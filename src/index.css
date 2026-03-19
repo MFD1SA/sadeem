@@ -1,0 +1,130 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html, body, #root {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  body {
+    font-family: 'IBM Plex Sans Arabic', 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    color: #1a1d2e;
+    background: #f8f9fb;
+    letter-spacing: -0.01em;
+  }
+
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #ddd;
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #bbb;
+  }
+}
+
+@layer components {
+  /* ─── Sidebar ─── */
+  .sidebar-item {
+    @apply flex items-center gap-3 px-5 py-2 text-[13px] font-normal text-sidebar-text cursor-pointer transition-all duration-150 border-r-[3px] border-transparent whitespace-nowrap;
+  }
+  .sidebar-item:hover {
+    @apply bg-sidebar-hover text-gray-100;
+  }
+  .sidebar-item.active {
+    @apply bg-sidebar-active text-white font-medium border-r-sidebar-accent;
+  }
+  .sidebar-item svg {
+    @apply w-[17px] h-[17px] flex-shrink-0 opacity-50;
+  }
+  .sidebar-item:hover svg {
+    @apply opacity-70;
+  }
+  .sidebar-item.active svg {
+    @apply opacity-100;
+  }
+
+  [dir="ltr"] .sidebar-item {
+    @apply border-r-0 border-l-[3px];
+  }
+  [dir="ltr"] .sidebar-item.active {
+    @apply border-l-sidebar-accent;
+  }
+
+  /* ─── Cards ─── */
+  .card {
+    @apply bg-white border border-border/80 rounded-xl;
+  }
+  .card-header {
+    @apply px-5 py-3.5 border-b border-border/60 flex items-center justify-between gap-3 flex-wrap;
+  }
+  .card-header h3 {
+    @apply text-[13px] font-semibold text-content-primary;
+  }
+  .card-body {
+    @apply p-5;
+  }
+
+  /* ─── Buttons ─── */
+  .btn {
+    @apply inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-lg text-[13px] font-medium cursor-pointer border transition-all duration-150 whitespace-nowrap;
+  }
+  .btn-primary {
+    @apply bg-brand-600 text-white border-brand-600 hover:bg-brand-700 shadow-sm;
+  }
+  .btn-secondary {
+    @apply bg-white text-content-primary border-border hover:bg-surface-secondary;
+  }
+  .btn-danger {
+    @apply bg-white text-state-danger border-red-200 hover:bg-state-danger-light;
+  }
+  .btn-sm {
+    @apply px-2.5 py-1.5 text-xs rounded-md;
+  }
+  .btn-icon {
+    @apply w-8 h-8 p-0 inline-flex items-center justify-center rounded-lg border border-border/70 bg-white cursor-pointer text-content-tertiary hover:bg-surface-secondary hover:text-content-primary transition-all duration-150;
+  }
+
+  /* ─── Forms ─── */
+  .form-label {
+    @apply block text-xs font-medium text-content-secondary mb-1.5;
+  }
+  .form-input {
+    @apply w-full px-3 py-2 border border-border rounded-lg text-sm text-content-primary bg-white transition-colors duration-150 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/10;
+  }
+  .form-select {
+    @apply w-full px-3 py-2 border border-border rounded-lg text-sm text-content-primary bg-white cursor-pointer focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/10;
+  }
+  .form-textarea {
+    @apply w-full px-3 py-2 border border-border rounded-lg text-sm text-content-primary bg-white min-h-[80px] resize-y focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/10;
+  }
+
+  /* ─── Badges ─── */
+  .badge {
+    @apply inline-flex items-center px-2 py-0.5 rounded-md text-2xs font-medium whitespace-nowrap;
+  }
+
+  /* ─── Tabs ─── */
+  .tab-item {
+    @apply px-4 py-2.5 text-[13px] font-medium text-content-tertiary cursor-pointer border-b-2 border-transparent transition-all duration-150 whitespace-nowrap hover:text-content-primary;
+  }
+  .tab-item.active {
+    @apply text-brand-600 border-brand-600 font-semibold;
+  }
+}
