@@ -1,4 +1,4 @@
-import { NavLink, useLocation } from 'react-router-dom';
+ { NavLink, useLocation } from 'react-router-dom';
 import { useLanguage } from '@/i18n';
 import {
   LayoutDashboard, MessageSquareText, Inbox, BarChart3, Building2, FileText,
