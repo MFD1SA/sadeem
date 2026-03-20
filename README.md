@@ -82,5 +82,6 @@ Push to GitHub → Vercel auto-deploys. Set env vars in Vercel Dashboard.
 Follow-up reviews → always manual.
 
 ## License
+<!-- deploy trigger -->
 
 Proprietary — All rights reserved.
