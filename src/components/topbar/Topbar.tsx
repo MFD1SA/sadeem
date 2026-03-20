@@ -2,7 +2,16 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useLanguage } from '@/i18n';
 import { useAuth } from '@/hooks/useAuth';
-import { Search, Bell, Menu, Globe, ChevronDown, LogOut, User, Settings } from 'lucide-react';
+import {
+  Search,
+  Bell,
+  Menu,
+  Globe,
+  ChevronDown,
+  LogOut,
+  User,
+  Settings,
+} from 'lucide-react';
 
 interface TopbarProps {
   onMenuClick: () => void;
@@ -13,15 +22,14 @@ export function Topbar({ onMenuClick }: TopbarProps) {
   const { profile, organization, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
   const [showUserMenu, setShowUserMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdown on route change
   useEffect(() => {
     setShowUserMenu(false);
   }, [location.pathname]);
 
-  // Close dropdown on click outside (no invisible full-screen overlay)
   useEffect(() => {
     if (!showUserMenu) return;
 
@@ -31,7 +39,6 @@ export function Topbar({ onMenuClick }: TopbarProps) {
       }
     };
 
-    // Use setTimeout to avoid closing immediately from the toggle click
     const timer = setTimeout(() => {
       document.addEventListener('click', handleClickOutside);
     }, 0);
@@ -46,6 +53,7 @@ export function Topbar({ onMenuClick }: TopbarProps) {
   const userAvatar = profile?.avatar_url;
   const userInitial = userName.charAt(0) || '?';
   const orgName = organization?.name || '';
+  const orgIndustry = organization?.industry || '';
 
   const handleLogout = async () => {
     setShowUserMenu(false);
@@ -54,101 +62,146 @@ export function Topbar({ onMenuClick }: TopbarProps) {
   };
 
   return (
-    <header className="h-14 min-h-[56px] bg-surface-primary border-b border-border flex items-center justify-between px-4 lg:px-6 gap-3 relative z-30">
-      {/* Right side */}
-      <div className="flex items-center gap-3">
-        <button className="lg:hidden text-content-secondary hover:text-content-primary" onClick={onMenuClick}>
-          <Menu size={20} />
-        </button>
-        <div>
-          <div className="text-[13px] font-semibold text-content-primary leading-tight">{orgName}</div>
-          <div className="text-2xs text-content-tertiary">{organization?.industry || ''}</div>
-        </div>
-      </div>
-
-      {/* Left side */}
-      <div className="flex items-center gap-2">
-        {/* Search */}
-        <div className="hidden md:flex items-center gap-2 bg-surface-secondary border border-border rounded-md px-3 py-1.5 w-56">
-          <Search size={15} className="text-content-tertiary flex-shrink-0" />
-          <input
-            type="text"
-            placeholder={t.topbar.search}
-            className="bg-transparent border-none outline-none text-xs text-content-primary w-full placeholder:text-content-tertiary cursor-not-allowed"
-            disabled
-            title={lang === 'ar' ? 'البحث قريباً' : 'Search coming soon'}
-          />
-        </div>
-
-        {/* Language toggle */}
-        <button
-          onClick={toggleLanguage}
-          className="flex items-center gap-1 px-2.5 py-1.5 rounded-md border border-border bg-white text-xs font-medium text-content-secondary hover:bg-surface-secondary transition-colors"
-        >
-          <Globe size={14} />
-        </button>
-
-        {/* Notifications */}
-        <button
-          onClick={() => navigate('/dashboard/notifications')}
-          className="relative w-8 h-8 flex items-center justify-center rounded-md border border-border bg-white text-content-secondary hover:bg-surface-secondary transition-colors"
-        >
-          <Bell size={16} />
-        </button>
-
-        {/* User avatar & dropdown */}
-        <div className="relative" ref={menuRef}>
+    <header className="sticky top-0 z-30 border-b border-border/70 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
+      <div className="mx-auto flex h-16 w-full max-w-[1600px] items-center justify-between gap-3 px-3 sm:px-4 lg:px-6 xl:px-8">
+        {/* Right / brand context */}
+        <div className="flex min-w-0 items-center gap-3">
           <button
-            onClick={() => setShowUserMenu((prev: boolean) => !prev)}
-            className="flex items-center gap-2 px-2 py-1 rounded-md hover:bg-surface-secondary transition-colors"
+            type="button"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-white text-content-secondary shadow-sm transition-colors hover:bg-surface-secondary hover:text-content-primary lg:hidden"
+            onClick={onMenuClick}
           >
-            {userAvatar ? (
-              <img src={userAvatar} alt="" className="w-7 h-7 rounded-full object-cover" />
-            ) : (
-              <div className="w-7 h-7 rounded-full bg-brand-600 text-white flex items-center justify-center text-xs font-semibold">
-                {userInitial}
-              </div>
-            )}
-            <span className="hidden sm:inline text-xs font-medium text-content-primary">{userName}</span>
-            <ChevronDown size={12} className={`text-content-tertiary transition-transform ${showUserMenu ? 'rotate-180' : ''}`} />
+            <Menu size={18} />
           </button>
 
-          {/* Dropdown menu — NO invisible overlay blocking the page */}
-          {showUserMenu && (
-            <div className="absolute top-full mt-1 ltr:right-0 rtl:left-0 w-52 bg-white border border-border rounded-lg shadow-md ring-1 ring-black/5 z-50 py-1 animate-in fade-in slide-in-from-top-1 duration-150">
-              {/* User info */}
-              <div className="px-3 py-2 border-b border-border">
-                <div className="text-xs font-medium text-content-primary">{userName}</div>
-                <div className="text-2xs text-content-tertiary">{profile?.email}</div>
+          <div className="min-w-0">
+            <div className="truncate text-sm font-semibold text-content-primary">
+              {orgName}
+            </div>
+            <div className="truncate text-[11px] text-content-tertiary">
+              {orgIndustry}
+            </div>
+          </div>
+        </div>
+
+        {/* Left / actions */}
+        <div className="flex items-center gap-2 sm:gap-2.5">
+          {/* Search */}
+          <div className="hidden md:flex items-center gap-2 rounded-xl border border-border bg-surface-secondary/70 px-3 py-2 w-64 lg:w-72">
+            <Search size={15} className="text-content-tertiary flex-shrink-0" />
+            <input
+              type="text"
+              placeholder={t.topbar.search}
+              className="w-full border-none bg-transparent text-xs text-content-primary outline-none placeholder:text-content-tertiary cursor-not-allowed"
+              disabled
+              title={lang === 'ar' ? 'البحث قريباً' : 'Search coming soon'}
+            />
+          </div>
+
+          {/* Language */}
+          <button
+            type="button"
+            onClick={toggleLanguage}
+            className="inline-flex h-10 items-center justify-center gap-1.5 rounded-xl border border-border bg-white px-3 text-xs font-medium text-content-secondary shadow-sm transition-colors hover:bg-surface-secondary hover:text-content-primary"
+            title={lang === 'ar' ? 'تغيير اللغة' : 'Change language'}
+          >
+            <Globe size={14} />
+            <span className="hidden sm:inline">{lang === 'ar' ? 'AR' : 'EN'}</span>
+          </button>
+
+          {/* Notifications */}
+          <button
+            type="button"
+            onClick={() => navigate('/dashboard/notifications')}
+            className="relative inline-flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-white text-content-secondary shadow-sm transition-colors hover:bg-surface-secondary hover:text-content-primary"
+            title={lang === 'ar' ? 'الإشعارات' : 'Notifications'}
+          >
+            <Bell size={16} />
+          </button>
+
+          {/* User menu */}
+          <div className="relative" ref={menuRef}>
+            <button
+              type="button"
+              onClick={() => setShowUserMenu((prev: boolean) => !prev)}
+              className="flex h-10 items-center gap-2 rounded-xl border border-border bg-white px-2.5 sm:px-3 shadow-sm transition-colors hover:bg-surface-secondary"
+            >
+              {userAvatar ? (
+                <img
+                  src={userAvatar}
+                  alt=""
+                  className="h-7 w-7 rounded-full object-cover ring-1 ring-border"
+                />
+              ) : (
+                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-600 text-xs font-semibold text-white">
+                  {userInitial}
+                </div>
+              )}
+
+              <div className="hidden min-w-0 sm:block text-start">
+                <div className="max-w-[120px] truncate text-xs font-medium text-content-primary">
+                  {userName}
+                </div>
               </div>
 
-              <button
-                onClick={() => { setShowUserMenu(false); navigate('/dashboard/settings'); }}
-                className="w-full flex items-center gap-2 px-3 py-2 text-xs text-content-primary hover:bg-surface-secondary transition-colors"
-              >
-                <User size={14} />
-                {t.topbar.profile}
-              </button>
+              <ChevronDown
+                size={14}
+                className={`text-content-tertiary transition-transform ${
+                  showUserMenu ? 'rotate-180' : ''
+                }`}
+              />
+            </button>
 
-              <button
-                onClick={() => { setShowUserMenu(false); navigate('/dashboard/settings'); }}
-                className="w-full flex items-center gap-2 px-3 py-2 text-xs text-content-primary hover:bg-surface-secondary transition-colors"
-              >
-                <Settings size={14} />
-                {t.settingsPage?.title || 'Settings'}
-              </button>
+            {showUserMenu && (
+              <div className="absolute top-full mt-2 ltr:right-0 rtl:left-0 z-50 w-60 overflow-hidden rounded-2xl border border-border bg-white shadow-xl ring-1 ring-black/5 animate-in fade-in slide-in-from-top-1 duration-150">
+                <div className="border-b border-border bg-surface-secondary/40 px-4 py-3">
+                  <div className="truncate text-sm font-semibold text-content-primary">
+                    {userName}
+                  </div>
+                  <div className="truncate text-[11px] text-content-tertiary mt-0.5">
+                    {profile?.email}
+                  </div>
+                </div>
 
-              <div className="border-t border-border my-1" />
+                <div className="p-1.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowUserMenu(false);
+                      navigate('/dashboard/settings');
+                    }}
+                    className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-xs text-content-primary transition-colors hover:bg-surface-secondary"
+                  >
+                    <User size={15} />
+                    {t.topbar.profile}
+                  </button>
 
-              <button
-                onClick={handleLogout}
-                className="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-600 hover:bg-red-50 transition-colors"
-              >
-                <LogOut size={14} />
-                {t.topbar.logout}
-              </button>
-            </div>
-          )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowUserMenu(false);
+                      navigate('/dashboard/settings');
+                    }}
+                    className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-xs text-content-primary transition-colors hover:bg-surface-secondary"
+                  >
+                    <Settings size={15} />
+                    {t.settingsPage?.title || 'Settings'}
+                  </button>
+
+                  <div className="my-1.5 border-t border-border" />
+
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-xs text-red-600 transition-colors hover:bg-red-50"
+                  >
+                    <LogOut size={15} />
+                    {t.topbar.logout}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </header>
