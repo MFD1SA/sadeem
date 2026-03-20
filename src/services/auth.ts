@@ -1,7 +1,6 @@
 import { supabase } from '@/lib/supabase';
 
 export const authService = {
-  // ─── Email Auth ───
   async signUp(email: string, password: string, fullName: string) {
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -23,7 +22,6 @@ export const authService = {
     return data;
   },
 
-  // ─── Google Login ───
   async loginWithGoogle() {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -40,13 +38,11 @@ export const authService = {
     return data;
   },
 
-  // ─── Logout ───
   async logout() {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
   },
 
-  // ─── Session ───
   async getSession() {
     const {
       data: { session },
@@ -65,7 +61,6 @@ export const authService = {
     return user;
   },
 
-  // ─── Auth State Listener ───
   onAuthStateChange(callback: (event: string, session: unknown) => void) {
     return supabase.auth.onAuthStateChange(callback);
   },
