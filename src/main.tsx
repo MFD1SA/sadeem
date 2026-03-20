@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { LanguageProvider } from '@/i18n';
 import { AuthProvider } from '@/hooks/useAuth';
 import App from './App';
