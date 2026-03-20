@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, type ChangeEvent } from 'react';
+import QRCode from 'qrcode';
 import { useLanguage } from '@/i18n';
 import { useAuth } from '@/hooks/useAuth';
 import { branchesService } from '@/services/branches';
@@ -53,7 +54,6 @@ export default function QrReviews() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Setup modal
   const [showSetup, setShowSetup] = useState(false);
   const [setupBranch, setSetupBranch] = useState<DbBranch | null>(null);
   const [setupConfig, setSetupConfig] = useState<DbQrConfig | null>(null);
@@ -65,7 +65,6 @@ export default function QrReviews() {
   const [setupError, setSetupError] = useState('');
   const [setupSuccess, setSetupSuccess] = useState('');
 
-  // Download modal
   const [downloadConfig, setDownloadConfig] = useState<DbQrConfig | null>(null);
 
   const loadData = useCallback(async () => {
@@ -78,13 +77,10 @@ export default function QrReviews() {
     setError('');
 
     try {
-      const [branches, configs] = await withTimeout(
-        Promise.all([
-          branchesService.list(organization.id),
-          qrService.listByOrganization(organization.id),
-        ]),
-        12000
-      );
+      const [branches, configs] = await Promise.all([
+        branchesService.list(organization.id),
+        qrService.listByOrganization(organization.id),
+      ]);
 
       const configMap = new Map(configs.map((c) => [c.branch_id, c]));
 
@@ -104,7 +100,7 @@ export default function QrReviews() {
   }, [organization]);
 
   useEffect(() => {
-    loadData();
+    void loadData();
   }, [loadData]);
 
   const openSetup = (branch: DbBranch, config: DbQrConfig | null) => {
@@ -152,10 +148,7 @@ export default function QrReviews() {
       };
 
       if (setupConfig) {
-        await withTimeout(
-          qrService.update(setupConfig.id, payload),
-          12000
-        );
+        await withTimeout(qrService.update(setupConfig.id, payload), 12000);
       } else {
         await withTimeout(
           qrService.create({
@@ -172,8 +165,6 @@ export default function QrReviews() {
       }
 
       setSetupSuccess(lang === 'ar' ? 'تم الحفظ بنجاح' : 'Saved successfully');
-
-      // أغلق النافذة أولاً ثم حدّث القائمة بالخلفية
       setShowSetup(false);
       void loadData();
     } catch (err: unknown) {
@@ -282,8 +273,8 @@ export default function QrReviews() {
                                   ? 'صفحة هبوط'
                                   : 'Landing Page'
                                 : lang === 'ar'
-                                ? 'Google مباشر'
-                                : 'Google Direct'}
+                                  ? 'Google مباشر'
+                                  : 'Google Direct'}
                             </Badge>
 
                             <Badge variant="neutral">
@@ -532,19 +523,19 @@ export default function QrReviews() {
             <div className="flex gap-2">
               <button
                 className="btn btn-primary btn-sm"
-                onClick={() => downloadQrImage(downloadConfig, 'png')}
+                onClick={() => void downloadQrImage(downloadConfig, 'png')}
               >
                 <Download size={12} /> PNG
               </button>
               <button
                 className="btn btn-secondary btn-sm"
-                onClick={() => downloadQrImage(downloadConfig, 'svg')}
+                onClick={() => void downloadQrImage(downloadConfig, 'svg')}
               >
                 <Download size={12} /> SVG
               </button>
               <button
                 className="btn btn-secondary btn-sm"
-                onClick={() => downloadQrImage(downloadConfig, 'png-hd')}
+                onClick={() => void downloadQrImage(downloadConfig, 'png-hd')}
               >
                 <Download size={12} /> {lang === 'ar' ? 'HD عالي الدقة' : 'HD Print'}
               </button>
@@ -556,47 +547,46 @@ export default function QrReviews() {
   );
 }
 
-function downloadQrImage(config: DbQrConfig, format: 'png' | 'svg' | 'png-hd') {
+async function downloadQrImage(
+  config: DbQrConfig,
+  format: 'png' | 'svg' | 'png-hd'
+) {
   const url = qrService.getQrUrl(config);
-  const canvas = document.createElement('canvas');
   const size = format === 'png-hd' ? 1024 : 512;
-  canvas.width = size;
-  canvas.height = size;
-
-  const ctx = canvas.getContext('2d');
-  if (!ctx) return;
-
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0, 0, size, size);
-
-  const qrCanvas = document.querySelector(
-    `[data-qr-url="${url}"] canvas`
-  ) as HTMLCanvasElement | null;
-
-  if (qrCanvas) {
-    ctx.drawImage(qrCanvas, 0, 0, size, size);
-  }
 
   if (format === 'svg') {
-    const svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}">
-      <rect width="100%" height="100%" fill="white"/>
-      <image href="${canvas.toDataURL('image/png')}" width="${size}" height="${size}"/>
-    </svg>`;
+    const svgString = await QRCode.toString(url, {
+      type: 'svg',
+      width: size,
+      margin: 1,
+      errorCorrectionLevel: 'M',
+      color: {
+        dark: '#111111',
+        light: '#FFFFFF',
+      },
+    });
 
-    const blob = new Blob([svgContent], { type: 'image/svg+xml' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `qr-${config.slug}.svg`;
-    a.click();
-    URL.revokeObjectURL(a.href);
-  } else {
-    canvas.toBlob((blob) => {
-      if (!blob) return;
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = `qr-${config.slug}${format === 'png-hd' ? '-hd' : ''}.png`;
-      a.click();
-      URL.revokeObjectURL(a.href);
-    }, 'image/png');
+    const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `qr-${config.slug}.svg`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+    return;
   }
+
+  const dataUrl = await QRCode.toDataURL(url, {
+    width: size,
+    margin: 1,
+    errorCorrectionLevel: 'M',
+    color: {
+      dark: '#111111',
+      light: '#FFFFFF',
+    },
+  });
+
+  const link = document.createElement('a');
+  link.href = dataUrl;
+  link.download = `qr-${config.slug}${format === 'png-hd' ? '-hd' : ''}.png`;
+  link.click();
 }
