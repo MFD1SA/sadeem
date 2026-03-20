@@ -8,27 +8,27 @@ export default function AuthCallback() {
 
   useEffect(() => {
     let cancelled = false;
-    let fallbackTimer: number | undefined;
 
-    const finishSuccess = () => {
-      setStatus('تم تسجيل الدخول بنجاح');
+    const goLogin = () => {
+      window.setTimeout(() => {
+        if (!cancelled) navigate('/login', { replace: true });
+      }, 1500);
+    };
+
+    const goOnboarding = () => {
       window.setTimeout(() => {
         if (!cancelled) navigate('/onboarding', { replace: true });
       }, 500);
     };
 
-    const failToLogin = () => {
-      setStatus('تعذر إكمال تسجيل الدخول');
-      window.setTimeout(() => {
-        if (!cancelled) navigate('/login', { replace: true });
-      }, 2000);
-    };
+    const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
     const handleCallback = async () => {
       try {
         const url = new URL(window.location.href);
-        const code = url.searchParams.get('code');
 
+        // PKCE flow: ?code=...
+        const code = url.searchParams.get('code');
         if (code) {
           const { error } = await supabase.auth.exchangeCodeForSession(code);
           if (error) {
@@ -36,50 +36,53 @@ export default function AuthCallback() {
           }
         }
 
-        const {
-          data: { session },
-          error,
-        } = await supabase.auth.getSession();
+        // Hash flow: #access_token=...&refresh_token=...
+        if (window.location.hash.includes('access_token')) {
+          const hash = new URLSearchParams(window.location.hash.substring(1));
+          const access_token = hash.get('access_token');
+          const refresh_token = hash.get('refresh_token');
 
-        if (cancelled) return;
+          if (access_token && refresh_token) {
+            const { error } = await supabase.auth.setSession({
+              access_token,
+              refresh_token,
+            });
 
-        if (session) {
-          finishSuccess();
-          return;
-        }
-
-        if (error) {
-          console.error('[Sadeem] getSession error:', error);
-        }
-
-        const { data: authListener } = supabase.auth.onAuthStateChange((event, newSession) => {
-          if (cancelled) return;
-
-          if (event === 'SIGNED_IN' && newSession) {
-            if (fallbackTimer) window.clearTimeout(fallbackTimer);
-            authListener.subscription.unsubscribe();
-            finishSuccess();
+            if (error) {
+              console.error('[Sadeem] setSession from hash error:', error);
+            } else {
+              window.history.replaceState({}, document.title, '/auth/callback');
+            }
           }
-        });
+        }
 
-        fallbackTimer = window.setTimeout(async () => {
-          authListener.subscription.unsubscribe();
-
+        // Retry session detection عدة مرات
+        for (let i = 0; i < 8; i++) {
           const {
-            data: { session: retrySession },
+            data: { session },
+            error,
           } = await supabase.auth.getSession();
 
-          if (cancelled) return;
-
-          if (retrySession) {
-            finishSuccess();
-          } else {
-            failToLogin();
+          if (session) {
+            setStatus('تم تسجيل الدخول بنجاح');
+            goOnboarding();
+            return;
           }
-        }, 2500);
+
+          if (error) {
+            console.error('[Sadeem] getSession error:', error);
+          }
+
+          await sleep(500);
+        }
+
+        console.error('[Sadeem] Session not found after callback');
+        setStatus('تعذر إكمال تسجيل الدخول');
+        goLogin();
       } catch (err) {
         console.error('[Sadeem] Auth callback failed:', err);
-        if (!cancelled) failToLogin();
+        setStatus('حدث خطأ في تسجيل الدخول');
+        goLogin();
       }
     };
 
@@ -87,7 +90,6 @@ export default function AuthCallback() {
 
     return () => {
       cancelled = true;
-      if (fallbackTimer) window.clearTimeout(fallbackTimer);
     };
   }, [navigate]);
 
