@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
 import { supabase } from '@/lib/supabase';
 import { organizationService } from '@/services/organizations';
 import type { DbUser, DbOrganization, DbMembership } from '@/types/database';
@@ -34,8 +34,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     hasOrganization: false,
   });
 
-  const initialized = useRef(false);
-
   const loadProfile = useCallback(async (userId: string): Promise<DbUser | null> => {
     try {
       const { data, error } = await supabase
@@ -43,10 +41,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .select('*')
         .eq('id', userId)
         .single();
+
       if (error) {
         console.warn('[Sadeem] Profile load error:', error.message);
         return null;
       }
+
       return (data as DbUser) || null;
     } catch (err) {
       console.warn('[Sadeem] Profile load failed:', err);
@@ -63,21 +63,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  // Initialize auth once on mount
-  useEffect(() => {
-    if (initialized.current) return;
-    initialized.current = true;
+  const hydrateAuth = useCallback(
+    async (session: any | null) => {
+      if (!session?.user) {
+        setState({
+          session: null,
+          user: null,
+          profile: null,
+          organization: null,
+          membership: null,
+          isLoading: false,
+          isAuthenticated: false,
+          hasOrganization: false,
+        });
+        return;
+      }
 
-    const init = async () => {
       try {
-        const { data, error } = await supabase.auth.getSession();
-
-        if (error || !data?.session?.user) {
-          setState((prev: AuthState) => ({ ...prev, isLoading: false, isAuthenticated: false }));
-          return;
-        }
-
-        const session = data.session;
         const profile = await loadProfile(session.user.id);
         const orgData = await loadOrganization(session.user.id);
 
@@ -92,65 +94,94 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           hasOrganization: !!orgData?.org,
         });
       } catch (err) {
+        console.error('[Sadeem] Auth hydrate failed:', err);
+        setState({
+          session: null,
+          user: null,
+          profile: null,
+          organization: null,
+          membership: null,
+          isLoading: false,
+          isAuthenticated: false,
+          hasOrganization: false,
+        });
+      }
+    },
+    [loadProfile, loadOrganization]
+  );
+
+  useEffect(() => {
+    let mounted = true;
+
+    const init = async () => {
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+
+        if (!mounted) return;
+        await hydrateAuth(session);
+      } catch (err) {
         console.error('[Sadeem] Auth init failed:', err);
-        setState((prev: AuthState) => ({ ...prev, isLoading: false, isAuthenticated: false }));
+        if (!mounted) return;
+
+        setState({
+          session: null,
+          user: null,
+          profile: null,
+          organization: null,
+          membership: null,
+          isLoading: false,
+          isAuthenticated: false,
+          hasOrganization: false,
+        });
       }
     };
 
-    // Safety timeout: if auth takes more than 5 seconds, stop loading
-    const timeout = setTimeout(() => {
-      setState((prev: AuthState) => {
-        if (prev.isLoading) {
-          console.warn('[Sadeem] Auth timeout - forcing loading to false');
-          return { ...prev, isLoading: false };
-        }
-        return prev;
-      });
-    }, 5000);
+    init();
 
-    init().finally(() => clearTimeout(timeout));
+    const { data: listener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted) return;
 
-    // Listen for auth changes — handle sign-in and sign-out
-    const { data: listener } = supabase.auth.onAuthStateChange(async (event: string, session: any) => {
-      if (event === 'SIGNED_IN' && session?.user) {
-        // Update state for email login, signup, or OAuth callback
-        const profile = await loadProfile(session.user.id);
-        const orgData = await loadOrganization(session.user.id);
+      if (
+        event === 'INITIAL_SESSION' ||
+        event === 'SIGNED_IN' ||
+        event === 'TOKEN_REFRESHED' ||
+        event === 'USER_UPDATED'
+      ) {
+        await hydrateAuth(session);
+      }
+
+      if (event === 'SIGNED_OUT') {
         setState({
-          session,
-          user: { id: session.user.id, email: session.user.email },
-          profile,
-          organization: orgData?.org || null,
-          membership: orgData?.membership || null,
+          session: null,
+          user: null,
+          profile: null,
+          organization: null,
+          membership: null,
           isLoading: false,
-          isAuthenticated: true,
-          hasOrganization: !!orgData?.org,
-        });
-      } else if (event === 'SIGNED_OUT') {
-        setState({
-          session: null, user: null, profile: null,
-          organization: null, membership: null,
-          isLoading: false, isAuthenticated: false, hasOrganization: false,
+          isAuthenticated: false,
+          hasOrganization: false,
         });
       }
-      // TOKEN_REFRESHED, USER_UPDATED: do nothing — avoid unnecessary re-renders
     });
 
     return () => {
+      mounted = false;
       listener?.subscription?.unsubscribe();
     };
-  }, [loadProfile, loadOrganization]);
+  }, [hydrateAuth]);
 
   const refreshProfile = useCallback(async () => {
     if (!state.user) return;
     const profile = await loadProfile(state.user.id);
-    setState((prev: AuthState) => ({ ...prev, profile }));
+    setState((prev) => ({ ...prev, profile }));
   }, [state.user, loadProfile]);
 
   const refreshOrganization = useCallback(async () => {
     if (!state.user) return;
     const orgData = await loadOrganization(state.user.id);
-    setState((prev: AuthState) => ({
+    setState((prev) => ({
       ...prev,
       organization: orgData?.org || null,
       membership: orgData?.membership || null,
@@ -163,17 +194,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await supabase.auth.signOut();
     } catch (err) {
       console.error('[Sadeem] Sign out failed:', err);
-      // Force clear state even if signOut API fails
       setState({
-        session: null, user: null, profile: null,
-        organization: null, membership: null,
-        isLoading: false, isAuthenticated: false, hasOrganization: false,
+        session: null,
+        user: null,
+        profile: null,
+        organization: null,
+        membership: null,
+        isLoading: false,
+        isAuthenticated: false,
+        hasOrganization: false,
       });
     }
   }, []);
 
   return (
-    <AuthContext.Provider value={{ ...state, refreshProfile, refreshOrganization, signOut }}>
+    <AuthContext.Provider
+      value={{
+        ...state,
+        refreshProfile,
+        refreshOrganization,
+        signOut,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
