@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { Tabs } from '@/components/ui/Tabs';
 import { Toggle } from '@/components/ui/Toggle';
-import { Shield, Camera } from 'lucide-react';
+import { Shield, Camera, Building2, UserCircle2, Globe2, Save } from 'lucide-react';
 
 export default function Settings() {
   const { t, lang, setLanguage } = useLanguage();
@@ -21,7 +21,6 @@ export default function Settings() {
 
   const [tab, setTab] = useState('organization');
 
-  // Per-tab UI state
   const [orgSaving, setOrgSaving] = useState(false);
   const [orgMessage, setOrgMessage] = useState('');
 
@@ -33,22 +32,17 @@ export default function Settings() {
 
   const [generalMessage, setGeneralMessage] = useState('');
 
-  // Org form
   const [orgName, setOrgName] = useState('');
   const [orgIndustry, setOrgIndustry] = useState('');
   const [orgCity, setOrgCity] = useState('');
 
-  // Profile form
   const [fullName, setFullName] = useState('');
 
-  // Avatar upload
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
-  // Detect if logged in via Google
   const [isGoogleUser, setIsGoogleUser] = useState(false);
 
-  // Policy settings
   const [autoReplyFirstOnly, setAutoReplyFirstOnly] = useState(true);
 
   useEffect(() => {
@@ -89,10 +83,10 @@ export default function Settings() {
 
     return (
       <div
-        className={`text-xs rounded-md p-3 mb-4 ${
+        className={`mb-5 rounded-2xl border px-4 py-3 text-xs sm:text-sm ${
           isSuccessMessage(msg)
-            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-            : 'bg-red-50 text-red-700 border border-red-200'
+            ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+            : 'border-red-200 bg-red-50 text-red-700'
         }`}
       >
         {msg}
@@ -187,7 +181,6 @@ export default function Settings() {
     setPolicyMessage('');
 
     try {
-      // Placeholder until policy persistence is implemented
       await new Promise((resolve) => setTimeout(resolve, 300));
       setPolicyMessage(lang === 'ar' ? 'تم الحفظ بنجاح' : 'Saved successfully');
     } catch (err: unknown) {
@@ -203,7 +196,7 @@ export default function Settings() {
 
   if (!organization) {
     return (
-      <div className="p-6 text-center text-content-secondary">
+      <div className="rounded-3xl border border-border bg-white p-8 text-center text-content-secondary shadow-sm">
         {lang === 'ar' ? 'لا يوجد نشاط تجاري' : 'No organization found'}
       </div>
     );
@@ -217,247 +210,332 @@ export default function Settings() {
   ];
 
   return (
-    <div className="card">
-      <div className="card-header">
-        <h3>{t.settingsPage.title}</h3>
-      </div>
-
-      <div className="px-5">
-        <Tabs tabs={tabs} active={tab} onChange={setTab} />
-      </div>
-
-      <div className="card-body">
-        {/* Organization tab */}
-        {tab === 'organization' && (
-          <div className="max-w-xl space-y-4">
-            {renderMessage(orgMessage)}
-
-            <div>
-              <label className="form-label">{lang === 'ar' ? 'اسم النشاط' : 'Business Name'}</label>
-              <input
-                className="form-input"
-                value={orgName}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => setOrgName(e.target.value)}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="form-label">{lang === 'ar' ? 'القطاع' : 'Industry'}</label>
-                <input
-                  className="form-input"
-                  value={orgIndustry}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => setOrgIndustry(e.target.value)}
-                />
-              </div>
-
-              <div>
-                <label className="form-label">{lang === 'ar' ? 'المدينة' : 'City'}</label>
-                <input
-                  className="form-input"
-                  value={orgCity}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => setOrgCity(e.target.value)}
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="form-label">{lang === 'ar' ? 'الدولة' : 'Country'}</label>
-              <input className="form-input bg-surface-secondary" value={organization.country || 'SA'} disabled />
-            </div>
-
-            <div>
-              <label className="form-label">Slug</label>
-              <input className="form-input bg-surface-secondary" value={organization.slug || ''} disabled />
-            </div>
-
-            <button className="btn btn-primary" onClick={handleSaveOrg} disabled={orgSaving}>
-              {orgSaving ? t.common.loading : t.common.save}
-            </button>
+    <div className="space-y-5">
+      {/* Header */}
+      <div className="rounded-3xl border border-border bg-white px-5 py-5 shadow-sm sm:px-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-lg font-semibold text-content-primary sm:text-xl">
+              {t.settingsPage.title}
+            </h1>
+            <p className="mt-1 text-xs text-content-tertiary sm:text-sm">
+              {lang === 'ar'
+                ? 'إدارة بيانات النشاط، الملف الشخصي، وسياسات المنصة من مكان واحد'
+                : 'Manage organization details, profile, and platform policies from one place'}
+            </p>
           </div>
-        )}
 
-        {/* Profile tab */}
-        {tab === 'profile' && (
-          <div className="max-w-xl space-y-4">
-            {renderMessage(profileMessage)}
+          <div className="rounded-2xl border border-border bg-surface-secondary/50 px-4 py-3 text-xs text-content-tertiary">
+            <div className="font-medium text-content-primary">{organization.name}</div>
+            <div className="mt-1">{organization.industry || (lang === 'ar' ? 'غير محدد' : 'Not set')}</div>
+          </div>
+        </div>
+      </div>
 
-            <div className="flex items-center gap-4 mb-4">
-              <div className="relative group">
-                {profile?.avatar_url ? (
-                  <img
-                    src={profile.avatar_url}
-                    alt=""
-                    className="w-16 h-16 rounded-full object-cover"
+      {/* Main card */}
+      <div className="overflow-hidden rounded-3xl border border-border bg-white shadow-sm">
+        <div className="border-b border-border/70 px-5 py-4 sm:px-6">
+          <Tabs tabs={tabs} active={tab} onChange={setTab} />
+        </div>
+
+        <div className="px-5 py-5 sm:px-6 sm:py-6">
+          {/* Organization tab */}
+          {tab === 'organization' && (
+            <div className="mx-auto max-w-3xl">
+              {renderMessage(orgMessage)}
+
+              <div className="mb-6 flex items-start gap-3 rounded-2xl border border-border bg-surface-secondary/40 p-4">
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-brand-50 text-brand-600">
+                  <Building2 size={20} />
+                </div>
+                <div>
+                  <div className="text-sm font-semibold text-content-primary">
+                    {lang === 'ar' ? 'بيانات النشاط التجاري' : 'Organization Details'}
+                  </div>
+                  <div className="mt-1 text-xs leading-6 text-content-tertiary">
+                    {lang === 'ar'
+                      ? 'حدّث الاسم، القطاع، والمدينة الأساسية للنشاط التجاري.'
+                      : 'Update your business name, industry, and main city.'}
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                <div className="sm:col-span-2">
+                  <label className="form-label">{lang === 'ar' ? 'اسم النشاط' : 'Business Name'}</label>
+                  <input
+                    className="form-input"
+                    value={orgName}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => setOrgName(e.target.value)}
                   />
-                ) : (
-                  <div className="w-16 h-16 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center text-xl font-bold">
-                    {fullName?.charAt(0) || '?'}
-                  </div>
-                )}
+                </div>
 
-                <button
-                  type="button"
-                  onClick={() => avatarInputRef.current?.click()}
-                  disabled={uploadingAvatar}
-                  className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity cursor-pointer"
-                >
-                  <Camera size={18} className="text-white" />
+                <div>
+                  <label className="form-label">{lang === 'ar' ? 'القطاع' : 'Industry'}</label>
+                  <input
+                    className="form-input"
+                    value={orgIndustry}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => setOrgIndustry(e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className="form-label">{lang === 'ar' ? 'المدينة' : 'City'}</label>
+                  <input
+                    className="form-input"
+                    value={orgCity}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => setOrgCity(e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className="form-label">{lang === 'ar' ? 'الدولة' : 'Country'}</label>
+                  <input
+                    className="form-input bg-surface-secondary"
+                    value={organization.country || 'SA'}
+                    disabled
+                  />
+                </div>
+
+                <div>
+                  <label className="form-label">Slug</label>
+                  <input
+                    className="form-input bg-surface-secondary"
+                    value={organization.slug || ''}
+                    disabled
+                  />
+                </div>
+              </div>
+
+              <div className="mt-6 flex justify-end">
+                <button className="btn btn-primary min-w-[140px]" onClick={handleSaveOrg} disabled={orgSaving}>
+                  <Save size={15} />
+                  {orgSaving ? t.common.loading : t.common.save}
                 </button>
-
-                <input
-                  ref={avatarInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleAvatarUpload}
-                />
               </div>
+            </div>
+          )}
 
-              <div>
-                <div className="text-sm font-semibold text-content-primary">{profile?.email || ''}</div>
-                <div className="text-2xs text-content-tertiary">
-                  {t.roles[(profile?.role || 'staff') as 'owner' | 'manager' | 'staff'] ||
-                    profile?.role ||
-                    ''}
-                </div>
-                {isGoogleUser && (
-                  <div className="text-2xs text-brand-500 mt-0.5">
-                    {lang === 'ar' ? 'حساب Google' : 'Google account'}
+          {/* Profile tab */}
+          {tab === 'profile' && (
+            <div className="mx-auto max-w-3xl">
+              {renderMessage(profileMessage)}
+
+              <div className="mb-6 rounded-2xl border border-border bg-surface-secondary/40 p-4 sm:p-5">
+                <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
+                  <div className="relative group self-start">
+                    {profile?.avatar_url ? (
+                      <img
+                        src={profile.avatar_url}
+                        alt=""
+                        className="h-20 w-20 rounded-full object-cover ring-4 ring-white shadow-md"
+                      />
+                    ) : (
+                      <div className="flex h-20 w-20 items-center justify-center rounded-full bg-brand-100 text-2xl font-bold text-brand-700 ring-4 ring-white shadow-md">
+                        {fullName?.charAt(0) || '?'}
+                      </div>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => avatarInputRef.current?.click()}
+                      disabled={uploadingAvatar}
+                      className="absolute inset-0 flex items-center justify-center rounded-full bg-black/45 opacity-0 transition-opacity group-hover:opacity-100"
+                    >
+                      <Camera size={20} className="text-white" />
+                    </button>
+
+                    <input
+                      ref={avatarInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleAvatarUpload}
+                    />
                   </div>
-                )}
-              </div>
-            </div>
 
-            <div>
-              <label className="form-label">{lang === 'ar' ? 'الاسم الكامل' : 'Full Name'}</label>
-              <input
-                className="form-input"
-                value={fullName}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => setFullName(e.target.value)}
-              />
-            </div>
-
-            <div>
-              <label className="form-label">{lang === 'ar' ? 'البريد الإلكتروني' : 'Email'}</label>
-              <input
-                className="form-input bg-surface-secondary"
-                value={profile?.email || ''}
-                disabled
-                title={
-                  isGoogleUser
-                    ? lang === 'ar'
-                      ? 'لا يمكن تغيير البريد لحسابات Google'
-                      : 'Email cannot be changed for Google accounts'
-                    : ''
-                }
-              />
-              {isGoogleUser && (
-                <p className="text-2xs text-content-tertiary mt-1">
-                  {lang === 'ar'
-                    ? 'البريد مرتبط بحساب Google ولا يمكن تعديله'
-                    : 'Email is linked to Google account and cannot be changed'}
-                </p>
-              )}
-            </div>
-
-            <button
-              className="btn btn-primary"
-              onClick={handleSaveProfile}
-              disabled={profileSaving || uploadingAvatar}
-            >
-              {profileSaving ? t.common.loading : t.common.save}
-            </button>
-          </div>
-        )}
-
-        {/* Reply Policy tab */}
-        {tab === 'policy' && (
-          <div className="max-w-xl">
-            {renderMessage(policyMessage)}
-
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 flex items-start gap-3">
-              <Shield size={20} className="text-blue-600 flex-shrink-0 mt-0.5" />
-              <div>
-                <div className="text-sm font-semibold text-blue-800 mb-1">
-                  {lang === 'ar' ? 'سياسة ردود سديم' : 'Sadeem Reply Policy'}
-                </div>
-                <div className="text-xs text-blue-700 leading-relaxed">
-                  {lang === 'ar'
-                    ? 'سديم ترد مرة واحدة فقط على التقييم الأول من كل عميل. إذا كتب العميل تعليقاً ثانياً، يتم إيقاف الرد الآلي وتتحول الحالة إلى "مراجعة يدوية مطلوبة". هذا يمنع الردود المتكررة ويحافظ على احترافية التواصل.'
-                    : 'Sadeem replies once to the first review from each customer. If a customer posts a follow-up, auto-reply is disabled and the status changes to "Manual Review Required". This prevents repetitive replies and maintains professional communication.'}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-start gap-3">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-brand-50 text-brand-600">
+                        <UserCircle2 size={20} />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-sm font-semibold text-content-primary">
+                          {fullName || profile?.email || (lang === 'ar' ? 'الملف الشخصي' : 'Profile')}
+                        </div>
+                        <div className="mt-1 truncate text-xs text-content-tertiary">
+                          {profile?.email || ''}
+                        </div>
+                        <div className="mt-1 text-2xs text-content-tertiary">
+                          {t.roles[(profile?.role || 'staff') as 'owner' | 'manager' | 'staff'] ||
+                            profile?.role ||
+                            ''}
+                        </div>
+                        {isGoogleUser && (
+                          <div className="mt-2 inline-flex rounded-full bg-brand-50 px-2.5 py-1 text-2xs font-medium text-brand-600">
+                            {lang === 'ar' ? 'حساب Google' : 'Google account'}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="space-y-1">
-              <div className="flex items-center justify-between py-3 border-b border-border">
+              <div className="grid grid-cols-1 gap-5">
                 <div>
-                  <div className="text-sm font-medium text-content-primary">
-                    {lang === 'ar' ? 'الرد التلقائي على أول تقييم فقط' : 'Auto-reply first review only'}
+                  <label className="form-label">{lang === 'ar' ? 'الاسم الكامل' : 'Full Name'}</label>
+                  <input
+                    className="form-input"
+                    value={fullName}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => setFullName(e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className="form-label">{lang === 'ar' ? 'البريد الإلكتروني' : 'Email'}</label>
+                  <input
+                    className="form-input bg-surface-secondary"
+                    value={profile?.email || ''}
+                    disabled
+                    title={
+                      isGoogleUser
+                        ? lang === 'ar'
+                          ? 'لا يمكن تغيير البريد لحسابات Google'
+                          : 'Email cannot be changed for Google accounts'
+                        : ''
+                    }
+                  />
+                  {isGoogleUser && (
+                    <p className="mt-2 text-2xs leading-6 text-content-tertiary">
+                      {lang === 'ar'
+                        ? 'البريد مرتبط بحساب Google ولا يمكن تعديله'
+                        : 'Email is linked to Google account and cannot be changed'}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="mt-6 flex justify-end">
+                <button
+                  className="btn btn-primary min-w-[140px]"
+                  onClick={handleSaveProfile}
+                  disabled={profileSaving || uploadingAvatar}
+                >
+                  <Save size={15} />
+                  {profileSaving ? t.common.loading : t.common.save}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Reply Policy tab */}
+          {tab === 'policy' && (
+            <div className="mx-auto max-w-3xl">
+              {renderMessage(policyMessage)}
+
+              <div className="mb-6 flex items-start gap-3 rounded-2xl border border-blue-200 bg-blue-50 p-4 sm:p-5">
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-blue-600 shadow-sm">
+                  <Shield size={20} />
+                </div>
+                <div>
+                  <div className="text-sm font-semibold text-blue-800">
+                    {lang === 'ar' ? 'سياسة ردود سديم' : 'Sadeem Reply Policy'}
                   </div>
-                  <div className="text-2xs text-content-tertiary mt-0.5">
+                  <div className="mt-1 text-xs leading-7 text-blue-700">
                     {lang === 'ar'
-                      ? 'مفعّل افتراضياً — قاعدة سديم الأساسية'
-                      : 'Enabled by default — core Sadeem rule'}
+                      ? 'سديم ترد مرة واحدة فقط على التقييم الأول من كل عميل. إذا كتب العميل تعليقاً ثانياً، يتم إيقاف الرد الآلي وتتحول الحالة إلى "مراجعة يدوية مطلوبة". هذا يمنع الردود المتكررة ويحافظ على احترافية التواصل.'
+                      : 'Sadeem replies once to the first review from each customer. If a customer posts a follow-up, auto-reply is disabled and the status changes to "Manual Review Required". This prevents repetitive replies and maintains professional communication.'}
                   </div>
                 </div>
-                <Toggle value={autoReplyFirstOnly} onChange={setAutoReplyFirstOnly} />
               </div>
 
-              <div className="flex items-center justify-between py-3 border-b border-border">
-                <div>
-                  <div className="text-sm font-medium text-content-primary">
-                    {lang === 'ar' ? 'التقييمات المتكررة → مراجعة يدوية' : 'Follow-up reviews → Manual review'}
+              <div className="overflow-hidden rounded-2xl border border-border bg-white">
+                <div className="flex items-center justify-between gap-4 border-b border-border px-4 py-4 sm:px-5">
+                  <div>
+                    <div className="text-sm font-medium text-content-primary">
+                      {lang === 'ar' ? 'الرد التلقائي على أول تقييم فقط' : 'Auto-reply first review only'}
+                    </div>
+                    <div className="mt-1 text-2xs text-content-tertiary">
+                      {lang === 'ar'
+                        ? 'مفعّل افتراضياً — قاعدة سديم الأساسية'
+                        : 'Enabled by default — core Sadeem rule'}
+                    </div>
                   </div>
-                  <div className="text-2xs text-content-tertiary mt-0.5">
-                    {lang === 'ar' ? 'عند تكرار تقييم من نفس العميل' : 'When same customer posts again'}
-                  </div>
+                  <Toggle value={autoReplyFirstOnly} onChange={setAutoReplyFirstOnly} />
                 </div>
-                <Toggle value={true} disabled />
+
+                <div className="flex items-center justify-between gap-4 border-b border-border px-4 py-4 sm:px-5">
+                  <div>
+                    <div className="text-sm font-medium text-content-primary">
+                      {lang === 'ar' ? 'التقييمات المتكررة → مراجعة يدوية' : 'Follow-up reviews → Manual review'}
+                    </div>
+                    <div className="mt-1 text-2xs text-content-tertiary">
+                      {lang === 'ar' ? 'عند تكرار تقييم من نفس العميل' : 'When same customer posts again'}
+                    </div>
+                  </div>
+                  <Toggle value={true} disabled />
+                </div>
+
+                <div className="flex items-center justify-between gap-4 px-4 py-4 sm:px-5">
+                  <div>
+                    <div className="text-sm font-medium text-content-primary">
+                      {lang === 'ar'
+                        ? 'إظهار قوالب الردود في المراجعة اليدوية'
+                        : 'Show templates in manual review'}
+                    </div>
+                    <div className="mt-1 text-2xs text-content-tertiary">
+                      {lang === 'ar' ? 'اقتراح قوالب عند الرد يدوياً' : 'Suggest templates during manual reply'}
+                    </div>
+                  </div>
+                  <Toggle value={true} disabled />
+                </div>
               </div>
 
-              <div className="flex items-center justify-between py-3 border-b border-border">
+              <div className="mt-6 flex justify-end">
+                <button className="btn btn-primary min-w-[140px]" onClick={handleSavePolicy} disabled={policySaving}>
+                  <Save size={15} />
+                  {policySaving ? t.common.loading : t.common.save}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* General tab */}
+          {tab === 'general' && (
+            <div className="mx-auto max-w-3xl">
+              {renderMessage(generalMessage)}
+
+              <div className="mb-6 flex items-start gap-3 rounded-2xl border border-border bg-surface-secondary/40 p-4 sm:p-5">
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-brand-50 text-brand-600">
+                  <Globe2 size={20} />
+                </div>
                 <div>
-                  <div className="text-sm font-medium text-content-primary">
+                  <div className="text-sm font-semibold text-content-primary">
+                    {lang === 'ar' ? 'اللغة والمنطقة' : 'Language & Region'}
+                  </div>
+                  <div className="mt-1 text-xs leading-6 text-content-tertiary">
                     {lang === 'ar'
-                      ? 'إظهار قوالب الردود في المراجعة اليدوية'
-                      : 'Show templates in manual review'}
-                  </div>
-                  <div className="text-2xs text-content-tertiary mt-0.5">
-                    {lang === 'ar' ? 'اقتراح قوالب عند الرد يدوياً' : 'Suggest templates during manual reply'}
+                      ? 'تحكم في لغة الواجهة المستخدمة داخل لوحة التحكم.'
+                      : 'Control the interface language used inside the dashboard.'}
                   </div>
                 </div>
-                <Toggle value={true} disabled />
+              </div>
+
+              <div className="max-w-sm">
+                <label className="form-label">{t.settingsPage.language}</label>
+                <select
+                  className="form-select"
+                  value={lang}
+                  onChange={(e: ChangeEvent<HTMLSelectElement>) => setLanguage(e.target.value as 'ar' | 'en')}
+                >
+                  <option value="ar">{t.settingsPage.arabic}</option>
+                  <option value="en">{t.settingsPage.english}</option>
+                </select>
               </div>
             </div>
-
-            <div className="mt-5">
-              <button className="btn btn-primary" onClick={handleSavePolicy} disabled={policySaving}>
-                {policySaving ? t.common.loading : t.common.save}
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* General tab */}
-        {tab === 'general' && (
-          <div className="max-w-xl space-y-4">
-            {renderMessage(generalMessage)}
-
-            <div>
-              <label className="form-label">{t.settingsPage.language}</label>
-              <select
-                className="form-select w-48"
-                value={lang}
-                onChange={(e: ChangeEvent<HTMLSelectElement>) => setLanguage(e.target.value as 'ar' | 'en')}
-              >
-                <option value="ar">{t.settingsPage.arabic}</option>
-                <option value="en">{t.settingsPage.english}</option>
-              </select>
-            </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
