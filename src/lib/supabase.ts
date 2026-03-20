@@ -5,6 +5,16 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 let supabase: SupabaseClient;
 
+const clientOptions = {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+    flowType: 'implicit',
+    storageKey: 'sadeem-auth',
+  },
+};
+
 try {
   if (!supabaseUrl || !supabaseAnonKey) {
     console.warn('[Sadeem] Supabase environment variables not configured. Auth features will not work.');
@@ -12,30 +22,16 @@ try {
 
   supabase = createClient(
     supabaseUrl || 'https://placeholder.supabase.co',
-    supabaseAnonKey || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.placeholder',
-    {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true,
-        flowType: 'implicit',
-      },
-    }
+    supabaseAnonKey || 'sb_publishable_placeholder',
+    clientOptions
   );
 } catch (err) {
   console.error('[Sadeem] Failed to initialize Supabase client:', err);
 
   supabase = createClient(
     'https://placeholder.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.placeholder',
-    {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true,
-        flowType: 'implicit',
-      },
-    }
+    'sb_publishable_placeholder',
+    clientOptions
   );
 }
 
