@@ -8,6 +8,21 @@ export default function AuthCallback() {
 
   useEffect(() => {
     let cancelled = false;
+    let fallbackTimer: number | undefined;
+
+    const finishSuccess = () => {
+      setStatus('تم تسجيل الدخول بنجاح');
+      window.setTimeout(() => {
+        if (!cancelled) navigate('/onboarding', { replace: true });
+      }, 500);
+    };
+
+    const failToLogin = () => {
+      setStatus('تعذر إكمال تسجيل الدخول');
+      window.setTimeout(() => {
+        if (!cancelled) navigate('/login', { replace: true });
+      }, 2000);
+    };
 
     const handleCallback = async () => {
       try {
@@ -16,14 +31,8 @@ export default function AuthCallback() {
 
         if (code) {
           const { error } = await supabase.auth.exchangeCodeForSession(code);
-
           if (error) {
             console.error('[Sadeem] exchangeCodeForSession error:', error);
-            setStatus('حدث خطأ في تسجيل الدخول');
-            setTimeout(() => {
-              if (!cancelled) navigate('/login', { replace: true });
-            }, 2000);
-            return;
           }
         }
 
@@ -34,28 +43,43 @@ export default function AuthCallback() {
 
         if (cancelled) return;
 
-        if (error || !session) {
-          console.error('[Sadeem] Session not found after callback:', error);
-          setStatus('تعذر إكمال تسجيل الدخول');
-          setTimeout(() => {
-            if (!cancelled) navigate('/login', { replace: true });
-          }, 2000);
+        if (session) {
+          finishSuccess();
           return;
         }
 
-        setStatus('تم تسجيل الدخول بنجاح');
+        if (error) {
+          console.error('[Sadeem] getSession error:', error);
+        }
 
-        setTimeout(() => {
-          if (!cancelled) navigate('/onboarding', { replace: true });
-        }, 500);
+        const { data: authListener } = supabase.auth.onAuthStateChange((event, newSession) => {
+          if (cancelled) return;
+
+          if (event === 'SIGNED_IN' && newSession) {
+            if (fallbackTimer) window.clearTimeout(fallbackTimer);
+            authListener.subscription.unsubscribe();
+            finishSuccess();
+          }
+        });
+
+        fallbackTimer = window.setTimeout(async () => {
+          authListener.subscription.unsubscribe();
+
+          const {
+            data: { session: retrySession },
+          } = await supabase.auth.getSession();
+
+          if (cancelled) return;
+
+          if (retrySession) {
+            finishSuccess();
+          } else {
+            failToLogin();
+          }
+        }, 2500);
       } catch (err) {
         console.error('[Sadeem] Auth callback failed:', err);
-        if (!cancelled) {
-          setStatus('حدث خطأ');
-          setTimeout(() => {
-            navigate('/login', { replace: true });
-          }, 2000);
-        }
+        if (!cancelled) failToLogin();
       }
     };
 
@@ -63,6 +87,7 @@ export default function AuthCallback() {
 
     return () => {
       cancelled = true;
+      if (fallbackTimer) window.clearTimeout(fallbackTimer);
     };
   }, [navigate]);
 
