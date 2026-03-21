@@ -37,6 +37,9 @@ import AdminSubscribers from '@/admin/pages/AdminSubscribers';
 import AdminBilling from '@/admin/pages/AdminBilling';
 import AdminAIUsage from '@/admin/pages/AdminAIUsage';
 import AdminPaymentGateway from '@/admin/pages/AdminPaymentGateway';
+import AdminAuditLogs from '@/admin/pages/AdminAuditLogs';
+import AdminTickets from '@/admin/pages/AdminTickets';
+import AdminIntegrations from '@/admin/pages/AdminIntegrations';
 
 export function AppRouter() {
   return (
@@ -104,7 +107,10 @@ export function AppRouter() {
         <Route path="billing" element={<AdminBilling />} />
         <Route path="ai-usage" element={<AdminAIUsage />} />
         <Route path="payment-gateway" element={<AdminPaymentGateway />} />
+        <Route path="tickets" element={<AdminTickets />} />
+        <Route path="integrations" element={<AdminIntegrations />} />
         <Route path="settings" element={<AdminSettings />} />
+        <Route path="audit-logs" element={<AdminAuditLogs />} />
         <Route path="profile" element={<AdminProfile />} />
         <Route path="security" element={<AdminSecurity />} />
       </Route>

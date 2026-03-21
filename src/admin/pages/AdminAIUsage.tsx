@@ -5,8 +5,8 @@
 import { useEffect, useState, useCallback } from 'react';
 import { adminAIUsageService, type AIUsageOverview, type AIUsageLogItem } from '../services/adminAIUsage.service';
 import {
-  Zap, Activity, DollarSign, AlertTriangle,
-  CheckCircle, XCircle, Clock, Search,
+  Zap, Activity, AlertTriangle,
+  CheckCircle, XCircle, Clock, Search, Coins,
 } from 'lucide-react';
 
 const STATUS_MAP: Record<string, { ar: string; color: string }> = {
@@ -62,8 +62,8 @@ export default function AdminAIUsage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatCard icon={Zap} color="cyan" label="طلبات هذا الشهر" value={String(overview?.calls_this_month ?? 0)} />
         <StatCard icon={Activity} color="blue" label="التوكنز هذا الشهر" value={(overview?.tokens_this_month ?? 0).toLocaleString()} />
-        <StatCard icon={DollarSign} color="emerald" label="تكلفة الشهر (تقريبي)"
-          value={`$${(overview?.cost_this_month ?? 0).toFixed(4)} ≈ ${costSAR.toFixed(2)} ر.س`} />
+        <StatCard icon={Coins} color="emerald" label="تكلفة الشهر (تقريبي)"
+          value={`${costSAR.toFixed(2)} ر.س`} />
         <StatCard icon={AlertTriangle} color="red" label="الطلبات الفاشلة" value={String(overview?.failed_calls ?? 0)} />
       </div>
 

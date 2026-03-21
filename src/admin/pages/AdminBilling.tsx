@@ -9,7 +9,7 @@ import { adminSubscribersService, type SubscriberListItem } from '../services/ad
 import { PERMISSIONS } from '../utils/constants';
 import { PermissionGate } from '../guards';
 import {
-  CreditCard, FileText, DollarSign, AlertTriangle,
+  CreditCard, FileText, Coins, AlertTriangle,
   Plus, Search, MoreVertical, X, Check, Ban, RotateCcw,
 } from 'lucide-react';
 
@@ -151,7 +151,7 @@ export default function AdminBilling() {
 
       {/* Overview cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <OvCard icon={DollarSign} color="emerald" label="إجمالي الإيرادات"
+        <OvCard icon={Coins} color="emerald" label="إجمالي الإيرادات"
           value={`${(overview?.total_revenue ?? 0).toLocaleString()} ر.س`} />
         <OvCard icon={CreditCard} color="cyan" label="إيرادات الشهر"
           value={`${(overview?.revenue_this_month ?? 0).toLocaleString()} ر.س`} />

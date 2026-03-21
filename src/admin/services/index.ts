@@ -7,3 +7,5 @@ export { adminSubscribersService } from './adminSubscribers.service';
 export { adminBillingService } from './adminBilling.service';
 export { adminAIUsageService } from './adminAIUsage.service';
 export { adminGatewayService } from './adminGateway.service';
+export { adminSettingsService } from './adminSettings.service';
+export { adminTicketsService } from './adminTickets.service';

@@ -12,6 +12,8 @@ export const ADMIN_ROUTES = {
   BILLING: '/admin/billing',
   AI_USAGE: '/admin/ai-usage',
   PAYMENT_GATEWAY: '/admin/payment-gateway',
+  TICKETS: '/admin/tickets',
+  INTEGRATIONS: '/admin/integrations',
   SETTINGS: '/admin/settings',
   PROFILE: '/admin/profile',
   SECURITY: '/admin/security',
