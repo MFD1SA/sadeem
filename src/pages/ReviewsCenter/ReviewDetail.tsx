@@ -1,0 +1,229 @@
+import { useState, useEffect, type ChangeEvent } from 'react';
+import { useLanguage } from '@/i18n';
+import { useAuth } from '@/hooks/useAuth';
+import { Badge } from '@/components/ui/Badge';
+import { formatDateTime, renderStars, getStatusColor, getSentimentColor } from '@/utils/helpers';
+import { reviewsService, replyDraftsService } from '@/services/reviews';
+import { Send, Clock, X, Edit3, MessageSquare, AlertTriangle } from 'lucide-react';
+import type { DbReview, DbReplyDraft } from '@/types/database';
+
+interface Props {
+  review: DbReview | null;
+  branchName: string;
+  onUpdate: () => void;
+}
+
+export function ReviewDetail({ review, branchName, onUpdate }: Props) {
+  const { t, lang } = useLanguage();
+  const { user } = useAuth();
+  const [drafts, setDrafts] = useState<DbReplyDraft[]>([]);
+  const [editingReply, setEditingReply] = useState(false);
+  const [replyText, setReplyText] = useState('');
+  const [manualReply, setManualReply] = useState('');
+  const [actionLoading, setActionLoading] = useState(false);
+
+  useEffect(() => {
+    if (!review) { setDrafts([]); return; }
+    reviewsService.getWithDrafts(review.id)
+      .then(({ drafts: d }) => setDrafts(d))
+      .catch(() => setDrafts([]));
+  }, [review?.id]);
+
+  if (!review) {
+    return (
+      <div className="flex items-center justify-center h-full text-sm text-content-tertiary p-4">
+        <div className="text-center">
+          <MessageSquare size={40} className="mx-auto mb-3 opacity-30" />
+          <p>{t.reviewsCenter.selectReview}</p>
+        </div>
+      </div>
+    );
+  }
+
+  const latestDraft = drafts[0] || null;
+  const suggestedReply = latestDraft?.ai_reply || latestDraft?.edited_reply || '';
+  const isFollowUp = review.is_followup || review.status === 'manual_review_required';
+
+  const handleApprove = async () => {
+    if (!latestDraft || !user) return;
+    setActionLoading(true);
+    try {
+      await replyDraftsService.approve(latestDraft.id, user.id, replyText || suggestedReply);
+      await reviewsService.updateStatus(review.id, 'replied');
+      onUpdate();
+    } catch {} finally { setActionLoading(false); }
+  };
+
+  const handleDefer = async () => {
+    if (!latestDraft) return;
+    setActionLoading(true);
+    try {
+      await replyDraftsService.defer(latestDraft.id);
+      onUpdate();
+    } catch {} finally { setActionLoading(false); }
+  };
+
+  const handleReject = async () => {
+    if (!latestDraft) return;
+    setActionLoading(true);
+    try {
+      await replyDraftsService.reject(latestDraft.id);
+      onUpdate();
+    } catch {} finally { setActionLoading(false); }
+  };
+
+  const handleManualSend = async () => {
+    if (!manualReply.trim() || !user || !review) return;
+    setActionLoading(true);
+    try {
+      const draft = await replyDraftsService.create({
+        review_id: review.id,
+        organization_id: review.organization_id,
+        edited_reply: manualReply,
+        source: 'manual',
+      });
+      await replyDraftsService.approve(draft.id, user.id, manualReply);
+      await reviewsService.updateStatus(review.id, 'replied');
+      setManualReply('');
+      onUpdate();
+    } catch {} finally { setActionLoading(false); }
+  };
+
+  return (
+    <div className="p-4 overflow-y-auto h-full">
+      {/* Reviewer Info */}
+      <div className="mb-4">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-sm font-semibold text-content-secondary">
+            {review.reviewer_name.charAt(0)}
+          </div>
+          <div>
+            <div className="text-sm font-semibold text-content-primary">{review.reviewer_name}</div>
+            <div className="text-2xs text-content-tertiary">{formatDateTime(review.published_at)}</div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-amber-500 text-lg">{renderStars(review.rating)}</span>
+          <span className="text-sm font-semibold text-content-primary">{review.rating}/5</span>
+        </div>
+
+        <div className="flex flex-wrap gap-1.5 mb-3">
+          <Badge variant="neutral">{branchName}</Badge>
+          {review.sentiment && (
+            <Badge variant={getSentimentColor(review.sentiment) as 'success' | 'warning' | 'danger'}>
+              {t.sentiment[review.sentiment]}
+            </Badge>
+          )}
+          <Badge variant={getStatusColor(review.status) as 'success' | 'warning' | 'danger' | 'info' | 'neutral'}>
+            {t.status[review.status] || review.status}
+          </Badge>
+        </div>
+      </div>
+
+      {/* Review text */}
+      <div className="bg-surface-secondary rounded-lg p-4 mb-4 border border-border">
+        <p className="text-sm text-content-primary leading-relaxed">{review.review_text}</p>
+      </div>
+
+      {/* Follow-up warning */}
+      {isFollowUp && (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4 flex items-start gap-2">
+          <AlertTriangle size={16} className="text-amber-600 flex-shrink-0 mt-0.5" />
+          <div>
+            <div className="text-xs font-semibold text-amber-800 mb-0.5">
+              {lang === 'ar' ? 'تقييم متكرر — مراجعة يدوية مطلوبة' : 'Follow-up review — Manual review required'}
+            </div>
+            <div className="text-2xs text-amber-700">
+              {lang === 'ar'
+                ? 'هذا العميل كتب تقييماً سابقاً وتم الرد عليه. سياسة سديم: لا يتم الرد التلقائي على التقييمات المتكررة.'
+                : 'This reviewer has a previous replied review. Sadeem policy: no auto-reply on follow-up reviews.'}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reply Section */}
+      {review.status === 'replied' || review.status === 'auto_replied' ? (
+        <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+          <div className="text-xs font-semibold text-emerald-700 mb-2 flex items-center gap-1.5">
+            <Send size={13} />
+            {t.status[review.status]}
+          </div>
+          <p className="text-sm text-emerald-800">{latestDraft?.final_reply || latestDraft?.edited_reply || latestDraft?.ai_reply || ''}</p>
+          {latestDraft?.sent_at && (
+            <div className="text-2xs text-emerald-600 mt-2">{formatDateTime(latestDraft.sent_at)}</div>
+          )}
+        </div>
+      ) : isFollowUp ? (
+        /* Manual reply for follow-up reviews */
+        <div>
+          <div className="text-xs font-semibold text-content-secondary mb-2">
+            {lang === 'ar' ? 'رد يدوي' : 'Manual Reply'}
+          </div>
+          <textarea
+            className="form-textarea text-sm mb-3"
+            rows={4}
+            value={manualReply}
+            onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setManualReply(e.target.value)}
+            placeholder={lang === 'ar' ? 'اكتب ردك يدوياً هنا...' : 'Write your manual reply here...'}
+          />
+          <button className="btn btn-primary btn-sm" onClick={handleManualSend} disabled={actionLoading || !manualReply.trim()}>
+            <Send size={13} />
+            {actionLoading ? t.common.loading : (lang === 'ar' ? 'إرسال الرد' : 'Send Reply')}
+          </button>
+        </div>
+      ) : suggestedReply ? (
+        /* AI suggested reply */
+        <div>
+          <div className="text-xs font-semibold text-content-secondary mb-2">{t.reviewsCenter.suggestedReply}</div>
+          {editingReply ? (
+            <textarea
+              className="form-textarea text-sm mb-3"
+              rows={4}
+              value={replyText || suggestedReply}
+              onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setReplyText(e.target.value)}
+            />
+          ) : (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-3">
+              <p className="text-sm text-blue-800">{suggestedReply}</p>
+            </div>
+          )}
+          <div className="flex flex-wrap gap-2">
+            <button className="btn btn-primary btn-sm" onClick={handleApprove} disabled={actionLoading}>
+              <Send size={13} />
+              {actionLoading ? t.common.loading : t.reviewsCenter.approve}
+            </button>
+            <button className="btn btn-secondary btn-sm" onClick={() => { setEditingReply(!editingReply); setReplyText(suggestedReply); }}>
+              <Edit3 size={13} /> {t.reviewsCenter.editReply}
+            </button>
+            <button className="btn btn-secondary btn-sm" onClick={handleDefer} disabled={actionLoading}>
+              <Clock size={13} /> {t.reviewsCenter.defer}
+            </button>
+            <button className="btn btn-danger btn-sm" onClick={handleReject} disabled={actionLoading}>
+              <X size={13} /> {t.reviewsCenter.reject}
+            </button>
+          </div>
+        </div>
+      ) : (
+        /* No draft yet — show manual reply */
+        <div>
+          <div className="text-xs font-semibold text-content-secondary mb-2">
+            {lang === 'ar' ? 'اكتب رداً' : 'Write a reply'}
+          </div>
+          <textarea
+            className="form-textarea text-sm mb-3"
+            rows={3}
+            value={manualReply}
+            onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setManualReply(e.target.value)}
+            placeholder={lang === 'ar' ? 'اكتب ردك هنا...' : 'Write your reply here...'}
+          />
+          <button className="btn btn-primary btn-sm" onClick={handleManualSend} disabled={actionLoading || !manualReply.trim()}>
+            <Send size={13} />
+            {actionLoading ? t.common.loading : (lang === 'ar' ? 'إرسال' : 'Send')}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
