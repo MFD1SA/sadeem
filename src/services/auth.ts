@@ -26,8 +26,10 @@ export const authService = {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        // Redirect to /auth/callback — shows branded loading screen, no login page flash.
-        redirectTo: `${window.location.origin}/auth/callback`,
+        // Redirect to /login — this URL is confirmed allowed in Supabase.
+        // Supabase PKCE exchanges the code automatically on load.
+        // RedirectIfAuthenticated shows a spinner (not the form) during exchange.
+        redirectTo: `${window.location.origin}/login`,
         scopes: 'https://www.googleapis.com/auth/business.manage',
         queryParams: {
           access_type: 'offline',
