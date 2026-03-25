@@ -2,6 +2,11 @@ import { useState, type ChangeEvent, type FormEvent } from 'react';
 import { useLanguage } from '@/i18n';
 import { authService } from '@/services/auth';
 
+// During PKCE OAuth exchange, the URL contains ?code= or ?error=.
+// Evaluated at module load — stable for the lifetime of the page.
+const _sp = new URLSearchParams(window.location.search);
+const isOAuthCallback = _sp.has('code') || _sp.has('error');
+
 export default function Login() {
   const { t, lang } = useLanguage();
   const [email, setEmail] = useState('');
@@ -10,6 +15,24 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const [fullName, setFullName] = useState('');
+
+  // Show branded loading screen during PKCE exchange — no form flash
+  if (isOAuthCallback) {
+    return (
+      <div className="min-h-screen bg-surface-secondary flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center mx-auto mb-5 shadow-lg">
+            <span className="text-white text-2xl font-bold">س</span>
+          </div>
+          <div className="text-sm font-semibold text-content-primary mb-1">سديم</div>
+          <div className="text-xs text-content-tertiary mb-5">
+            {lang === 'ar' ? 'جاري تسجيل الدخول…' : 'Signing you in…'}
+          </div>
+          <div className="w-5 h-5 border-2 border-brand-200 border-t-brand-600 rounded-full animate-spin mx-auto" />
+        </div>
+      </div>
+    );
+  }
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
