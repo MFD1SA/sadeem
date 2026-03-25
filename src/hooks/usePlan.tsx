@@ -78,10 +78,14 @@ export function PlanProvider({ children }: { children: ReactNode }) {
 
   const [trial, setTrial] = useState<TrialState>(defaultTrial);
 
+  // Use the primitive ID (not the full object) so the callback is only
+  // recreated when the org actually changes — not on every auth re-render.
+  const orgId = organization?.id;
+
   const loadPlan = useCallback(async () => {
     // Wait for auth to finish before deciding — prevents premature isLoading=false
     if (authLoading) return;
-    if (!organization) { setIsLoading(false); return; }
+    if (!orgId) { setIsLoading(false); return; }
 
     // Safety timeout: never stay in loading state for more than 8 seconds.
     // Guards against hanging Supabase queries (e.g. cold start, network issues).
@@ -89,8 +93,8 @@ export function PlanProvider({ children }: { children: ReactNode }) {
 
     try {
       const [sub, branches] = await Promise.all([
-        subscriptionService.getByOrganization(organization.id),
-        branchesService.list(organization.id),
+        subscriptionService.getByOrganization(orgId),
+        branchesService.list(orgId),
       ]);
       setSubscription(sub);
       setTrial(computeTrial(sub));
@@ -101,7 +105,7 @@ export function PlanProvider({ children }: { children: ReactNode }) {
       clearTimeout(safetyTimer);
       setIsLoading(false);
     }
-  }, [organization, authLoading, computeTrial]);
+  }, [orgId, authLoading, computeTrial]);
 
   useEffect(() => { loadPlan(); }, [loadPlan]);
 
