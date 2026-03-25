@@ -4,7 +4,7 @@
 // This provider wraps only admin routes via AdminLayout, NOT the whole app.
 // ============================================================================
 
-import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef, type ReactNode } from 'react';
 import { adminAuthService } from '../services/adminAuth.service';
 import { adminSupabase } from '../services/adminSupabase';
 import type {
@@ -38,11 +38,16 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     error: null,
   });
 
+  // Guard against concurrent validateSession() calls (e.g., rapid navigation)
+  const validatingRef = useRef(false);
+
   // Validate session on mount
   useEffect(() => {
     let cancelled = false;
 
     async function init() {
+      if (validatingRef.current) return;
+      validatingRef.current = true;
       try {
         const session = await adminAuthService.validateSession();
         if (cancelled) return;
@@ -74,6 +79,8 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
             error: null,
           });
         }
+      } finally {
+        validatingRef.current = false;
       }
     }
 
@@ -154,15 +161,33 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
   );
 
   const refreshUser = useCallback(async () => {
-    const session = await adminAuthService.validateSession();
-    if (session) {
-      setState((prev) => ({
-        ...prev,
-        user: session.adminUser,
-        permissions: session.permissions,
-      }));
+    if (validatingRef.current) return;
+    validatingRef.current = true;
+    try {
+      const session = await adminAuthService.validateSession();
+      if (session) {
+        setState((prev) => ({
+          ...prev,
+          user: session.adminUser,
+          permissions: session.permissions,
+        }));
+      }
+    } finally {
+      validatingRef.current = false;
     }
   }, []);
+
+  // Refresh permissions when the admin tab regains focus.
+  // This keeps cached permissions from going stale if the admin's role
+  // is changed by a super-admin while this session is open.
+  useEffect(() => {
+    if (!state.isAuthenticated) return;
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') refreshUser();
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [state.isAuthenticated, refreshUser]);
 
   const value = useMemo(
     () => ({

@@ -34,6 +34,13 @@ const defaultTrial: TrialState = {
   aiUsed: 0, aiMax: 0, templateUsed: 0, templateMax: 0,
 };
 
+// When no subscription row exists we treat the account as expired.
+// Implicit free access is not permitted — users must have an active row.
+const noSubscriptionTrial: TrialState = {
+  isTrial: false, isExpired: true, hoursRemaining: 0,
+  aiUsed: 0, aiMax: 0, templateUsed: 0, templateMax: 0,
+};
+
 export function PlanProvider({ children }: { children: ReactNode }) {
   const { organization, isLoading: authLoading } = useAuth();
   const [subscription, setSubscription] = useState<DbSubscription | null>(null);
@@ -45,7 +52,9 @@ export function PlanProvider({ children }: { children: ReactNode }) {
 
   // ─── Compute trial state ───
   const computeTrial = useCallback((sub: DbSubscription | null): TrialState => {
-    if (!sub) return defaultTrial;
+    // No subscription row → treat as expired. Prevents implicit free access
+    // when the trial trigger failed or no plan has been assigned yet.
+    if (!sub) return noSubscriptionTrial;
 
     const isTrial = sub.status === 'trial';
     const now = new Date();
