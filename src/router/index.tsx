@@ -1,123 +1,131 @@
+import { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { SubscriberLayout } from '@/layouts/SubscriberLayout';
 import { RequireAuth, RequireOrganization, RedirectIfAuthenticated } from './guards';
+import { LoadingState } from '@/components/ui/LoadingState';
 
-// --- Subscriber pages ---
+// ── Eagerly loaded (critical path) ──────────────────────────────────────────
 import Login from '@/pages/Auth/Login';
 import AuthCallback from '@/pages/Auth/Callback';
 import Onboarding from '@/pages/Onboarding';
-
 import Dashboard from '@/pages/Dashboard';
-import ReviewsCenter from '@/pages/ReviewsCenter';
-import ResponsesInbox from '@/pages/ResponsesInbox';
-import Analytics from '@/pages/Analytics';
-import Insights from '@/pages/Insights';
-import Branches from '@/pages/Branches';
-import Templates from '@/pages/Templates';
-import Team from '@/pages/Team';
-import Integrations from '@/pages/Integrations';
-import QrReviews from '@/pages/QrReviews';
-import Tasks from '@/pages/Tasks';
-import Notifications from '@/pages/Notifications';
-import Billing from '@/pages/Billing';
-import Support from '@/pages/Support';
-import Settings from '@/pages/Settings';
-import ReviewLanding from '@/pages/ReviewLanding';
 
-// --- Admin pages (completely independent layer) ---
+// ── Lazily loaded subscriber pages ──────────────────────────────────────────
+const ReviewsCenter   = lazy(() => import('@/pages/ReviewsCenter'));
+const ResponsesInbox  = lazy(() => import('@/pages/ResponsesInbox'));
+const Analytics       = lazy(() => import('@/pages/Analytics'));
+const Insights        = lazy(() => import('@/pages/Insights'));
+const Branches        = lazy(() => import('@/pages/Branches'));
+const Templates       = lazy(() => import('@/pages/Templates'));
+const Team            = lazy(() => import('@/pages/Team'));
+const Integrations    = lazy(() => import('@/pages/Integrations'));
+const QrReviews       = lazy(() => import('@/pages/QrReviews'));
+const Tasks           = lazy(() => import('@/pages/Tasks'));
+const Notifications   = lazy(() => import('@/pages/Notifications'));
+const Billing         = lazy(() => import('@/pages/Billing'));
+const Support         = lazy(() => import('@/pages/Support'));
+const Settings        = lazy(() => import('@/pages/Settings'));
+const ReviewLanding   = lazy(() => import('@/pages/ReviewLanding'));
+
+// ── Lazily loaded admin pages ────────────────────────────────────────────────
 import { AdminLayout } from '@/admin/layouts/AdminLayout';
 import AdminLogin from '@/admin/pages/AdminLogin';
-import AdminDashboard from '@/admin/pages/AdminDashboard';
-import AdminUsers from '@/admin/pages/AdminUsers';
-import AdminRoles from '@/admin/pages/AdminRoles';
-import AdminSettings from '@/admin/pages/AdminSettings';
-import AdminProfile from '@/admin/pages/AdminProfile';
-import AdminSecurity from '@/admin/pages/AdminSecurity';
-import AdminSubscribers from '@/admin/pages/AdminSubscribers';
-import AdminBilling from '@/admin/pages/AdminBilling';
-import AdminAIUsage from '@/admin/pages/AdminAIUsage';
-import AdminPaymentGateway from '@/admin/pages/AdminPaymentGateway';
-import AdminAuditLogs from '@/admin/pages/AdminAuditLogs';
-import AdminTickets from '@/admin/pages/AdminTickets';
-import AdminIntegrations from '@/admin/pages/AdminIntegrations';
-import AdminPlans from '@/admin/pages/AdminPlans';
+
+const AdminDashboard      = lazy(() => import('@/admin/pages/AdminDashboard'));
+const AdminUsers          = lazy(() => import('@/admin/pages/AdminUsers'));
+const AdminRoles          = lazy(() => import('@/admin/pages/AdminRoles'));
+const AdminSettings       = lazy(() => import('@/admin/pages/AdminSettings'));
+const AdminProfile        = lazy(() => import('@/admin/pages/AdminProfile'));
+const AdminSecurity       = lazy(() => import('@/admin/pages/AdminSecurity'));
+const AdminSubscribers    = lazy(() => import('@/admin/pages/AdminSubscribers'));
+const AdminBilling        = lazy(() => import('@/admin/pages/AdminBilling'));
+const AdminAIUsage        = lazy(() => import('@/admin/pages/AdminAIUsage'));
+const AdminPaymentGateway = lazy(() => import('@/admin/pages/AdminPaymentGateway'));
+const AdminAuditLogs      = lazy(() => import('@/admin/pages/AdminAuditLogs'));
+const AdminTickets        = lazy(() => import('@/admin/pages/AdminTickets'));
+const AdminIntegrations   = lazy(() => import('@/admin/pages/AdminIntegrations'));
+const AdminPlans          = lazy(() => import('@/admin/pages/AdminPlans'));
+
+function PageLoader() {
+  return (
+    <div className="flex h-full min-h-[40vh] items-center justify-center">
+      <LoadingState />
+    </div>
+  );
+}
 
 export function AppRouter() {
   return (
     <Routes>
-      {/* ========================================= */}
-      {/* SUBSCRIBER ROUTES (unchanged)             */}
-      {/* ========================================= */}
+      {/* ======================================================= */}
+      {/* SUBSCRIBER ROUTES                                        */}
+      {/* ======================================================= */}
 
-      {/* Root redirect */}
       <Route path="/" element={<Navigate to="/login" replace />} />
 
-      {/* Public: Review Landing Page (no auth required) */}
-      <Route path="/r/:slug" element={<ReviewLanding />} />
+      <Route
+        path="/r/:slug"
+        element={
+          <Suspense fallback={<PageLoader />}>
+            <ReviewLanding />
+          </Suspense>
+        }
+      />
 
-      {/* Public routes */}
       <Route element={<RedirectIfAuthenticated />}>
         <Route path="/login" element={<Login />} />
       </Route>
 
-      {/* Auth callback */}
       <Route path="/auth/callback" element={<AuthCallback />} />
 
-      {/* Onboarding (auth required, no org required) */}
       <Route element={<RequireAuth />}>
         <Route path="/onboarding" element={<Onboarding />} />
       </Route>
 
-      {/* Dashboard (auth + org required) */}
       <Route element={<RequireOrganization />}>
         <Route path="/dashboard" element={<SubscriberLayout />}>
           <Route index element={<Dashboard />} />
-          <Route path="reviews" element={<ReviewsCenter />} />
-          <Route path="replies" element={<ResponsesInbox />} />
-          <Route path="analytics" element={<Analytics />} />
-          <Route path="insights" element={<Insights />} />
-          <Route path="branches" element={<Branches />} />
-          <Route path="templates" element={<Templates />} />
-          <Route path="qr" element={<QrReviews />} />
-          <Route path="team" element={<Team />} />
-          <Route path="integrations" element={<Integrations />} />
-          <Route path="tasks" element={<Tasks />} />
-          <Route path="notifications" element={<Notifications />} />
-          <Route path="billing" element={<Billing />} />
-          <Route path="support" element={<Support />} />
-          <Route path="settings" element={<Settings />} />
+          <Route path="reviews"       element={<Suspense fallback={<PageLoader />}><ReviewsCenter /></Suspense>} />
+          <Route path="replies"       element={<Suspense fallback={<PageLoader />}><ResponsesInbox /></Suspense>} />
+          <Route path="analytics"     element={<Suspense fallback={<PageLoader />}><Analytics /></Suspense>} />
+          <Route path="insights"      element={<Suspense fallback={<PageLoader />}><Insights /></Suspense>} />
+          <Route path="branches"      element={<Suspense fallback={<PageLoader />}><Branches /></Suspense>} />
+          <Route path="templates"     element={<Suspense fallback={<PageLoader />}><Templates /></Suspense>} />
+          <Route path="qr"            element={<Suspense fallback={<PageLoader />}><QrReviews /></Suspense>} />
+          <Route path="team"          element={<Suspense fallback={<PageLoader />}><Team /></Suspense>} />
+          <Route path="integrations"  element={<Suspense fallback={<PageLoader />}><Integrations /></Suspense>} />
+          <Route path="tasks"         element={<Suspense fallback={<PageLoader />}><Tasks /></Suspense>} />
+          <Route path="notifications" element={<Suspense fallback={<PageLoader />}><Notifications /></Suspense>} />
+          <Route path="billing"       element={<Suspense fallback={<PageLoader />}><Billing /></Suspense>} />
+          <Route path="support"       element={<Suspense fallback={<PageLoader />}><Support /></Suspense>} />
+          <Route path="settings"      element={<Suspense fallback={<PageLoader />}><Settings /></Suspense>} />
         </Route>
       </Route>
 
-      {/* ========================================= */}
-      {/* ADMIN ROUTES (independent layer)          */}
-      {/* AdminAuthProvider is inside AdminLayout,   */}
-      {/* NOT in main.tsx — zero impact on subscriber*/}
-      {/* ========================================= */}
+      {/* ======================================================= */}
+      {/* ADMIN ROUTES                                             */}
+      {/* ======================================================= */}
 
-      {/* Admin login (public, own auth provider) */}
       <Route path="/admin/login" element={<AdminLogin />} />
 
-      {/* Admin authenticated routes */}
       <Route path="/admin" element={<AdminLayout />}>
         <Route index element={<Navigate to="/admin/dashboard" replace />} />
-        <Route path="dashboard" element={<AdminDashboard />} />
-        <Route path="admins" element={<AdminUsers />} />
-        <Route path="roles" element={<AdminRoles />} />
-        <Route path="subscribers" element={<AdminSubscribers />} />
-        <Route path="billing" element={<AdminBilling />} />
-        <Route path="ai-usage" element={<AdminAIUsage />} />
-        <Route path="payment-gateway" element={<AdminPaymentGateway />} />
-        <Route path="tickets" element={<AdminTickets />} />
-        <Route path="integrations" element={<AdminIntegrations />} />
-        <Route path="plans" element={<AdminPlans />} />
-        <Route path="settings" element={<AdminSettings />} />
-        <Route path="audit-logs" element={<AdminAuditLogs />} />
-        <Route path="profile" element={<AdminProfile />} />
-        <Route path="security" element={<AdminSecurity />} />
+        <Route path="dashboard"       element={<Suspense fallback={<PageLoader />}><AdminDashboard /></Suspense>} />
+        <Route path="admins"          element={<Suspense fallback={<PageLoader />}><AdminUsers /></Suspense>} />
+        <Route path="roles"           element={<Suspense fallback={<PageLoader />}><AdminRoles /></Suspense>} />
+        <Route path="subscribers"     element={<Suspense fallback={<PageLoader />}><AdminSubscribers /></Suspense>} />
+        <Route path="billing"         element={<Suspense fallback={<PageLoader />}><AdminBilling /></Suspense>} />
+        <Route path="ai-usage"        element={<Suspense fallback={<PageLoader />}><AdminAIUsage /></Suspense>} />
+        <Route path="payment-gateway" element={<Suspense fallback={<PageLoader />}><AdminPaymentGateway /></Suspense>} />
+        <Route path="tickets"         element={<Suspense fallback={<PageLoader />}><AdminTickets /></Suspense>} />
+        <Route path="integrations"    element={<Suspense fallback={<PageLoader />}><AdminIntegrations /></Suspense>} />
+        <Route path="plans"           element={<Suspense fallback={<PageLoader />}><AdminPlans /></Suspense>} />
+        <Route path="settings"        element={<Suspense fallback={<PageLoader />}><AdminSettings /></Suspense>} />
+        <Route path="audit-logs"      element={<Suspense fallback={<PageLoader />}><AdminAuditLogs /></Suspense>} />
+        <Route path="profile"         element={<Suspense fallback={<PageLoader />}><AdminProfile /></Suspense>} />
+        <Route path="security"        element={<Suspense fallback={<PageLoader />}><AdminSecurity /></Suspense>} />
       </Route>
 
-      {/* Catch-all: redirect to login (safe default) */}
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );

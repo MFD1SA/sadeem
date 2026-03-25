@@ -109,7 +109,12 @@ export default function Settings() {
         .from('avatars')
         .upload(filePath, file, { upsert: true });
 
-      if (upErr) throw upErr;
+      if (upErr) {
+        if (upErr.message?.includes('Bucket not found') || upErr.message?.includes('bucket')) {
+          throw new Error(lang === 'ar' ? 'خدمة رفع الصور غير مهيأة بعد. تواصل مع الدعم.' : 'Image upload service not configured. Contact support.');
+        }
+        throw upErr;
+      }
 
       const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(filePath);
       const publicUrl = `${urlData.publicUrl}?t=${Date.now()}`;
