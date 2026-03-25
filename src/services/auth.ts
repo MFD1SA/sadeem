@@ -26,7 +26,8 @@ export const authService = {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/login`,
+        // Redirect to /auth/callback — shows branded loading screen, no login page flash.
+        redirectTo: `${window.location.origin}/auth/callback`,
         scopes: 'https://www.googleapis.com/auth/business.manage',
         queryParams: {
           access_type: 'offline',

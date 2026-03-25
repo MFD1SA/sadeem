@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useLanguage } from '@/i18n';
 import { useAuth } from '@/hooks/useAuth';
+import { useLocation } from 'react-router-dom';
 import { reviewsService } from '@/services/reviews';
 import { branchesService } from '@/services/branches';
 import { LoadingState, ErrorState } from '@/components/ui/LoadingState';
@@ -28,12 +29,15 @@ const defaultFilters: ReviewFilters = {
 export default function ReviewsCenter() {
   const { t } = useLanguage();
   const { organization, isLoading: authLoading } = useAuth();
+  const location = useLocation();
 
   const [reviews, setReviews] = useState<DbReview[]>([]);
   const [branches, setBranches] = useState<DbBranch[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [filters, setFilters] = useState<ReviewFilters>(defaultFilters);
+  // Pre-populate search from topbar navigation state
+  const navSearch: string = (location.state as { search?: string } | null)?.search || '';
+  const [filters, setFilters] = useState<ReviewFilters>({ ...defaultFilters, search: navSearch });
   const [selectedReview, setSelectedReview] = useState<DbReview | null>(null);
 
   const branchMap = useMemo(() => {
@@ -73,12 +77,11 @@ export default function ReviewsCenter() {
 
   const filtered = useMemo(() => {
     return reviews.filter((r: DbReview) => {
-      if (
-        filters.search &&
-        !(r.review_text || '').includes(filters.search) &&
-        !r.reviewer_name.includes(filters.search)
-      ) {
-        return false;
+      if (filters.search) {
+        const q = filters.search.toLowerCase();
+        const inText = (r.review_text || '').toLowerCase().includes(q);
+        const inName = r.reviewer_name.toLowerCase().includes(q);
+        if (!inText && !inName) return false;
       }
 
       if (filters.branchId && r.branch_id !== filters.branchId) {

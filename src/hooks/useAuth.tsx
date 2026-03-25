@@ -1,4 +1,7 @@
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
+import {
+  createContext, useContext, useState, useEffect,
+  useCallback, useRef, type ReactNode,
+} from 'react';
 import { supabase } from '@/lib/supabase';
 import { organizationService } from '@/services/organizations';
 import type { DbUser, DbOrganization, DbMembership } from '@/types/database';
@@ -34,6 +37,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     hasOrganization: false,
   });
 
+  // Track whether INITIAL_SESSION has already been handled to prevent
+  // the getSession() fallback from double-hydrating.
+  const initialSessionHandled = useRef(false);
+  // Track in-flight hydration to prevent concurrent calls.
+  const hydrating = useRef(false);
+
   const loadProfile = useCallback(async (userId: string): Promise<DbUser | null> => {
     try {
       const { data, error } = await supabase
@@ -41,12 +50,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .select('*')
         .eq('id', userId)
         .single();
-
       if (error) {
         console.warn('[Sadeem] Profile load error:', error.message);
         return null;
       }
-
       return (data as DbUser) || null;
     } catch (err) {
       console.warn('[Sadeem] Profile load failed:', err);
@@ -65,7 +72,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const hydrateAuth = useCallback(
     async (session: any | null) => {
+      // Prevent concurrent hydrations
+      if (hydrating.current) return;
+      hydrating.current = true;
+
       if (!session?.user) {
+        hydrating.current = false;
         setState({
           session: null,
           user: null,
@@ -80,8 +92,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       try {
-        const profile = await loadProfile(session.user.id);
-        const orgData = await loadOrganization(session.user.id);
+        const [profile, orgData] = await Promise.all([
+          loadProfile(session.user.id),
+          loadOrganization(session.user.id),
+        ]);
 
         setState({
           session,
@@ -95,16 +109,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
       } catch (err) {
         console.error('[Sadeem] Auth hydrate failed:', err);
+        // IMPORTANT: keep the session alive even if profile/org queries fail.
+        // The session token is still valid — don't log the user out on DB error.
         setState({
-          session: null,
-          user: null,
+          session,
+          user: { id: session.user.id, email: session.user.email },
           profile: null,
           organization: null,
           membership: null,
           isLoading: false,
-          isAuthenticated: false,
+          isAuthenticated: true,
           hasOrganization: false,
         });
+      } finally {
+        hydrating.current = false;
       }
     },
     [loadProfile, loadOrganization]
@@ -113,15 +131,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
-    // Immediately try to get stored session (non-blocking, before listener fires)
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (mounted && session) {
-        hydrateAuth(session);
-      }
-    });
-
     const { data: listener } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!mounted) return;
+
+      if (event === 'INITIAL_SESSION') {
+        initialSessionHandled.current = true;
+      }
 
       if (
         event === 'INITIAL_SESSION' ||
@@ -133,6 +148,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       if (event === 'SIGNED_OUT') {
+        initialSessionHandled.current = false;
         setState({
           session: null,
           user: null,
@@ -146,8 +162,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
 
+    // Fallback: if INITIAL_SESSION doesn't fire within 400 ms (lock contention),
+    // call getSession() ourselves. Only runs if INITIAL_SESSION hasn't fired yet.
+    const fallback = setTimeout(() => {
+      if (!initialSessionHandled.current && mounted) {
+        supabase.auth.getSession().then(({ data: { session } }) => {
+          if (mounted && !initialSessionHandled.current) {
+            hydrateAuth(session);
+          }
+        });
+      }
+    }, 400);
+
     return () => {
       mounted = false;
+      clearTimeout(fallback);
       listener?.subscription?.unsubscribe();
     };
   }, [hydrateAuth]);
@@ -189,12 +218,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{
-        ...state,
-        refreshProfile,
-        refreshOrganization,
-        signOut,
-      }}
+      value={{ ...state, refreshProfile, refreshOrganization, signOut }}
     >
       {children}
     </AuthContext.Provider>
