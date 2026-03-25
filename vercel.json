@@ -1,0 +1,8 @@
+{
+  "installCommand": "cd \"OneDrive/سطح المكتب/sadeem-rbac-final\" && npm install",
+  "buildCommand": "cd \"OneDrive/سطح المكتب/sadeem-rbac-final\" && npm run build",
+  "outputDirectory": "OneDrive/سطح المكتب/sadeem-rbac-final/dist",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
