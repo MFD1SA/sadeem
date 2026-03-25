@@ -14,6 +14,7 @@ export const ADMIN_ROUTES = {
   PAYMENT_GATEWAY: '/admin/payment-gateway',
   TICKETS: '/admin/tickets',
   INTEGRATIONS: '/admin/integrations',
+  PLANS: '/admin/plans',
   SETTINGS: '/admin/settings',
   PROFILE: '/admin/profile',
   SECURITY: '/admin/security',
