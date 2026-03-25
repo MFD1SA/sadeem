@@ -269,7 +269,7 @@ export default function AdminSecurity() {
           <div className="admin-card-header"><h3>معلومات الأمان</h3></div>
           <div className="admin-card-body space-y-3 text-sm">
             <div className="flex justify-between"><span className="text-slate-400">آخر تغيير لكلمة المرور</span>
-              <span className="text-slate-300">{user?.password_changed_at ? new Date(user.password_changed_at).toLocaleDateString('ar-SA') : 'لم يتم التغيير بعد'}</span></div>
+              <span className="text-slate-300">{user?.password_changed_at ? new Date(user.password_changed_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'لم يتم التغيير بعد'}</span></div>
             <div className="flex justify-between"><span className="text-slate-400">محاولات الدخول الفاشلة</span>
               <span className="text-slate-300">{user?.failed_login_attempts || 0}</span></div>
             <div className="flex justify-between"><span className="text-slate-400">المصادقة الثنائية</span>

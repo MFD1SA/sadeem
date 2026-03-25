@@ -14,6 +14,7 @@ import {
   UsersRound, Plus, Search, MoreVertical,
   UserCheck, UserX, Trash2, X, Eye, EyeOff, ShieldCheck,
 } from 'lucide-react';
+import { AdminSelect } from '../components/AdminSelect';
 
 export default function AdminUsers() {
   const { user: currentUser, hasPermission } = useAdminAuth();
@@ -249,7 +250,7 @@ export default function AdminUsers() {
                       </td>
                       <td>
                         <span className="text-sm text-slate-500">
-                          {u.last_login_at ? new Date(u.last_login_at).toLocaleDateString('ar-SA') : '—'}
+                          {u.last_login_at ? new Date(u.last_login_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '—'}
                         </span>
                       </td>
                       <td>
@@ -314,7 +315,7 @@ export default function AdminUsers() {
 
       {/* Create Modal */}
       {showCreate && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4"
           onClick={(e) => { if (e.target === e.currentTarget) setShowCreate(false); }}>
           <div className="bg-[#0d1322] border border-white/[0.08] rounded-2xl w-full max-w-md shadow-2xl" dir="rtl">
             <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
@@ -360,13 +361,13 @@ export default function AdminUsers() {
               </div>
               <div>
                 <label className="block text-xs font-medium text-slate-400 mb-1.5">الدور *</label>
-                <select className="admin-form-input" value={createForm.role_id}
+                <AdminSelect value={createForm.role_id}
                   onChange={(e) => setCreateForm((p) => ({ ...p, role_id: e.target.value }))}>
                   <option value="">اختر الدور</option>
                   {roles.filter((r) => r.name !== 'super_admin' && r.is_active).map((r) => (
                     <option key={r.id} value={r.id}>{r.display_name_ar}</option>
                   ))}
-                </select>
+                </AdminSelect>
               </div>
             </div>
             <div className="flex items-center justify-end gap-3 px-5 py-4 border-t border-white/[0.06]">
@@ -381,7 +382,7 @@ export default function AdminUsers() {
 
       {/* Role Reassignment Modal */}
       {roleTarget && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4"
           onClick={(e) => { if (e.target === e.currentTarget) setRoleTarget(null); }}>
           <div className="bg-[#0d1322] border border-white/[0.08] rounded-2xl w-full max-w-sm shadow-2xl" dir="rtl">
             <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
@@ -404,12 +405,12 @@ export default function AdminUsers() {
               <div className="mb-2 text-xs text-slate-400">الدور الحالي: <span className="text-white">{roleTarget.role?.display_name_ar}</span></div>
 
               <label className="block text-xs font-medium text-slate-400 mb-1.5">الدور الجديد</label>
-              <select className="admin-form-input" value={newRoleId}
+              <AdminSelect value={newRoleId}
                 onChange={(e) => setNewRoleId(e.target.value)}>
                 {roles.filter((r) => r.name !== 'super_admin' && r.is_active).map((r) => (
                   <option key={r.id} value={r.id}>{r.display_name_ar}</option>
                 ))}
-              </select>
+              </AdminSelect>
             </div>
             <div className="flex items-center justify-end gap-3 px-5 py-4 border-t border-white/[0.06]">
               <button onClick={() => setRoleTarget(null)} className="admin-btn-secondary text-sm">إلغاء</button>

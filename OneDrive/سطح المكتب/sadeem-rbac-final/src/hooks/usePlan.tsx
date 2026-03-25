@@ -35,7 +35,7 @@ const defaultTrial: TrialState = {
 };
 
 export function PlanProvider({ children }: { children: ReactNode }) {
-  const { organization } = useAuth();
+  const { organization, isLoading: authLoading } = useAuth();
   const [subscription, setSubscription] = useState<DbSubscription | null>(null);
   const [branchCount, setBranchCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -70,6 +70,8 @@ export function PlanProvider({ children }: { children: ReactNode }) {
   const [trial, setTrial] = useState<TrialState>(defaultTrial);
 
   const loadPlan = useCallback(async () => {
+    // Wait for auth to finish before deciding — prevents premature isLoading=false
+    if (authLoading) return;
     if (!organization) { setIsLoading(false); return; }
     try {
       const [sub, branches] = await Promise.all([
@@ -84,7 +86,7 @@ export function PlanProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  }, [organization, computeTrial]);
+  }, [organization, authLoading, computeTrial]);
 
   useEffect(() => { loadPlan(); }, [loadPlan]);
 

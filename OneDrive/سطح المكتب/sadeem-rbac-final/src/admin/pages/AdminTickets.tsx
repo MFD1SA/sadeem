@@ -142,12 +142,12 @@ export default function AdminTickets() {
                 <div className="flex items-center gap-2 text-slate-400">
                   <Calendar size={14} className="flex-shrink-0" />
                   <span>تاريخ الإنشاء:</span>
-                  <span className="text-slate-300">{new Date(selected.created_at).toLocaleDateString('ar-SA')}</span>
+                  <span className="text-slate-300">{new Date(selected.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
                 </div>
                 <div className="flex items-center gap-2 text-slate-400">
                   <Clock size={14} className="flex-shrink-0" />
                   <span>آخر تحديث:</span>
-                  <span className="text-slate-300">{new Date(selected.updated_at).toLocaleDateString('ar-SA')}</span>
+                  <span className="text-slate-300">{new Date(selected.updated_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
                 </div>
               </div>
             </div>
@@ -193,7 +193,7 @@ export default function AdminTickets() {
                 <td><span className="text-sm text-slate-300">{t.submitted_by_name || '—'}</span></td>
                 <td><span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ${prioColor(t.priority)}`}>{pi.ar}</span></td>
                 <td><span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ${statusColor(t.status)}`}>{si.ar}</span></td>
-                <td><span className="text-xs text-slate-500">{new Date(t.created_at).toLocaleDateString('ar-SA')}</span></td>
+                <td><span className="text-xs text-slate-500">{new Date(t.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span></td>
               </tr>
             );
           })}

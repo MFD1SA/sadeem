@@ -8,7 +8,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAdminAuth } from '../contexts/AdminAuthContext';
 import { ADMIN_ROUTES } from '../utils/constants';
 import { adminSettingsService, type BrandingSettings } from '../services/adminSettings.service';
-import { Menu, UserCircle, Lock, ChevronDown } from 'lucide-react';
+import { Menu, UserCircle, Lock, ChevronDown, User } from 'lucide-react';
 import type { BreadcrumbItem } from '../types';
 
 // Page title map
@@ -73,7 +73,11 @@ export function AdminTopbar({ onMenuToggle }: AdminTopbarProps) {
         <button onClick={() => setShowMenu(!showMenu)}
           className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl hover:bg-white/[0.04] transition-colors">
           <div className="w-8 h-8 rounded-lg overflow-hidden bg-gradient-to-br from-cyan-600 to-blue-700 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-            {user?.avatar_url ? <img src={user.avatar_url} alt="" className="w-full h-full object-cover" /> : (user?.full_name_ar?.charAt(0) || 'م')}
+            {user?.avatar_url
+              ? <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
+              : user?.full_name_ar?.charAt(0)
+                ? <span>{user.full_name_ar.charAt(0)}</span>
+                : <User size={14} className="text-white/80" />}
           </div>
           <div className="hidden sm:block text-right">
             <div className="text-[13px] text-white font-medium leading-tight">{user?.full_name_ar || 'مشرف'}</div>

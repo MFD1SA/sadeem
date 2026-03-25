@@ -120,7 +120,7 @@ export default function AdminDashboard() {
                 {stats.recent_organizations.map((org) => (
                   <div key={org.id} className="flex items-center justify-between py-2 px-3 rounded-lg bg-white/[0.02]">
                     <span className="text-sm text-white">{org.name}</span>
-                    <span className="text-xs text-slate-500">{new Date(org.created_at).toLocaleDateString('ar-SA')}</span>
+                    <span className="text-xs text-slate-500">{new Date(org.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
                   </div>
                 ))}
               </div>
@@ -160,7 +160,7 @@ function StatCard({ icon: Icon, color, label, value }: {
           <Icon size={20} className={`text-${color}-400`} />
         </div>
       </div>
-      <div className="text-2xl font-bold text-white mb-1">{value.toLocaleString('ar-SA')}</div>
+      <div className="text-2xl font-bold text-white mb-1">{value.toLocaleString('en-US')}</div>
       <div className="text-xs text-slate-400">{label}</div>
     </div>
   );

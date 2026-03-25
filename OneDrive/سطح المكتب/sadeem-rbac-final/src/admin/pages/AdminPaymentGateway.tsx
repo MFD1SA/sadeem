@@ -170,9 +170,9 @@ export default function AdminPaymentGateway() {
                             'bg-blue-500/10 text-blue-400'}`}>{si.ar}</span>
                       </td>
                       <td><span className="text-xs text-slate-500">
-                        {ev.processed_at ? new Date(ev.processed_at).toLocaleString('ar-SA') : '—'}
+                        {ev.processed_at ? new Date(ev.processed_at).toLocaleString('en-US') : '—'}
                       </span></td>
-                      <td><span className="text-xs text-slate-500">{new Date(ev.created_at).toLocaleString('ar-SA')}</span></td>
+                      <td><span className="text-xs text-slate-500">{new Date(ev.created_at).toLocaleString('en-US')}</span></td>
                     </tr>
                   );
                 })}
