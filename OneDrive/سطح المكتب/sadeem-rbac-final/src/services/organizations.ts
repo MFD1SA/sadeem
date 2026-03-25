@@ -40,7 +40,15 @@ export const organizationService = {
 
   async createOrganization(
     userId: string,
-    input: { name: string; industry: string; country: string; city: string; logoUrl?: string }
+    input: {
+      name: string;
+      industry: string;
+      country: string;
+      city: string;
+      logoUrl?: string;
+      language?: string;
+      tone?: string;
+    }
   ): Promise<DbOrganization> {
     const slug =
       input.name
@@ -52,17 +60,23 @@ export const organizationService = {
       '-' +
       Date.now().toString(36);
 
+    const insertPayload: Record<string, unknown> = {
+      owner_user_id: userId,
+      name: input.name,
+      slug,
+      industry: input.industry,
+      country: input.country,
+      city: input.city,
+      logo_url: input.logoUrl || null,
+    };
+
+    // Add optional fields if provided (columns may not exist yet — handled gracefully)
+    if (input.language !== undefined) insertPayload['language'] = input.language;
+    if (input.tone !== undefined) insertPayload['tone'] = input.tone;
+
     const { data: org, error: orgErr } = await supabase
       .from('organizations')
-      .insert({
-        owner_user_id: userId,
-        name: input.name,
-        slug,
-        industry: input.industry,
-        country: input.country,
-        city: input.city,
-        logo_url: input.logoUrl || null,
-      })
+      .insert(insertPayload)
       .select()
       .single();
 

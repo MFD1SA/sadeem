@@ -19,7 +19,7 @@ interface TopbarProps {
 
 export function Topbar({ onMenuClick }: TopbarProps) {
   const { t, toggleLanguage, lang } = useLanguage();
-  const { profile, organization, signOut } = useAuth();
+  const { profile, organization, signOut, session } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -50,7 +50,8 @@ export function Topbar({ onMenuClick }: TopbarProps) {
   }, [showUserMenu]);
 
   const userName = profile?.full_name || profile?.email || '';
-  const userAvatar = profile?.avatar_url;
+  const sessionMeta = (session as { user?: { user_metadata?: { avatar_url?: string } } } | null)?.user?.user_metadata;
+  const userAvatar = profile?.avatar_url || sessionMeta?.avatar_url || null;
   const userInitial = userName.charAt(0) || '?';
   const orgName = organization?.name || '';
   const orgIndustry = organization?.industry || '';

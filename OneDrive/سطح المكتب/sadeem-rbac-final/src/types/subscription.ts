@@ -25,10 +25,19 @@ export const TRIAL_LIMITS = {
 
 // ─── Plan Definitions ───
 
-export type PlanId = 'starter' | 'growth' | 'pro' | 'enterprise';
+// New plan IDs (preferred)
+export type NewPlanId = 'orbit' | 'nova' | 'galaxy' | 'infinity';
+// Legacy plan IDs (backward compat)
+export type LegacyPlanId = 'starter' | 'growth' | 'pro' | 'enterprise';
+export type PlanId = NewPlanId | LegacyPlanId;
 
 export interface PlanLimits {
   maxBranches: number;
+  maxTeamMembers: number;
+  maxAiReplies: number;
+  maxTemplateReplies: number;
+  maxQrCodes: number;
+  // Feature flags
   qrPerBranch: boolean;
   qrLandingPage: boolean;
   qrEmployeeField: boolean;
@@ -39,6 +48,10 @@ export interface PlanLimits {
   logoUpload: boolean;
   apiAccess: boolean;
   premiumSupport: boolean;
+  aiAutoReply: boolean;
+  tasks: boolean;
+  teamManagement: boolean;
+  notifications: boolean;
 }
 
 export interface PlanInfo {
@@ -47,28 +60,100 @@ export interface PlanInfo {
   nameEn: string;
   descAr: string;
   descEn: string;
+  priceMonthly: number;
+  priceYearly: number;
   limits: PlanLimits;
+  templateCount: number;
 }
 
-export const PLANS: Record<PlanId, PlanInfo> = {
+const UNLIMITED = 999999;
+
+export const PLANS: Record<string, PlanInfo> = {
+  // ── New Plans ──
+  orbit: {
+    id: 'orbit',
+    nameAr: 'مدار',
+    nameEn: 'Orbit',
+    descAr: 'للأنشطة الصغيرة والناشئة',
+    descEn: 'For small & emerging businesses',
+    priceMonthly: 99,
+    priceYearly: 990,
+    templateCount: 3,
+    limits: {
+      maxBranches: 1, maxTeamMembers: 1, maxAiReplies: 50, maxTemplateReplies: 100, maxQrCodes: 1,
+      qrPerBranch: false, qrLandingPage: false, qrEmployeeField: false, qrAnalytics: false,
+      advancedAnalytics: false, branchComparison: false, advancedReporting: false,
+      logoUpload: false, apiAccess: false, premiumSupport: false,
+      aiAutoReply: false, tasks: false, teamManagement: false, notifications: true,
+    },
+  },
+  nova: {
+    id: 'nova',
+    nameAr: 'نوفا',
+    nameEn: 'Nova',
+    descAr: 'للأنشطة المتنامية',
+    descEn: 'For growing businesses',
+    priceMonthly: 199,
+    priceYearly: 1990,
+    templateCount: 6,
+    limits: {
+      maxBranches: 3, maxTeamMembers: 3, maxAiReplies: 300, maxTemplateReplies: 500, maxQrCodes: 3,
+      qrPerBranch: true, qrLandingPage: true, qrEmployeeField: false, qrAnalytics: true,
+      advancedAnalytics: true, branchComparison: true, advancedReporting: false,
+      logoUpload: true, apiAccess: false, premiumSupport: false,
+      aiAutoReply: true, tasks: true, teamManagement: true, notifications: true,
+    },
+  },
+  galaxy: {
+    id: 'galaxy',
+    nameAr: 'جالاكسي',
+    nameEn: 'Galaxy',
+    descAr: 'للشركات المتقدمة متعددة الفروع',
+    descEn: 'For advanced multi-branch companies',
+    priceMonthly: 399,
+    priceYearly: 3990,
+    templateCount: 10,
+    limits: {
+      maxBranches: 10, maxTeamMembers: 10, maxAiReplies: 1500, maxTemplateReplies: UNLIMITED, maxQrCodes: 10,
+      qrPerBranch: true, qrLandingPage: true, qrEmployeeField: true, qrAnalytics: true,
+      advancedAnalytics: true, branchComparison: true, advancedReporting: true,
+      logoUpload: true, apiAccess: false, premiumSupport: true,
+      aiAutoReply: true, tasks: true, teamManagement: true, notifications: true,
+    },
+  },
+  infinity: {
+    id: 'infinity',
+    nameAr: 'إنفينيتي',
+    nameEn: 'Infinity',
+    descAr: 'حلول مخصصة بلا حدود',
+    descEn: 'Unlimited custom solutions',
+    priceMonthly: 0,
+    priceYearly: 0,
+    templateCount: UNLIMITED,
+    limits: {
+      maxBranches: UNLIMITED, maxTeamMembers: UNLIMITED, maxAiReplies: UNLIMITED, maxTemplateReplies: UNLIMITED, maxQrCodes: UNLIMITED,
+      qrPerBranch: true, qrLandingPage: true, qrEmployeeField: true, qrAnalytics: true,
+      advancedAnalytics: true, branchComparison: true, advancedReporting: true,
+      logoUpload: true, apiAccess: true, premiumSupport: true,
+      aiAutoReply: true, tasks: true, teamManagement: true, notifications: true,
+    },
+  },
+  // ── Legacy (backward compat) ──
   starter: {
     id: 'starter',
     nameAr: 'المبتدئ',
     nameEn: 'Starter',
     descAr: 'للأنشطة التجارية الصغيرة',
     descEn: 'For small businesses',
+    priceMonthly: 99,
+    priceYearly: 990,
+    templateCount: 3,
     limits: {
-      maxBranches: 1,
-      qrPerBranch: false,
-      qrLandingPage: false,
-      qrEmployeeField: false,
-      qrAnalytics: false,
-      advancedAnalytics: false,
-      branchComparison: false,
-      advancedReporting: false,
-      logoUpload: false,
-      apiAccess: false,
-      premiumSupport: false,
+      maxBranches: 1, maxTeamMembers: 1, maxAiReplies: 50, maxTemplateReplies: 100, maxQrCodes: 1,
+      qrPerBranch: false, qrLandingPage: false, qrEmployeeField: false, qrAnalytics: false,
+      advancedAnalytics: false, branchComparison: false, advancedReporting: false,
+      logoUpload: false, apiAccess: false, premiumSupport: false,
+      aiAutoReply: false, tasks: false, teamManagement: false, notifications: true,
     },
   },
   growth: {
@@ -77,18 +162,15 @@ export const PLANS: Record<PlanId, PlanInfo> = {
     nameEn: 'Growth',
     descAr: 'للأنشطة المتوسعة',
     descEn: 'For growing businesses',
+    priceMonthly: 199,
+    priceYearly: 1990,
+    templateCount: 6,
     limits: {
-      maxBranches: 5,
-      qrPerBranch: true,
-      qrLandingPage: true,
-      qrEmployeeField: false,
-      qrAnalytics: false,
-      advancedAnalytics: true,
-      branchComparison: false,
-      advancedReporting: false,
-      logoUpload: true,
-      apiAccess: false,
-      premiumSupport: false,
+      maxBranches: 5, maxTeamMembers: 5, maxAiReplies: 300, maxTemplateReplies: 500, maxQrCodes: 3,
+      qrPerBranch: true, qrLandingPage: true, qrEmployeeField: false, qrAnalytics: true,
+      advancedAnalytics: true, branchComparison: false, advancedReporting: false,
+      logoUpload: true, apiAccess: false, premiumSupport: false,
+      aiAutoReply: true, tasks: true, teamManagement: true, notifications: true,
     },
   },
   pro: {
@@ -97,18 +179,15 @@ export const PLANS: Record<PlanId, PlanInfo> = {
     nameEn: 'Pro',
     descAr: 'للأنشطة المتقدمة',
     descEn: 'For advanced businesses',
+    priceMonthly: 399,
+    priceYearly: 3990,
+    templateCount: 10,
     limits: {
-      maxBranches: 20,
-      qrPerBranch: true,
-      qrLandingPage: true,
-      qrEmployeeField: true,
-      qrAnalytics: true,
-      advancedAnalytics: true,
-      branchComparison: true,
-      advancedReporting: true,
-      logoUpload: true,
-      apiAccess: false,
-      premiumSupport: false,
+      maxBranches: 20, maxTeamMembers: 10, maxAiReplies: 1500, maxTemplateReplies: UNLIMITED, maxQrCodes: 10,
+      qrPerBranch: true, qrLandingPage: true, qrEmployeeField: true, qrAnalytics: true,
+      advancedAnalytics: true, branchComparison: true, advancedReporting: true,
+      logoUpload: true, apiAccess: false, premiumSupport: false,
+      aiAutoReply: true, tasks: true, teamManagement: true, notifications: true,
     },
   },
   enterprise: {
@@ -117,38 +196,43 @@ export const PLANS: Record<PlanId, PlanInfo> = {
     nameEn: 'Enterprise',
     descAr: 'حلول مخصصة للمؤسسات الكبرى',
     descEn: 'Custom solutions for large organizations',
+    priceMonthly: 0,
+    priceYearly: 0,
+    templateCount: UNLIMITED,
     limits: {
-      maxBranches: Infinity,
-      qrPerBranch: true,
-      qrLandingPage: true,
-      qrEmployeeField: true,
-      qrAnalytics: true,
-      advancedAnalytics: true,
-      branchComparison: true,
-      advancedReporting: true,
-      logoUpload: true,
-      apiAccess: true,
-      premiumSupport: true,
+      maxBranches: UNLIMITED, maxTeamMembers: UNLIMITED, maxAiReplies: UNLIMITED, maxTemplateReplies: UNLIMITED, maxQrCodes: UNLIMITED,
+      qrPerBranch: true, qrLandingPage: true, qrEmployeeField: true, qrAnalytics: true,
+      advancedAnalytics: true, branchComparison: true, advancedReporting: true,
+      logoUpload: true, apiAccess: true, premiumSupport: true,
+      aiAutoReply: true, tasks: true, teamManagement: true, notifications: true,
     },
   },
 };
 
+// Preferred display order
+export const PLAN_DISPLAY_ORDER: NewPlanId[] = ['orbit', 'nova', 'galaxy', 'infinity'];
+
 export function getPlanLimits(planId: PlanId): PlanLimits {
-  return PLANS[planId]?.limits || PLANS.starter.limits;
+  return PLANS[planId]?.limits || PLANS.orbit.limits;
+}
+
+export function getPlanInfo(planId: PlanId): PlanInfo {
+  return PLANS[planId] || PLANS.orbit;
 }
 
 export function getPlanName(planId: PlanId, lang: 'ar' | 'en'): string {
   const plan = PLANS[planId];
+  if (!plan) return planId;
   return lang === 'ar' ? plan.nameAr : plan.nameEn;
 }
 
 export function getMinimumPlanFor(feature: keyof PlanLimits): PlanId {
-  const order: PlanId[] = ['starter', 'growth', 'pro', 'enterprise'];
+  const order: PlanId[] = ['orbit', 'nova', 'galaxy', 'infinity'];
   for (const planId of order) {
-    const limits = PLANS[planId].limits;
-    if (limits[feature] === true || (typeof limits[feature] === 'number' && limits[feature] > 0)) {
-      return planId;
-    }
+    const limits = PLANS[planId]?.limits;
+    if (!limits) continue;
+    const val = limits[feature];
+    if (val === true || (typeof val === 'number' && val > 0)) return planId;
   }
-  return 'enterprise';
+  return 'infinity';
 }

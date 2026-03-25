@@ -11,7 +11,7 @@ import { useEffect, useState } from 'react';
 import {
   LayoutGrid, UsersRound, ShieldCheck, Settings, ClipboardList,
   UserCircle, Lock, LogOut, X, Building2, CreditCard, Zap,
-  Activity, Headphones, Puzzle, Layers,
+  Activity, Headphones, Puzzle, Layers, Package,
 } from 'lucide-react';
 
 interface AdminSidebarProps { isOpen: boolean; onClose: () => void; }
@@ -23,7 +23,8 @@ const mainNav = [
   { id: 'ai-usage', label: 'استهلاك AI', icon: Zap, path: ADMIN_ROUTES.AI_USAGE, permission: PERMISSIONS.DASHBOARD_ANALYTICS },
   { id: 'payment-gateway', label: 'بوابة الدفع', icon: Activity, path: ADMIN_ROUTES.PAYMENT_GATEWAY, permission: PERMISSIONS.FINANCE_VIEW, dividerAfter: true },
   { id: 'tickets', label: 'الدعم الفني', icon: Headphones, path: ADMIN_ROUTES.TICKETS, permission: PERMISSIONS.SUPPORT_VIEW },
-  { id: 'integrations', label: 'التكاملات', icon: Puzzle, path: ADMIN_ROUTES.INTEGRATIONS, permission: PERMISSIONS.SETTINGS_VIEW, dividerAfter: true },
+  { id: 'integrations', label: 'التكاملات', icon: Puzzle, path: ADMIN_ROUTES.INTEGRATIONS, permission: PERMISSIONS.SETTINGS_VIEW },
+  { id: 'plans', label: 'الخطط والأسعار', icon: Package, path: ADMIN_ROUTES.PLANS, permission: PERMISSIONS.SETTINGS_VIEW, dividerAfter: true },
   { id: 'admins', label: 'المشرفين', icon: UsersRound, path: ADMIN_ROUTES.ADMINS, permission: PERMISSIONS.ADMIN_USERS_VIEW },
   { id: 'roles', label: 'الأدوار والصلاحيات', icon: ShieldCheck, path: ADMIN_ROUTES.ROLES, permission: PERMISSIONS.ROLES_VIEW, dividerAfter: true },
   { id: 'settings', label: 'الإعدادات', icon: Settings, path: ADMIN_ROUTES.SETTINGS, permission: PERMISSIONS.SETTINGS_VIEW },

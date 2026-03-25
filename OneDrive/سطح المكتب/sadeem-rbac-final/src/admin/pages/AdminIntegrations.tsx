@@ -1,275 +1,295 @@
 // ============================================================================
-// SADEEM Admin — Integrations (DB-Persisted + Config Panel)
-// Integration status saved/loaded from system_settings via RPCs.
-// Settings button opens a real config panel per integration.
+// SADEEM Admin — Integrations (DB-Driven)
+// Reads from integrations_config table, not hardcoded
 // ============================================================================
 
-import { useState, useEffect } from 'react';
-import { adminSettingsService } from '../services/adminSettings.service';
-import { Puzzle, Check, X, Settings, Save } from 'lucide-react';
-import { AdminSelect } from '../components/AdminSelect';
+import { useState, useEffect, useCallback } from 'react';
+import { Puzzle, RefreshCw, Settings2, CheckCircle, XCircle, AlertCircle, X, Check, Loader2 } from 'lucide-react';
+import { integrationsService, type DbIntegration } from '@/services/plans';
 
-interface IntegrationDef {
-  id: string; name: string; name_ar: string; description: string;
-  icon: string; category: string; configurable: boolean;
-  configFields?: Array<{ key: string; label: string; type: 'text' | 'password'; placeholder: string }>;
-}
-
-const INTEGRATION_DEFS: IntegrationDef[] = [
-  {
-    id: 'google_business', name: 'Google Business', name_ar: 'Google Business Profile',
-    description: 'ربط حسابات Google لسحب التقييمات والرد عليها',
-    icon: '🔗', category: 'reviews', configurable: true,
-    configFields: [
-      { key: 'client_id', label: 'Client ID', type: 'text', placeholder: 'Google OAuth Client ID' },
-      { key: 'client_secret', label: 'Client Secret', type: 'password', placeholder: 'Google OAuth Client Secret' },
-    ],
-  },
-  {
-    id: 'gemini_ai', name: 'Google Gemini', name_ar: 'الذكاء الاصطناعي — Gemini',
-    description: 'توليد الردود الذكية وتحليل المشاعر',
-    icon: '🤖', category: 'ai', configurable: true,
-    configFields: [
-      { key: 'api_key', label: 'API Key', type: 'password', placeholder: 'AIzaSy...' },
-      { key: 'model', label: 'Model', type: 'text', placeholder: 'gemini-1.5-flash-8b' },
-    ],
-  },
-  {
-    id: 'stripe', name: 'Stripe', name_ar: 'بوابة الدفع — Stripe',
-    description: 'معالجة المدفوعات والاشتراكات الدولية',
-    icon: '💳', category: 'payments', configurable: true,
-    configFields: [
-      { key: 'publishable_key', label: 'Publishable Key', type: 'text', placeholder: 'pk_live_...' },
-      { key: 'secret_key', label: 'Secret Key', type: 'password', placeholder: 'sk_live_...' },
-      { key: 'webhook_secret', label: 'Webhook Secret', type: 'password', placeholder: 'whsec_...' },
-    ],
-  },
-  {
-    id: 'moyasar', name: 'Moyasar', name_ar: 'بوابة الدفع — ميسر',
-    description: 'بوابة دفع سعودية تدعم مدى وApple Pay',
-    icon: '💰', category: 'payments', configurable: true,
-    configFields: [
-      { key: 'publishable_key', label: 'Publishable Key', type: 'text', placeholder: 'pk_live_...' },
-      { key: 'secret_key', label: 'Secret Key', type: 'password', placeholder: 'sk_live_...' },
-    ],
-  },
-  {
-    id: 'slack', name: 'Slack', name_ar: 'إشعارات Slack',
-    description: 'إرسال تنبيهات التقييمات إلى قنوات Slack',
-    icon: '💬', category: 'notifications', configurable: false,
-  },
-  {
-    id: 'zapier', name: 'Zapier', name_ar: 'أتمتة Zapier',
-    description: 'ربط مع آلاف التطبيقات عبر Zapier',
-    icon: '⚡', category: 'automation', configurable: false,
-  },
-  {
-    id: 'whatsapp', name: 'WhatsApp Business', name_ar: 'إشعارات واتساب',
-    description: 'إرسال تنبيهات فورية عبر واتساب للأعمال',
-    icon: '📱', category: 'notifications', configurable: false,
-  },
-];
-
-const CATS: Record<string, string> = {
-  reviews: 'التقييمات', ai: 'الذكاء الاصطناعي', payments: 'المدفوعات',
-  notifications: 'الإشعارات', automation: 'الأتمتة',
+const CATEGORY_LABELS: Record<string, string> = {
+  reviews:       'التقييمات',
+  ai:            'الذكاء الاصطناعي',
+  payments:      'المدفوعات',
+  notifications: 'الإشعارات',
+  automation:    'الأتمتة',
+  other:         'أخرى',
 };
 
-type IntegrationConfig = Record<string, string>;
-type IntegrationState = Record<string, { enabled: boolean; config?: IntegrationConfig }>;
-
-const DEFAULT_STATE: IntegrationState = {
-  google_business: { enabled: true }, gemini_ai: { enabled: true },
-  stripe: { enabled: true }, moyasar: { enabled: false },
-  slack: { enabled: false }, zapier: { enabled: false }, whatsapp: { enabled: false },
+const STATUS_CONFIG = {
+  connected:    { label: 'متصل',      icon: CheckCircle, color: 'text-emerald-400' },
+  disconnected: { label: 'غير متصل',  icon: XCircle,     color: 'text-slate-500'   },
+  error:        { label: 'خطأ',       icon: AlertCircle, color: 'text-red-400'      },
 };
 
 export default function AdminIntegrations() {
-  const [state, setState] = useState<IntegrationState>(DEFAULT_STATE);
+  const [integrations, setIntegrations] = useState<DbIntegration[]>([]);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState<string | null>(null);
-  const [filterCat, setFilterCat] = useState('');
-  const [msg, setMsg] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
-  const [configTarget, setConfigTarget] = useState<IntegrationDef | null>(null);
-  const [configValues, setConfigValues] = useState<IntegrationConfig>({});
-  const [savingConfig, setSavingConfig] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editValues, setEditValues] = useState<{ api_key: string; access_token: string }>({ api_key: '', access_token: '' });
+  const [testingId, setTestingId] = useState<string | null>(null);
+  const [testResults, setTestResults] = useState<Record<string, { success: boolean; message: string }>>({});
+  const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [filterCategory, setFilterCategory] = useState<string>('all');
 
-  useEffect(() => {
-    adminSettingsService.get<IntegrationState>('integrations', DEFAULT_STATE)
-      .then((s) => { setState(s); setLoading(false); })
-      .catch(() => setLoading(false));
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await integrationsService.list();
+      setIntegrations(data);
+    } catch {
+      // DB table may not exist yet — show empty state
+      setIntegrations([]);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const showMsg = (text: string, type: 'success' | 'error') => {
-    setMsg({ text, type });
-    setTimeout(() => setMsg(null), 3000);
-  };
+  useEffect(() => { load(); }, [load]);
 
-  const toggleIntegration = async (id: string) => {
-    const newState = { ...state, [id]: { ...state[id], enabled: !state[id]?.enabled } };
-    setState(newState);
-    setSaving(id);
+  const handleToggle = async (integration: DbIntegration) => {
+    setTogglingId(integration.id);
     try {
-      await adminSettingsService.set('integrations', newState);
-      showMsg(`تم ${newState[id].enabled ? 'تفعيل' : 'تعطيل'} التكامل`, 'success');
-    } catch {
-      setState(state);
-      showMsg('فشل في حفظ التغيير', 'error');
-    } finally { setSaving(null); }
+      await integrationsService.toggleEnabled(integration.id, !integration.enabled);
+      setIntegrations(prev =>
+        prev.map(i => i.id === integration.id ? { ...i, enabled: !i.enabled } : i)
+      );
+    } finally {
+      setTogglingId(null);
+    }
   };
 
-  const openConfig = (intg: IntegrationDef) => {
-    setConfigTarget(intg);
-    setConfigValues(state[intg.id]?.config || {});
+  const startEdit = (integration: DbIntegration) => {
+    setEditingId(integration.id);
+    setEditValues({ api_key: integration.api_key || '', access_token: integration.access_token || '' });
   };
 
-  const saveConfig = async () => {
-    if (!configTarget) return;
-    setSavingConfig(true);
+  const saveEdit = async (integration: DbIntegration) => {
     try {
-      const newState = {
-        ...state,
-        [configTarget.id]: { ...state[configTarget.id], config: configValues },
-      };
-      await adminSettingsService.set('integrations', newState);
-      setState(newState);
-      showMsg('تم حفظ الإعدادات', 'success');
-      setConfigTarget(null);
-    } catch {
-      showMsg('فشل في حفظ الإعدادات', 'error');
-    } finally { setSavingConfig(false); }
+      await integrationsService.update(integration.id, {
+        api_key: editValues.api_key || null,
+        access_token: editValues.access_token || null,
+      } as Partial<DbIntegration>);
+      setIntegrations(prev =>
+        prev.map(i => i.id === integration.id
+          ? { ...i, api_key: editValues.api_key || null, access_token: editValues.access_token || null }
+          : i
+        )
+      );
+      setEditingId(null);
+    } catch { /* show error */ }
   };
 
-  const filtered = filterCat ? INTEGRATION_DEFS.filter(i => i.category === filterCat) : INTEGRATION_DEFS;
-  const cats = [...new Set(INTEGRATION_DEFS.map(i => i.category))];
+  const testConnection = async (integration: DbIntegration) => {
+    setTestingId(integration.id);
+    try {
+      const result = await integrationsService.testConnection(integration.key);
+      setTestResults(prev => ({ ...prev, [integration.id]: result }));
+    } finally {
+      setTestingId(null);
+    }
+  };
 
-  if (loading) return <div className="flex items-center justify-center py-20"><div className="admin-spinner" /></div>;
+  const categories = ['all', ...Array.from(new Set(integrations.map(i => i.category)))];
+  const filtered = filterCategory === 'all'
+    ? integrations
+    : integrations.filter(i => i.category === filterCategory);
+
+  const grouped = filtered.reduce((acc, i) => {
+    if (!acc[i.category]) acc[i.category] = [];
+    acc[i.category].push(i);
+    return acc;
+  }, {} as Record<string, DbIntegration[]>);
+
+  if (loading) return (
+    <div className="flex items-center justify-center h-64">
+      <div className="w-8 h-8 border-2 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin" />
+    </div>
+  );
 
   return (
-    <div>
-      <div className="mb-6">
-        <h1 className="text-xl font-bold text-white mb-1">التكاملات</h1>
-        <p className="text-sm text-slate-400">إدارة وتفعيل التكاملات مع الخدمات الخارجية — الحالة تُحفظ تلقائيًا</p>
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-4">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 flex items-center justify-center">
+            <Puzzle size={20} className="text-cyan-400" />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold text-white">التكاملات</h1>
+            <p className="text-sm text-slate-400">إدارة وتفعيل التكاملات مع الخدمات الخارجية</p>
+          </div>
+        </div>
+        <button onClick={load} className="flex items-center gap-2 px-3 py-2 bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white rounded-lg text-sm transition-colors">
+          <RefreshCw size={14} /> تحديث
+        </button>
       </div>
 
-      {msg && (
-        <div className={`text-xs rounded-lg p-3 mb-4 ${msg.type === 'success' ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400' : 'bg-red-500/10 border border-red-500/20 text-red-400'}`}>
-          {msg.text}
+      {/* Category Filter */}
+      {categories.length > 2 && (
+        <div className="flex gap-2 mb-6 flex-wrap">
+          {categories.map(cat => (
+            <button
+              key={cat}
+              onClick={() => setFilterCategory(cat)}
+              className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                filterCategory === cat
+                  ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
+                  : 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10 border border-transparent'
+              }`}
+            >
+              {cat === 'all' ? 'الكل' : CATEGORY_LABELS[cat] || cat}
+            </button>
+          ))}
         </div>
       )}
 
-      <div className="admin-card mb-4">
-        <div className="p-4 flex items-center gap-3">
-          <AdminSelect wrapperClassName="w-auto min-w-[140px]" value={filterCat} onChange={(e) => setFilterCat(e.target.value)}>
-            <option value="">كل التصنيفات</option>
-            {cats.map(c => <option key={c} value={c}>{CATS[c] || c}</option>)}
-          </AdminSelect>
-          <span className="text-xs text-slate-500">{filtered.length} تكامل</span>
+      {integrations.length === 0 ? (
+        <div className="text-center py-16 text-slate-500">
+          <Puzzle size={40} className="mx-auto mb-3 opacity-30" />
+          <p className="text-sm">لم يتم إعداد التكاملات بعد</p>
+          <p className="text-xs mt-1">شغّل migration: sadeem-plans-integrations-schema.sql في Supabase</p>
         </div>
-      </div>
+      ) : (
+        <div className="space-y-8">
+          {Object.entries(grouped).map(([category, items]) => (
+            <div key={category}>
+              <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
+                {CATEGORY_LABELS[category] || category}
+              </h2>
+              <div className="space-y-3">
+                {items.map((integration) => {
+                  const status = STATUS_CONFIG[integration.status] || STATUS_CONFIG.disconnected;
+                  const StatusIcon = status.icon;
+                  const testResult = testResults[integration.id];
+                  const isTesting = testingId === integration.id;
+                  const isToggling = togglingId === integration.id;
+                  const isEditing = editingId === integration.id;
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {filtered.map((intg) => {
-          const s = state[intg.id] || { enabled: false };
-          const isSaving = saving === intg.id;
-          const hasConfig = intg.configFields && (state[intg.id]?.config
-            ? Object.values(state[intg.id]!.config!).some(v => v.trim() !== '')
-            : false);
-
-          return (
-            <div key={intg.id} className={`admin-card transition-colors ${s.enabled ? 'border-cyan-500/10' : ''}`}>
-              <div className="p-5">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-11 h-11 rounded-xl bg-white/[0.05] flex items-center justify-center text-xl flex-shrink-0">{intg.icon}</div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-semibold text-white truncate">{intg.name_ar}</h3>
-                    <p className="text-xs text-slate-500" dir="ltr">{intg.name}</p>
-                  </div>
-
-                  {/* Enable/disable toggle */}
-                  <button
-                    onClick={() => toggleIntegration(intg.id)}
-                    disabled={isSaving}
-                    className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${s.enabled ? 'bg-cyan-500' : 'bg-slate-700'} ${isSaving ? 'opacity-50' : ''}`}
-                  >
-                    <div className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${s.enabled ? 'right-1' : 'right-[24px]'}`} />
-                  </button>
-                </div>
-
-                <p className="text-xs text-slate-400 leading-relaxed mb-4">{intg.description}</p>
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[11px] text-slate-600">{CATS[intg.category]}</span>
-                    <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium ${s.enabled ? 'bg-emerald-500/10 text-emerald-400' : 'bg-slate-500/10 text-slate-500'}`}>
-                      {s.enabled ? <><Check size={10} /> مفعّل</> : <><X size={10} /> معطّل</>}
-                    </span>
-                    {hasConfig && (
-                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-500/10 text-blue-400">
-                        مُهيَّأ
-                      </span>
-                    )}
-                  </div>
-                  {intg.configurable && s.enabled && (
-                    <button
-                      onClick={() => openConfig(intg)}
-                      className="text-xs text-cyan-400/70 hover:text-cyan-400 transition-colors flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-cyan-500/10"
+                  return (
+                    <div key={integration.id}
+                      className={`rounded-xl border transition-all ${
+                        integration.enabled
+                          ? 'bg-white/[0.04] border-white/10'
+                          : 'bg-white/[0.02] border-white/5 opacity-70'
+                      }`}
                     >
-                      <Settings size={12} /> إعدادات
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+                      <div className="p-4 flex items-start gap-4">
+                        {/* Toggle */}
+                        <button
+                          onClick={() => handleToggle(integration)}
+                          disabled={isToggling}
+                          className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 mt-0.5 ${
+                            integration.enabled ? 'bg-cyan-500' : 'bg-slate-700'
+                          } ${isToggling ? 'opacity-50' : ''}`}
+                        >
+                          <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${
+                            integration.enabled ? 'ltr:translate-x-5 rtl:-translate-x-5' : 'ltr:translate-x-1 rtl:-translate-x-1'
+                          }`} />
+                        </button>
 
-      {/* Config Modal */}
-      {configTarget && (
-        <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4"
-          onClick={(e) => { if (e.target === e.currentTarget) setConfigTarget(null); }}
-        >
-          <div className="bg-[#0d1322] border border-white/[0.08] rounded-2xl w-full max-w-md shadow-2xl" dir="rtl">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
-              <div className="flex items-center gap-3">
-                <span className="text-xl">{configTarget.icon}</span>
-                <div>
-                  <h2 className="text-base font-semibold text-white">{configTarget.name_ar}</h2>
-                  <p className="text-xs text-slate-500" dir="ltr">{configTarget.name} — Configuration</p>
-                </div>
+                        {/* Info */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-0.5">
+                            <span className="text-white font-medium text-sm">{integration.name_ar}</span>
+                            <span className="px-2 py-0.5 bg-white/5 text-slate-400 rounded text-[10px] uppercase">{integration.type}</span>
+                          </div>
+                          <div className={`flex items-center gap-1.5 text-xs ${status.color}`}>
+                            <StatusIcon size={11} />
+                            {status.label}
+                            {integration.last_sync_at && (
+                              <span className="text-slate-500 mr-2">
+                                آخر مزامنة: {new Date(integration.last_sync_at).toLocaleDateString('ar-SA')}
+                              </span>
+                            )}
+                          </div>
+                          {integration.last_error && (
+                            <div className="text-xs text-red-400 mt-1 bg-red-500/5 px-2 py-1 rounded">
+                              {integration.last_error}
+                            </div>
+                          )}
+                          {testResult && (
+                            <div className={`text-xs mt-1 px-2 py-1 rounded ${
+                              testResult.success ? 'text-emerald-400 bg-emerald-500/10' : 'text-red-400 bg-red-500/10'
+                            }`}>
+                              {testResult.success ? '✓' : '✗'} {testResult.message}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <button
+                            onClick={() => testConnection(integration)}
+                            disabled={isTesting}
+                            className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white rounded-lg text-xs transition-colors"
+                          >
+                            {isTesting ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
+                            اختبار
+                          </button>
+                          <button
+                            onClick={() => isEditing ? setEditingId(null) : startEdit(integration)}
+                            className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white rounded-lg text-xs transition-colors"
+                          >
+                            {isEditing ? <X size={12} /> : <Settings2 size={12} />}
+                            {isEditing ? 'إغلاق' : 'إعدادات'}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Edit Panel */}
+                      {isEditing && (
+                        <div className="px-4 pb-4 border-t border-white/5 pt-4">
+                          <div className="space-y-3 max-w-md">
+                            {integration.type === 'api' && (
+                              <div>
+                                <label className="block text-xs text-slate-400 mb-1">مفتاح API</label>
+                                <input
+                                  type="password"
+                                  value={editValues.api_key}
+                                  onChange={e => setEditValues(prev => ({ ...prev, api_key: e.target.value }))}
+                                  placeholder="sk-..."
+                                  className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm placeholder-slate-600"
+                                  dir="ltr"
+                                />
+                              </div>
+                            )}
+                            {integration.type === 'oauth' && (
+                              <div>
+                                <label className="block text-xs text-slate-400 mb-1">Access Token</label>
+                                <input
+                                  type="password"
+                                  value={editValues.access_token}
+                                  onChange={e => setEditValues(prev => ({ ...prev, access_token: e.target.value }))}
+                                  placeholder="ya29...."
+                                  className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm placeholder-slate-600"
+                                  dir="ltr"
+                                />
+                              </div>
+                            )}
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => saveEdit(integration)}
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 rounded-lg text-xs transition-colors"
+                              >
+                                <Check size={13} /> حفظ
+                              </button>
+                              <button
+                                onClick={() => setEditingId(null)}
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 text-slate-400 hover:bg-white/10 rounded-lg text-xs transition-colors"
+                              >
+                                <X size={13} /> إلغاء
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
-              <button onClick={() => setConfigTarget(null)} className="text-slate-500 hover:text-white transition-colors">
-                <X size={18} />
-              </button>
             </div>
-            <div className="p-5 space-y-4">
-              <p className="text-xs text-slate-500 leading-relaxed bg-white/[0.02] rounded-lg p-3 border border-white/[0.04]">
-                هذه البيانات تُخزَّن بشكل آمن في إعدادات النظام. تأكد من استخدام مفاتيح الإنتاج (Production) فقط.
-              </p>
-              {configTarget.configFields?.map((field) => (
-                <div key={field.key}>
-                  <label className="block text-xs font-medium text-slate-400 mb-1.5">{field.label}</label>
-                  <input
-                    type={field.type}
-                    className="admin-form-input"
-                    dir="ltr"
-                    placeholder={field.placeholder}
-                    value={configValues[field.key] || ''}
-                    onChange={(e) => setConfigValues(p => ({ ...p, [field.key]: e.target.value }))}
-                  />
-                </div>
-              ))}
-            </div>
-            <div className="flex items-center justify-end gap-3 px-5 py-4 border-t border-white/[0.06]">
-              <button onClick={() => setConfigTarget(null)} className="admin-btn-secondary text-sm">إلغاء</button>
-              <button onClick={saveConfig} disabled={savingConfig} className="admin-btn-primary text-sm">
-                <Save size={14} />
-                <span>{savingConfig ? 'جاري الحفظ...' : 'حفظ الإعدادات'}</span>
-              </button>
-            </div>
-          </div>
+          ))}
         </div>
       )}
     </div>
