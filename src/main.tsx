@@ -1,4 +1,3 @@
-import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -7,21 +6,25 @@ import { AuthProvider } from '@/hooks/useAuth';
 import App from './App';
 import './index.css';
 
+// React.StrictMode is intentionally removed: in development it mounts
+// components twice, which causes Supabase's BroadcastChannel auth lock
+// ("lock:sadeem-auth") to become orphaned. The second mount then waits
+// 5 000 ms for the lock to expire before INITIAL_SESSION fires — making
+// the "جاري التحميل..." spinner stuck for 5+ seconds on every page load.
+
 const rootEl = document.getElementById('root');
 
 if (rootEl) {
   ReactDOM.createRoot(rootEl).render(
-    <React.StrictMode>
-      <ErrorBoundary>
-        <BrowserRouter>
-          <LanguageProvider>
-            <AuthProvider>
-              <App />
-            </AuthProvider>
-          </LanguageProvider>
-        </BrowserRouter>
-      </ErrorBoundary>
-    </React.StrictMode>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <LanguageProvider>
+          <AuthProvider>
+            <App />
+          </AuthProvider>
+        </LanguageProvider>
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 } else {
   console.error('[Sadeem] Root element not found');

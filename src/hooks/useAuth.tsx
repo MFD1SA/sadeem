@@ -3,6 +3,11 @@ import { supabase } from '@/lib/supabase';
 import { organizationService } from '@/services/organizations';
 import type { DbUser, DbOrganization, DbMembership } from '@/types/database';
 
+// Maximum ms we wait for INITIAL_SESSION before forcing isLoading=false.
+// This protects against Supabase BroadcastChannel lock contention (e.g. when
+// the lock isn't released quickly enough) that would otherwise freeze the UI.
+const AUTH_LOADING_TIMEOUT_MS = 3000;
+
 interface AuthState {
   session: unknown;
   user: { id: string; email?: string } | null;
@@ -113,12 +118,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
+    // Safety net: if INITIAL_SESSION hasn't resolved in AUTH_LOADING_TIMEOUT_MS
+    // (e.g. due to orphaned Supabase lock from double-mount), force-end loading
+    // so the user isn't shown a permanent spinner.
+    const loadingTimeout = setTimeout(() => {
+      if (!mounted) return;
+      setState(prev => {
+        if (prev.isLoading) {
+          console.warn('[Sadeem] Auth loading timeout — forcing isLoading=false');
+          return { ...prev, isLoading: false };
+        }
+        return prev;
+      });
+    }, AUTH_LOADING_TIMEOUT_MS);
+
     // Use onAuthStateChange exclusively for session initialization.
     // The INITIAL_SESSION event fires immediately with the current session,
     // so there is no need for a separate getSession() call. Calling both
-    // causes two concurrent hydrateAuth invocations (double-hydration race)
-    // which can result in isLoading toggling false prematurely while the
-    // second hydration still runs.
+    // causes two concurrent hydrateAuth invocations (double-hydration race).
     const { data: listener } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!mounted) return;
 
@@ -147,6 +164,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     return () => {
       mounted = false;
+      clearTimeout(loadingTimeout);
       listener?.subscription?.unsubscribe();
     };
   }, [hydrateAuth]);
