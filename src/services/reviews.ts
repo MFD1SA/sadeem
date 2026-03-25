@@ -69,6 +69,11 @@ export const reviewsService = {
   },
 };
 
+// Tracks in-flight draft creation requests by review_id within the same
+// browser session. Prevents duplicate drafts from double-clicks or rapid
+// retries while a request is still in flight.
+const _pendingDraftCreations = new Set<string>();
+
 export const replyDraftsService = {
   async list(organizationId: string, status?: string): Promise<DbReplyDraft[]> {
     let query = supabase
@@ -91,21 +96,29 @@ export const replyDraftsService = {
     edited_reply?: string;
     source: string;
   }): Promise<DbReplyDraft> {
-    const { data, error } = await supabase
-      .from('reply_drafts')
-      .insert({
-        review_id: draft.review_id,
-        organization_id: draft.organization_id,
-        ai_reply: draft.ai_reply ?? null,
-        edited_reply: draft.edited_reply ?? null,
-        source: draft.source,
-        status: 'pending',
-      })
-      .select()
-      .single();
+    if (_pendingDraftCreations.has(draft.review_id)) {
+      throw new Error('Draft creation already in progress for this review');
+    }
+    _pendingDraftCreations.add(draft.review_id);
+    try {
+      const { data, error } = await supabase
+        .from('reply_drafts')
+        .insert({
+          review_id: draft.review_id,
+          organization_id: draft.organization_id,
+          ai_reply: draft.ai_reply ?? null,
+          edited_reply: draft.edited_reply ?? null,
+          source: draft.source,
+          status: 'pending',
+        })
+        .select()
+        .single();
 
-    if (error) throw error;
-    return data as DbReplyDraft;
+      if (error) throw error;
+      return data as DbReplyDraft;
+    } finally {
+      _pendingDraftCreations.delete(draft.review_id);
+    }
   },
 
   async approve(draftId: string, userId: string, finalReply: string): Promise<void> {

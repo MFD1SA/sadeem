@@ -214,7 +214,7 @@ export default function AdminBilling() {
                             inv.status === 'sent' ? 'bg-blue-500/10 text-blue-400' :
                             'bg-slate-500/10 text-slate-400'}`}>{si.ar}</span>
                       </td>
-                      <td><span className="text-sm text-slate-500">{inv.due_date ? new Date(inv.due_date).toLocaleDateString('ar-SA') : '—'}</span></td>
+                      <td><span className="text-sm text-slate-500">{inv.due_date ? new Date(inv.due_date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '—'}</span></td>
                       <td>
                         <PermissionGate permission={PERMISSIONS.FINANCE_MANAGE}>
                           <div className="relative">
@@ -375,7 +375,7 @@ function Modal({ title, children, onClose }: {
   title: string; children: React.ReactNode; onClose: () => void;
 }) {
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="bg-[#0d1322] border border-white/[0.08] rounded-2xl w-full max-w-md shadow-2xl" dir="rtl">
         <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">

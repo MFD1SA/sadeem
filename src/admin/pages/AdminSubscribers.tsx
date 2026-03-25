@@ -13,6 +13,7 @@ import {
   MessageSquare, Zap, FileText, MoreVertical,
   Pause, Play, ArrowUpCircle, X,
 } from 'lucide-react';
+import { AdminSelect } from '../components/AdminSelect';
 
 const PLAN_LABELS: Record<string, { ar: string; color: string }> = {
   starter: { ar: 'المبتدئ', color: 'slate' },
@@ -111,7 +112,8 @@ export default function AdminSubscribers() {
     if (!planTarget || !newPlan) return;
     setChangingPlan(true);
     try {
-      await adminSubscribersService.updateSubscription(planTarget.id, { plan: newPlan });
+      // Also set status to 'active' so subscriber doesn't see "expired" after plan change
+      await adminSubscribersService.updateSubscription(planTarget.id, { plan: newPlan, status: 'active' });
       showMsg('تم تغيير الخطة بنجاح', 'success');
       setPlanTarget(null);
       loadList();
@@ -160,7 +162,7 @@ export default function AdminSubscribers() {
               {sub?.ends_at && (
                 <div className="flex justify-between">
                   <span className="text-slate-400">ينتهي في</span>
-                  <span className="text-slate-300">{new Date(sub.ends_at).toLocaleDateString('ar-SA')}</span>
+                  <span className="text-slate-300">{new Date(sub.ends_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
                 </div>
               )}
             </div>
@@ -295,22 +297,22 @@ export default function AdminSubscribers() {
               onKeyDown={(e) => e.key === 'Enter' && loadList()}
               className="admin-form-input pr-9" />
           </div>
-          <select className="admin-form-input w-auto min-w-[140px]" value={filterPlan}
+          <AdminSelect wrapperClassName="w-auto min-w-[140px]" value={filterPlan}
             onChange={(e) => setFilterPlan(e.target.value)}>
             <option value="">كل الخطط</option>
             <option value="starter">المبتدئ</option>
             <option value="growth">النمو</option>
             <option value="pro">الاحترافي</option>
             <option value="enterprise">المؤسسات</option>
-          </select>
-          <select className="admin-form-input w-auto min-w-[140px]" value={filterStatus}
+          </AdminSelect>
+          <AdminSelect wrapperClassName="w-auto min-w-[140px]" value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}>
             <option value="">كل الحالات</option>
             <option value="active">نشط</option>
             <option value="trial">تجريبي</option>
             <option value="expired">منتهي</option>
             <option value="cancelled">ملغي</option>
-          </select>
+          </AdminSelect>
         </div>
       </div>
 
@@ -413,7 +415,7 @@ export default function AdminSubscribers() {
 
       {/* Plan Change Modal */}
       {planTarget && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4"
           onClick={(e) => { if (e.target === e.currentTarget) setPlanTarget(null); }}>
           <div className="bg-[#0d1322] border border-white/[0.08] rounded-2xl w-full max-w-sm shadow-2xl" dir="rtl">
             <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
@@ -422,12 +424,12 @@ export default function AdminSubscribers() {
             </div>
             <div className="p-5">
               <p className="text-sm text-slate-400 mb-4">تغيير خطة "{planTarget.name}"</p>
-              <select className="admin-form-input" value={newPlan} onChange={(e) => setNewPlan(e.target.value)}>
+              <AdminSelect value={newPlan} onChange={(e) => setNewPlan(e.target.value)}>
                 <option value="starter">المبتدئ</option>
                 <option value="growth">النمو</option>
                 <option value="pro">الاحترافي</option>
                 <option value="enterprise">المؤسسات</option>
-              </select>
+              </AdminSelect>
             </div>
             <div className="flex items-center justify-end gap-3 px-5 py-4 border-t border-white/[0.06]">
               <button onClick={() => setPlanTarget(null)} className="admin-btn-secondary text-sm">إلغاء</button>

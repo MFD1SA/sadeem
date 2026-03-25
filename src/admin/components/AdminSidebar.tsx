@@ -11,7 +11,7 @@ import { useEffect, useState } from 'react';
 import {
   LayoutGrid, UsersRound, ShieldCheck, Settings, ClipboardList,
   UserCircle, Lock, LogOut, X, Building2, CreditCard, Zap,
-  Activity, Headphones, Puzzle,
+  Activity, Headphones, Puzzle, Layers,
 } from 'lucide-react';
 
 interface AdminSidebarProps { isOpen: boolean; onClose: () => void; }
@@ -58,7 +58,7 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
               <img src={branding.logo_icon_url} alt="" className="w-8 h-8 rounded-lg object-contain" />
             ) : (
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
-                <span className="text-white text-xs font-bold">سد</span>
+                <Layers size={16} className="text-white" />
               </div>
             )}
             <div>
@@ -92,7 +92,11 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
         <div className="border-t border-white/[0.06] p-3 flex-shrink-0">
           <div className="flex items-center gap-3 px-3 py-2">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center text-white text-xs font-bold flex-shrink-0 overflow-hidden">
-              {user?.avatar_url ? <img src={user.avatar_url} alt="" className="w-full h-full object-cover" /> : (user?.full_name_ar?.charAt(0) || 'م')}
+              {user?.avatar_url
+                ? <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
+                : user?.full_name_ar?.charAt(0)
+                  ? <span>{user.full_name_ar.charAt(0)}</span>
+                  : <UserCircle size={16} className="text-slate-400" />}
             </div>
             <div className="flex-1 text-right min-w-0">
               <div className="text-sm text-white font-medium truncate">{user?.full_name_ar || 'مشرف'}</div>

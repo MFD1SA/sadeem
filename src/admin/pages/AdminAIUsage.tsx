@@ -173,7 +173,7 @@ export default function AdminAIUsage() {
                           {si.ar}
                         </span>
                       </td>
-                      <td><span className="text-xs text-slate-500">{new Date(log.created_at).toLocaleString('ar-SA')}</span></td>
+                      <td><span className="text-xs text-slate-500">{new Date(log.created_at).toLocaleString('en-US')}</span></td>
                     </tr>
                   );
                 })}

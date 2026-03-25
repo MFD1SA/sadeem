@@ -9,6 +9,7 @@ import { useAdminAuth } from '../contexts/AdminAuthContext';
 import { adminSettingsService, type BrandingSettings } from '../services/adminSettings.service';
 import { adminSupabase } from '../services/adminSupabase';
 import { Palette, Shield, Globe, Bell, Server, Save, Upload, Check } from 'lucide-react';
+import { AdminSelect } from '../components/AdminSelect';
 
 export default function AdminSettings() {
   const [activeSection, setActiveSection] = useState('branding');
@@ -183,10 +184,10 @@ function SettingSection({ settingKey, fields, showMsg }: { settingKey: string; f
           ) : (
             <div><label className="block text-xs font-medium text-slate-400 mb-1.5">{f.label}</label>
               {f.type === 'select' ? (
-                <select className="admin-form-input w-auto min-w-[200px]" value={String(values[f.key] ?? f.default)}
+                <AdminSelect wrapperClassName="w-auto min-w-[200px]" value={String(values[f.key] ?? f.default)}
                   onChange={(e) => setValues(p => ({ ...p, [f.key]: e.target.value }))}>
                   {f.options?.map(o => <option key={o.v} value={o.v}>{o.l}</option>)}
-                </select>
+                </AdminSelect>
               ) : (
                 <input type={f.type} className="admin-form-input w-auto min-w-[120px]" dir="ltr"
                   value={String(values[f.key] ?? f.default)}

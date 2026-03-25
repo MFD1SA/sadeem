@@ -1,9 +1,9 @@
 import { useState, useCallback } from 'react';
-import { Outlet } from 'react-router-dom';
 import { Sidebar } from '@/components/sidebar/Sidebar';
 import { Topbar } from '@/components/topbar/Topbar';
 import { PlanProvider } from '@/hooks/usePlan';
 import { TrialBanner } from '@/components/ui/TrialBanner';
+import { SubscriptionGate } from '@/router/guards';
 
 export function SubscriberLayout() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -29,7 +29,7 @@ export function SubscriberLayout() {
               </div>
 
               <div className="min-w-0">
-                <Outlet />
+                <SubscriptionGate />
               </div>
             </div>
           </main>

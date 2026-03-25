@@ -178,9 +178,9 @@ export default function AdminProfile() {
           <div className="admin-card-header"><h3>معلومات الحساب</h3></div>
           <div className="admin-card-body space-y-3 text-sm">
             <div className="flex justify-between"><span className="text-slate-400">تاريخ الإنشاء</span>
-              <span className="text-slate-300">{user?.created_at ? new Date(user.created_at).toLocaleDateString('ar-SA') : '—'}</span></div>
+              <span className="text-slate-300">{user?.created_at ? new Date(user.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '—'}</span></div>
             <div className="flex justify-between"><span className="text-slate-400">آخر تسجيل دخول</span>
-              <span className="text-slate-300">{user?.last_login_at ? new Date(user.last_login_at).toLocaleDateString('ar-SA') : '—'}</span></div>
+              <span className="text-slate-300">{user?.last_login_at ? new Date(user.last_login_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '—'}</span></div>
             <div className="flex justify-between"><span className="text-slate-400">المصادقة الثنائية</span>
               <span className={user?.two_factor_enabled ? 'text-emerald-400' : 'text-slate-500'}>{user?.two_factor_enabled ? 'مفعّلة' : 'غير مفعّلة'}</span></div>
           </div>
