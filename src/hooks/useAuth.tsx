@@ -174,6 +174,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     }, 400);
 
+    // PKCE race fallback: when INITIAL_SESSION fires with null but the URL has
+    // ?code= (OAuth callback in progress), the SIGNED_IN event may have already
+    // fired before our listener registered. Poll getSession() once after 1.5s to
+    // catch this case and hydrate from the newly-stored session.
+    const hasPkceCode = typeof window !== 'undefined' && window.location.search.includes('code=');
+    const pkceTimer = hasPkceCode ? setTimeout(() => {
+      if (!mounted) return;
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (mounted && session?.user && !hydrating.current) {
+          hydrateAuth(session);
+        }
+      });
+    }, 1500) : null;
+
     // Hard safety timeout: if auth still hasn't resolved after 6 seconds
     // (e.g. Supabase lock is stuck or network failure), force isLoading=false
     // so the user sees the login form instead of an infinite spinner.
@@ -188,6 +202,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       mounted = false;
       clearTimeout(fallback);
       clearTimeout(safetyTimer);
+      if (pkceTimer) clearTimeout(pkceTimer);
       listener?.subscription?.unsubscribe();
     };
   }, [hydrateAuth]);

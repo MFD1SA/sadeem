@@ -1,6 +1,7 @@
-import { useState, type ChangeEvent, type FormEvent } from 'react';
+import { useState, useEffect, type ChangeEvent, type FormEvent } from 'react';
 import { useLanguage } from '@/i18n';
 import { authService } from '@/services/auth';
+import { supabase } from '@/lib/supabase';
 
 // During PKCE OAuth exchange, the URL contains ?code= or ?error=.
 // Evaluated at module load — stable for the lifetime of the page.
@@ -15,6 +16,20 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const [fullName, setFullName] = useState('');
+
+  // PKCE fallback: if onAuthStateChange SIGNED_IN fires before the listener
+  // registers (race condition on fast connections), the redirect never happens.
+  // After 2s, manually call getSession() — if a session exists, force redirect.
+  useEffect(() => {
+    if (!isOAuthCallback) return;
+    const timer = setTimeout(async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) window.location.href = '/dashboard';
+      } catch { /* ignore — SIGNED_IN will arrive via onAuthStateChange */ }
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Show branded loading screen during PKCE exchange — no form flash
   if (isOAuthCallback) {
