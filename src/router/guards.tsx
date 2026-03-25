@@ -22,33 +22,41 @@ const ADMIN_CHECK_TIMEOUT_MS = 5000;
 
 /**
  * Hook: check if current auth.uid() is an admin.
- * Result is cached in sessionStorage by session user ID to avoid
- * a redundant RPC call on every navigation. Cache is invalidated when
- * the session changes. Hard 5-second timeout prevents permanent stuck loading.
+ *
+ * CRITICAL: waits for useAuth to fully resolve before starting — this avoids
+ * Supabase lock contention. Previously this hook called getSession() on mount,
+ * which competed for the "lock:sadeem-auth" BroadcastChannel lock that
+ * onAuthStateChange (inside AuthProvider) also holds during INITIAL_SESSION.
+ * The result was a 5-second delay before the login page appeared.
+ *
+ * Now we only start the admin check AFTER useAuth signals it's done
+ * (authLoading = false), at which point the lock is already free.
  */
 function useAdminCheck() {
+  const { isAuthenticated, isLoading: authLoading, user } = useAuth();
   const [isAdmin, setIsAdmin] = useState(false);
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
+    // Don't start until auth is fully resolved — avoids lock contention
+    if (authLoading) return;
+
     let cancelled = false;
 
     async function check() {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-
-        if (!session) {
-          sessionStorage.removeItem(ADMIN_CACHE_KEY);
+        // Not authenticated → no admin check needed, resolve immediately
+        if (!isAuthenticated || !user) {
           if (!cancelled) { setIsAdmin(false); setChecking(false); }
           return;
         }
 
-        // Serve from cache if it belongs to the current session user
+        // Serve from cache if it belongs to the current user
         try {
           const raw = sessionStorage.getItem(ADMIN_CACHE_KEY);
           if (raw) {
             const cached = JSON.parse(raw) as { uid: string; value: boolean };
-            if (cached.uid === session.user.id) {
+            if (cached.uid === user.id) {
               if (!cancelled) { setIsAdmin(cached.value); setChecking(false); }
               return;
             }
@@ -67,7 +75,7 @@ function useAdminCheck() {
 
         sessionStorage.setItem(
           ADMIN_CACHE_KEY,
-          JSON.stringify({ uid: session.user.id, value: result })
+          JSON.stringify({ uid: user.id, value: result })
         );
         if (!cancelled) { setIsAdmin(result); setChecking(false); }
       } catch {
@@ -77,7 +85,7 @@ function useAdminCheck() {
 
     check();
     return () => { cancelled = true; };
-  }, []);
+  }, [authLoading, isAuthenticated, user]);
 
   return { isAdmin, checking };
 }
@@ -179,6 +187,9 @@ export function RedirectIfAuthenticated() {
   const { isAuthenticated, hasOrganization, isLoading } = useAuth();
   const { isAdmin, checking } = useAdminCheck();
 
+  // Show spinner only while auth is loading, OR while admin-check runs
+  // (admin-check only runs for authenticated users, so unauthenticated
+  // visitors reach the login form as soon as useAuth resolves — no extra wait)
   if (isLoading || checking) {
     return (
       <div className="min-h-screen flex items-center justify-center">
