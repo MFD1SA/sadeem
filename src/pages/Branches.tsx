@@ -53,7 +53,7 @@ export default function Branches() {
 
   useEffect(() => {
     if (authLoading) return;
-    if (!organization?.id) return;
+    if (!organization?.id) { setLoading(false); return; }
     void loadBranches();
   }, [authLoading, organization?.id, loadBranches]);
 

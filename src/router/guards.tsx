@@ -18,7 +18,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 
 const ADMIN_CACHE_KEY = 'sadeem_admin_check';
-const ADMIN_CHECK_TIMEOUT_MS = 5000;
+const ADMIN_CHECK_TIMEOUT_MS = 2000;
 
 /**
  * Hook: check if current auth.uid() is an admin.
@@ -163,9 +163,12 @@ export function SubscriptionGate() {
   const { trial, isLoading } = usePlan();
   const location = useLocation();
 
-  // While subscription data is loading, render nothing in the content area.
-  // The surrounding layout (sidebar, topbar) remains visible.
-  if (isLoading) return null;
+  // While subscription data is loading, show a spinner so users see feedback.
+  if (isLoading) return (
+    <div className="flex items-center justify-center min-h-[40vh]">
+      <LoadingState />
+    </div>
+  );
 
   // Billing page is always accessible — prevent redirect loop.
   if (location.pathname === '/dashboard/billing') return <Outlet />;

@@ -44,7 +44,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (authLoading) return;
-    if (!organization?.id) return;
+    if (!organization?.id) { setLoading(false); return; }
     void loadData();
   }, [authLoading, organization?.id, loadData]);
 

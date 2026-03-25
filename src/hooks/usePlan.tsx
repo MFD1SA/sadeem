@@ -82,6 +82,11 @@ export function PlanProvider({ children }: { children: ReactNode }) {
     // Wait for auth to finish before deciding — prevents premature isLoading=false
     if (authLoading) return;
     if (!organization) { setIsLoading(false); return; }
+
+    // Safety timeout: never stay in loading state for more than 8 seconds.
+    // Guards against hanging Supabase queries (e.g. cold start, network issues).
+    const safetyTimer = setTimeout(() => { setIsLoading(false); }, 8000);
+
     try {
       const [sub, branches] = await Promise.all([
         subscriptionService.getByOrganization(organization.id),
@@ -93,6 +98,7 @@ export function PlanProvider({ children }: { children: ReactNode }) {
     } catch (err) {
       console.warn('[Sadeem] Plan load failed:', err);
     } finally {
+      clearTimeout(safetyTimer);
       setIsLoading(false);
     }
   }, [organization, authLoading, computeTrial]);

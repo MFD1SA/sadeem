@@ -36,7 +36,7 @@ export default function ResponsesInbox() {
 
   useEffect(() => {
     if (authLoading) return;
-    if (!organization?.id) return;
+    if (!organization?.id) { setLoading(false); return; }
     void loadDrafts();
   }, [authLoading, organization?.id, loadDrafts]);
 
