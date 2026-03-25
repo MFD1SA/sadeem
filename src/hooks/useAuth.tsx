@@ -174,9 +174,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     }, 400);
 
+    // Hard safety timeout: if auth still hasn't resolved after 6 seconds
+    // (e.g. Supabase lock is stuck or network failure), force isLoading=false
+    // so the user sees the login form instead of an infinite spinner.
+    const safetyTimer = setTimeout(() => {
+      if (mounted && !initialSessionHandled.current) {
+        initialSessionHandled.current = true;
+        setState((prev) => ({ ...prev, isLoading: false }));
+      }
+    }, 6000);
+
     return () => {
       mounted = false;
       clearTimeout(fallback);
+      clearTimeout(safetyTimer);
       listener?.subscription?.unsubscribe();
     };
   }, [hydrateAuth]);

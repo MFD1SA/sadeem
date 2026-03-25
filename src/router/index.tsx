@@ -11,21 +11,49 @@ import Onboarding from '@/pages/Onboarding';
 import Dashboard from '@/pages/Dashboard';
 
 // ── Lazily loaded subscriber pages ──────────────────────────────────────────
-const ReviewsCenter   = lazy(() => import('@/pages/ReviewsCenter'));
-const ResponsesInbox  = lazy(() => import('@/pages/ResponsesInbox'));
-const Analytics       = lazy(() => import('@/pages/Analytics'));
-const Insights        = lazy(() => import('@/pages/Insights'));
-const Branches        = lazy(() => import('@/pages/Branches'));
-const Templates       = lazy(() => import('@/pages/Templates'));
-const Team            = lazy(() => import('@/pages/Team'));
-const Integrations    = lazy(() => import('@/pages/Integrations'));
-const QrReviews       = lazy(() => import('@/pages/QrReviews'));
-const Tasks           = lazy(() => import('@/pages/Tasks'));
-const Notifications   = lazy(() => import('@/pages/Notifications'));
-const Billing         = lazy(() => import('@/pages/Billing'));
-const Support         = lazy(() => import('@/pages/Support'));
-const Settings        = lazy(() => import('@/pages/Settings'));
+const reviewsCenterImport  = () => import('@/pages/ReviewsCenter');
+const responsesInboxImport = () => import('@/pages/ResponsesInbox');
+const analyticsImport      = () => import('@/pages/Analytics');
+const insightsImport       = () => import('@/pages/Insights');
+const branchesImport       = () => import('@/pages/Branches');
+const templatesImport      = () => import('@/pages/Templates');
+const teamImport           = () => import('@/pages/Team');
+const integrationsImport   = () => import('@/pages/Integrations');
+const qrReviewsImport      = () => import('@/pages/QrReviews');
+const tasksImport          = () => import('@/pages/Tasks');
+const notificationsImport  = () => import('@/pages/Notifications');
+const billingImport        = () => import('@/pages/Billing');
+const supportImport        = () => import('@/pages/Support');
+const settingsImport       = () => import('@/pages/Settings');
+
+const ReviewsCenter   = lazy(reviewsCenterImport);
+const ResponsesInbox  = lazy(responsesInboxImport);
+const Analytics       = lazy(analyticsImport);
+const Insights        = lazy(insightsImport);
+const Branches        = lazy(branchesImport);
+const Templates       = lazy(templatesImport);
+const Team            = lazy(teamImport);
+const Integrations    = lazy(integrationsImport);
+const QrReviews       = lazy(qrReviewsImport);
+const Tasks           = lazy(tasksImport);
+const Notifications   = lazy(notificationsImport);
+const Billing         = lazy(billingImport);
+const Support         = lazy(supportImport);
+const Settings        = lazy(settingsImport);
 const ReviewLanding   = lazy(() => import('@/pages/ReviewLanding'));
+
+// Prefetch all subscriber page chunks in the background after initial load.
+// This eliminates the per-page JS download delay when navigating the sidebar.
+export function prefetchSubscriberPages() {
+  const imports = [
+    reviewsCenterImport, responsesInboxImport, analyticsImport, insightsImport,
+    branchesImport, templatesImport, teamImport, integrationsImport,
+    qrReviewsImport, tasksImport, notificationsImport, billingImport,
+    supportImport, settingsImport,
+  ];
+  // Stagger prefetches to avoid congesting the network on first load
+  imports.forEach((fn, i) => setTimeout(fn, 500 + i * 150));
+}
 
 // ── Lazily loaded admin pages ────────────────────────────────────────────────
 import { AdminLayout } from '@/admin/layouts/AdminLayout';
