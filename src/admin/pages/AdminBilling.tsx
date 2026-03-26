@@ -223,7 +223,7 @@ export default function AdminBilling() {
                               <MoreVertical size={16} />
                             </button>
                             {activeMenu === inv.id && (
-                              <div className="absolute left-0 top-full mt-1 w-48 bg-[#111827] border border-white/[0.08] rounded-xl shadow-2xl py-1.5 z-50">
+                              <div className="absolute left-0 bottom-full mb-1 w-48 bg-[#111827] border border-white/[0.08] rounded-xl shadow-2xl py-1.5 z-50">
                                 {inv.status !== 'paid' && inv.status !== 'cancelled' && (
                                   <button onClick={() => { setActiveMenu(null); setPayTarget(inv); setPayForm(p => ({ ...p, amount: String(inv.total) })); }}
                                     className="w-full flex items-center gap-2 px-3 py-2 text-xs text-emerald-400 hover:bg-emerald-500/10 transition-colors">

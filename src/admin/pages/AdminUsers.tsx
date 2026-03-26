@@ -285,7 +285,7 @@ export default function AdminUsers() {
                               <MoreVertical size={16} />
                             </button>
                             {activeMenu === u.id && (
-                              <div className="absolute left-0 top-full mt-1 w-44 bg-[#111827] border border-white/[0.08] rounded-xl shadow-2xl py-1.5 z-50">
+                              <div className="absolute left-0 bottom-full mb-1 w-44 bg-[#111827] border border-white/[0.08] rounded-xl shadow-2xl py-1.5 z-50">
                                 <PermissionGate permission={PERMISSIONS.ROLES_ASSIGN}>
                                   <button
                                     onClick={() => openRoleModal(u)}

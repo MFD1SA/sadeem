@@ -415,7 +415,7 @@ export default function AdminSubscribers() {
                               <MoreVertical size={16} />
                             </button>
                             {activeMenu === item.id && (
-                              <div className="absolute left-0 top-full mt-1 w-48 bg-[#111827] border border-white/[0.08] rounded-xl shadow-2xl py-1.5 z-50">
+                              <div className="absolute left-0 bottom-full mb-1 w-48 bg-[#111827] border border-white/[0.08] rounded-xl shadow-2xl py-1.5 z-50">
                                 <button onClick={() => { setActiveMenu(null); setPlanTarget(item); setNewPlan(item.subscription?.plan || 'orbit'); }}
                                   className="w-full flex items-center gap-2 px-3 py-2 text-xs text-cyan-400 hover:bg-cyan-500/10 transition-colors">
                                   <ArrowUpCircle size={14} /> تغيير الخطة
