@@ -11,9 +11,10 @@ import { RequireAuth, RequireOrganization, RedirectIfAuthenticated } from './gua
 import { LoadingState } from '@/components/ui/LoadingState';
 
 // ── Eagerly loaded — critical path + all subscriber pages ───────────────────
-import Login        from '@/pages/Auth/Login';
-import AuthCallback from '@/pages/Auth/Callback';
-import Onboarding   from '@/pages/Onboarding';
+import Login         from '@/pages/Auth/Login';
+import AuthCallback  from '@/pages/Auth/Callback';
+import ResetPassword from '@/pages/Auth/ResetPassword';
+import Onboarding    from '@/pages/Onboarding';
 import Dashboard    from '@/pages/Dashboard';
 
 // Subscriber pages — eager so sidebar navigation is always instant
@@ -75,7 +76,8 @@ export function AppRouter() {
         <Route path="/login" element={<Login />} />
       </Route>
 
-      <Route path="/auth/callback" element={<AuthCallback />} />
+      <Route path="/auth/callback"  element={<AuthCallback />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
 
       <Route element={<RequireAuth />}>
         <Route path="/onboarding" element={<Onboarding />} />

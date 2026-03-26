@@ -1,5 +1,5 @@
 // ============================================================================
-// SADEEM — Professional Login / Sign-Up Page
+// SADEEM — Professional Login / Sign-Up / Forgot-Password Page
 // Split-panel design: branding panel (left/top) + form panel (right/bottom).
 // Logo is configurable from Admin → Settings → Branding.
 // ============================================================================
@@ -8,9 +8,9 @@ import { useLanguage } from '@/i18n';
 import { authService } from '@/services/auth';
 import { supabase } from '@/lib/supabase';
 import { getBranding, type BrandingConfig } from '@/services/branding';
-import { CheckCircle2, Star, BarChart3, MessageSquare, GitBranch } from 'lucide-react';
+import { CheckCircle2, Star, BarChart3, MessageSquare, GitBranch, ArrowRight } from 'lucide-react';
 
-// Password strength: 0=empty 1=weak 2=medium 3=strong
+// ── Password strength helper ────────────────────────────────────────────────
 function calcPasswordStrength(pw: string): number {
   if (!pw) return 0;
   let s = 0;
@@ -24,67 +24,100 @@ function calcPasswordStrength(pw: string): number {
   return 3;
 }
 
-// Detect auth callback at module load — stable for page lifetime.
-// Covers: Google OAuth (?code=) and email confirmation (?token_hash=&type=email).
+// ── Friendly error translation ──────────────────────────────────────────────
+function translateError(msg: string, isAr: boolean): string {
+  const m = msg.toLowerCase();
+  if (m.includes('rate limit') || m.includes('too many'))
+    return isAr
+      ? 'تجاوزت الحد المسموح. يرجى الانتظار دقيقة ثم المحاولة مجدداً.'
+      : 'Too many requests. Please wait a moment and try again.';
+  if (m.includes('email not confirmed'))
+    return isAr
+      ? 'يرجى تأكيد بريدك الإلكتروني أولاً. تحقق من صندوق الوارد.'
+      : 'Please confirm your email first. Check your inbox.';
+  if (m.includes('invalid login credentials') || m.includes('invalid credentials') || m.includes('wrong password'))
+    return isAr
+      ? 'البريد الإلكتروني أو كلمة المرور غير صحيحة.'
+      : 'Incorrect email or password.';
+  if (m.includes('user already registered') || m.includes('already registered'))
+    return isAr
+      ? 'هذا البريد الإلكتروني مسجّل بالفعل. سجّل دخولك.'
+      : 'This email is already registered. Sign in instead.';
+  if (m.includes('password') && (m.includes('short') || m.includes('weak')))
+    return isAr
+      ? 'كلمة المرور قصيرة جداً (6 أحرف على الأقل).'
+      : 'Password is too short (minimum 6 characters).';
+  if (m.includes('user not found') || m.includes('no user'))
+    return isAr
+      ? 'لا يوجد حساب بهذا البريد الإلكتروني.'
+      : 'No account found with this email.';
+  if (m.includes('network') || m.includes('fetch'))
+    return isAr
+      ? 'خطأ في الاتصال. تحقق من الإنترنت وأعد المحاولة.'
+      : 'Connection error. Check your internet and try again.';
+  return msg;
+}
+
+// ── Module-level URL detection ──────────────────────────────────────────────
 const _sp = new URLSearchParams(window.location.search);
 const isOAuthCallback = _sp.has('code') || _sp.has('error') || _sp.has('token_hash');
 
-// Feature bullets shown on the branding panel
+// Feature bullets on branding panel
 const FEATURES = [
-  { icon: Star,           ar: 'ربط Google Business Profile', en: 'Google Business Profile integration' },
-  { icon: MessageSquare,  ar: 'ردود تلقائية بالذكاء الاصطناعي', en: 'AI-powered auto-replies'  },
-  { icon: BarChart3,      ar: 'تحليلات متقدمة وتقارير ذكية', en: 'Advanced analytics & smart reports' },
-  { icon: GitBranch,      ar: 'إدارة جميع فروعك من مكان واحد', en: 'Manage all branches in one place' },
+  { icon: Star,          ar: 'ربط Google Business Profile', en: 'Google Business Profile integration' },
+  { icon: MessageSquare, ar: 'ردود تلقائية بالذكاء الاصطناعي', en: 'AI-powered auto-replies' },
+  { icon: BarChart3,     ar: 'تحليلات متقدمة وتقارير ذكية', en: 'Advanced analytics & smart reports' },
+  { icon: GitBranch,     ar: 'إدارة جميع فروعك من مكان واحد', en: 'Manage all branches in one place' },
 ];
 
 export default function Login() {
   const { lang } = useLanguage();
   const isAr = lang === 'ar';
 
-  const [email, setEmail]             = useState('');
-  const [password, setPassword]       = useState('');
-  const [fullName, setFullName]       = useState('');
-  const [error, setError]             = useState('');
-  const [success, setSuccess]         = useState('');
-  const [loading, setLoading]         = useState(false);
-  const [isSignUp, setIsSignUp]       = useState(false);
-  const [branding, setBranding]       = useState<BrandingConfig | null>(null);
-  const [pwStrength, setPwStrength]   = useState(0);
+  const [email, setEmail]               = useState('');
+  const [password, setPassword]         = useState('');
+  const [fullName, setFullName]         = useState('');
+  const [error, setError]               = useState('');
+  const [success, setSuccess]           = useState('');
+  const [loading, setLoading]           = useState(false);
+  const [isSignUp, setIsSignUp]         = useState(false);
+  const [isForgotPw, setIsForgotPw]     = useState(false);
+  const [branding, setBranding]         = useState<BrandingConfig | null>(null);
+  const [pwStrength, setPwStrength]     = useState(0);
   const [emailTouched, setEmailTouched] = useState(false);
   const emailDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Load admin-configured branding (logo, name, tagline)
-  useEffect(() => {
-    getBranding().then(setBranding).catch(() => {});
-  }, []);
+  // Load admin branding
+  useEffect(() => { getBranding().then(setBranding).catch(() => {}); }, []);
 
-  // Email confirmation: if URL has token_hash + type=email, verify the OTP immediately.
-  // This handles the case where the confirmation link redirects to /login instead of /auth/callback.
+  // Show confirmation_failed error from URL param
+  useEffect(() => {
+    if (_sp.get('error') === 'confirmation_failed') {
+      setError(isAr
+        ? 'انتهت صلاحية رابط التأكيد أو تم استخدامه بالفعل. أعد التسجيل أو تواصل مع الدعم.'
+        : 'The confirmation link expired or was already used. Please sign up again.');
+    }
+  }, [isAr]);
+
+  // Email confirmation via token_hash (fallback if redirected to /login instead of /auth/callback)
   useEffect(() => {
     const tokenHash = _sp.get('token_hash');
     const type = _sp.get('type');
     if (!tokenHash || type !== 'email') return;
     supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'email' })
-      .then(({ error }) => {
-        if (!error) {
-          window.location.href = '/dashboard';
-        } else {
-          window.location.href = '/login?error=confirmation_failed';
-        }
+      .then(({ error: e }) => {
+        window.location.href = e ? '/login?error=confirmation_failed' : '/dashboard';
       });
   }, []);
 
-  // PKCE fallback: if SIGNED_IN event was missed (race on fast connections),
-  // manually call getSession() after 2 s and redirect if a session is found.
+  // PKCE safety fallback
   useEffect(() => {
     if (!isOAuthCallback) return;
-    const timer = setTimeout(async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) window.location.href = '/dashboard';
-      } catch { /* SIGNED_IN will arrive via onAuthStateChange */ }
+    const t = setTimeout(async () => {
+      const { data: { session } } = await supabase.auth.getSession().catch(() => ({ data: { session: null } }));
+      if (session?.user) window.location.href = '/dashboard';
     }, 2000);
-    return () => clearTimeout(timer);
+    return () => clearTimeout(t);
   }, []);
 
   // ── OAuth callback loading screen ─────────────────────────────────────────
@@ -98,58 +131,23 @@ export default function Login() {
               ? <img src={logoUrl} alt="logo" className="w-10 h-10 object-contain" />
               : <span className="text-white text-3xl font-bold">س</span>}
           </div>
-          <div className="text-white text-base font-semibold mb-1">
-            {branding?.platform_name_ar || 'سديم'}
-          </div>
-          <div className="text-white/70 text-sm mb-6">
-            {isAr ? 'جاري تسجيل الدخول…' : 'Signing you in…'}
-          </div>
+          <div className="text-white text-base font-semibold mb-1">{branding?.platform_name_ar || 'سديم'}</div>
+          <div className="text-white/70 text-sm mb-6">{isAr ? 'جاري تسجيل الدخول…' : 'Signing you in…'}</div>
           <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto" />
         </div>
       </div>
     );
   }
 
-  // ── Helpers ───────────────────────────────────────────────────────────────
-  const logoIconUrl = branding?.logo_icon_url || '';
-  const logoFullUrl = branding?.logo_full_url || '';
+  // ── Shared values ──────────────────────────────────────────────────────────
+  const logoIconUrl  = branding?.logo_icon_url || '';
+  const logoFullUrl  = branding?.logo_full_url || '';
   const platformNameAr = branding?.platform_name_ar || 'سديم';
   const platformNameEn = branding?.platform_name_en || 'SADEEM';
-  const tagline = branding?.tagline || (isAr ? 'إدارة تقييمات Google بالذكاء الاصطناعي' : 'AI-Powered Google Reviews Management');
+  const tagline = branding?.tagline || (isAr
+    ? 'إدارة تقييمات Google بالذكاء الاصطناعي'
+    : 'AI-Powered Google Reviews Management');
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setSuccess('');
-    setLoading(true);
-    try {
-      if (isSignUp) {
-        await authService.signUp(email, password, fullName);
-        // Email confirmation may be required — show success message instead of redirect
-        setSuccess(isAr
-          ? 'تم إنشاء الحساب! يرجى التحقق من بريدك الإلكتروني لتفعيل الحساب.'
-          : 'Account created! Please check your email to confirm your account.');
-        setLoading(false);
-      } else {
-        await authService.login(email, password);
-        window.location.href = '/dashboard';
-      }
-    } catch (err: unknown) {
-      setError((err as Error).message || (isAr ? 'حدث خطأ' : 'An error occurred'));
-      setLoading(false);
-    }
-  };
-
-  const handleGoogleLogin = async () => {
-    setError('');
-    try {
-      await authService.loginWithGoogle();
-    } catch (err: unknown) {
-      setError((err as Error).message || (isAr ? 'حدث خطأ' : 'An error occurred'));
-    }
-  };
-
-  // Simple email format validator
   const isValidEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
 
   const handleEmailChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -164,97 +162,218 @@ export default function Login() {
     if (isSignUp) setPwStrength(calcPasswordStrength(e.target.value));
   };
 
-  const pwLabels = isAr
-    ? ['', 'ضعيفة', 'متوسطة', 'قوية']
-    : ['', 'Weak', 'Medium', 'Strong'];
-  const pwColors = ['', 'bg-red-500', 'bg-amber-500', 'bg-emerald-500'];
+  // ── Handlers ───────────────────────────────────────────────────────────────
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setError(''); setSuccess(''); setLoading(true);
+    try {
+      if (isSignUp) {
+        await authService.signUp(email, password, fullName);
+        setSuccess(isAr
+          ? 'تم إنشاء الحساب! يرجى فتح بريدك الإلكتروني والضغط على رابط التأكيد.'
+          : 'Account created! Please check your email and click the confirmation link.');
+      } else {
+        await authService.login(email, password);
+        window.location.href = '/dashboard';
+      }
+    } catch (err: unknown) {
+      setError(translateError((err as Error).message || '', isAr));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setError('');
+    try { await authService.loginWithGoogle(); }
+    catch (err: unknown) { setError(translateError((err as Error).message || '', isAr)); }
+  };
+
+  const handleForgotPassword = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!email || !isValidEmail(email)) {
+      setError(isAr ? 'يرجى إدخال بريد إلكتروني صحيح.' : 'Please enter a valid email.');
+      return;
+    }
+    setError(''); setLoading(true);
+    try {
+      await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth/callback?type=recovery`,
+      });
+      setSuccess(isAr
+        ? `تم إرسال رابط إعادة تعيين كلمة المرور إلى ${email}. تحقق من صندوق الوارد.`
+        : `Password reset link sent to ${email}. Check your inbox.`);
+    } catch (err: unknown) {
+      setError(translateError((err as Error).message || '', isAr));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resetToLogin = () => {
+    setIsForgotPw(false); setIsSignUp(false);
+    setError(''); setSuccess(''); setEmail(''); setPassword('');
+    setPwStrength(0); setEmailTouched(false);
+  };
+
+  const pwLabels    = isAr ? ['', 'ضعيفة', 'متوسطة', 'قوية'] : ['', 'Weak', 'Medium', 'Strong'];
+  const pwColors    = ['', 'bg-red-500', 'bg-amber-500', 'bg-emerald-500'];
   const pwTextColors = ['', 'text-red-600', 'text-amber-600', 'text-emerald-600'];
 
-  // ── Render ────────────────────────────────────────────────────────────────
-  return (
-    <div className="min-h-screen flex" dir={isAr ? 'rtl' : 'ltr'}>
-
-      {/* ── Left/Top: Branding Panel ─────────────────────────── */}
-      <div className="hidden lg:flex lg:w-[45%] flex-col justify-between bg-gradient-to-br from-brand-600 via-brand-700 to-brand-900 p-10 relative overflow-hidden">
-        {/* Decorative circles */}
-        <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-white/5 pointer-events-none" />
-        <div className="absolute -bottom-32 -left-16 w-80 h-80 rounded-full bg-white/5 pointer-events-none" />
-
-        {/* Logo + Name */}
-        <div className="relative z-10 flex items-center gap-3">
-          <div className="w-11 h-11 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center flex-shrink-0">
-            {logoIconUrl
-              ? <img src={logoIconUrl} alt="logo" className="w-7 h-7 object-contain" />
-              : <span className="text-white text-xl font-bold">س</span>}
-          </div>
-          <div>
-            <div className="text-white font-bold text-lg leading-tight">{platformNameAr}</div>
-            <div className="text-white/50 text-[11px] tracking-widest uppercase">{platformNameEn}</div>
-          </div>
+  // ── Shared header for branding panel ──────────────────────────────────────
+  const BrandingPanel = (
+    <div className="hidden lg:flex lg:w-[45%] flex-col justify-between bg-gradient-to-br from-brand-600 via-brand-700 to-brand-900 p-10 relative overflow-hidden">
+      <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-white/5 pointer-events-none" />
+      <div className="absolute -bottom-32 -left-16 w-80 h-80 rounded-full bg-white/5 pointer-events-none" />
+      <div className="relative z-10 flex items-center gap-3">
+        <div className="w-11 h-11 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center flex-shrink-0">
+          {logoIconUrl
+            ? <img src={logoIconUrl} alt="logo" className="w-7 h-7 object-contain" />
+            : <span className="text-white text-xl font-bold">س</span>}
         </div>
-
-        {/* Main headline */}
-        <div className="relative z-10">
-          {logoFullUrl && (
-            <img src={logoFullUrl} alt={platformNameAr} className="h-16 mb-8 object-contain" />
-          )}
-          <h1 className="text-3xl font-bold text-white leading-snug mb-3">
-            {isAr ? 'منصة سديم' : 'Sadeem Platform'}
-          </h1>
-          <p className="text-white/70 text-base mb-8 leading-relaxed">{tagline}</p>
-
-          <div className="space-y-3">
-            {FEATURES.map(({ icon: Icon, ar, en }) => (
-              <div key={ar} className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-white/15 flex items-center justify-center flex-shrink-0">
-                  <Icon size={15} className="text-white" />
-                </div>
-                <span className="text-white/85 text-sm">{isAr ? ar : en}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="relative z-10 text-white/40 text-xs">
-          {isAr ? '© 2026 سديم — جميع الحقوق محفوظة' : '© 2026 Sadeem — All rights reserved'}
+        <div>
+          <div className="text-white font-bold text-lg leading-tight">{platformNameAr}</div>
+          <div className="text-white/50 text-[11px] tracking-widest uppercase">{platformNameEn}</div>
         </div>
       </div>
+      <div className="relative z-10">
+        {logoFullUrl && <img src={logoFullUrl} alt={platformNameAr} className="h-16 mb-8 object-contain" />}
+        <h1 className="text-3xl font-bold text-white leading-snug mb-3">{isAr ? 'منصة سديم' : 'Sadeem Platform'}</h1>
+        <p className="text-white/70 text-base mb-8 leading-relaxed">{tagline}</p>
+        <div className="space-y-3">
+          {FEATURES.map(({ icon: Icon, ar, en }) => (
+            <div key={ar} className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-white/15 flex items-center justify-center flex-shrink-0">
+                <Icon size={15} className="text-white" />
+              </div>
+              <span className="text-white/85 text-sm">{isAr ? ar : en}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="relative z-10 text-white/40 text-xs">
+        {isAr ? '© 2026 سديم — جميع الحقوق محفوظة' : '© 2026 Sadeem — All rights reserved'}
+      </div>
+    </div>
+  );
 
-      {/* ── Right/Bottom: Form Panel ──────────────────────────── */}
+  // ── Mobile logo ────────────────────────────────────────────────────────────
+  const MobileLogo = (
+    <div className="flex flex-col items-center mb-8 lg:hidden">
+      <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center mb-3 shadow-lg">
+        {logoIconUrl
+          ? <img src={logoIconUrl} alt="logo" className="w-9 h-9 object-contain" />
+          : <span className="text-white text-2xl font-bold">س</span>}
+      </div>
+      <h2 className="text-xl font-bold text-content-primary">{platformNameAr}</h2>
+      <p className="text-xs text-content-tertiary mt-1 text-center">{tagline}</p>
+    </div>
+  );
+
+  // ── FORGOT PASSWORD form ───────────────────────────────────────────────────
+  if (isForgotPw) {
+    return (
+      <div className="min-h-screen flex" dir={isAr ? 'rtl' : 'ltr'}>
+        {BrandingPanel}
+        <div className="flex-1 flex flex-col items-center justify-center bg-surface-secondary p-6 sm:p-10">
+          <div className="w-full max-w-sm">
+            {MobileLogo}
+
+            {/* Back link */}
+            <button
+              onClick={resetToLogin}
+              className="flex items-center gap-1.5 text-xs text-brand-600 hover:text-brand-700 mb-6 transition-colors"
+            >
+              <ArrowRight size={13} className={isAr ? '' : 'rotate-180'} />
+              {isAr ? 'العودة لتسجيل الدخول' : 'Back to sign in'}
+            </button>
+
+            <div className="mb-6">
+              <h2 className="text-xl font-bold text-content-primary">
+                {isAr ? 'استعادة كلمة المرور' : 'Reset your password'}
+              </h2>
+              <p className="text-sm text-content-tertiary mt-1">
+                {isAr
+                  ? 'أدخل بريدك الإلكتروني وسنرسل لك رابط إعادة التعيين'
+                  : 'Enter your email and we\'ll send you a reset link'}
+              </p>
+            </div>
+
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl p-3 mb-4">{error}</div>
+            )}
+            {success && (
+              <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs rounded-xl p-3 mb-4 flex items-start gap-2">
+                <CheckCircle2 size={14} className="mt-0.5 flex-shrink-0" />
+                {success}
+              </div>
+            )}
+
+            {!success && (
+              <form onSubmit={handleForgotPassword} className="space-y-3">
+                <div>
+                  <label className="block text-xs font-medium text-content-secondary mb-1.5">
+                    {isAr ? 'البريد الإلكتروني' : 'Email'}
+                  </label>
+                  <input
+                    className="form-input"
+                    type="email"
+                    value={email}
+                    autoComplete="email"
+                    onChange={(e) => { setEmail(e.target.value); setError(''); }}
+                    placeholder="you@example.com"
+                    dir="ltr"
+                    required
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="btn btn-primary w-full justify-center py-2.5"
+                >
+                  {loading
+                    ? (isAr ? 'جاري الإرسال…' : 'Sending…')
+                    : (isAr ? 'إرسال رابط الاستعادة' : 'Send reset link')}
+                </button>
+              </form>
+            )}
+
+            {success && (
+              <button
+                onClick={resetToLogin}
+                className="btn btn-primary w-full justify-center py-2.5 mt-2"
+              >
+                {isAr ? 'العودة لتسجيل الدخول' : 'Back to sign in'}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── LOGIN / SIGN-UP form ───────────────────────────────────────────────────
+  return (
+    <div className="min-h-screen flex" dir={isAr ? 'rtl' : 'ltr'}>
+      {BrandingPanel}
+
       <div className="flex-1 flex flex-col items-center justify-center bg-surface-secondary p-6 sm:p-10">
         <div className="w-full max-w-sm">
-
-          {/* Mobile logo (hidden on desktop) */}
-          <div className="flex flex-col items-center mb-8 lg:hidden">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center mb-3 shadow-lg">
-              {logoIconUrl
-                ? <img src={logoIconUrl} alt="logo" className="w-9 h-9 object-contain" />
-                : <span className="text-white text-2xl font-bold">س</span>}
-            </div>
-            <h2 className="text-xl font-bold text-content-primary">{platformNameAr}</h2>
-            <p className="text-xs text-content-tertiary mt-1 text-center">{tagline}</p>
-          </div>
+          {MobileLogo}
 
           {/* Heading */}
           <div className="mb-6">
             <h2 className="text-xl font-bold text-content-primary">
-              {isSignUp
-                ? (isAr ? 'إنشاء حساب جديد' : 'Create your account')
-                : (isAr ? 'أهلاً بعودتك' : 'Welcome back')}
+              {isSignUp ? (isAr ? 'إنشاء حساب جديد' : 'Create your account') : (isAr ? 'أهلاً بعودتك' : 'Welcome back')}
             </h2>
             <p className="text-sm text-content-tertiary mt-1">
-              {isSignUp
-                ? (isAr ? 'أنشئ حسابك لتبدأ الرحلة' : 'Sign up to get started')
-                : (isAr ? 'سجّل دخولك للمتابعة' : 'Sign in to continue')}
+              {isSignUp ? (isAr ? 'أنشئ حسابك لتبدأ الرحلة' : 'Sign up to get started') : (isAr ? 'سجّل دخولك للمتابعة' : 'Sign in to continue')}
             </p>
           </div>
 
-          {/* Error / Success */}
+          {/* Alerts */}
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl p-3 mb-4">
-              {error}
-            </div>
+            <div className="bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl p-3 mb-4">{error}</div>
           )}
           {success && (
             <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs rounded-xl p-3 mb-4 flex items-start gap-2">
@@ -263,7 +382,7 @@ export default function Login() {
             </div>
           )}
 
-          {/* Google Login */}
+          {/* Google login */}
           <button
             onClick={handleGoogleLogin}
             className="w-full flex items-center justify-center gap-3 py-2.5 px-4 rounded-xl border border-border bg-white text-content-primary text-sm font-medium hover:bg-surface-secondary transition-colors shadow-sm mb-4"
@@ -284,7 +403,7 @@ export default function Login() {
             <div className="flex-1 border-t border-border" />
           </div>
 
-          {/* Email / Password form */}
+          {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-3" autoComplete="on">
             {isSignUp && (
               <div>
@@ -302,6 +421,7 @@ export default function Login() {
                 />
               </div>
             )}
+
             <div>
               <label className="block text-xs font-medium text-content-secondary mb-1.5">
                 {isAr ? 'البريد الإلكتروني' : 'Email'}
@@ -323,10 +443,23 @@ export default function Login() {
                 </p>
               )}
             </div>
+
             <div>
-              <label className="block text-xs font-medium text-content-secondary mb-1.5">
-                {isAr ? 'كلمة المرور' : 'Password'}
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-medium text-content-secondary">
+                  {isAr ? 'كلمة المرور' : 'Password'}
+                </label>
+                {/* Forgot password link — only on login form */}
+                {!isSignUp && (
+                  <button
+                    type="button"
+                    onClick={() => { setIsForgotPw(true); setError(''); setSuccess(''); }}
+                    className="text-[11px] text-brand-600 hover:text-brand-700 hover:underline transition-colors"
+                  >
+                    {isAr ? 'نسيت كلمة المرور؟' : 'Forgot password?'}
+                  </button>
+                )}
+              </div>
               <input
                 className="form-input"
                 type="password"
@@ -338,7 +471,7 @@ export default function Login() {
                 required
                 minLength={6}
               />
-              {/* Password strength — only shown in sign-up mode */}
+              {/* Password strength — signup only */}
               {isSignUp && password.length > 0 && (
                 <div className="mt-1.5">
                   <div className="flex gap-1 mb-1">
@@ -374,29 +507,24 @@ export default function Login() {
             </button>
           </form>
 
-          {/* Toggle sign-in / sign-up */}
+          {/* Toggle login/signup */}
           <div className="text-center mt-5">
             <span className="text-xs text-content-tertiary">
-              {isSignUp
-                ? (isAr ? 'لديك حساب بالفعل؟' : 'Already have an account?')
-                : (isAr ? 'ليس لديك حساب؟' : "Don't have an account?")}
+              {isSignUp ? (isAr ? 'لديك حساب بالفعل؟' : 'Already have an account?') : (isAr ? 'ليس لديك حساب؟' : "Don't have an account?")}
             </span>
             {' '}
             <button
               className="text-xs font-medium text-brand-600 hover:text-brand-700 hover:underline transition-colors"
               onClick={() => { setIsSignUp(v => !v); setError(''); setSuccess(''); setPwStrength(0); setEmailTouched(false); setPassword(''); }}
             >
-              {isSignUp
-                ? (isAr ? 'سجّل دخولك' : 'Sign in')
-                : (isAr ? 'أنشئ حساباً' : 'Sign up')}
+              {isSignUp ? (isAr ? 'سجّل دخولك' : 'Sign in') : (isAr ? 'أنشئ حساباً' : 'Sign up')}
             </button>
           </div>
 
-          {/* Google account note */}
           <p className="text-center text-[11px] text-content-tertiary mt-6 leading-relaxed">
             {isAr
               ? 'زر Google يستخدم حساب Google المسجّل في المتصفح. لحساب جديد بإيميل مختلف استخدم النموذج أعلاه.'
-              : 'The Google button uses your browser\'s signed-in Google account. To register with a different email, use the form above.'}
+              : "The Google button uses your browser's signed-in Google account. To register with a different email, use the form above."}
           </p>
         </div>
       </div>

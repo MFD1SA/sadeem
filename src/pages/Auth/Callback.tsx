@@ -30,12 +30,19 @@ export default function AuthCallback() {
     if (tokenHash && type === 'email') {
       supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'email' })
         .then(({ data, error }) => {
-          if (!error && data.session) {
-            go('/dashboard');
-          } else {
-            // Confirmation failed or expired — redirect to login with error
-            go('/login?error=confirmation_failed');
-          }
+          if (!error && data.session) go('/dashboard');
+          else go('/login?error=confirmation_failed');
+        });
+      return;
+    }
+
+    // ── Password reset flow ──────────────────────────────────────────────────
+    // Supabase sends: /auth/callback?token_hash=xxx&type=recovery
+    if (tokenHash && type === 'recovery') {
+      supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'recovery' })
+        .then(({ data, error }) => {
+          if (!error && data.session) go('/reset-password');
+          else go('/login?error=confirmation_failed');
         });
       return;
     }
