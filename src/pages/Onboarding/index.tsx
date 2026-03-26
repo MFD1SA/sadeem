@@ -119,7 +119,7 @@ export default function Onboarding() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0e1a] flex flex-col items-center justify-center px-4 py-8">
+    <div className="min-h-screen bg-[#0a0e1a] flex flex-col items-center justify-start sm:justify-center px-4 py-8 pb-24 sm:pb-8">
       {/* Logo */}
       <div className="flex items-center gap-3 mb-8">
         <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
@@ -149,7 +149,7 @@ export default function Onboarding() {
                 }`}>
                   <Icon size={14} className={done || active ? 'text-white' : 'text-slate-600'} />
                 </div>
-                <span className={`text-[10px] whitespace-nowrap ${active ? 'text-cyan-400' : 'text-slate-600'}`}>
+                <span className={`hidden sm:block text-[10px] whitespace-nowrap ${active ? 'text-cyan-400' : 'text-slate-600'}`}>
                   {s.title}
                 </span>
               </div>
@@ -335,8 +335,8 @@ export default function Onboarding() {
           </div>
         )}
 
-        {/* Navigation */}
-        <div className="flex items-center justify-between mt-8">
+        {/* Navigation — hidden on mobile (shown in sticky bar below) */}
+        <div className="hidden sm:flex items-center justify-between mt-8">
           <button
             onClick={() => setStep(s => Math.max(1, s - 1))}
             disabled={step === 1}
@@ -364,6 +364,36 @@ export default function Onboarding() {
             </button>
           )}
         </div>
+      </div>
+
+      {/* Mobile sticky navigation bar */}
+      <div className="sm:hidden fixed bottom-0 inset-x-0 bg-[#0a0e1a]/95 backdrop-blur border-t border-white/10 px-4 py-3 flex items-center justify-between z-50">
+        <button
+          onClick={() => setStep(s => Math.max(1, s - 1))}
+          disabled={step === 1}
+          className="flex items-center gap-2 px-4 py-2.5 bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white rounded-xl text-sm transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+        >
+          <ChevronRight size={16} /> السابق
+        </button>
+
+        {step < 5 ? (
+          <button
+            onClick={() => setStep(s => s + 1)}
+            disabled={!canGoNext()}
+            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            {step === 3 ? 'تخطي' : 'التالي'} <ChevronLeft size={16} />
+          </button>
+        ) : (
+          <button
+            onClick={handleFinish}
+            disabled={saving}
+            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+          >
+            {saving ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle size={16} />}
+            ابدأ الآن
+          </button>
+        )}
       </div>
 
       <p className="text-xs text-slate-600 mt-6">
