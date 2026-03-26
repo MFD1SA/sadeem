@@ -9,6 +9,7 @@ import { adminSubscribersService, type DashboardStats } from '../services/adminS
 import {
   Building2, Users, GitBranch, MessageSquare,
   Zap, FileText, ShieldCheck, TrendingUp,
+  Puzzle, Star, Activity,
 } from 'lucide-react';
 
 export default function AdminDashboard() {
@@ -144,6 +145,66 @@ export default function AdminDashboard() {
               <MiniStat label="منتهي" value={stats?.total_subscribers_expired ?? 0} color="red" />
               <MiniStat label="إجمالي" value={stats?.total_organizations ?? 0} color="slate" />
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── System Overview ── */}
+      <div className="admin-card mt-4">
+        <div className="admin-card-header">
+          <h3 className="flex items-center gap-2"><Activity size={14} className="text-indigo-400" /> نظرة عامة على النظام</h3>
+          <span className="text-[10px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full font-medium">نشط</span>
+        </div>
+        <div className="admin-card-body">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+              <div className="w-9 h-9 rounded-xl bg-amber-500/10 flex items-center justify-center flex-shrink-0">
+                <Star size={16} className="text-amber-400" />
+              </div>
+              <div>
+                <div className="text-base font-bold text-white">{(stats?.total_reviews ?? 0).toLocaleString('en-US')}</div>
+                <div className="text-[10px] text-slate-500">تقييمات Google</div>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+              <div className="w-9 h-9 rounded-xl bg-indigo-500/10 flex items-center justify-center flex-shrink-0">
+                <Zap size={16} className="text-indigo-400" />
+              </div>
+              <div>
+                <div className="text-base font-bold text-white">{(stats?.total_ai_replies_used ?? 0).toLocaleString('en-US')}</div>
+                <div className="text-[10px] text-slate-500">ردود AI</div>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+              <div className="w-9 h-9 rounded-xl bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
+                <Puzzle size={16} className="text-emerald-400" />
+              </div>
+              <div>
+                <div className="text-base font-bold text-white">5</div>
+                <div className="text-[10px] text-slate-500">تكاملات مفعّلة</div>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+              <div className="w-9 h-9 rounded-xl bg-cyan-500/10 flex items-center justify-center flex-shrink-0">
+                <TrendingUp size={16} className="text-cyan-400" />
+              </div>
+              <div>
+                <div className="text-base font-bold text-white">{(stats?.reviews_this_month ?? 0).toLocaleString('en-US')}</div>
+                <div className="text-[10px] text-slate-500">تقييمات هذا الشهر</div>
+              </div>
+            </div>
+          </div>
+          <div className="mt-3 pt-3 border-t border-white/[0.04] grid grid-cols-3 gap-2 text-center">
+            {[
+              { label: 'Gemini AI', status: 'نشط', color: 'emerald' },
+              { label: 'Google Business', status: 'مربوط', color: 'emerald' },
+              { label: 'ChatGPT', status: 'قريباً', color: 'amber' },
+            ].map(s => (
+              <div key={s.label} className="text-[10px]">
+                <div className={`font-medium text-${s.color}-400`}>{s.status}</div>
+                <div className="text-slate-600">{s.label}</div>
+              </div>
+            ))}
           </div>
         </div>
       </div>

@@ -8,7 +8,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAdminAuth } from '../contexts/AdminAuthContext';
 import { adminSettingsService, type BrandingSettings } from '../services/adminSettings.service';
 import { adminSupabase } from '../services/adminSupabase';
-import { Palette, Shield, Globe, Bell, Server, Save, Upload, Check } from 'lucide-react';
+import { Palette, Shield, Globe, Bell, Server, Save, Upload, Check, Search } from 'lucide-react';
 import { AdminSelect } from '../components/AdminSelect';
 
 export default function AdminSettings() {
@@ -18,6 +18,7 @@ export default function AdminSettings() {
 
   const sections = [
     { id: 'branding', label: 'هوية المنصة', icon: Palette },
+    { id: 'seo', label: 'تحسين محركات البحث', icon: Search },
     { id: 'security', label: 'الأمان والسياسات', icon: Shield },
     { id: 'region', label: 'المنطقة والعملة', icon: Globe },
     { id: 'notifications', label: 'الإشعارات', icon: Bell },
@@ -43,6 +44,7 @@ export default function AdminSettings() {
 
         <div className="flex-1 min-w-0">
           {activeSection === 'branding' && <BrandingSection showMsg={showMsg} />}
+          {activeSection === 'seo' && <SeoSection showMsg={showMsg} />}
           {activeSection === 'security' && <SettingSection settingKey="security_policies" showMsg={showMsg} fields={[
             { key: 'min_password_length', label: 'الحد الأدنى لطول كلمة المرور', type: 'number', default: 8 },
             { key: 'max_failed_attempts', label: 'الحد الأقصى لمحاولات الدخول الفاشلة', type: 'number', default: 5 },
@@ -203,6 +205,96 @@ function SettingSection({ settingKey, fields, showMsg }: { settingKey: string; f
         </button>
       </div>
     </div></div>
+  );
+}
+
+// ─── SEO Section ───
+function SeoSection({ showMsg }: { showMsg: (t: string, ty: 'success' | 'error') => void }) {
+  const [seo, setSeo] = useState({ meta_title: '', meta_description: '', keywords: '', og_image_url: '' });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    adminSupabase.rpc('admin_get_setting', { p_key: 'seo' }).then(({ data }) => {
+      if (data) setSeo({ meta_title: data.meta_title || '', meta_description: data.meta_description || '', keywords: data.keywords || '', og_image_url: data.og_image_url || '' });
+    }).catch(() => {}).finally(() => setLoading(false));
+  }, []);
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      const { error } = await adminSupabase.rpc('admin_set_setting', { p_key: 'seo', p_value: seo });
+      if (error) throw error;
+      showMsg('تم حفظ إعدادات SEO بنجاح', 'success');
+    } catch { showMsg('فشل الحفظ', 'error'); }
+    finally { setSaving(false); }
+  };
+
+  if (loading) return <div className="flex justify-center py-12"><div className="admin-spinner" /></div>;
+
+  return (
+    <div className="space-y-4">
+      <div className="admin-card">
+        <div className="admin-card-header">
+          <h3>إعدادات SEO الأساسية</h3>
+        </div>
+        <div className="admin-card-body space-y-4">
+          <div>
+            <label className="block text-xs text-slate-400 mb-1.5 font-medium">عنوان الصفحة (Meta Title)</label>
+            <input value={seo.meta_title} onChange={e => setSeo(p => ({ ...p, meta_title: e.target.value }))}
+              placeholder="سديم — نظام إدارة التقييمات بالذكاء الاصطناعي"
+              className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm placeholder-slate-600 focus:outline-none focus:border-indigo-500/50" />
+            <p className="text-[10px] text-slate-600 mt-1">{seo.meta_title.length}/60 حرف — الموصى به: 50-60</p>
+          </div>
+          <div>
+            <label className="block text-xs text-slate-400 mb-1.5 font-medium">وصف الصفحة (Meta Description)</label>
+            <textarea value={seo.meta_description} onChange={e => setSeo(p => ({ ...p, meta_description: e.target.value }))}
+              rows={3} placeholder="منصة سديم لإدارة تقييمات Google تلقائياً بالذكاء الاصطناعي — ردود فورية، تحليلات متقدمة، وإدارة جميع الفروع من مكان واحد."
+              className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm placeholder-slate-600 focus:outline-none focus:border-indigo-500/50 resize-none" />
+            <p className="text-[10px] text-slate-600 mt-1">{seo.meta_description.length}/160 حرف — الموصى به: 120-160</p>
+          </div>
+          <div>
+            <label className="block text-xs text-slate-400 mb-1.5 font-medium">الكلمات المفتاحية (Keywords)</label>
+            <input value={seo.keywords} onChange={e => setSeo(p => ({ ...p, keywords: e.target.value }))}
+              placeholder="إدارة تقييمات Google، ردود تلقائية، ذكاء اصطناعي، سديم"
+              className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm placeholder-slate-600 focus:outline-none focus:border-indigo-500/50" />
+            <p className="text-[10px] text-slate-600 mt-1">افصل بين الكلمات بفاصلة</p>
+          </div>
+          <div>
+            <label className="block text-xs text-slate-400 mb-1.5 font-medium">صورة Open Graph (للمشاركة)</label>
+            <input value={seo.og_image_url} onChange={e => setSeo(p => ({ ...p, og_image_url: e.target.value }))}
+              placeholder="https://..."
+              dir="ltr"
+              className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm placeholder-slate-600 focus:outline-none focus:border-indigo-500/50" />
+          </div>
+          <div className="flex justify-end pt-1">
+            <button onClick={save} disabled={saving} className="admin-btn-primary">
+              <Save size={14} /><span>{saving ? 'جاري الحفظ...' : 'حفظ SEO'}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="admin-card border-dashed border-white/10">
+        <div className="admin-card-body">
+          <div className="flex items-start gap-3">
+            <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <Search size={15} className="text-amber-400" />
+            </div>
+            <div>
+              <div className="text-sm font-semibold text-white mb-1">Programmatic SEO <span className="text-[10px] text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded-full border border-amber-500/20 mr-1">قريباً</span></div>
+              <p className="text-xs text-slate-500 leading-relaxed">إنشاء صفحات SEO تلقائية لكل فرع، مدينة، وخدمة — يُمكن المنصة من التصنيف في نتائج البحث لكلمات طويلة الذيل مثل "إدارة تقييمات Google في الرياض".</p>
+              <ul className="mt-2 space-y-1 text-[11px] text-slate-600">
+                <li>• صفحة مخصصة لكل فرع تلقائياً</li>
+                <li>• Sitemap XML ديناميكي</li>
+                <li>• Schema Markup للمطاعم والمحلات</li>
+                <li>• روابط قانونية (Canonical URLs)</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
