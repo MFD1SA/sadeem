@@ -7,6 +7,9 @@ export const authService = {
       password,
       options: {
         data: { full_name: fullName },
+        // Direct confirmation link to /auth/callback so the token_hash is
+        // processed there and the user lands directly on the dashboard.
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
       },
     });
     if (error) throw error;

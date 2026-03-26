@@ -1,6 +1,8 @@
 // ============================================================================
 // SADEEM — Auth Callback
-// Handles PKCE code exchange after Google / OAuth redirect.
+// Handles two flows:
+//   1. Google OAuth PKCE  — URL has ?code=  (Supabase exchanges automatically)
+//   2. Email confirmation — URL has ?token_hash=&type=email (must call verifyOtp)
 // Shows a branded loading screen, then navigates to /dashboard.
 // ============================================================================
 
@@ -19,6 +21,26 @@ export default function AuthCallback() {
       navigate(path, { replace: true });
     };
 
+    const sp = new URLSearchParams(window.location.search);
+    const tokenHash = sp.get('token_hash');
+    const type = sp.get('type');
+
+    // ── Email confirmation flow ──────────────────────────────────────────────
+    // Supabase sends: /auth/callback?token_hash=xxx&type=email
+    if (tokenHash && type === 'email') {
+      supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'email' })
+        .then(({ data, error }) => {
+          if (!error && data.session) {
+            go('/dashboard');
+          } else {
+            // Confirmation failed or expired — redirect to login with error
+            go('/login?error=confirmation_failed');
+          }
+        });
+      return;
+    }
+
+    // ── Google OAuth PKCE flow ───────────────────────────────────────────────
     // Supabase detects ?code= in the URL automatically (detectSessionInUrl: true).
     // We just wait for SIGNED_IN, then redirect to dashboard.
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
@@ -30,7 +52,6 @@ export default function AuthCallback() {
           subscription.unsubscribe();
           go('/dashboard');
         } else {
-          // No session in the callback — go back to login
           subscription.unsubscribe();
           go('/login');
         }
@@ -58,14 +79,14 @@ export default function AuthCallback() {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-surface-secondary">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-brand-600 to-brand-800">
       <div className="text-center">
-        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center mx-auto mb-5 shadow-lg">
-          <span className="text-white text-2xl font-bold">س</span>
+        <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center mx-auto mb-5 shadow-lg">
+          <span className="text-white text-3xl font-bold">س</span>
         </div>
-        <div className="text-sm font-medium text-content-primary mb-1">سديم</div>
-        <div className="text-xs text-content-tertiary mb-4">جاري تسجيل الدخول…</div>
-        <div className="w-5 h-5 border-2 border-brand-200 border-t-brand-600 rounded-full animate-spin mx-auto" />
+        <div className="text-white font-semibold text-base mb-1">سديم</div>
+        <div className="text-white/70 text-sm mb-6">جاري تسجيل الدخول…</div>
+        <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto" />
       </div>
     </div>
   );

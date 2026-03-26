@@ -24,9 +24,10 @@ function calcPasswordStrength(pw: string): number {
   return 3;
 }
 
-// Detect PKCE OAuth callback at module load — stable for page lifetime.
+// Detect auth callback at module load — stable for page lifetime.
+// Covers: Google OAuth (?code=) and email confirmation (?token_hash=&type=email).
 const _sp = new URLSearchParams(window.location.search);
-const isOAuthCallback = _sp.has('code') || _sp.has('error');
+const isOAuthCallback = _sp.has('code') || _sp.has('error') || _sp.has('token_hash');
 
 // Feature bullets shown on the branding panel
 const FEATURES = [
@@ -55,6 +56,22 @@ export default function Login() {
   // Load admin-configured branding (logo, name, tagline)
   useEffect(() => {
     getBranding().then(setBranding).catch(() => {});
+  }, []);
+
+  // Email confirmation: if URL has token_hash + type=email, verify the OTP immediately.
+  // This handles the case where the confirmation link redirects to /login instead of /auth/callback.
+  useEffect(() => {
+    const tokenHash = _sp.get('token_hash');
+    const type = _sp.get('type');
+    if (!tokenHash || type !== 'email') return;
+    supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'email' })
+      .then(({ error }) => {
+        if (!error) {
+          window.location.href = '/dashboard';
+        } else {
+          window.location.href = '/login?error=confirmation_failed';
+        }
+      });
   }, []);
 
   // PKCE fallback: if SIGNED_IN event was missed (race on fast connections),
