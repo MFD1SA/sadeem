@@ -3,12 +3,26 @@
 // Split-panel design: branding panel (left/top) + form panel (right/bottom).
 // Logo is configurable from Admin → Settings → Branding.
 // ============================================================================
-import { useState, useEffect, type ChangeEvent, type FormEvent } from 'react';
+import { useState, useEffect, useRef, type ChangeEvent, type FormEvent } from 'react';
 import { useLanguage } from '@/i18n';
 import { authService } from '@/services/auth';
 import { supabase } from '@/lib/supabase';
 import { getBranding, type BrandingConfig } from '@/services/branding';
 import { CheckCircle2, Star, BarChart3, MessageSquare, GitBranch } from 'lucide-react';
+
+// Password strength: 0=empty 1=weak 2=medium 3=strong
+function calcPasswordStrength(pw: string): number {
+  if (!pw) return 0;
+  let s = 0;
+  if (pw.length >= 8)  s++;
+  if (pw.length >= 12) s++;
+  if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) s++;
+  if (/[0-9]/.test(pw)) s++;
+  if (/[^A-Za-z0-9]/.test(pw)) s++;
+  if (s <= 1) return 1;
+  if (s <= 3) return 2;
+  return 3;
+}
 
 // Detect PKCE OAuth callback at module load — stable for page lifetime.
 const _sp = new URLSearchParams(window.location.search);
@@ -26,14 +40,17 @@ export default function Login() {
   const { lang } = useLanguage();
   const isAr = lang === 'ar';
 
-  const [email, setEmail]       = useState('');
-  const [password, setPassword] = useState('');
-  const [fullName, setFullName] = useState('');
-  const [error, setError]       = useState('');
-  const [success, setSuccess]   = useState('');
-  const [loading, setLoading]   = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false);
-  const [branding, setBranding] = useState<BrandingConfig | null>(null);
+  const [email, setEmail]             = useState('');
+  const [password, setPassword]       = useState('');
+  const [fullName, setFullName]       = useState('');
+  const [error, setError]             = useState('');
+  const [success, setSuccess]         = useState('');
+  const [loading, setLoading]         = useState(false);
+  const [isSignUp, setIsSignUp]       = useState(false);
+  const [branding, setBranding]       = useState<BrandingConfig | null>(null);
+  const [pwStrength, setPwStrength]   = useState(0);
+  const [emailTouched, setEmailTouched] = useState(false);
+  const emailDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Load admin-configured branding (logo, name, tagline)
   useEffect(() => {
@@ -114,6 +131,27 @@ export default function Login() {
       setError((err as Error).message || (isAr ? 'حدث خطأ' : 'An error occurred'));
     }
   };
+
+  // Simple email format validator
+  const isValidEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+
+  const handleEmailChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value);
+    setError('');
+    if (emailDebounce.current) clearTimeout(emailDebounce.current);
+    emailDebounce.current = setTimeout(() => setEmailTouched(true), 600);
+  };
+
+  const handlePasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setPassword(e.target.value);
+    if (isSignUp) setPwStrength(calcPasswordStrength(e.target.value));
+  };
+
+  const pwLabels = isAr
+    ? ['', 'ضعيفة', 'متوسطة', 'قوية']
+    : ['', 'Weak', 'Medium', 'Strong'];
+  const pwColors = ['', 'bg-red-500', 'bg-amber-500', 'bg-emerald-500'];
+  const pwTextColors = ['', 'text-red-600', 'text-amber-600', 'text-emerald-600'];
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
@@ -230,7 +268,7 @@ export default function Login() {
           </div>
 
           {/* Email / Password form */}
-          <form onSubmit={handleSubmit} className="space-y-3">
+          <form onSubmit={handleSubmit} className="space-y-3" autoComplete="on">
             {isSignUp && (
               <div>
                 <label className="block text-xs font-medium text-content-secondary mb-1.5">
@@ -240,8 +278,9 @@ export default function Login() {
                   className="form-input"
                   type="text"
                   value={fullName}
+                  autoComplete="name"
                   onChange={(e: ChangeEvent<HTMLInputElement>) => setFullName(e.target.value)}
-                  placeholder={isAr ? 'محمد أحمد' : 'John Smith'}
+                  placeholder={isAr ? 'أدخل اسمك الكامل' : 'Enter your full name'}
                   required
                 />
               </div>
@@ -251,14 +290,21 @@ export default function Login() {
                 {isAr ? 'البريد الإلكتروني' : 'Email'}
               </label>
               <input
-                className="form-input"
+                className={`form-input ${emailTouched && email && !isValidEmail(email) ? 'border-red-400 focus:ring-red-300' : ''}`}
                 type="email"
                 value={email}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
-                placeholder={isAr ? 'you@example.com' : 'you@example.com'}
+                autoComplete="email"
+                onChange={handleEmailChange}
+                onBlur={() => setEmailTouched(true)}
+                placeholder="you@example.com"
                 dir="ltr"
                 required
               />
+              {emailTouched && email && !isValidEmail(email) && (
+                <p className="text-[11px] text-red-500 mt-1">
+                  {isAr ? 'صيغة البريد الإلكتروني غير صحيحة' : 'Invalid email format'}
+                </p>
+              )}
             </div>
             <div>
               <label className="block text-xs font-medium text-content-secondary mb-1.5">
@@ -268,12 +314,34 @@ export default function Login() {
                 className="form-input"
                 type="password"
                 value={password}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
+                autoComplete={isSignUp ? 'new-password' : 'current-password'}
+                onChange={handlePasswordChange}
                 placeholder="••••••••"
                 dir="ltr"
                 required
                 minLength={6}
               />
+              {/* Password strength — only shown in sign-up mode */}
+              {isSignUp && password.length > 0 && (
+                <div className="mt-1.5">
+                  <div className="flex gap-1 mb-1">
+                    {[1, 2, 3].map((level) => (
+                      <div
+                        key={level}
+                        className={`h-1 flex-1 rounded-full transition-colors ${pwStrength >= level ? pwColors[pwStrength] : 'bg-gray-200'}`}
+                      />
+                    ))}
+                  </div>
+                  <p className={`text-[11px] font-medium ${pwTextColors[pwStrength]}`}>
+                    {isAr ? `قوة كلمة المرور: ${pwLabels[pwStrength]}` : `Password strength: ${pwLabels[pwStrength]}`}
+                  </p>
+                </div>
+              )}
+              {isSignUp && (
+                <p className="text-[11px] text-content-tertiary mt-1">
+                  {isAr ? 'يُنصح باستخدام 8+ أحرف مع أرقام ورموز' : 'Recommended: 8+ chars with numbers & symbols'}
+                </p>
+              )}
             </div>
 
             <button
@@ -299,7 +367,7 @@ export default function Login() {
             {' '}
             <button
               className="text-xs font-medium text-brand-600 hover:text-brand-700 hover:underline transition-colors"
-              onClick={() => { setIsSignUp(v => !v); setError(''); setSuccess(''); }}
+              onClick={() => { setIsSignUp(v => !v); setError(''); setSuccess(''); setPwStrength(0); setEmailTouched(false); setPassword(''); }}
             >
               {isSignUp
                 ? (isAr ? 'سجّل دخولك' : 'Sign in')

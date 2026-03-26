@@ -30,10 +30,12 @@ export const authService = {
         // Supabase PKCE exchanges the code automatically on load.
         // RedirectIfAuthenticated shows a spinner (not the form) during exchange.
         redirectTo: `${window.location.origin}/login`,
-        scopes: 'https://www.googleapis.com/auth/business.manage',
+        // Basic profile scopes only — no consent/permissions screen.
+        // Google Business API access is requested separately in Integrations.
+        scopes: 'openid email profile',
         queryParams: {
-          access_type: 'offline',
-          prompt: 'consent',
+          access_type: 'online',
+          prompt: 'select_account', // show account picker only, no extra permissions
         },
       },
     });

@@ -185,32 +185,25 @@ export function SubscriptionGate() {
  * Redirect authenticated users away from login/signup pages.
  * Admin users → /admin/dashboard.
  * Subscriber users → /dashboard or /onboarding.
+ *
+ * IMPORTANT: Never show a white loading screen here.
+ * – On the first load of /login, show the form immediately.
+ * – During Google OAuth callback (/login?code=…), Login.tsx renders its own
+ *   branded blue loading screen — we must not overlap it with a white spinner.
+ * – After logout, the login form appears instantly with no loading flash.
+ * When auth resolves to authenticated, the redirect below fires automatically.
  */
 export function RedirectIfAuthenticated() {
   const { isAuthenticated, hasOrganization, isLoading } = useAuth();
   const { isAdmin, checking } = useAdminCheck();
 
-  // Show spinner only while auth is loading, OR while admin-check runs
-  // (admin-check only runs for authenticated users, so unauthenticated
-  // visitors reach the login form as soon as useAuth resolves — no extra wait)
-  if (isLoading || checking) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <LoadingState />
-      </div>
-    );
-  }
+  // While auth/admin-check is still resolving, render the login form immediately.
+  // If the user turns out to be authenticated, we redirect once checking is done.
+  if (isLoading || checking) return <Outlet />;
 
   if (isAuthenticated) {
-    // Admin → admin dashboard
-    if (isAdmin) {
-      return <Navigate to="/admin/dashboard" replace />;
-    }
-
-    // Subscriber → dashboard or onboarding
-    if (hasOrganization) {
-      return <Navigate to="/dashboard" replace />;
-    }
+    if (isAdmin) return <Navigate to="/admin/dashboard" replace />;
+    if (hasOrganization) return <Navigate to="/dashboard" replace />;
     return <Navigate to="/onboarding" replace />;
   }
 
