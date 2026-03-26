@@ -13,13 +13,31 @@ class AdminTicketsService {
   static getInstance() { if (!this.instance) this.instance = new AdminTicketsService(); return this.instance; }
 
   async list(params: { status?: string; priority?: string; limit?: number; offset?: number }) {
-    const { data, error } = await adminSupabase.rpc('admin_list_tickets', {
-      p_status: params.status ?? null, p_priority: params.priority ?? null,
-      p_limit: params.limit ?? 50, p_offset: params.offset ?? 0,
-    });
+    let query = adminSupabase
+      .from('support_tickets')
+      .select(`
+        id, subject, body, status, priority,
+        submitted_by_name, submitted_by_email, organization_id,
+        created_at, updated_at,
+        admin_reply, replied_at, admin_replied_by_name,
+        organizations ( name )
+      `, { count: 'exact' })
+      .order('created_at', { ascending: false })
+      .limit(params.limit ?? 50);
+
+    if (params.status) query = query.eq('status', params.status);
+    if (params.priority) query = query.eq('priority', params.priority);
+    if (params.offset) query = query.range(params.offset, (params.offset) + (params.limit ?? 50) - 1);
+
+    const { data, error, count } = await query;
     if (error) throw new Error('فشل في جلب التذاكر: ' + error.message);
-    const r = data as { data: TicketItem[]; total: number };
-    return { data: r.data ?? [], total: r.total ?? 0 };
+
+    const rows = (data ?? []).map((t: any) => ({
+      ...t,
+      org_name: t.organizations?.name ?? null,
+    }));
+
+    return { data: rows as TicketItem[], total: count ?? rows.length };
   }
 
   async getTicket(ticketId: string): Promise<TicketItem | null> {

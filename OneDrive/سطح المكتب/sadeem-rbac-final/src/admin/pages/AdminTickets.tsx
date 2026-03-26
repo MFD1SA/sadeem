@@ -143,11 +143,11 @@ export default function AdminTickets() {
 
               {/* Previous reply if exists */}
               {selected.admin_reply && (
-                <div className="admin-card" style={{ borderColor: 'rgba(6,182,212,0.2)', background: 'rgba(6,182,212,0.04)' }}>
+                <div className="admin-card" style={{ borderColor: 'rgba(99,102,241,0.25)', background: 'rgba(99,102,241,0.05)' }}>
                   <div className="admin-card-header">
                     <div className="flex items-center gap-2">
-                      <Reply size={14} className="text-cyan-400" />
-                      <h3 className="text-cyan-400">الرد المُرسل</h3>
+                      <Reply size={14} className="text-indigo-400" />
+                      <h3 className="text-indigo-300">الرد المُرسل</h3>
                     </div>
                     {selected.admin_replied_by_name && (
                       <div className="flex items-center gap-1.5 text-xs text-slate-400">
@@ -263,9 +263,9 @@ export default function AdminTickets() {
                     )}
                     {selected.admin_replied_by_name && (
                       <div className="flex items-center gap-2">
-                        <User size={13} className="text-cyan-500 flex-shrink-0" />
+                        <User size={13} className="text-indigo-400 flex-shrink-0" />
                         <span className="text-slate-400 text-xs">رد بواسطة:</span>
-                        <span className="text-cyan-400 text-xs font-medium">{selected.admin_replied_by_name}</span>
+                        <span className="text-indigo-300 text-xs font-medium">{selected.admin_replied_by_name}</span>
                       </div>
                     )}
                   </div>
