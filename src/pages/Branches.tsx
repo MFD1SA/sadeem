@@ -5,9 +5,10 @@ import { branchesService } from '@/services/branches';
 import { LoadingState, ErrorState } from '@/components/ui/LoadingState';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { StatusDot } from '@/components/ui/StatusDot';
+import { Badge } from '@/components/ui/Badge';
 import { Modal } from '@/components/ui/Modal';
 import { useBranchLimit } from '@/components/ui/FeatureGate';
-import { Plus, Edit3, Trash2, Lock } from 'lucide-react';
+import { Plus, Edit3, Trash2, Lock, MapPin, Link2, LinkSlash } from 'lucide-react';
 import type { DbBranch } from '@/types/database';
 
 export default function Branches() {
@@ -148,10 +149,18 @@ export default function Branches() {
     return <ErrorState message={error} onRetry={loadBranches} />;
   }
 
+  const activeCount = branches.filter((b) => b.status === 'active').length;
+  const linkedCount = branches.filter((b) => !!b.google_name).length;
+  const unlinkedCount = branches.length - linkedCount;
+  const usedSlots = branches.length;
+  const maxSlots = maxBranches === -1 ? null : maxBranches;
+  const progressPct = maxSlots ? Math.min(100, (usedSlots / maxSlots) * 100) : 0;
+
   return (
-    <div>
+    <div className="space-y-5">
+      {/* Limit Warning Banner */}
       {limitWarning && (
-        <div className="flex items-center justify-between bg-amber-50 border border-amber-200/60 rounded-xl p-4 mb-4">
+        <div className="flex items-center justify-between bg-amber-50 border border-amber-200/60 rounded-xl p-4">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
               <Lock size={16} className="text-amber-600" />
@@ -159,9 +168,7 @@ export default function Branches() {
             <div>
               <div className="text-[13px] font-semibold text-content-primary">
                 {lang === 'ar'
-                  ? `وصلت إلى الحد الأقصى (${maxBranches === -1 ? '∞' : maxBranches} ${
-                      maxBranches === 1 ? 'فرع' : 'فروع'
-                    })`
+                  ? `وصلت إلى الحد الأقصى (${maxBranches === -1 ? '∞' : maxBranches} ${maxBranches === 1 ? 'فرع' : 'فروع'})`
                   : `Branch limit reached (${maxBranches === -1 ? '∞' : maxBranches} max)`}
               </div>
               <div className="text-xs text-content-tertiary">
@@ -171,34 +178,68 @@ export default function Branches() {
               </div>
             </div>
           </div>
-
           <div className="flex gap-2">
             <button className="btn btn-primary btn-sm" onClick={showUpgrade}>
               {lang === 'ar' ? 'ترقية' : 'Upgrade'}
             </button>
-            <button
-              className="btn btn-secondary btn-sm"
-              onClick={() => setLimitWarning(false)}
-            >
+            <button className="btn btn-secondary btn-sm" onClick={() => setLimitWarning(false)}>
               {lang === 'ar' ? 'إغلاق' : 'Dismiss'}
             </button>
           </div>
         </div>
       )}
 
+      {/* Stats Summary */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="card card-body text-center">
+          <div className="text-2xl font-bold text-content-primary">{branches.length}</div>
+          <div className="text-xs text-content-tertiary mt-0.5">
+            {lang === 'ar' ? 'إجمالي الفروع' : 'Total Branches'}
+          </div>
+        </div>
+        <div className="card card-body text-center">
+          <div className="text-2xl font-bold text-content-primary">{activeCount}</div>
+          <div className="text-xs text-content-tertiary mt-0.5">
+            {lang === 'ar' ? 'الفروع النشطة' : 'Active Branches'}
+          </div>
+        </div>
+        <div className="card card-body text-center">
+          <div className="text-2xl font-bold text-content-primary">{linkedCount}</div>
+          <div className="flex items-center justify-center gap-1 mt-0.5">
+            <Link2 size={11} className="text-green-500" />
+            <span className="text-xs text-content-tertiary">
+              {lang === 'ar' ? 'مرتبطة بجوجل' : 'Google Linked'}
+            </span>
+          </div>
+        </div>
+        <div className="card card-body text-center">
+          <div className="text-2xl font-bold text-content-primary">{unlinkedCount}</div>
+          <div className="flex items-center justify-center gap-1 mt-0.5">
+            <LinkSlash size={11} className="text-content-tertiary" />
+            <span className="text-xs text-content-tertiary">
+              {lang === 'ar' ? 'غير مرتبطة' : 'Not Linked'}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Card */}
       <div className="card">
         <div className="card-header">
-          <div className="flex items-center gap-2">
-            <h3>
-              {t.branchesPage.title} ({branches.length})
-            </h3>
-            {maxBranches > 0 && (
-              <span className="text-2xs text-content-tertiary">
-                / {maxBranches === -1 ? '∞' : maxBranches}
-              </span>
+          <div className="flex items-center gap-3">
+            <h3>{t.branchesPage.title} ({branches.length})</h3>
+            {maxSlots !== null && (
+              <div className="flex items-center gap-2">
+                <div className="w-20 h-1.5 bg-surface-secondary rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all ${progressPct >= 90 ? 'bg-red-500' : progressPct >= 70 ? 'bg-amber-500' : 'bg-brand-600'}`}
+                    style={{ width: `${progressPct}%` }}
+                  />
+                </div>
+                <span className="text-2xs text-content-tertiary">{usedSlots}/{maxSlots}</span>
+              </div>
             )}
           </div>
-
           <button className="btn btn-primary btn-sm" onClick={openCreate}>
             <Plus size={14} /> {t.branchesPage.addBranch}
           </button>
@@ -206,11 +247,7 @@ export default function Branches() {
 
         {branches.length === 0 ? (
           <EmptyState
-            message={
-              lang === 'ar'
-                ? 'لا توجد فروع بعد. أضف أول فرع.'
-                : 'No branches yet. Add your first branch.'
-            }
+            message={lang === 'ar' ? 'لا توجد فروع بعد. أضف أول فرع.' : 'No branches yet. Add your first branch.'}
             action={
               <button className="btn btn-primary btn-sm" onClick={openCreate}>
                 <Plus size={14} /> {t.branchesPage.addBranch}
@@ -218,92 +255,96 @@ export default function Branches() {
             }
           />
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr>
-                  <th className="text-right rtl:text-right ltr:text-left px-4 py-2.5 text-xs font-semibold text-content-secondary bg-surface-secondary border-b border-border">
-                    {t.branchesPage.internalName}
-                  </th>
-                  <th className="px-4 py-2.5 text-xs font-semibold text-content-secondary bg-surface-secondary border-b border-border">
-                    {t.branchesPage.googleName}
-                  </th>
-                  <th className="px-4 py-2.5 text-xs font-semibold text-content-secondary bg-surface-secondary border-b border-border">
-                    {t.branchesPage.city}
-                  </th>
-                  <th className="px-4 py-2.5 text-xs font-semibold text-content-secondary bg-surface-secondary border-b border-border">
-                    {t.branchesPage.address}
-                  </th>
-                  <th className="px-4 py-2.5 text-xs font-semibold text-content-secondary bg-surface-secondary border-b border-border">
-                    {t.branchesPage.status}
-                  </th>
-                  <th className="px-4 py-2.5 text-xs font-semibold text-content-secondary bg-surface-secondary border-b border-border w-24"></th>
-                </tr>
-              </thead>
+          <div className="p-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {branches.map((b: DbBranch) => (
+                <div
+                  key={b.id}
+                  className="card card-body flex flex-col gap-3 hover:shadow-md transition-shadow"
+                >
+                  {/* Branch Name + City */}
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-start gap-2 min-w-0">
+                      <div className="w-8 h-8 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <MapPin size={15} />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="font-semibold text-sm text-content-primary truncate">
+                          {b.internal_name}
+                        </div>
+                        {b.city && (
+                          <span className="inline-block text-2xs bg-surface-secondary text-content-secondary rounded px-1.5 py-0.5 mt-1 font-medium">
+                            {b.city}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    {/* Status Badge */}
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                      <StatusDot
+                        color={b.status === 'active' ? 'green' : b.status === 'pending' ? 'yellow' : 'gray'}
+                      />
+                      <span className="text-xs text-content-secondary">{t.status[b.status]}</span>
+                    </div>
+                  </div>
 
-              <tbody>
-                {branches.map((b: DbBranch) => (
-                  <tr
-                    key={b.id}
-                    className="border-b border-border last:border-b-0 hover:bg-surface-secondary/50 transition-colors"
-                  >
-                    <td className="px-4 py-3 font-medium">{b.internal_name}</td>
-                    <td className="px-4 py-3 text-xs text-content-secondary">
-                      {b.google_name || '—'}
-                    </td>
-                    <td className="px-4 py-3">{b.city || '—'}</td>
-                    <td className="px-4 py-3 text-xs text-content-secondary">
-                      {b.address || '—'}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-1.5">
-                        <StatusDot
-                          color={
-                            b.status === 'active'
-                              ? 'green'
-                              : b.status === 'pending'
-                                ? 'yellow'
-                                : 'gray'
-                          }
-                        />
-                        <span className="text-xs">{t.status[b.status]}</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-1">
-                        <button
-                          className="btn-icon"
-                          title={t.common.edit}
-                          onClick={() => openEdit(b)}
-                        >
-                          <Edit3 size={14} />
-                        </button>
-                        <button
-                          className="btn-icon"
-                          title={t.common.delete}
-                          onClick={() => handleDelete(b.id)}
-                        >
-                          <Trash2 size={14} className="text-red-500" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                  {/* Divider */}
+                  <div className="border-t border-border" />
+
+                  {/* Google Link Status */}
+                  <div className="flex items-center gap-2">
+                    {b.google_name ? (
+                      <>
+                        <Link2 size={13} className="text-green-500 flex-shrink-0" />
+                        <span className="text-xs text-content-secondary truncate">{b.google_name}</span>
+                        <Badge variant="success">
+                          {lang === 'ar' ? 'مرتبط' : 'Linked'}
+                        </Badge>
+                      </>
+                    ) : (
+                      <>
+                        <LinkSlash size={13} className="text-content-tertiary flex-shrink-0" />
+                        <span className="text-xs text-content-tertiary italic">
+                          {lang === 'ar' ? 'غير مرتبط بجوجل' : 'Not linked to Google'}
+                        </span>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Address */}
+                  {b.address && (
+                    <div className="text-xs text-content-tertiary truncate">
+                      {b.address}
+                    </div>
+                  )}
+
+                  {/* Actions */}
+                  <div className="flex items-center justify-end gap-1 pt-1 border-t border-border">
+                    <button
+                      className="btn-icon"
+                      title={t.common.edit}
+                      onClick={() => openEdit(b)}
+                    >
+                      <Edit3 size={14} />
+                    </button>
+                    <button
+                      className="btn-icon"
+                      title={t.common.delete}
+                      onClick={() => handleDelete(b.id)}
+                    >
+                      <Trash2 size={14} className="text-red-500" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>
 
       {showModal && (
         <Modal
-          title={
-            editBranch
-              ? lang === 'ar'
-                ? 'تعديل الفرع'
-                : 'Edit Branch'
-              : t.branchesPage.addBranch
-          }
+          title={editBranch ? (lang === 'ar' ? 'تعديل الفرع' : 'Edit Branch') : t.branchesPage.addBranch}
           onClose={() => setShowModal(false)}
           footer={
             <>
@@ -314,10 +355,7 @@ export default function Branches() {
               >
                 {saving ? t.common.loading : t.common.save}
               </button>
-              <button
-                className="btn btn-secondary"
-                onClick={() => setShowModal(false)}
-              >
+              <button className="btn btn-secondary" onClick={() => setShowModal(false)}>
                 {t.common.cancel}
               </button>
             </>

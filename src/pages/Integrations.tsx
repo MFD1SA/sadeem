@@ -12,7 +12,16 @@ import { branchesService } from '@/services/branches';
 import { Badge } from '@/components/ui/Badge';
 import { StatusDot } from '@/components/ui/StatusDot';
 import { Modal } from '@/components/ui/Modal';
-import { Link2, RefreshCw, Zap, Building2, CheckCircle, AlertCircle, ExternalLink, Check } from 'lucide-react';
+import {
+  Link2,
+  RefreshCw,
+  Zap,
+  Building2,
+  CheckCircle,
+  AlertCircle,
+  ExternalLink,
+  Check,
+} from 'lucide-react';
 import type { DbBranch } from '@/types/database';
 
 function sleep(ms: number) {
@@ -50,6 +59,41 @@ async function retryGoogleRequest<T>(
   throw lastError;
 }
 
+// Step number circle component
+function StepCircle({
+  number,
+  done,
+}: {
+  number: number;
+  done: boolean;
+}) {
+  if (done) {
+    return (
+      <div className="w-9 h-9 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0 shadow-sm">
+        <Check size={16} className="text-white" strokeWidth={3} />
+      </div>
+    );
+  }
+  return (
+    <div className="w-9 h-9 rounded-full bg-brand-600 flex items-center justify-center flex-shrink-0 shadow-sm">
+      <span className="text-sm font-bold text-white leading-none">{number}</span>
+    </div>
+  );
+}
+
+// Connector line between steps
+function StepConnector({ done }: { done: boolean }) {
+  return (
+    <div className="flex justify-center my-1 px-4">
+      <div
+        className={`w-0.5 h-5 rounded-full transition-colors ${
+          done ? 'bg-emerald-400' : 'bg-border'
+        }`}
+      />
+    </div>
+  );
+}
+
 export default function Integrations() {
   const { t, lang } = useLanguage();
   const { organization } = useAuth();
@@ -70,7 +114,11 @@ export default function Integrations() {
 
   // Sync
   const [syncing, setSyncing] = useState(false);
-  const [syncResult, setSyncResult] = useState<{ synced: number; drafts: number; errors: string[] } | null>(null);
+  const [syncResult, setSyncResult] = useState<{
+    synced: number;
+    drafts: number;
+    errors: string[];
+  } | null>(null);
 
   // Gemini test
   const [testingGemini, setTestingGemini] = useState(false);
@@ -287,231 +335,350 @@ export default function Integrations() {
     (name) => !branches.some((b: DbBranch) => b.google_location_id === name)
   ).length;
 
+  // Step completion state
+  const step1Done = hasGoogleToken;
+  const step2Done = linkedCount > 0;
+  const step3Done = false; // Sync is an action, never permanently "done" — handled per-result
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
+      {/* ── Google Business section ── */}
       <div>
-        <h3 className="text-xs font-semibold text-content-secondary uppercase tracking-wider mb-3">
+        <h3 className="text-xs font-semibold text-content-secondary uppercase tracking-wider mb-4">
           {t.integrationsPage.google}
         </h3>
 
+        {/* Global feedback banners */}
         {locationError && (
-          <div className="flex items-center gap-2 text-xs text-red-700 bg-red-50 border border-red-200/60 rounded-lg p-3 mb-3">
+          <div className="flex items-center gap-2 text-xs text-red-700 bg-red-50 border border-red-200/60 rounded-lg p-3 mb-4">
             <AlertCircle size={14} className="flex-shrink-0" />
             <span>{locationError}</span>
           </div>
         )}
 
         {locationSuccess && (
-          <div className="flex items-center gap-2 text-xs text-emerald-700 bg-emerald-50 border border-emerald-200/60 rounded-lg p-3 mb-3">
+          <div className="flex items-center gap-2 text-xs text-emerald-700 bg-emerald-50 border border-emerald-200/60 rounded-lg p-3 mb-4">
             <CheckCircle size={14} className="flex-shrink-0" />
             <span>{locationSuccess}</span>
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        {/* Numbered step flow */}
+        <div className="space-y-0">
+          {/* Step 1 — Connect Google Account */}
           <div className="card">
             <div className="card-body">
-              <div className="flex items-start justify-between mb-3">
-                <div className="text-[13px] font-semibold text-content-primary">
-                  {lang === 'ar' ? 'حساب Google' : 'Google Account'}
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <StatusDot color="green" />
-                  <Badge variant="success">{t.status.connected}</Badge>
+              <div className="flex items-start gap-4">
+                <StepCircle number={1} done={step1Done} />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <div>
+                      <p className="text-[13px] font-semibold text-content-primary">
+                        {lang === 'ar' ? 'ربط حساب Google Business' : 'Connect Google Business Account'}
+                      </p>
+                      <p className="text-xs text-content-tertiary mt-0.5">
+                        {lang === 'ar'
+                          ? 'سجّل الدخول بحساب Google الخاص بنشاطك التجاري'
+                          : 'Sign in with the Google account linked to your business'}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {step1Done ? (
+                        <>
+                          <StatusDot color="green" />
+                          <Badge variant="success">
+                            {lang === 'ar' ? 'متصل' : 'Connected'}
+                          </Badge>
+                        </>
+                      ) : (
+                        <Badge variant="neutral">
+                          {lang === 'ar' ? 'غير متصل' : 'Not connected'}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Action */}
+                  <div className="mt-3">
+                    {!step1Done ? (
+                      <button className="btn btn-primary btn-sm" onClick={handleConnectGoogle}>
+                        <ExternalLink size={13} />
+                        {lang === 'ar' ? 'ربط حساب Google Business' : 'Connect Google Business'}
+                      </button>
+                    ) : (
+                      <button className="btn btn-secondary btn-sm" onClick={handleConnectGoogle}>
+                        <ExternalLink size={13} />
+                        {lang === 'ar' ? 'تغيير الحساب' : 'Change Account'}
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
-              <p className="text-xs text-content-tertiary">
-                {lang === 'ar' ? 'تم تسجيل الدخول عبر Google بنجاح' : 'Signed in with Google'}
-              </p>
             </div>
           </div>
 
-          <div className="card">
+          <StepConnector done={step1Done} />
+
+          {/* Step 2 — Link Locations */}
+          <div className={`card transition-opacity ${!step1Done ? 'opacity-50' : ''}`}>
             <div className="card-body">
-              <div className="flex items-start justify-between mb-3">
-                <div className="text-[13px] font-semibold text-content-primary">
-                  Google Business Profile
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <StatusDot color={linkedCount > 0 ? 'green' : hasGoogleToken ? 'yellow' : 'gray'} />
-                  <Badge variant={linkedCount > 0 ? 'success' : hasGoogleToken ? 'warning' : 'neutral'}>
-                    {linkedCount > 0
-                      ? `${linkedCount} ${lang === 'ar' ? 'مرتبط' : 'linked'}`
-                      : hasGoogleToken
-                        ? (lang === 'ar' ? 'جاهز للربط' : 'Ready to link')
-                        : (lang === 'ar' ? 'غير متصل' : 'Not connected')}
-                  </Badge>
+              <div className="flex items-start gap-4">
+                <StepCircle number={2} done={step2Done} />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <div>
+                      <p className="text-[13px] font-semibold text-content-primary">
+                        {lang === 'ar' ? 'ربط المواقع' : 'Link Locations'}
+                      </p>
+                      <p className="text-xs text-content-tertiary mt-0.5">
+                        {lang === 'ar'
+                          ? 'اختر مواقع Google Business لربطها بالفروع'
+                          : 'Select Google Business locations to link to branches'}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {step2Done ? (
+                        <>
+                          <StatusDot color="green" />
+                          <Badge variant="success">
+                            {linkedCount} {lang === 'ar' ? 'مرتبط' : 'linked'}
+                          </Badge>
+                        </>
+                      ) : step1Done ? (
+                        <>
+                          <StatusDot color="yellow" />
+                          <Badge variant="warning">
+                            {lang === 'ar' ? 'جاهز للربط' : 'Ready to link'}
+                          </Badge>
+                        </>
+                      ) : (
+                        <Badge variant="neutral">
+                          {lang === 'ar' ? 'في انتظار الخطوة السابقة' : 'Awaiting step 1'}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Action */}
+                  {step1Done && (
+                    <div className="mt-3">
+                      <button
+                        className="btn btn-primary btn-sm"
+                        onClick={handleFetchLocations}
+                        disabled={loadingLocations}
+                      >
+                        {loadingLocations ? (
+                          <RefreshCw size={13} className="animate-spin" />
+                        ) : (
+                          <Building2 size={13} />
+                        )}
+                        {loadingLocations
+                          ? lang === 'ar' ? 'جاري التحميل...' : 'Loading...'
+                          : lang === 'ar' ? 'ربط المواقع' : 'Link Locations'}
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Linked locations chips */}
+                  {step2Done && (
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                      {branches
+                        .filter((b: DbBranch) => b.google_location_id)
+                        .map((b: DbBranch) => (
+                          <span
+                            key={b.id}
+                            className="inline-flex items-center gap-1 text-2xs px-2 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200/60 rounded-md"
+                          >
+                            <Building2 size={10} />
+                            {b.internal_name}
+                            {b.city && (
+                              <span className="text-emerald-500">— {b.city}</span>
+                            )}
+                          </span>
+                        ))}
+                    </div>
+                  )}
                 </div>
               </div>
+            </div>
+          </div>
 
-              <p className="text-xs text-content-tertiary mb-3">
-                {lang === 'ar'
-                  ? 'ربط مواقع Google Business لمزامنة التقييمات'
-                  : 'Link Google Business locations to sync reviews'}
-              </p>
+          <StepConnector done={step2Done} />
 
-              <div className="flex flex-wrap gap-2">
-                {!hasGoogleToken && (
-                  <button className="btn btn-primary btn-sm" onClick={handleConnectGoogle}>
-                    <ExternalLink size={13} />
-                    {lang === 'ar' ? 'ربط حساب Google Business' : 'Connect Google Business'}
-                  </button>
-                )}
-
-                {hasGoogleToken && (
-                  <button
-                    className="btn btn-primary btn-sm"
-                    onClick={handleFetchLocations}
-                    disabled={loadingLocations}
-                  >
-                    {loadingLocations ? (
-                      <RefreshCw size={13} className="animate-spin" />
-                    ) : (
-                      <Building2 size={13} />
+          {/* Step 3 — Sync Reviews */}
+          <div className={`card transition-opacity ${!step2Done ? 'opacity-50' : ''}`}>
+            <div className="card-body">
+              <div className="flex items-start gap-4">
+                <StepCircle number={3} done={step3Done} />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <div>
+                      <p className="text-[13px] font-semibold text-content-primary">
+                        {lang === 'ar' ? 'مزامنة التقييمات' : 'Sync Reviews'}
+                      </p>
+                      <p className="text-xs text-content-tertiary mt-0.5">
+                        {lang === 'ar'
+                          ? 'جلب أحدث التقييمات من Google Business وتوليد ردود مقترحة'
+                          : 'Fetch latest reviews from Google Business and generate suggested replies'}
+                      </p>
+                    </div>
+                    {step2Done && (
+                      <Badge variant="neutral">
+                        {lang === 'ar' ? 'جاهز للمزامنة' : 'Ready to sync'}
+                      </Badge>
                     )}
-                    {lang === 'ar' ? 'ربط المواقع' : 'Link Locations'}
-                  </button>
-                )}
+                  </div>
 
-                {linkedCount > 0 && (
-                  <button className="btn btn-secondary btn-sm" onClick={handleSync} disabled={syncing}>
-                    {syncing ? (
-                      <RefreshCw size={13} className="animate-spin" />
-                    ) : (
-                      <RefreshCw size={13} />
-                    )}
-                    {lang === 'ar' ? 'مزامنة التقييمات' : 'Sync Reviews'}
-                  </button>
-                )}
+                  {/* Action */}
+                  {step2Done && (
+                    <div className="mt-3">
+                      <button
+                        className="btn btn-primary btn-sm"
+                        onClick={handleSync}
+                        disabled={syncing}
+                      >
+                        {syncing ? (
+                          <RefreshCw size={13} className="animate-spin" />
+                        ) : (
+                          <RefreshCw size={13} />
+                        )}
+                        {syncing
+                          ? lang === 'ar' ? 'جاري المزامنة...' : 'Syncing...'
+                          : lang === 'ar' ? 'مزامنة التقييمات' : 'Sync Reviews'}
+                      </button>
+                    </div>
+                  )}
 
-                {hasGoogleToken && (
-                  <button className="btn btn-secondary btn-sm" onClick={handleConnectGoogle}>
-                    <ExternalLink size={13} />
-                    {lang === 'ar' ? 'تغيير الحساب' : 'Change Account'}
-                  </button>
-                )}
+                  {/* Sync result */}
+                  {syncResult && (
+                    <div
+                      className={`mt-3 p-3 rounded-lg text-xs ${
+                        syncResult.errors.length > 0
+                          ? 'bg-amber-50 border border-amber-200/60'
+                          : 'bg-emerald-50 border border-emerald-200/60'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 mb-1">
+                        {syncResult.errors.length > 0 ? (
+                          <AlertCircle size={14} className="text-amber-600" />
+                        ) : (
+                          <CheckCircle size={14} className="text-emerald-600" />
+                        )}
+                        <span className="font-medium">
+                          {lang === 'ar'
+                            ? `تمت المزامنة: ${syncResult.synced} تقييم جديد، ${syncResult.drafts} رد مقترح`
+                            : `Synced: ${syncResult.synced} new reviews, ${syncResult.drafts} drafts`}
+                        </span>
+                      </div>
+                      {syncResult.errors.map((e: string, i: number) => (
+                        <div key={i} className="text-amber-700 ps-5">
+                          {e}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
         </div>
-
-        {syncResult && (
-          <div
-            className={`mt-3 p-3 rounded-lg text-xs ${
-              syncResult.errors.length > 0
-                ? 'bg-amber-50 border border-amber-200/60'
-                : 'bg-emerald-50 border border-emerald-200/60'
-            }`}
-          >
-            <div className="flex items-center gap-2 mb-1">
-              {syncResult.errors.length > 0 ? (
-                <AlertCircle size={14} className="text-amber-600" />
-              ) : (
-                <CheckCircle size={14} className="text-emerald-600" />
-              )}
-              <span className="font-medium">
-                {lang === 'ar'
-                  ? `تمت المزامنة: ${syncResult.synced} تقييم جديد، ${syncResult.drafts} رد مقترح`
-                  : `Synced: ${syncResult.synced} new reviews, ${syncResult.drafts} drafts`}
-              </span>
-            </div>
-            {syncResult.errors.map((e: string, i: number) => (
-              <div key={i} className="text-amber-700 ps-5">
-                {e}
-              </div>
-            ))}
-          </div>
-        )}
-
-        {linkedCount > 0 && (
-          <div className="mt-3">
-            <div className="text-2xs font-medium text-content-tertiary uppercase tracking-wider mb-2">
-              {lang === 'ar' ? 'المواقع المرتبطة' : 'Linked Locations'}
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              {branches
-                .filter((b: DbBranch) => b.google_location_id)
-                .map((b: DbBranch) => (
-                  <span
-                    key={b.id}
-                    className="inline-flex items-center gap-1 text-2xs px-2 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200/60 rounded-md"
-                  >
-                    <Building2 size={10} />
-                    {b.internal_name}
-                    {b.city && <span className="text-emerald-500">— {b.city}</span>}
-                  </span>
-                ))}
-            </div>
-          </div>
-        )}
       </div>
 
+      {/* ── AI section ── */}
       <div>
-        <h3 className="text-xs font-semibold text-content-secondary uppercase tracking-wider mb-3">
+        <h3 className="text-xs font-semibold text-content-secondary uppercase tracking-wider mb-4">
           {lang === 'ar' ? 'الذكاء الاصطناعي' : 'AI'}
         </h3>
 
         <div className="card">
           <div className="card-body">
-            <div className="flex items-start justify-between mb-3">
-              <div>
-                <div className="text-[13px] font-semibold text-content-primary">
-                  AI Smart Reply Engine
+            <div className="flex items-start gap-4">
+              {/* Icon */}
+              <div
+                className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                  geminiConfigured
+                    ? 'bg-brand-100 text-brand-600'
+                    : 'bg-surface-secondary text-content-tertiary'
+                }`}
+              >
+                <Zap size={20} />
+              </div>
+
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start justify-between gap-2 flex-wrap">
+                  <div>
+                    <p className="text-[13px] font-semibold text-content-primary">
+                      AI Smart Reply Engine
+                    </p>
+                    <p className="text-xs text-content-tertiary mt-0.5">
+                      {lang === 'ar'
+                        ? 'محرك ردود ذكي مدعوم بالذكاء الاصطناعي'
+                        : 'AI-powered smart reply engine'}
+                    </p>
+                  </div>
+
+                  {/* Status indicator */}
+                  <div className="flex items-center gap-1.5">
+                    <StatusDot color={geminiConfigured ? 'green' : 'gray'} />
+                    <Badge variant={geminiConfigured ? 'success' : 'neutral'}>
+                      {geminiConfigured
+                        ? lang === 'ar' ? 'متصل' : 'Connected'
+                        : lang === 'ar' ? 'محرك الرد الذكي غير متصل' : 'Not connected'}
+                    </Badge>
+                  </div>
                 </div>
-                <p className="text-xs text-content-tertiary mt-0.5">
-                  {lang === 'ar'
-                    ? 'محرك ردود ذكي مدعوم بالذكاء الاصطناعي'
-                    : 'AI-powered smart reply engine'}
-                </p>
-              </div>
 
-              <div className="flex items-center gap-1.5">
-                <StatusDot color={geminiConfigured ? 'green' : 'gray'} />
-                <Badge variant={geminiConfigured ? 'success' : 'neutral'}>
-                  {geminiConfigured
-                    ? (lang === 'ar' ? 'متصل' : 'Connected')
-                    : (lang === 'ar' ? 'محرك الرد الذكي غير متصل' : 'Not connected')}
-                </Badge>
-              </div>
-            </div>
+                {/* Content based on configured state */}
+                {geminiConfigured ? (
+                  <div className="mt-3 space-y-2">
+                    <button
+                      className="btn btn-secondary btn-sm"
+                      onClick={handleTestGemini}
+                      disabled={testingGemini}
+                    >
+                      {testingGemini ? (
+                        <RefreshCw size={13} className="animate-spin" />
+                      ) : (
+                        <Zap size={13} />
+                      )}
+                      {testingGemini
+                        ? lang === 'ar' ? 'جاري الاختبار...' : 'Testing...'
+                        : lang === 'ar' ? 'اختبار المحرك' : 'Test Engine'}
+                    </button>
 
-            {geminiConfigured ? (
-              <div className="space-y-2">
-                <button className="btn btn-secondary btn-sm" onClick={handleTestGemini} disabled={testingGemini}>
-                  {testingGemini ? (
-                    <RefreshCw size={13} className="animate-spin" />
-                  ) : (
-                    <Zap size={13} />
-                  )}
-                  {lang === 'ar' ? 'اختبار المحرك' : 'Test Engine'}
-                </button>
-
-                {geminiTestResult && (
-                  <div
-                    className={`text-xs p-2 rounded-lg ${
-                      geminiTestResult.startsWith('✓')
-                        ? 'bg-emerald-50 text-emerald-700'
-                        : 'bg-red-50 text-red-700'
-                    }`}
-                  >
-                    {geminiTestResult}
+                    {geminiTestResult && (
+                      <div
+                        className={`text-xs p-3 rounded-lg border ${
+                          geminiTestResult.startsWith('✓')
+                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200/60'
+                            : 'bg-red-50 text-red-700 border-red-200/60'
+                        }`}
+                      >
+                        {geminiTestResult}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="mt-3 text-xs text-content-tertiary bg-surface-secondary rounded-lg px-3 py-2.5">
+                    {lang === 'ar'
+                      ? 'يرجى إضافة VITE_GEMINI_API_KEY لتفعيل الذكاء الاصطناعي'
+                      : 'Add VITE_GEMINI_API_KEY to .env to enable AI'}
                   </div>
                 )}
               </div>
-            ) : (
-              <div className="text-xs text-content-tertiary">
-                {lang === 'ar'
-                  ? 'يرجى إضافة VITE_GEMINI_API_KEY لتفعيل الذكاء الاصطناعي'
-                  : 'Add VITE_GEMINI_API_KEY to .env to enable AI'}
-              </div>
-            )}
+            </div>
           </div>
         </div>
       </div>
 
+      {/* Location modal — unchanged */}
       {showLocationModal && (
         <Modal
-          title={lang === 'ar' ? 'ربط المواقع من Google Business' : 'Link Google Business Locations'}
+          title={
+            lang === 'ar'
+              ? 'ربط المواقع من Google Business'
+              : 'Link Google Business Locations'
+          }
           onClose={() => {
             setShowLocationModal(false);
             setSelectedLocations(new Set());
@@ -560,7 +727,9 @@ export default function Integrations() {
           ) : (
             <div className="space-y-1.5 max-h-96 overflow-y-auto">
               {locations.map((loc: GoogleLocation) => {
-                const alreadyLinked = branches.some((b: DbBranch) => b.google_location_id === loc.name);
+                const alreadyLinked = branches.some(
+                  (b: DbBranch) => b.google_location_id === loc.name
+                );
                 const isSelected = selectedLocations.has(loc.name);
 
                 return (
@@ -595,16 +764,23 @@ export default function Integrations() {
                       </div>
 
                       <div className="flex-1 min-w-0">
-                        <div className="text-[13px] font-medium text-content-primary">{loc.title}</div>
+                        <div className="text-[13px] font-medium text-content-primary">
+                          {loc.title}
+                        </div>
                         <div className="text-2xs text-content-tertiary">
-                          {[loc.storefrontAddress?.locality, loc.storefrontAddress?.addressLines?.join(', ')]
+                          {[
+                            loc.storefrontAddress?.locality,
+                            loc.storefrontAddress?.addressLines?.join(', '),
+                          ]
                             .filter(Boolean)
                             .join(' — ')}
                         </div>
                       </div>
 
                       {alreadyLinked && (
-                        <Badge variant="success">{lang === 'ar' ? 'مرتبط' : 'Linked'}</Badge>
+                        <Badge variant="success">
+                          {lang === 'ar' ? 'مرتبط' : 'Linked'}
+                        </Badge>
                       )}
                     </div>
                   </button>

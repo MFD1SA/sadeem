@@ -7,10 +7,31 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { Badge } from '@/components/ui/Badge';
 import { Modal } from '@/components/ui/Modal';
 import { Toggle } from '@/components/ui/Toggle';
-import { Plus, Edit3, Trash2 } from 'lucide-react';
+import { Plus, Edit3, Trash2, BarChart2 } from 'lucide-react';
 import type { DbReplyTemplate } from '@/types/database';
 
 type TemplateForm = { name: string; body: string; category: string; rating_min: number; rating_max: number; is_active: boolean };
+
+function StarDisplay({ min, max }: { min: number; max: number }) {
+  const renderStars = (filled: number) =>
+    Array.from({ length: 5 }, (_, i) => (
+      <span key={i} className={i < filled ? 'text-amber-400' : 'text-content-tertiary opacity-40'}>
+        ★
+      </span>
+    ));
+
+  return (
+    <div className="flex items-center gap-1 text-sm">
+      <span className="flex">{renderStars(min)}</span>
+      {min !== max && (
+        <>
+          <span className="text-content-tertiary text-xs mx-0.5">–</span>
+          <span className="flex">{renderStars(max)}</span>
+        </>
+      )}
+    </div>
+  );
+}
 
 export default function Templates() {
   const { t, lang } = useLanguage();
@@ -104,41 +125,120 @@ export default function Templates() {
     positive: 'success', negative: 'danger', neutral: 'warning', general: 'neutral',
   };
 
+  const categoryDotColors: Record<string, string> = {
+    positive: 'bg-green-500',
+    negative: 'bg-red-500',
+    neutral: 'bg-amber-500',
+    general: 'bg-slate-400',
+  };
+
+  const activeCount = templates.filter((tpl) => tpl.is_active).length;
+  const categoryCounts = ['positive', 'negative', 'neutral', 'general'].map((cat) => ({
+    key: cat,
+    label: t.templatesPage[cat as keyof typeof t.templatesPage] as string,
+    count: templates.filter((tpl) => tpl.category === cat).length,
+  }));
+
   return (
-    <div>
+    <div className="space-y-5">
+      {/* Stats Summary */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <div className="card card-body text-center">
+          <div className="text-2xl font-bold text-content-primary">{templates.length}</div>
+          <div className="text-xs text-content-tertiary mt-0.5">
+            {lang === 'ar' ? 'إجمالي القوالب' : 'Total Templates'}
+          </div>
+        </div>
+        <div className="card card-body text-center">
+          <div className="text-2xl font-bold text-content-primary">{activeCount}</div>
+          <div className="text-xs text-content-tertiary mt-0.5">
+            {lang === 'ar' ? 'القوالب النشطة' : 'Active Templates'}
+          </div>
+        </div>
+        <div className="card card-body col-span-2 sm:col-span-1">
+          <div className="text-xs font-semibold text-content-secondary mb-2">
+            {lang === 'ar' ? 'حسب الفئة' : 'By Category'}
+          </div>
+          <div className="flex flex-wrap gap-x-3 gap-y-1">
+            {categoryCounts.map(({ key, label, count }) => (
+              <div key={key} className="flex items-center gap-1.5">
+                <span className={`w-2 h-2 rounded-full flex-shrink-0 ${categoryDotColors[key]}`} />
+                <span className="text-xs text-content-secondary">{label}</span>
+                <span className="text-xs font-semibold text-content-primary">{count}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Main Card */}
       <div className="card">
         <div className="card-header">
           <h3>{t.templatesPage.title} ({templates.length})</h3>
-          <button className="btn btn-primary btn-sm" onClick={openCreate}><Plus size={14} /> {t.templatesPage.addTemplate}</button>
+          <button className="btn btn-primary btn-sm" onClick={openCreate}>
+            <Plus size={14} /> {t.templatesPage.addTemplate}
+          </button>
         </div>
+
         {templates.length === 0 ? (
           <EmptyState
             message={lang === 'ar' ? 'لا توجد قوالب بعد. أنشئ أول قالب.' : 'No templates yet.'}
-            action={<button className="btn btn-primary btn-sm" onClick={openCreate}><Plus size={14} /> {t.templatesPage.addTemplate}</button>}
+            action={
+              <button className="btn btn-primary btn-sm" onClick={openCreate}>
+                <Plus size={14} /> {t.templatesPage.addTemplate}
+              </button>
+            }
           />
         ) : (
-          <div className="divide-y divide-border">
-            {templates.map((tpl: DbReplyTemplate) => (
-              <div key={tpl.id} className="px-5 py-4 hover:bg-surface-secondary/50 transition-colors">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-content-primary">{tpl.name}</span>
-                    <Badge variant={categoryColors[tpl.category]}>{t.templatesPage[tpl.category as keyof typeof t.templatesPage] as string}</Badge>
-                    {!tpl.is_active && <Badge variant="neutral">{t.status.inactive}</Badge>}
-                  </div>
-                  <div className="flex items-center gap-3">
+          <div className="p-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {templates.map((tpl: DbReplyTemplate) => (
+                <div
+                  key={tpl.id}
+                  className={`card card-body flex flex-col gap-3 transition-shadow hover:shadow-md ${!tpl.is_active ? 'opacity-60' : ''}`}
+                >
+                  {/* Header Row */}
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <div className="text-sm font-semibold text-content-primary truncate">{tpl.name}</div>
+                      <div className="mt-1">
+                        <Badge variant={categoryColors[tpl.category]}>
+                          {t.templatesPage[tpl.category as keyof typeof t.templatesPage] as string}
+                        </Badge>
+                      </div>
+                    </div>
                     <Toggle value={tpl.is_active} onChange={() => handleToggle(tpl.id, tpl.is_active)} />
-                    <button className="btn-icon" onClick={() => openEdit(tpl)}><Edit3 size={14} /></button>
-                    <button className="btn-icon" onClick={() => handleDelete(tpl.id)}><Trash2 size={14} className="text-red-500" /></button>
+                  </div>
+
+                  {/* Body Preview */}
+                  <p className="text-xs text-content-secondary line-clamp-3 leading-relaxed flex-1">
+                    {tpl.body}
+                  </p>
+
+                  {/* Divider */}
+                  <div className="border-t border-border" />
+
+                  {/* Star Rating Range */}
+                  <div className="flex items-center justify-between">
+                    <StarDisplay min={tpl.rating_min} max={tpl.rating_max} />
+                    <div className="flex items-center gap-1 text-xs text-content-tertiary">
+                      <BarChart2 size={12} />
+                      <span>{tpl.usage_count}</span>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center justify-end gap-1 pt-1">
+                    <button className="btn-icon" onClick={() => openEdit(tpl)} title={t.common.edit}>
+                      <Edit3 size={14} />
+                    </button>
+                    <button className="btn-icon" onClick={() => handleDelete(tpl.id)} title={t.common.delete}>
+                      <Trash2 size={14} className="text-red-500" />
+                    </button>
                   </div>
                 </div>
-                <p className="text-xs text-content-secondary mb-2 line-clamp-2">{tpl.body}</p>
-                <div className="flex items-center gap-4 text-2xs text-content-tertiary">
-                  <span>{t.templatesPage.ratingRange}: {tpl.rating_min}–{tpl.rating_max} ★</span>
-                  <span>{t.templatesPage.usage}: {tpl.usage_count}</span>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         )}
       </div>

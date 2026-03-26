@@ -18,6 +18,7 @@ import {
   Eye,
   MousePointerClick,
   ScanLine,
+  Plus,
 } from 'lucide-react';
 import type { DbBranch } from '@/types/database';
 import type { DbQrConfig } from '@/types/qr';
@@ -206,9 +207,16 @@ export default function QrReviews() {
     return <ErrorState message={error} onRetry={loadData} />;
   }
 
+  // Computed stats
+  const configuredItems = items.filter((i) => i.config !== null);
+  const unconfiguredItems = items.filter((i) => i.config === null);
+  const totalScans = configuredItems.reduce((sum, i) => sum + (i.config?.scan_count ?? 0), 0);
+  const totalClicks = configuredItems.reduce((sum, i) => sum + (i.config?.click_count ?? 0), 0);
+
   return (
-    <div>
-      <div className="flex items-center justify-between mb-5">
+    <div className="space-y-6">
+      {/* Page header */}
+      <div className="flex items-center justify-between">
         <div>
           <h2 className="text-base font-bold text-content-primary">
             {lang === 'ar' ? 'QR التقييمات' : 'Review QR'}
@@ -233,140 +241,239 @@ export default function QrReviews() {
           />
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {items.map(({ branch, config }: BranchQr) => {
-            const qrUrl = config ? qrService.getQrUrl(config) : null;
-            const landingUrl = config ? qrService.getLandingUrl(config.slug) : null;
+        <>
+          {/* Stats summary bar */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="card">
+              <div className="card-body py-3 px-4">
+                <p className="text-2xs text-content-tertiary uppercase tracking-wider mb-1">
+                  {lang === 'ar' ? 'رموز مُعدَّة' : 'QR Configured'}
+                </p>
+                <p className="text-2xl font-bold text-content-primary leading-none">
+                  {configuredItems.length}
+                </p>
+                <p className="text-2xs text-content-tertiary mt-1">
+                  {lang === 'ar' ? `من ${items.length} فرع` : `of ${items.length} branches`}
+                </p>
+              </div>
+            </div>
 
-            return (
-              <div key={branch.id} className="card">
-                <div className="card-body">
-                  <div className="flex gap-4">
-                    <div className="flex-shrink-0">
-                      {config && qrUrl ? (
-                        <div className="w-28 h-28 bg-white border border-border/60 rounded-lg p-2 flex items-center justify-center">
-                          <QrPreview url={qrUrl} size={96} />
-                        </div>
-                      ) : (
-                        <div className="w-28 h-28 bg-surface-secondary border border-border/60 rounded-lg flex items-center justify-center">
-                          <QrCode size={32} className="text-content-tertiary/30" />
-                        </div>
+            <div className="card">
+              <div className="card-body py-3 px-4">
+                <p className="text-2xs text-content-tertiary uppercase tracking-wider mb-1">
+                  {lang === 'ar' ? 'إجمالي المسح' : 'Total Scans'}
+                </p>
+                <p className="text-2xl font-bold text-content-primary leading-none">
+                  {totalScans.toLocaleString()}
+                </p>
+                <p className="text-2xs text-content-tertiary mt-1">
+                  {lang === 'ar' ? 'عبر جميع الفروع' : 'across all branches'}
+                </p>
+              </div>
+            </div>
+
+            <div className="card">
+              <div className="card-body py-3 px-4">
+                <p className="text-2xs text-content-tertiary uppercase tracking-wider mb-1">
+                  {lang === 'ar' ? 'إجمالي النقرات' : 'Total Clicks'}
+                </p>
+                <p className="text-2xl font-bold text-content-primary leading-none">
+                  {totalClicks.toLocaleString()}
+                </p>
+                <p className="text-2xs text-content-tertiary mt-1">
+                  {lang === 'ar' ? 'عبر جميع الفروع' : 'across all branches'}
+                </p>
+              </div>
+            </div>
+
+            <div className="card">
+              <div className="card-body py-3 px-4">
+                <p className="text-2xs text-content-tertiary uppercase tracking-wider mb-1">
+                  {lang === 'ar' ? 'فروع بدون QR' : 'Without QR'}
+                </p>
+                <p className="text-2xl font-bold text-amber-500 leading-none">
+                  {unconfiguredItems.length}
+                </p>
+                <p className="text-2xs text-content-tertiary mt-1">
+                  {lang === 'ar' ? 'لم تُعدَّ بعد' : 'not configured yet'}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* QR cards grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            {items.map(({ branch, config }: BranchQr) => {
+              const qrUrl = config ? qrService.getQrUrl(config) : null;
+              const landingUrl = config ? qrService.getLandingUrl(config.slug) : null;
+
+              if (!config) {
+                // Not-configured state: dashed border card
+                return (
+                  <div
+                    key={branch.id}
+                    className="rounded-xl border-2 border-dashed border-border bg-surface-secondary/30 p-6 flex flex-col items-center justify-center gap-3 text-center min-h-[200px] hover:border-brand-400 hover:bg-brand-50/20 transition-colors"
+                  >
+                    <div className="w-14 h-14 rounded-full bg-surface-secondary flex items-center justify-center">
+                      <QrCode size={26} className="text-content-tertiary/50" />
+                    </div>
+                    <div>
+                      <p className="text-[13px] font-semibold text-content-primary">
+                        {branch.internal_name}
+                      </p>
+                      {branch.city && (
+                        <p className="text-xs text-content-tertiary mt-0.5">{branch.city}</p>
                       )}
                     </div>
+                    <p className="text-xs text-content-tertiary max-w-[200px]">
+                      {lang === 'ar'
+                        ? 'لم يتم إنشاء رمز QR لهذا الفرع بعد'
+                        : 'No QR code generated for this branch yet'}
+                    </p>
+                    <button
+                      className="btn btn-primary btn-sm"
+                      onClick={() => openSetup(branch, null)}
+                    >
+                      <Plus size={13} />
+                      {lang === 'ar' ? 'إنشاء QR' : 'Generate QR'}
+                    </button>
+                  </div>
+                );
+              }
 
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-[13px] font-semibold text-content-primary truncate">
-                          {branch.internal_name}
-                        </span>
-                        {branch.city && (
-                          <span className="text-2xs text-content-tertiary">— {branch.city}</span>
-                        )}
+              return (
+                <div key={branch.id} className="card">
+                  <div className="card-body">
+                    {/* Top section: QR preview + branch info */}
+                    <div className="flex gap-5 mb-4">
+                      {/* Large QR preview */}
+                      <div className="flex-shrink-0">
+                        <div className="w-40 h-40 bg-white border border-border/60 rounded-xl p-2.5 flex items-center justify-center shadow-sm">
+                          <QrPreview url={qrUrl!} size={136} />
+                        </div>
                       </div>
 
-                      {config ? (
-                        <>
-                          <div className="flex items-center gap-1.5 mb-2">
-                            <Badge variant={config.mode === 'landing' ? 'info' : 'success'}>
-                              {config.mode === 'landing'
-                                ? lang === 'ar'
-                                  ? 'صفحة هبوط'
-                                  : 'Landing Page'
-                                : lang === 'ar'
-                                  ? 'Google مباشر'
-                                  : 'Google Direct'}
-                            </Badge>
+                      {/* Branch info + stats */}
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-[15px] font-bold text-content-primary leading-snug">
+                          {branch.internal_name}
+                        </h3>
+                        {branch.city && (
+                          <p className="text-xs text-content-tertiary mt-0.5 mb-2">{branch.city}</p>
+                        )}
 
-                            <Badge variant="neutral">
-                              <ScanLine size={10} className="me-0.5" />
-                              {config.scan_count} {lang === 'ar' ? 'مسح' : 'scans'}
-                            </Badge>
-
-                            <Badge variant="neutral">
-                              <MousePointerClick size={10} className="me-0.5" />
-                              {config.click_count} {lang === 'ar' ? 'نقرة' : 'clicks'}
-                            </Badge>
-                          </div>
-
-                          <div className="flex items-center gap-1 mb-3">
-                            <code className="text-2xs text-content-tertiary bg-surface-secondary px-1.5 py-0.5 rounded truncate max-w-[200px]">
-                              {landingUrl}
-                            </code>
-                            <button
-                              className="btn-icon w-6 h-6"
-                              title="Copy"
-                              onClick={() => copyLink(qrUrl || '')}
-                            >
-                              <Copy size={11} />
-                            </button>
-                          </div>
-
-                          <div className="flex flex-wrap gap-1.5">
-                            <button
-                              className="btn btn-secondary btn-sm"
-                              onClick={() => setDownloadConfig(config)}
-                            >
-                              <Download size={12} /> {lang === 'ar' ? 'تنزيل' : 'Download'}
-                            </button>
-
-                            <button
-                              className="btn btn-secondary btn-sm"
-                              onClick={() => openSetup(branch, config)}
-                            >
-                              <Settings size={12} /> {lang === 'ar' ? 'إعدادات' : 'Settings'}
-                            </button>
-
-                            <button
-                              className="btn btn-secondary btn-sm"
-                              onClick={() => handleRegenerate(config, branch.internal_name)}
-                            >
-                              <RefreshCw size={12} /> {lang === 'ar' ? 'تجديد' : 'Regenerate'}
-                            </button>
-
-                            {config.mode === 'landing' && (
-                              <a
-                                href={landingUrl || ''}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="btn btn-secondary btn-sm"
-                              >
-                                <Eye size={12} /> {lang === 'ar' ? 'معاينة' : 'Preview'}
-                              </a>
-                            )}
-                          </div>
-                        </>
-                      ) : (
-                        <div>
-                          <p className="text-xs text-content-tertiary mb-2">
-                            {lang === 'ar'
-                              ? 'لم يتم إنشاء QR لهذا الفرع بعد'
-                              : 'No QR code generated yet'}
-                          </p>
-                          <button
-                            className="btn btn-primary btn-sm"
-                            onClick={() => openSetup(branch, null)}
-                          >
-                            <QrCode size={12} /> {lang === 'ar' ? 'إنشاء QR' : 'Generate QR'}
-                          </button>
+                        <div className="mb-3">
+                          <Badge variant={config.mode === 'landing' ? 'info' : 'success'}>
+                            {config.mode === 'landing'
+                              ? lang === 'ar' ? 'صفحة هبوط' : 'Landing Page'
+                              : lang === 'ar' ? 'Google مباشر' : 'Google Direct'}
+                          </Badge>
                         </div>
+
+                        {/* Big stat numbers */}
+                        <div className="flex gap-5">
+                          <div>
+                            <div className="flex items-center gap-1 text-content-tertiary mb-0.5">
+                              <ScanLine size={12} />
+                              <span className="text-2xs uppercase tracking-wide">
+                                {lang === 'ar' ? 'مسح' : 'Scans'}
+                              </span>
+                            </div>
+                            <span className="text-2xl font-bold text-content-primary leading-none">
+                              {config.scan_count.toLocaleString()}
+                            </span>
+                          </div>
+                          <div className="w-px bg-border/60" />
+                          <div>
+                            <div className="flex items-center gap-1 text-content-tertiary mb-0.5">
+                              <MousePointerClick size={12} />
+                              <span className="text-2xs uppercase tracking-wide">
+                                {lang === 'ar' ? 'نقرات' : 'Clicks'}
+                              </span>
+                            </div>
+                            <span className="text-2xl font-bold text-content-primary leading-none">
+                              {config.click_count.toLocaleString()}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Landing URL copy row */}
+                    <div className="flex items-center gap-2 mb-4 bg-surface-secondary rounded-lg px-3 py-2">
+                      <code className="flex-1 text-2xs text-content-tertiary truncate" dir="ltr">
+                        {landingUrl}
+                      </code>
+                      <button
+                        className="btn-icon w-7 h-7 flex-shrink-0"
+                        title={lang === 'ar' ? 'نسخ الرابط' : 'Copy link'}
+                        onClick={() => copyLink(qrUrl || '')}
+                      >
+                        <Copy size={12} />
+                      </button>
+                    </div>
+
+                    {/* Action buttons */}
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        className="btn btn-primary btn-sm"
+                        onClick={() => setDownloadConfig(config)}
+                      >
+                        <Download size={12} />
+                        {lang === 'ar' ? 'تنزيل' : 'Download'}
+                      </button>
+
+                      <button
+                        className="btn btn-secondary btn-sm"
+                        onClick={() => openSetup(branch, config)}
+                      >
+                        <Settings size={12} />
+                        {lang === 'ar' ? 'إعدادات' : 'Settings'}
+                      </button>
+
+                      <button
+                        className="btn btn-secondary btn-sm"
+                        onClick={() => handleRegenerate(config, branch.internal_name)}
+                      >
+                        <RefreshCw size={12} />
+                        {lang === 'ar' ? 'تجديد' : 'Regenerate'}
+                      </button>
+
+                      {config.mode === 'landing' && (
+                        <a
+                          href={landingUrl || ''}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn btn-secondary btn-sm"
+                        >
+                          <Eye size={12} />
+                          {lang === 'ar' ? 'معاينة' : 'Preview'}
+                        </a>
                       )}
                     </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        </>
       )}
 
+      {/* Setup modal — unchanged */}
       {showSetup && setupBranch && (
         <Modal
-          title={lang === 'ar' ? `إعداد QR — ${setupBranch.internal_name}` : `QR Setup — ${setupBranch.internal_name}`}
+          title={
+            lang === 'ar'
+              ? `إعداد QR — ${setupBranch.internal_name}`
+              : `QR Setup — ${setupBranch.internal_name}`
+          }
           onClose={closeSetup}
           footer={
             <>
               <button className="btn btn-primary" onClick={handleSaveSetup} disabled={saving}>
-                {saving ? (lang === 'ar' ? 'جاري الحفظ...' : 'Saving...') : lang === 'ar' ? 'حفظ' : 'Save'}
+                {saving
+                  ? lang === 'ar' ? 'جاري الحفظ...' : 'Saving...'
+                  : lang === 'ar' ? 'حفظ' : 'Save'}
               </button>
               <button className="btn btn-secondary" onClick={closeSetup} disabled={saving}>
                 {lang === 'ar' ? 'إلغاء' : 'Cancel'}
@@ -431,7 +538,9 @@ export default function QrReviews() {
             </div>
 
             <div>
-              <label className="form-label">{lang === 'ar' ? 'رابط تقييم Google' : 'Google Review URL'}</label>
+              <label className="form-label">
+                {lang === 'ar' ? 'رابط تقييم Google' : 'Google Review URL'}
+              </label>
               <input
                 className="form-input text-xs"
                 placeholder="https://search.google.com/local/writereview?placeid=..."
@@ -495,7 +604,9 @@ export default function QrReviews() {
                         : 'e.g. Thank you for visiting! Your feedback matters.'
                     }
                     value={setupMessage}
-                    onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setSetupMessage(e.target.value)}
+                    onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
+                      setSetupMessage(e.target.value)
+                    }
                   />
                 </div>
               </>
@@ -504,6 +615,7 @@ export default function QrReviews() {
         </Modal>
       )}
 
+      {/* Download modal — unchanged */}
       {downloadConfig && (
         <Modal
           title={lang === 'ar' ? 'تنزيل QR' : 'Download QR'}
