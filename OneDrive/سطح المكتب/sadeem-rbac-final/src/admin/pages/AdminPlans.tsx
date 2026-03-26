@@ -6,6 +6,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Package, Edit2, Check, X, ChevronDown, ChevronUp, Star } from 'lucide-react';
 import { plansService, type DbPlan, type DbPlanLimits } from '@/services/plans';
+import { adminSupabase } from '../services/adminSupabase';
 
 export default function AdminPlans() {
   const [plans, setPlans] = useState<DbPlan[]>([]);
@@ -52,7 +53,11 @@ export default function AdminPlans() {
   const savePlan = async (planId: string) => {
     setSaving(true);
     try {
-      await plansService.updatePlan(planId, planEdits);
+      const { error } = await adminSupabase
+        .from('plans')
+        .update({ ...planEdits, updated_at: new Date().toISOString() })
+        .eq('id', planId);
+      if (error) throw error;
       setEditingPlan(null);
       await load();
     } finally { setSaving(false); }
@@ -67,7 +72,10 @@ export default function AdminPlans() {
   const saveLimits = async (planId: string) => {
     setSaving(true);
     try {
-      await plansService.updateLimits(planId, limitEdits);
+      const { error } = await adminSupabase
+        .from('plan_limits')
+        .upsert({ plan_id: planId, ...limitEdits });
+      if (error) throw error;
       setEditingLimits(null);
       await load();
     } finally { setSaving(false); }
@@ -77,11 +85,11 @@ export default function AdminPlans() {
     const current = features[planId]?.[featureKey] || 'false';
     const newVal = current === 'true' ? 'false' : 'true';
     try {
-      await plansService.updateFeature(planId, featureKey, newVal);
-      setFeatures(prev => ({
-        ...prev,
-        [planId]: { ...prev[planId], [featureKey]: newVal },
-      }));
+      const { error } = await adminSupabase
+        .from('plan_features')
+        .upsert({ plan_id: planId, feature_key: featureKey, feature_value: newVal });
+      if (error) throw error;
+      setFeatures(prev => ({ ...prev, [planId]: { ...prev[planId], [featureKey]: newVal } }));
     } catch { /* silent */ }
   };
 
@@ -113,7 +121,7 @@ export default function AdminPlans() {
 
   if (loading) return (
     <div className="flex items-center justify-center h-64">
-      <div className="w-8 h-8 border-2 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin" />
+      <div className="admin-spinner" />
     </div>
   );
 

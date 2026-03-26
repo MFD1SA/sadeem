@@ -10,7 +10,7 @@ const clientOptions = {
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
-    flowType: 'implicit',
+    flowType: 'pkce',
     storageKey: 'sadeem-auth',
   },
 };

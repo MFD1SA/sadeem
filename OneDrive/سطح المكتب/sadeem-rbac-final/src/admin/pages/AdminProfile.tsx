@@ -39,23 +39,53 @@ export default function AdminProfile() {
     }
   };
 
+  const compressImage = (file: File, maxSizeKB = 800): Promise<Blob> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        const canvas = document.createElement('canvas');
+        let { width, height } = img;
+        const MAX_DIM = 600;
+        if (width > MAX_DIM || height > MAX_DIM) {
+          if (width > height) { height = Math.round(height * MAX_DIM / width); width = MAX_DIM; }
+          else { width = Math.round(width * MAX_DIM / height); height = MAX_DIM; }
+        }
+        canvas.width = width; canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) { reject(new Error('Canvas error')); return; }
+        ctx.drawImage(img, 0, 0, width, height);
+        let quality = 0.85;
+        const tryCompress = () => {
+          canvas.toBlob((blob) => {
+            if (!blob) { reject(new Error('Compression failed')); return; }
+            if (blob.size <= maxSizeKB * 1024 || quality <= 0.3) { resolve(blob); }
+            else { quality -= 0.1; tryCompress(); }
+          }, 'image/jpeg', quality);
+        };
+        tryCompress();
+      };
+      img.onerror = reject;
+      img.src = url;
+    });
+  };
+
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
 
-    if (file.size > 2 * 1024 * 1024) {
-      showMsg('حجم الصورة يجب ألا يتجاوز 2 ميغابايت', 'error');
-      return;
-    }
-
     setUploading(true);
     try {
-      const ext = file.name.split('.').pop() || 'png';
-      const path = `admin-avatars/${user.id}.${ext}`;
+      let uploadFile: Blob = file;
+      if (file.size > 500 * 1024) {
+        uploadFile = await compressImage(file, 800);
+      }
+      const path = `admin-avatars/${user.id}.jpg`;
 
       const { error: upErr } = await adminSupabase.storage
         .from('avatars')
-        .upload(path, file, { upsert: true, contentType: file.type });
+        .upload(path, uploadFile, { upsert: true, contentType: 'image/jpeg' });
 
       if (upErr) {
         // If bucket doesn't exist, show helpful message
@@ -108,7 +138,7 @@ export default function AdminProfile() {
             <div className="flex items-center gap-5 mb-6">
               {/* Avatar */}
               <div className="relative group">
-                <div className="w-20 h-20 rounded-2xl overflow-hidden bg-gradient-to-br from-cyan-600 to-blue-700 flex items-center justify-center flex-shrink-0 shadow-lg">
+                <div className="w-20 h-20 rounded-2xl overflow-hidden bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center flex-shrink-0 shadow-lg">
                   {avatarUrl ? (
                     <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
                   ) : (
@@ -118,10 +148,10 @@ export default function AdminProfile() {
                 <button
                   onClick={() => fileRef.current?.click()}
                   disabled={uploading}
-                  className="absolute -bottom-1 -left-1 w-7 h-7 rounded-lg bg-[#111827] border border-white/[0.1] flex items-center justify-center text-slate-400 hover:text-cyan-400 hover:border-cyan-500/30 transition-colors shadow-lg"
+                  className="absolute -bottom-1 -left-1 w-7 h-7 rounded-lg bg-[#1e293b] border border-white/[0.1] flex items-center justify-center text-slate-400 hover:text-indigo-400 hover:border-indigo-500/30 transition-colors shadow-lg"
                 >
                   {uploading ? (
-                    <div className="w-3.5 h-3.5 border-2 border-slate-600 border-t-cyan-400 rounded-full animate-spin" />
+                    <div className="w-3.5 h-3.5 border-2 border-slate-600 border-t-indigo-400 rounded-full animate-spin" />
                   ) : (
                     <Camera size={13} />
                   )}
@@ -133,7 +163,7 @@ export default function AdminProfile() {
               <div className="flex-1 min-w-0">
                 <h2 className="text-lg font-semibold text-white truncate">{user?.full_name_ar}</h2>
                 <p className="text-sm text-slate-400 truncate" dir="ltr">{user?.email}</p>
-                <p className="text-xs text-cyan-400 mt-1">
+                <p className="text-xs text-indigo-400 mt-1">
                   {user?.is_super_admin ? 'مدير عام النظام' : user?.role?.display_name_ar}
                 </p>
               </div>

@@ -94,6 +94,38 @@ export default function Settings() {
     );
   };
 
+  const compressImage = (file: File, maxSizeKB = 800): Promise<Blob> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        const canvas = document.createElement('canvas');
+        let { width, height } = img;
+        const MAX_DIM = 600;
+        if (width > MAX_DIM || height > MAX_DIM) {
+          if (width > height) { height = Math.round(height * MAX_DIM / width); width = MAX_DIM; }
+          else { width = Math.round(width * MAX_DIM / height); height = MAX_DIM; }
+        }
+        canvas.width = width; canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) { reject(new Error('Canvas error')); return; }
+        ctx.drawImage(img, 0, 0, width, height);
+        let quality = 0.85;
+        const tryCompress = () => {
+          canvas.toBlob((blob) => {
+            if (!blob) { reject(new Error('Compression failed')); return; }
+            if (blob.size <= maxSizeKB * 1024 || quality <= 0.3) { resolve(blob); }
+            else { quality -= 0.1; tryCompress(); }
+          }, 'image/jpeg', quality);
+        };
+        tryCompress();
+      };
+      img.onerror = reject;
+      img.src = url;
+    });
+  };
+
   const handleAvatarUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
@@ -102,14 +134,23 @@ export default function Settings() {
     setProfileMessage('');
 
     try {
-      const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
-      const filePath = `${user.id}.${ext}`;
+      let uploadFile: Blob = file;
+      if (file.size > 500 * 1024) {
+        uploadFile = await compressImage(file, 800);
+      }
+
+      const filePath = `${user.id}.jpg`;
 
       const { error: upErr } = await supabase.storage
         .from('avatars')
-        .upload(filePath, file, { upsert: true });
+        .upload(filePath, uploadFile, { upsert: true, contentType: 'image/jpeg' });
 
-      if (upErr) throw upErr;
+      if (upErr) {
+        if (upErr.message?.includes('Bucket not found') || upErr.message?.includes('bucket')) {
+          throw new Error(lang === 'ar' ? 'خدمة رفع الصور غير مهيأة بعد. تواصل مع الدعم.' : 'Image upload service not configured. Contact support.');
+        }
+        throw upErr;
+      }
 
       const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(filePath);
       const publicUrl = `${urlData.publicUrl}?t=${Date.now()}`;

@@ -72,7 +72,7 @@ export function AdminTopbar({ onMenuToggle }: AdminTopbarProps) {
       <div className="relative" ref={menuRef}>
         <button onClick={() => setShowMenu(!showMenu)}
           className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl hover:bg-white/[0.04] transition-colors">
-          <div className="w-8 h-8 rounded-lg overflow-hidden bg-gradient-to-br from-cyan-600 to-blue-700 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+          <div className="w-8 h-8 rounded-lg overflow-hidden bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
             {user?.avatar_url
               ? <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
               : user?.full_name_ar?.charAt(0)
@@ -87,7 +87,7 @@ export function AdminTopbar({ onMenuToggle }: AdminTopbarProps) {
         </button>
 
         {showMenu && (
-          <div className="absolute left-0 top-full mt-2 w-52 bg-[#0f1729] border border-white/[0.08] rounded-xl shadow-2xl shadow-black/50 overflow-hidden z-50">
+          <div className="absolute left-0 top-full mt-2 w-52 bg-[#1e293b] border border-white/[0.08] rounded-xl shadow-2xl shadow-black/50 overflow-hidden z-50">
             <div className="px-4 py-3 bg-white/[0.02] border-b border-white/[0.06]">
               <div className="text-sm text-white font-medium">{user?.full_name_ar}</div>
               <div className="text-[11px] text-slate-500 mt-0.5" dir="ltr">{user?.email}</div>

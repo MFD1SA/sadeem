@@ -58,13 +58,13 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
             {branding?.logo_icon_url ? (
               <img src={branding.logo_icon_url} alt="" className="w-8 h-8 rounded-lg object-contain" />
             ) : (
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
                 <Layers size={16} className="text-white" />
               </div>
             )}
             <div>
               <span className="text-white text-sm font-semibold tracking-wide">{branding?.platform_name_en || 'SADEEM'}</span>
-              <span className="block text-[10px] text-cyan-400/80 font-medium -mt-0.5">لوحة الإدارة</span>
+              <span className="block text-[10px] text-indigo-400/80 font-medium -mt-0.5">لوحة الإدارة</span>
             </div>
           </div>
           <button onClick={onClose} className="lg:hidden p-1.5 rounded-md text-slate-500 hover:text-white hover:bg-white/5 transition-colors">
@@ -81,7 +81,7 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
                   className={`admin-nav-item ${isActive(item.path) ? 'admin-nav-item-active' : ''}`}>
                   <item.icon size={18} className="flex-shrink-0" />
                   <span>{item.label}</span>
-                  {isActive(item.path) && <div className="mr-auto w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-sm shadow-cyan-400/50" />}
+                  {isActive(item.path) && <div className="mr-auto w-1.5 h-1.5 rounded-full bg-indigo-400 shadow-sm shadow-indigo-400/50" />}
                 </NavLink>
                 {item.dividerAfter && <div className="my-3 mx-3 border-t border-white/[0.04]" />}
               </div>

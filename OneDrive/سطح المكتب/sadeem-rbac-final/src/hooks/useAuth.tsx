@@ -113,12 +113,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
-    // Use onAuthStateChange exclusively for session initialization.
-    // The INITIAL_SESSION event fires immediately with the current session,
-    // so there is no need for a separate getSession() call. Calling both
-    // causes two concurrent hydrateAuth invocations (double-hydration race)
-    // which can result in isLoading toggling false prematurely while the
-    // second hydration still runs.
+    // Immediately try to get stored session (non-blocking, before listener fires)
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (mounted && session) {
+        hydrateAuth(session);
+      }
+    });
+
     const { data: listener } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!mounted) return;
 
