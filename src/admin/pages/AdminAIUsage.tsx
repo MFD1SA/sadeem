@@ -107,7 +107,7 @@ export default function AdminAIUsage() {
                   <div className="flex items-center gap-6 text-xs">
                     <span className="text-slate-400">{c.total_calls} طلب</span>
                     <span className="text-slate-400">{Number(c.total_tokens).toLocaleString()} توكن</span>
-                    <span className="text-cyan-400">${Number(c.total_cost).toFixed(4)}</span>
+                    <span className="text-cyan-400">{(Number(c.total_cost) * 3.75).toFixed(3)} ر.س</span>
                   </div>
                 </div>
               ))}
@@ -158,7 +158,7 @@ export default function AdminAIUsage() {
                       <td><span className="text-sm text-white">{log.org_name}</span></td>
                       <td><span className="text-xs text-slate-400 font-mono" dir="ltr">{log.model}</span></td>
                       <td><span className="text-sm text-slate-300">{log.total_tokens.toLocaleString()}</span></td>
-                      <td><span className="text-sm text-slate-300" dir="ltr">${Number(log.estimated_cost_usd).toFixed(6)}</span></td>
+                      <td><span className="text-sm text-slate-300" dir="ltr">{(Number(log.estimated_cost_usd) * 3.75).toFixed(5)} ر.س</span></td>
                       <td>
                         <span className="text-sm text-slate-400 flex items-center gap-1">
                           <Clock size={12} />

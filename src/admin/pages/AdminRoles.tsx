@@ -350,8 +350,8 @@ export default function AdminRoles() {
                     <Users size={14} />
                     <span>{userCounts[role.id] || 0} مشرف</span>
                   </div>
-                  <span className="text-cyan-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                    عرض الصلاحيات ←
+                  <span className="text-cyan-400/60 text-[11px]">
+                    {role.is_system ? '🔒 نظامي' : `${role.id === 'super_admin' ? '∞' : ''} صلاحية`}
                   </span>
                 </div>
               </div>

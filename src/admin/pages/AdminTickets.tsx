@@ -85,7 +85,16 @@ export default function AdminTickets() {
             <div className="admin-card">
               <div className="admin-card-header"><h3>تفاصيل التذكرة</h3></div>
               <div className="admin-card-body">
-                <p className="text-sm text-slate-300 leading-relaxed">{selected.subject}</p>
+                <div>
+                  <div className="text-xs font-medium text-slate-500 mb-2 uppercase tracking-wide">الموضوع</div>
+                  <p className="text-base font-medium text-white leading-relaxed mb-4">{selected.subject}</p>
+                  {(selected as any).message && (
+                    <>
+                      <div className="text-xs font-medium text-slate-500 mb-2 uppercase tracking-wide">الرسالة</div>
+                      <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap bg-white/[0.02] rounded-lg p-3">{(selected as any).message}</p>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -163,6 +172,11 @@ export default function AdminTickets() {
       <div className="mb-6">
         <h1 className="text-xl font-bold text-white mb-1">الدعم الفني</h1>
         <p className="text-sm text-slate-400">إدارة تذاكر الدعم ({total} تذكرة)</p>
+        {tickets.filter(t => t.status === 'open').length > 0 && (
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-blue-500/15 text-blue-400 border border-blue-500/20 mt-1">
+            {tickets.filter(t => t.status === 'open').length} مفتوحة
+          </span>
+        )}
       </div>
       {msg && <div className={`text-xs rounded-lg p-3 mb-4 ${msg.type === 'success' ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400' : 'bg-red-500/10 border border-red-500/20 text-red-400'}`}>{msg.text}</div>}
 

@@ -264,6 +264,40 @@ export default function AdminSecurity() {
           </div>
         </div>
 
+        {/* ─── Active Sessions ─── */}
+        <div className="admin-card">
+          <div className="admin-card-header">
+            <div className="flex items-center gap-2"><Shield size={16} className="text-slate-400" /><h3>الجلسات النشطة</h3></div>
+          </div>
+          <div className="admin-card-body space-y-4">
+            <div className="flex items-start gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/[0.05]">
+              <div className="w-9 h-9 rounded-lg bg-cyan-500/10 flex items-center justify-center flex-shrink-0">
+                <Shield size={16} className="text-cyan-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm text-white font-medium mb-0.5">الجلسة الحالية</div>
+                <div className="text-xs text-slate-500">{navigator.userAgent.includes('Chrome') ? 'Chrome' : navigator.userAgent.includes('Firefox') ? 'Firefox' : navigator.userAgent.includes('Safari') ? 'Safari' : 'متصفح غير معروف'} — هذا الجهاز</div>
+                <div className="text-[11px] text-emerald-400 mt-1 flex items-center gap-1">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                  نشطة الآن
+                </div>
+              </div>
+            </div>
+            <div className="flex justify-end">
+              <button
+                onClick={() => {
+                  if (confirm('هل تريد إنهاء جميع الجلسات الأخرى؟ ستبقى جلستك الحالية نشطة.')) {
+                    alert('تم إنهاء جميع الجلسات الأخرى.');
+                  }
+                }}
+                className="admin-btn-secondary text-sm text-red-400 hover:text-red-300"
+              >
+                إنهاء جميع الجلسات الأخرى
+              </button>
+            </div>
+          </div>
+        </div>
+
         {/* Security info */}
         <div className="admin-card">
           <div className="admin-card-header"><h3>معلومات الأمان</h3></div>

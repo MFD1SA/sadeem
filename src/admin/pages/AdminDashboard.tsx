@@ -91,7 +91,11 @@ export default function AdminDashboard() {
                 {Object.entries(stats.plan_distribution).map(([plan, count]) => {
                   const total = Object.values(stats.plan_distribution).reduce((a, b) => a + b, 0);
                   const pct = total > 0 ? Math.round((count / total) * 100) : 0;
-                  const labels: Record<string, string> = { starter: 'المبتدئ', growth: 'النمو', pro: 'الاحترافي', enterprise: 'المؤسسات' };
+                  const labels: Record<string, string> = {
+                    orbit: 'مدار', nova: 'نوفا', galaxy: 'جالاكسي', infinity: 'إنفينيتي',
+                    // keep old keys as fallbacks
+                    starter: 'المبتدئ', growth: 'النمو', pro: 'الاحترافي', enterprise: 'المؤسسات',
+                  };
                   return (
                     <div key={plan}>
                       <div className="flex items-center justify-between text-sm mb-1">
@@ -140,6 +144,26 @@ export default function AdminDashboard() {
               <MiniStat label="منتهي" value={stats?.total_subscribers_expired ?? 0} color="red" />
               <MiniStat label="إجمالي" value={stats?.total_organizations ?? 0} color="slate" />
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Quick Actions bar ── */}
+      <div className="admin-card mt-4">
+        <div className="admin-card-header"><h3>إجراءات سريعة</h3></div>
+        <div className="admin-card-body">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {[
+              { label: 'إدارة المشتركين', path: '/admin/subscribers', color: 'cyan' },
+              { label: 'الفواتير المعلّقة', path: '/admin/billing', color: 'amber' },
+              { label: 'تذاكر الدعم',     path: '/admin/tickets',   color: 'blue' },
+              { label: 'استهلاك AI',      path: '/admin/ai-usage',  color: 'purple' },
+            ].map(({ label, path, color }) => (
+              <a key={path} href={path}
+                className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-${color}-500/8 border border-${color}-500/15 text-${color}-400 text-xs font-medium hover:bg-${color}-500/15 transition-colors`}>
+                {label}
+              </a>
+            ))}
           </div>
         </div>
       </div>

@@ -11,15 +11,15 @@ import { PermissionGate } from '../guards';
 import {
   Building2, Search, ChevronLeft, Users, GitBranch,
   MessageSquare, Zap, FileText, MoreVertical,
-  Pause, Play, ArrowUpCircle, X,
+  Pause, Play, ArrowUpCircle, X, Calendar, RefreshCw,
 } from 'lucide-react';
 import { AdminSelect } from '../components/AdminSelect';
 
 const PLAN_LABELS: Record<string, { ar: string; color: string }> = {
-  starter: { ar: 'المبتدئ', color: 'slate' },
-  growth: { ar: 'النمو', color: 'blue' },
-  pro: { ar: 'الاحترافي', color: 'purple' },
-  enterprise: { ar: 'المؤسسات', color: 'amber' },
+  orbit:    { ar: 'مدار',      color: 'blue' },
+  nova:     { ar: 'نوفا',      color: 'violet' },
+  galaxy:   { ar: 'جالاكسي',  color: 'amber' },
+  infinity: { ar: 'إنفينيتي', color: 'emerald' },
 };
 
 const SUB_STATUS: Record<string, { ar: string; color: string }> = {
@@ -121,10 +121,37 @@ export default function AdminSubscribers() {
     finally { setChangingPlan(false); }
   };
 
+  const handleExtendSub = async (item: SubscriberListItem) => {
+    setActiveMenu(null);
+    if (!confirm(`تمديد اشتراك "${item.name}" لمدة 30 يوم إضافية؟`)) return;
+    try {
+      const newEnd = new Date();
+      const currentEnd = item.subscription?.ends_at ? new Date(item.subscription.ends_at) : new Date();
+      if (currentEnd > newEnd) newEnd.setTime(currentEnd.getTime());
+      newEnd.setDate(newEnd.getDate() + 30);
+      await adminSubscribersService.updateSubscription(item.id, {
+        status: 'active',
+        ends_at: newEnd.toISOString(),
+      });
+      showMsg('تم تمديد الاشتراك 30 يوم', 'success');
+      loadList();
+    } catch (err) { showMsg(err instanceof Error ? err.message : 'فشل', 'error'); }
+  };
+
+  const handleResetAI = async (orgId: string) => {
+    setActiveMenu(null);
+    if (!confirm('إعادة تعيين عداد استهلاك AI لهذا المشترك؟')) return;
+    try {
+      await adminSubscribersService.resetAIUsage(orgId);
+      showMsg('تم إعادة تعيين استهلاك AI', 'success');
+      loadList();
+    } catch (err) { showMsg(err instanceof Error ? err.message : 'فشل', 'error'); }
+  };
+
   // ─── Detail View ───
   if (detail) {
     const sub = detail.subscription;
-    const planInfo = PLAN_LABELS[sub?.plan ?? ''] || PLAN_LABELS.starter;
+    const planInfo = PLAN_LABELS[sub?.plan ?? ''] || PLAN_LABELS.orbit;
     const statusInfo = SUB_STATUS[sub?.status ?? ''] || SUB_STATUS.expired;
 
     return (
@@ -162,7 +189,12 @@ export default function AdminSubscribers() {
               {sub?.ends_at && (
                 <div className="flex justify-between">
                   <span className="text-slate-400">ينتهي في</span>
-                  <span className="text-slate-300">{new Date(sub.ends_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-slate-300">{new Date(sub.ends_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
+                    {new Date(sub.ends_at) < new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) && (
+                      <span className="text-[10px] text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded font-medium">قريب</span>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
@@ -300,10 +332,10 @@ export default function AdminSubscribers() {
           <AdminSelect wrapperClassName="w-auto min-w-[140px]" value={filterPlan}
             onChange={(e) => setFilterPlan(e.target.value)}>
             <option value="">كل الخطط</option>
-            <option value="starter">المبتدئ</option>
-            <option value="growth">النمو</option>
-            <option value="pro">الاحترافي</option>
-            <option value="enterprise">المؤسسات</option>
+            <option value="orbit">مدار</option>
+            <option value="nova">نوفا</option>
+            <option value="galaxy">جالاكسي</option>
+            <option value="infinity">إنفينيتي</option>
           </AdminSelect>
           <AdminSelect wrapperClassName="w-auto min-w-[140px]" value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}>
@@ -341,12 +373,13 @@ export default function AdminSubscribers() {
                   <th>الفروع</th>
                   <th>AI</th>
                   <th>التقييمات</th>
+                  <th>تاريخ الانضمام</th>
                   <th className="w-12"></th>
                 </tr>
               </thead>
               <tbody>
                 {items.map((item) => {
-                  const planInfo = PLAN_LABELS[item.subscription?.plan ?? ''] || PLAN_LABELS.starter;
+                  const planInfo = PLAN_LABELS[item.subscription?.plan ?? ''] || PLAN_LABELS.orbit;
                   const statusInfo = SUB_STATUS[item.subscription?.status ?? ''] || SUB_STATUS.expired;
                   const subStatus = item.subscription?.status ?? 'expired';
 
@@ -373,6 +406,7 @@ export default function AdminSubscribers() {
                       <td><span className="text-sm text-slate-300">{item.branch_count}</span></td>
                       <td><span className="text-sm text-slate-300">{item.subscription?.ai_replies_used ?? 0}</span></td>
                       <td><span className="text-sm text-slate-300">{item.review_count}</span></td>
+                      <td><span className="text-sm text-slate-300">{item.created_at ? new Date(item.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '—'}</span></td>
                       <td onClick={(e) => e.stopPropagation()}>
                         {hasPermission(PERMISSIONS.SUBSCRIBERS_UPDATE) && (
                           <div className="relative">
@@ -382,10 +416,22 @@ export default function AdminSubscribers() {
                             </button>
                             {activeMenu === item.id && (
                               <div className="absolute left-0 top-full mt-1 w-48 bg-[#111827] border border-white/[0.08] rounded-xl shadow-2xl py-1.5 z-50">
-                                <button onClick={() => { setActiveMenu(null); setPlanTarget(item); setNewPlan(item.subscription?.plan || 'starter'); }}
+                                <button onClick={() => { setActiveMenu(null); setPlanTarget(item); setNewPlan(item.subscription?.plan || 'orbit'); }}
                                   className="w-full flex items-center gap-2 px-3 py-2 text-xs text-cyan-400 hover:bg-cyan-500/10 transition-colors">
                                   <ArrowUpCircle size={14} /> تغيير الخطة
                                 </button>
+                                <PermissionGate permission={PERMISSIONS.SUBSCRIBERS_UPDATE}>
+                                  <button onClick={() => handleExtendSub(item)}
+                                    className="w-full flex items-center gap-2 px-3 py-2 text-xs text-blue-400 hover:bg-blue-500/10 transition-colors">
+                                    <Calendar size={14} /> تمديد 30 يوم
+                                  </button>
+                                </PermissionGate>
+                                <PermissionGate permission={PERMISSIONS.SUBSCRIBERS_UPDATE}>
+                                  <button onClick={() => handleResetAI(item.id)}
+                                    className="w-full flex items-center gap-2 px-3 py-2 text-xs text-amber-400 hover:bg-amber-500/10 transition-colors">
+                                    <RefreshCw size={14} /> إعادة تعيين AI
+                                  </button>
+                                </PermissionGate>
                                 {(subStatus === 'active' || subStatus === 'trial') ? (
                                   <PermissionGate permission={PERMISSIONS.SUBSCRIBERS_SUSPEND}>
                                     <button onClick={() => handleSuspend(item.id)}
@@ -425,10 +471,10 @@ export default function AdminSubscribers() {
             <div className="p-5">
               <p className="text-sm text-slate-400 mb-4">تغيير خطة "{planTarget.name}"</p>
               <AdminSelect value={newPlan} onChange={(e) => setNewPlan(e.target.value)}>
-                <option value="starter">المبتدئ</option>
-                <option value="growth">النمو</option>
-                <option value="pro">الاحترافي</option>
-                <option value="enterprise">المؤسسات</option>
+                <option value="orbit">مدار</option>
+                <option value="nova">نوفا</option>
+                <option value="galaxy">جالاكسي</option>
+                <option value="infinity">إنفينيتي</option>
               </AdminSelect>
             </div>
             <div className="flex items-center justify-end gap-3 px-5 py-4 border-t border-white/[0.06]">

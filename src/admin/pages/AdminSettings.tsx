@@ -178,7 +178,7 @@ function SettingSection({ settingKey, fields, showMsg }: { settingKey: string; f
               <span className="text-sm text-slate-300">{f.label}</span>
               <button onClick={() => setValues(p => ({ ...p, [f.key]: !p[f.key] }))}
                 className={`relative w-10 h-5 rounded-full transition-colors flex-shrink-0 ${values[f.key] ? 'bg-cyan-500' : 'bg-slate-700'}`}>
-                <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${values[f.key] ? 'right-0.5' : 'right-[22px]'}`} />
+                <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all duration-200 ${values[f.key] ? 'right-0.5' : 'left-0.5'}`} />
               </button>
             </div>
           ) : (

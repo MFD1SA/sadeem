@@ -187,6 +187,23 @@ export default function AdminUsers() {
         </div>
       </div>
 
+      {/* Summary bar */}
+      {!isLoading && !error && users.length > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+          {[
+            { label: 'الكل', value: users.length, color: 'slate' },
+            { label: 'نشط', value: users.filter(u => u.status === 'active').length, color: 'emerald' },
+            { label: 'معلّق', value: users.filter(u => u.status === 'suspended').length, color: 'amber' },
+            { label: 'مدير عام', value: users.filter(u => u.is_super_admin).length, color: 'cyan' },
+          ].map(({ label, value, color }) => (
+            <div key={label} className={`admin-card p-3 text-center`}>
+              <div className={`text-lg font-bold text-${color}-400`}>{value}</div>
+              <div className="text-xs text-slate-500">{label}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Table */}
       <div className="admin-card">
         {isLoading ? (
@@ -249,9 +266,14 @@ export default function AdminUsers() {
                         </span>
                       </td>
                       <td>
-                        <span className="text-sm text-slate-500">
-                          {u.last_login_at ? new Date(u.last_login_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '—'}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          {u.last_login_at && (new Date().getTime() - new Date(u.last_login_at).getTime()) < 7 * 24 * 60 * 60 * 1000 && (
+                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0" title="نشط مؤخراً" />
+                          )}
+                          <span className="text-sm text-slate-500">
+                            {u.last_login_at ? new Date(u.last_login_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '—'}
+                          </span>
+                        </div>
                       </td>
                       <td>
                         {canManage && !isSelf && !u.is_super_admin && (

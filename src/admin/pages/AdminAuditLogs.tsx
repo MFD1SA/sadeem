@@ -65,9 +65,22 @@ export default function AdminAuditLogs() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-xl font-bold text-white mb-1">سجل العمليات</h1>
-        <p className="text-sm text-slate-400">جميع العمليات الإدارية المسجّلة في النظام ({total} سجل)</p>
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+        <div>
+          <h1 className="text-xl font-bold text-white mb-1">سجل العمليات</h1>
+          <p className="text-sm text-slate-400">جميع العمليات الإدارية المسجّلة في النظام ({total} سجل)</p>
+        </div>
+        <button
+          onClick={() => {
+            const csv = logs.map(l => `${l.created_at},${l.action},${l.module},${l.admin_email || 'system'},${l.severity}`).join('\n');
+            const blob = new Blob([`التاريخ,الإجراء,القسم,المنفذ,المستوى\n${csv}`], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = `audit-logs-${new Date().toISOString().slice(0,10)}.csv`; a.click();
+          }}
+          className="admin-btn-secondary text-sm flex items-center gap-2"
+        >
+          <Filter size={15} /> تصدير CSV
+        </button>
       </div>
 
       {/* Filters */}
@@ -88,6 +101,9 @@ export default function AdminAuditLogs() {
             <option value="roles">الأدوار</option>
             <option value="subscribers">المشتركين</option>
             <option value="finance">المالية</option>
+            <option value="settings">الإعدادات</option>
+            <option value="support">الدعم الفني</option>
+            <option value="system">النظام</option>
           </select>
           <select className="admin-form-input w-auto min-w-[130px]" value={filterSeverity}
             onChange={(e) => { setFilterSeverity(e.target.value); setPage(1); }}>

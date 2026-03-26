@@ -36,7 +36,7 @@ export default function AdminBilling() {
   // Create invoice modal
   const [showCreate, setShowCreate] = useState(false);
   const [orgs, setOrgs] = useState<SubscriberListItem[]>([]);
-  const [createForm, setCreateForm] = useState({ org_id: '', plan: 'starter', subtotal: '', notes: '' });
+  const [createForm, setCreateForm] = useState({ org_id: '', plan: 'orbit', subtotal: '', notes: '' });
   const [creating, setCreating] = useState(false);
 
   // Record payment modal
@@ -87,7 +87,7 @@ export default function AdminBilling() {
       });
       showMsg(`تم إنشاء الفاتورة ${result.invoice_number}`, 'success');
       setShowCreate(false);
-      setCreateForm({ org_id: '', plan: 'starter', subtotal: '', notes: '' });
+      setCreateForm({ org_id: '', plan: 'orbit', subtotal: '', notes: '' });
       loadData();
     } catch (err) { showMsg(err instanceof Error ? err.message : 'فشل', 'error'); }
     finally { setCreating(false); }
@@ -272,10 +272,10 @@ export default function AdminBilling() {
               <label className="block text-xs font-medium text-slate-400 mb-1.5">الخطة *</label>
               <select className="admin-form-input" value={createForm.plan}
                 onChange={(e) => setCreateForm(p => ({ ...p, plan: e.target.value }))}>
-                <option value="starter">المبتدئ</option>
-                <option value="growth">النمو</option>
-                <option value="pro">الاحترافي</option>
-                <option value="enterprise">المؤسسات</option>
+                <option value="orbit">مدار</option>
+                <option value="nova">نوفا</option>
+                <option value="galaxy">جالاكسي</option>
+                <option value="infinity">إنفينيتي</option>
               </select>
             </div>
             <div>

@@ -175,6 +175,14 @@ class AdminSubscribersService {
     }
   }
 
+  async resetAIUsage(orgId: string): Promise<void> {
+    const { error } = await adminSupabase
+      .from('subscriptions')
+      .update({ ai_replies_used: 0 })
+      .eq('organization_id', orgId);
+    if (error) throw new Error(error.message);
+  }
+
   async getDashboardStats(): Promise<DashboardStats> {
     const { data, error } = await adminSupabase.rpc('admin_get_dashboard_stats');
 

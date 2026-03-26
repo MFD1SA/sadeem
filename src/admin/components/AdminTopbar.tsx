@@ -8,7 +8,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAdminAuth } from '../contexts/AdminAuthContext';
 import { ADMIN_ROUTES } from '../utils/constants';
 import { adminSettingsService, type BrandingSettings } from '../services/adminSettings.service';
-import { Menu, UserCircle, Lock, ChevronDown, User } from 'lucide-react';
+import { Menu, UserCircle, Lock, ChevronDown, User, Bell, AlertCircle } from 'lucide-react';
 import type { BreadcrumbItem } from '../types';
 
 // Page title map
@@ -26,6 +26,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/admin/audit-logs': 'سجل العمليات',
   '/admin/profile': 'الملف الشخصي',
   '/admin/security': 'الأمان',
+  '/admin/plans': 'الخطط والأسعار',
 };
 
 interface AdminTopbarProps { onMenuToggle: () => void; }
@@ -66,6 +67,19 @@ export function AdminTopbar({ onMenuToggle }: AdminTopbarProps) {
             <span className="text-[11px] text-slate-500">{branding?.platform_name_ar || 'سديم'}</span>
           </div>
         )}
+      </div>
+
+      {/* Notification bell */}
+      <div className="relative mr-1">
+        <button
+          onClick={() => navigate(ADMIN_ROUTES.TICKETS)}
+          className="relative w-9 h-9 flex items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-white/[0.04] transition-colors"
+          title="تذاكر الدعم"
+        >
+          <Bell size={17} />
+          {/* Alert dot — always shown as reminder */}
+          <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-500 ring-2 ring-[#060a13]" />
+        </button>
       </div>
 
       {/* User quick menu */}
