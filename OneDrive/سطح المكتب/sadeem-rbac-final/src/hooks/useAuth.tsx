@@ -113,13 +113,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
-    // Immediately try to get stored session (non-blocking, before listener fires)
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (mounted && session) {
-        hydrateAuth(session);
-      }
-    });
-
+    // onAuthStateChange fires INITIAL_SESSION reliably (Supabase v2) — no need for
+    // a separate getSession() call which would cause a double-hydration race.
     const { data: listener } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!mounted) return;
 

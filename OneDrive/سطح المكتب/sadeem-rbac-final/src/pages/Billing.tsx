@@ -200,8 +200,8 @@ export default function Billing() {
 }
 
 const STATIC_PLANS: DbPlan[] = [
-  { id: 'orbit', name_ar: 'مدار', name_en: 'Orbit', desc_ar: 'للأنشطة الناشئة', desc_en: 'For small businesses', price_monthly: 99, price_yearly: 990, is_active: true, sort_order: 1, created_at: '', updated_at: '' },
-  { id: 'nova', name_ar: 'نوفا', name_en: 'Nova', desc_ar: 'للأنشطة المتنامية', desc_en: 'For growing businesses', price_monthly: 199, price_yearly: 1990, is_active: true, sort_order: 2, created_at: '', updated_at: '' },
-  { id: 'galaxy', name_ar: 'جالاكسي', name_en: 'Galaxy', desc_ar: 'للشركات المتقدمة', desc_en: 'For advanced companies', price_monthly: 399, price_yearly: 3990, is_active: true, sort_order: 3, created_at: '', updated_at: '' },
+  { id: 'orbit', name_ar: 'مدار', name_en: 'Orbit', desc_ar: 'للأنشطة الناشئة', desc_en: 'For small businesses', price_monthly: 99, price_yearly: 1009, is_active: true, sort_order: 1, created_at: '', updated_at: '' },
+  { id: 'nova', name_ar: 'نوفا', name_en: 'Nova', desc_ar: 'للأنشطة المتنامية', desc_en: 'For growing businesses', price_monthly: 199, price_yearly: 2030, is_active: true, sort_order: 2, created_at: '', updated_at: '' },
+  { id: 'galaxy', name_ar: 'جالاكسي', name_en: 'Galaxy', desc_ar: 'للشركات المتقدمة', desc_en: 'For advanced companies', price_monthly: 399, price_yearly: 4070, is_active: true, sort_order: 3, created_at: '', updated_at: '' },
   { id: 'infinity', name_ar: 'إنفينيتي', name_en: 'Infinity', desc_ar: 'حلول مخصصة', desc_en: 'Custom solutions', price_monthly: 0, price_yearly: 0, is_active: true, sort_order: 4, created_at: '', updated_at: '' },
 ];
