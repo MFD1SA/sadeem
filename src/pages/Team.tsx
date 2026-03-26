@@ -7,7 +7,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { Badge } from '@/components/ui/Badge';
 import { StatusDot } from '@/components/ui/StatusDot';
 import { formatDateTime } from '@/utils/helpers';
-import { UserPlus } from 'lucide-react';
+import { UserPlus, X } from 'lucide-react';
 
 let _cache: TeamMemberRow[] | null = null;
 
@@ -17,6 +17,13 @@ export default function Team() {
   const [members, setMembers] = useState<TeamMemberRow[]>(_cache ?? []);
   const [loading, setLoading] = useState(_cache === null);
   const [error, setError] = useState('');
+
+  const [showInvite, setShowInvite] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteRole, setInviteRole] = useState<'member' | 'admin'>('member');
+  const [inviting, setInviting] = useState(false);
+  const [inviteError, setInviteError] = useState('');
+  const [inviteSuccess, setInviteSuccess] = useState(false);
 
   const loadMembers = useCallback(async () => {
     if (!organization) { setLoading(false); return; }
@@ -34,6 +41,24 @@ export default function Team() {
   }, [organization]);
 
   useEffect(() => { loadMembers(); }, [loadMembers]);
+
+  const handleInvite = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!organization || !inviteEmail.trim()) return;
+    setInviting(true);
+    setInviteError('');
+    try {
+      await teamService.inviteMember(organization.id, inviteEmail, inviteRole);
+      _cache = null;
+      await loadMembers();
+      setInviteSuccess(true);
+      setTimeout(() => { setShowInvite(false); setInviteEmail(''); setInviteRole('member'); setInviteSuccess(false); }, 1500);
+    } catch (err: unknown) {
+      setInviteError((err as Error).message);
+    } finally {
+      setInviting(false);
+    }
+  };
 
   if (loading) return <LoadingState message={t.common.loading} />;
   if (error) return <ErrorState message={error} onRetry={loadMembers} />;
@@ -71,7 +96,7 @@ export default function Team() {
       <div className="card">
         <div className="card-header">
           <h3>{t.teamPage.title} ({members.length})</h3>
-          <button className="btn btn-primary btn-sm" type="button">
+          <button className="btn btn-primary btn-sm" type="button" onClick={() => { setShowInvite(true); setInviteError(''); setInviteSuccess(false); }}>
             <UserPlus size={14} />
             {lang === 'ar' ? 'دعوة عضو' : 'Invite Member'}
           </button>
@@ -133,6 +158,47 @@ export default function Team() {
           </div>
         )}
       </div>
+
+      {/* Invite Modal */}
+      {showInvite && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={(e) => { if (e.target === e.currentTarget) setShowInvite(false); }}>
+          <div className="bg-surface-primary rounded-2xl shadow-2xl w-full max-w-md border border-border">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+              <h3 className="font-semibold text-content-primary text-sm">{lang === 'ar' ? 'دعوة عضو جديد' : 'Invite New Member'}</h3>
+              <button onClick={() => setShowInvite(false)} className="text-content-tertiary hover:text-content-primary transition-colors"><X size={16} /></button>
+            </div>
+            <form onSubmit={handleInvite} className="p-5 space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-content-secondary mb-1.5">{lang === 'ar' ? 'البريد الإلكتروني' : 'Email Address'}</label>
+                <input
+                  type="email"
+                  value={inviteEmail}
+                  onChange={e => setInviteEmail(e.target.value)}
+                  placeholder={lang === 'ar' ? 'example@email.com' : 'example@email.com'}
+                  className="input w-full"
+                  required
+                  autoFocus
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-content-secondary mb-1.5">{lang === 'ar' ? 'الدور' : 'Role'}</label>
+                <select value={inviteRole} onChange={e => setInviteRole(e.target.value as 'member' | 'admin')} className="input w-full">
+                  <option value="member">{lang === 'ar' ? 'عضو' : 'Member'}</option>
+                  <option value="admin">{lang === 'ar' ? 'مشرف' : 'Admin'}</option>
+                </select>
+              </div>
+              {inviteError && <p className="text-xs text-red-600 bg-red-50 rounded-lg px-3 py-2">{inviteError}</p>}
+              {inviteSuccess && <p className="text-xs text-emerald-700 bg-emerald-50 rounded-lg px-3 py-2">{lang === 'ar' ? 'تمت الدعوة بنجاح!' : 'Member added successfully!'}</p>}
+              <div className="flex gap-2 pt-1">
+                <button type="button" onClick={() => setShowInvite(false)} className="btn btn-ghost btn-sm flex-1">{lang === 'ar' ? 'إلغاء' : 'Cancel'}</button>
+                <button type="submit" disabled={inviting} className="btn btn-primary btn-sm flex-1">
+                  {inviting ? (lang === 'ar' ? 'جاري الإضافة…' : 'Adding…') : (lang === 'ar' ? 'إضافة العضو' : 'Add Member')}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

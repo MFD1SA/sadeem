@@ -113,27 +113,37 @@ export default function ReviewsCenter() {
   }
 
   return (
-    <div className="card h-[calc(100vh-120px)] flex overflow-hidden">
-      <div className="w-56 min-w-[224px] border-l rtl:border-l ltr:border-l-0 ltr:border-r border-border overflow-y-auto hidden lg:block">
+    <div className="card h-[calc(100vh-120px)] flex overflow-hidden rounded-2xl shadow-sm border border-border">
+      {/* Filters sidebar */}
+      <div className="w-52 min-w-[208px] border-e border-border overflow-y-auto hidden lg:flex lg:flex-col bg-surface-secondary/40">
+        <div className="px-4 py-3 border-b border-border">
+          <span className="text-xs font-semibold text-content-secondary uppercase tracking-wider">{t.analyticsPage.filters || 'Filters'}</span>
+        </div>
         <FiltersPanel filters={filters} onChange={setFilters} branches={branches} />
       </div>
 
-      <div className="w-80 min-w-[280px] border-l rtl:border-l ltr:border-l-0 ltr:border-r border-border overflow-y-auto flex-shrink-0">
-        <div className="px-4 py-3 border-b border-border bg-surface-secondary">
-          <div className="text-xs font-semibold text-content-secondary">
-            {filtered.length} {t.analyticsPage.reviews}
+      {/* Reviews list */}
+      <div className="w-72 min-w-[260px] border-e border-border overflow-y-auto flex-shrink-0 flex flex-col">
+        <div className="px-4 py-3 border-b border-border bg-surface-primary sticky top-0 z-10">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-content-primary">{t.reviewsCenter?.title || 'Reviews'}</span>
+            <span className="text-xs bg-brand-50 text-brand-700 font-semibold px-2 py-0.5 rounded-full">
+              {filtered.length}
+            </span>
           </div>
         </div>
-
-        <ReviewsList
-          reviews={filtered}
-          branchMap={branchMap}
-          selectedId={selectedReview?.id ?? null}
-          onSelect={setSelectedReview}
-        />
+        <div className="flex-1 overflow-y-auto">
+          <ReviewsList
+            reviews={filtered}
+            branchMap={branchMap}
+            selectedId={selectedReview?.id ?? null}
+            onSelect={setSelectedReview}
+          />
+        </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto">
+      {/* Review detail */}
+      <div className="flex-1 overflow-y-auto bg-surface-primary">
         <ReviewDetail
           review={selectedReview}
           branchName={selectedReview ? branchMap[selectedReview.branch_id] || '' : ''}

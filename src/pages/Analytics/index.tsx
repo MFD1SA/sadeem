@@ -2,13 +2,12 @@ import { useState, useEffect, useCallback } from 'react';
 import { useLanguage } from '@/i18n';
 import { useAuth } from '@/hooks/useAuth';
 import { analyticsService, type AnalyticsData } from '@/services/analytics';
-import { StatCard } from '@/components/ui/StatCard';
 import { LoadingState, ErrorState } from '@/components/ui/LoadingState';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { RatingDistribution } from './RatingDistribution';
 import { SentimentChart } from './SentimentChart';
 import { BranchComparison } from './BranchComparison';
-import { Star, MessageSquare, Percent } from 'lucide-react';
+import { Star, MessageSquare, Percent, TrendingUp } from 'lucide-react';
 
 let _cache: AnalyticsData | null = null;
 
@@ -63,65 +62,74 @@ export default function Analytics() {
     );
   }
 
+  const maxCount = Math.max(...data.trendData.map((p: { count: number }) => p.count), 1);
+
   return (
-    <div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
-        <StatCard
-          label={t.analyticsPage.avgRating}
-          value={data.avgRating.toFixed(1)}
-          icon={<Star size={18} strokeWidth={1.5} />}
-          iconColor="text-amber-500"
-        />
-        <StatCard
-          label={t.analyticsPage.totalReviews}
-          value={data.totalReviews}
-          icon={<MessageSquare size={18} strokeWidth={1.5} />}
-          iconColor="text-brand-400"
-        />
-        <StatCard
-          label={t.analyticsPage.responseRate}
-          value={`${data.responseRate}%`}
-          valueColor="text-emerald-600"
-          icon={<Percent size={18} strokeWidth={1.5} />}
-          iconColor="text-emerald-400"
-        />
+    <div className="space-y-5">
+      {/* KPI row */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="card card-body flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center flex-shrink-0">
+            <Star size={18} className="text-amber-500" strokeWidth={1.5} />
+          </div>
+          <div>
+            <div className="text-2xl font-bold text-content-primary leading-none">{data.avgRating.toFixed(1)}</div>
+            <div className="text-xs text-content-tertiary mt-0.5">{t.analyticsPage.avgRating}</div>
+          </div>
+        </div>
+        <div className="card card-body flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-brand-50 flex items-center justify-center flex-shrink-0">
+            <MessageSquare size={18} className="text-brand-500" strokeWidth={1.5} />
+          </div>
+          <div>
+            <div className="text-2xl font-bold text-content-primary leading-none">{data.totalReviews}</div>
+            <div className="text-xs text-content-tertiary mt-0.5">{t.analyticsPage.totalReviews}</div>
+          </div>
+        </div>
+        <div className="card card-body flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center flex-shrink-0">
+            <Percent size={18} className="text-emerald-500" strokeWidth={1.5} />
+          </div>
+          <div>
+            <div className="text-2xl font-bold text-emerald-600 leading-none">{data.responseRate}%</div>
+            <div className="text-xs text-content-tertiary mt-0.5">{t.analyticsPage.responseRate}</div>
+          </div>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+      {/* Charts row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <RatingDistribution distribution={data.ratingDistribution} total={data.totalReviews} />
         <SentimentChart breakdown={data.sentimentBreakdown} />
       </div>
 
-      <div className="card mb-6">
+      {/* Trend chart */}
+      <div className="card">
         <div className="card-header">
-          <h3>{t.analyticsPage.reviewTrend}</h3>
+          <div className="flex items-center gap-2">
+            <TrendingUp size={14} className="text-content-tertiary" />
+            <h3 className="text-sm font-semibold text-content-primary">{t.analyticsPage.reviewTrend}</h3>
+          </div>
         </div>
         <div className="card-body">
-          <div className="flex items-end gap-1 h-32">
+          <div className="flex items-end gap-1 h-36 pt-6">
             {data.trendData.map(
               (point: { date: string; count: number; avgRating: number }, i: number) => {
-                const maxCount = Math.max(
-                  ...data.trendData.map((p: { count: number }) => p.count),
-                  1
-                );
                 const height = (point.count / maxCount) * 100;
-
                 return (
-                  <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                  <div key={i} className="flex-1 flex flex-col items-center gap-1 group relative">
                     {point.count > 0 && (
-                      <span className="text-2xs font-medium text-content-primary">
+                      <span className="text-[10px] font-semibold text-content-primary absolute -top-5 opacity-0 group-hover:opacity-100 transition-opacity">
                         {point.count}
                       </span>
                     )}
-
-                    <div className="w-full flex justify-center">
+                    <div className="w-full flex justify-center items-end flex-1">
                       <div
-                        className="w-6 rounded-t-md bg-brand-500 transition-all duration-300 min-h-[2px]"
-                        style={{ height: `${Math.max(height, 2)}%` }}
+                        className="w-full max-w-[28px] rounded-t-md bg-brand-500 hover:bg-brand-600 transition-all duration-300"
+                        style={{ height: `${Math.max(height, 3)}%` }}
                       />
                     </div>
-
-                    <span className="text-2xs text-content-tertiary">
+                    <span className="text-[9px] text-content-tertiary whitespace-nowrap">
                       {point.date.slice(5)}
                     </span>
                   </div>

@@ -126,7 +126,11 @@ export function RequireOrganization() {
   const { hasOrganization, isLoading, isAuthenticated } = useAuth();
   const { isAdmin, checking } = useAdminCheck();
 
-  if (isLoading || checking) {
+  // Only block on auth loading — not on the admin check.
+  // The admin check runs in background; if the user is an admin the redirect
+  // fires when `checking` resolves. This removes the white loading flash
+  // that appeared after Google OAuth redirected to /dashboard.
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <LoadingState />

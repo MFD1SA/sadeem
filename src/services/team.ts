@@ -7,6 +7,23 @@ export interface TeamMemberRow {
 }
 
 export const teamService = {
+  async inviteMember(organizationId: string, email: string, role: 'member' | 'admin' | 'owner'): Promise<void> {
+    const { data: found, error: findErr } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', email.trim().toLowerCase())
+      .maybeSingle();
+    if (findErr) throw findErr;
+    if (!found) throw new Error('لا يوجد حساب بهذا البريد الإلكتروني. يجب على المستخدم التسجيل أولاً.');
+    const { error } = await supabase
+      .from('memberships')
+      .insert({ organization_id: organizationId, user_id: found.id, role, status: 'active' });
+    if (error) {
+      if (error.code === '23505') throw new Error('هذا المستخدم عضو بالفعل في الفريق.');
+      throw error;
+    }
+  },
+
   async listMembers(organizationId: string): Promise<TeamMemberRow[]> {
     const { data: membershipsData, error: memErr } = await supabase
       .from('memberships')
