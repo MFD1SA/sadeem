@@ -1,61 +1,39 @@
+// ============================================================================
+// SADEEM — App Router
+// Subscriber pages are eagerly loaded for instant sidebar navigation
+// (no per-page JS download delay). Admin pages stay lazy — they are
+// rarely visited and not part of the subscriber hot path.
+// ============================================================================
 import { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { SubscriberLayout } from '@/layouts/SubscriberLayout';
 import { RequireAuth, RequireOrganization, RedirectIfAuthenticated } from './guards';
 import { LoadingState } from '@/components/ui/LoadingState';
 
-// ── Eagerly loaded (critical path) ──────────────────────────────────────────
-import Login from '@/pages/Auth/Login';
+// ── Eagerly loaded — critical path + all subscriber pages ───────────────────
+import Login        from '@/pages/Auth/Login';
 import AuthCallback from '@/pages/Auth/Callback';
-import Onboarding from '@/pages/Onboarding';
-import Dashboard from '@/pages/Dashboard';
+import Onboarding   from '@/pages/Onboarding';
+import Dashboard    from '@/pages/Dashboard';
 
-// ── Lazily loaded subscriber pages ──────────────────────────────────────────
-const reviewsCenterImport  = () => import('@/pages/ReviewsCenter');
-const responsesInboxImport = () => import('@/pages/ResponsesInbox');
-const analyticsImport      = () => import('@/pages/Analytics');
-const insightsImport       = () => import('@/pages/Insights');
-const branchesImport       = () => import('@/pages/Branches');
-const templatesImport      = () => import('@/pages/Templates');
-const teamImport           = () => import('@/pages/Team');
-const integrationsImport   = () => import('@/pages/Integrations');
-const qrReviewsImport      = () => import('@/pages/QrReviews');
-const tasksImport          = () => import('@/pages/Tasks');
-const notificationsImport  = () => import('@/pages/Notifications');
-const billingImport        = () => import('@/pages/Billing');
-const supportImport        = () => import('@/pages/Support');
-const settingsImport       = () => import('@/pages/Settings');
+// Subscriber pages — eager so sidebar navigation is always instant
+import ReviewsCenter  from '@/pages/ReviewsCenter';
+import ResponsesInbox from '@/pages/ResponsesInbox';
+import Analytics      from '@/pages/Analytics';
+import Insights       from '@/pages/Insights';
+import Branches       from '@/pages/Branches';
+import Templates      from '@/pages/Templates';
+import Team           from '@/pages/Team';
+import Integrations   from '@/pages/Integrations';
+import QrReviews      from '@/pages/QrReviews';
+import Tasks          from '@/pages/Tasks';
+import Notifications  from '@/pages/Notifications';
+import Billing        from '@/pages/Billing';
+import Support        from '@/pages/Support';
+import Settings       from '@/pages/Settings';
+import ReviewLanding  from '@/pages/ReviewLanding';
 
-const ReviewsCenter   = lazy(reviewsCenterImport);
-const ResponsesInbox  = lazy(responsesInboxImport);
-const Analytics       = lazy(analyticsImport);
-const Insights        = lazy(insightsImport);
-const Branches        = lazy(branchesImport);
-const Templates       = lazy(templatesImport);
-const Team            = lazy(teamImport);
-const Integrations    = lazy(integrationsImport);
-const QrReviews       = lazy(qrReviewsImport);
-const Tasks           = lazy(tasksImport);
-const Notifications   = lazy(notificationsImport);
-const Billing         = lazy(billingImport);
-const Support         = lazy(supportImport);
-const Settings        = lazy(settingsImport);
-const ReviewLanding   = lazy(() => import('@/pages/ReviewLanding'));
-
-// Prefetch all subscriber page chunks in the background after initial load.
-// This eliminates the per-page JS download delay when navigating the sidebar.
-export function prefetchSubscriberPages() {
-  const imports = [
-    reviewsCenterImport, responsesInboxImport, analyticsImport, insightsImport,
-    branchesImport, templatesImport, teamImport, integrationsImport,
-    qrReviewsImport, tasksImport, notificationsImport, billingImport,
-    supportImport, settingsImport,
-  ];
-  // Stagger prefetches to avoid congesting the network on first load
-  imports.forEach((fn, i) => setTimeout(fn, 500 + i * 150));
-}
-
-// ── Lazily loaded admin pages ────────────────────────────────────────────────
+// ── Lazily loaded admin pages (infrequently visited) ────────────────────────
 import { AdminLayout } from '@/admin/layouts/AdminLayout';
 import AdminLogin from '@/admin/pages/AdminLogin';
 
@@ -91,14 +69,7 @@ export function AppRouter() {
 
       <Route path="/" element={<Navigate to="/login" replace />} />
 
-      <Route
-        path="/r/:slug"
-        element={
-          <Suspense fallback={<PageLoader />}>
-            <ReviewLanding />
-          </Suspense>
-        }
-      />
+      <Route path="/r/:slug" element={<ReviewLanding />} />
 
       <Route element={<RedirectIfAuthenticated />}>
         <Route path="/login" element={<Login />} />
@@ -112,21 +83,21 @@ export function AppRouter() {
 
       <Route element={<RequireOrganization />}>
         <Route path="/dashboard" element={<SubscriberLayout />}>
-          <Route index element={<Dashboard />} />
-          <Route path="reviews"       element={<Suspense fallback={<PageLoader />}><ReviewsCenter /></Suspense>} />
-          <Route path="replies"       element={<Suspense fallback={<PageLoader />}><ResponsesInbox /></Suspense>} />
-          <Route path="analytics"     element={<Suspense fallback={<PageLoader />}><Analytics /></Suspense>} />
-          <Route path="insights"      element={<Suspense fallback={<PageLoader />}><Insights /></Suspense>} />
-          <Route path="branches"      element={<Suspense fallback={<PageLoader />}><Branches /></Suspense>} />
-          <Route path="templates"     element={<Suspense fallback={<PageLoader />}><Templates /></Suspense>} />
-          <Route path="qr"            element={<Suspense fallback={<PageLoader />}><QrReviews /></Suspense>} />
-          <Route path="team"          element={<Suspense fallback={<PageLoader />}><Team /></Suspense>} />
-          <Route path="integrations"  element={<Suspense fallback={<PageLoader />}><Integrations /></Suspense>} />
-          <Route path="tasks"         element={<Suspense fallback={<PageLoader />}><Tasks /></Suspense>} />
-          <Route path="notifications" element={<Suspense fallback={<PageLoader />}><Notifications /></Suspense>} />
-          <Route path="billing"       element={<Suspense fallback={<PageLoader />}><Billing /></Suspense>} />
-          <Route path="support"       element={<Suspense fallback={<PageLoader />}><Support /></Suspense>} />
-          <Route path="settings"      element={<Suspense fallback={<PageLoader />}><Settings /></Suspense>} />
+          <Route index           element={<Dashboard />} />
+          <Route path="reviews"       element={<ReviewsCenter />} />
+          <Route path="replies"       element={<ResponsesInbox />} />
+          <Route path="analytics"     element={<Analytics />} />
+          <Route path="insights"      element={<Insights />} />
+          <Route path="branches"      element={<Branches />} />
+          <Route path="templates"     element={<Templates />} />
+          <Route path="qr"            element={<QrReviews />} />
+          <Route path="team"          element={<Team />} />
+          <Route path="integrations"  element={<Integrations />} />
+          <Route path="tasks"         element={<Tasks />} />
+          <Route path="notifications" element={<Notifications />} />
+          <Route path="billing"       element={<Billing />} />
+          <Route path="support"       element={<Support />} />
+          <Route path="settings"      element={<Settings />} />
         </Route>
       </Route>
 

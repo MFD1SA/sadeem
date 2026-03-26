@@ -1,17 +1,13 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { Sidebar } from '@/components/sidebar/Sidebar';
 import { Topbar } from '@/components/topbar/Topbar';
 import { PlanProvider } from '@/hooks/usePlan';
 import { TrialBanner } from '@/components/ui/TrialBanner';
 import { SubscriptionGate } from '@/router/guards';
-import { prefetchSubscriberPages } from '@/router';
 
+// All subscriber pages are eagerly loaded — no prefetch needed.
 export function SubscriberLayout() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-
-  // Prefetch all lazy page chunks in the background so sidebar navigation
-  // feels instant (no per-page JS download delay on first visit).
-  useEffect(() => { prefetchSubscriberPages(); }, []);
 
   const closeMobileSidebar = useCallback(() => setMobileSidebarOpen(false), []);
   const openMobileSidebar = useCallback(() => setMobileSidebarOpen(true), []);
