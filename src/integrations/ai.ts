@@ -2,8 +2,6 @@ import { supabase } from '@/lib/supabase';
 import type { DbReview } from '@/types/database';
 import { notificationService } from '@/services/notifications';
 
-const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
-
 export interface AIReplyRequest {
   reviewText: string;
   reviewerName: string;
@@ -11,6 +9,7 @@ export interface AIReplyRequest {
   branchName: string;
   organizationName: string;
   language: 'ar' | 'en';
+  tone?: 'professional' | 'friendly' | 'luxury';
 }
 
 export interface AIReplyResponse {
@@ -26,14 +25,14 @@ export interface AIReplyResponse {
   durationMs: number;
 }
 
-function getApiKey(): string {
-  const key = import.meta.env.VITE_GEMINI_API_KEY;
-  if (!key) throw new Error('Gemini API key not configured');
-  return key;
-}
-
 function buildPrompt(req: AIReplyRequest): string {
-  const lang = req.language === 'ar' ? 'Arabic' : 'English';
+  // Language + dialect
+  let langInstruction = '';
+  if (req.language === 'ar') {
+    langInstruction = 'Arabic (Saudi Arabian dialect — اللهجة السعودية الفصيحة، مع مراعاة الثقافة السعودية)';
+  } else {
+    langInstruction = 'English';
+  }
 
   // Star-based tone guidance
   let toneGuide = '';
@@ -41,6 +40,11 @@ function buildPrompt(req: AIReplyRequest): string {
   else if (req.rating === 3) toneGuide = 'Tone: appreciative, acknowledge feedback, promise improvement.';
   else if (req.rating === 2) toneGuide = 'Tone: apologetic, empathetic, offer to resolve the issue.';
   else toneGuide = 'Tone: deeply apologetic, take responsibility, ask for a chance to make it right.';
+
+  // Brand tone override
+  if (req.tone === 'luxury') toneGuide += ' Brand style: premium, elegant, refined language.';
+  else if (req.tone === 'friendly') toneGuide += ' Brand style: warm, casual, personable.';
+  else toneGuide += ' Brand style: professional and respectful.';
 
   return `You are a professional review response assistant for "${req.organizationName}" (branch: "${req.branchName}").
 A customer named "${req.reviewerName}" left a ${req.rating}-star review:
@@ -50,57 +54,43 @@ ${req.reviewText || '(no text)'}
 Tasks:
 1. Classify sentiment: "positive", "neutral", or "negative"
 2. Classify category: "positive" | "complaint" | "suggestion" | "sarcasm" | "neutral"
-3. Decide action: 
+3. Decide action:
    - If 5★/4★ AND positive text → "auto" (template reply)
    - If 5★/4★ BUT complaint/sarcasm in text → "manual" (text overrides rating)
    - If 3★ → "ai" (AI-generated reply)
    - If 2★ → "ai" (apology tone)
    - If 1★ → "manual" (never auto-reply)
 4. Detect if abusive/spam: true/false
-5. Write a professional reply in ${lang}
+5. Write a professional reply in ${langInstruction}
 ${toneGuide}
-Rules: Keep short (2-3 sentences), professional tone, NO emojis, NO @ symbols, NO hashtags.
+Rules: Keep short (2-3 sentences), NO emojis, NO @ symbols, NO hashtags.
 Use customer first name only if it is a clear real name.
 IMPORTANT: Text analysis OVERRIDES star rating. A 5-star review with complaint text should be "manual".
 Respond ONLY with JSON: {"sentiment":"...","category":"...","decision":"...","isAbusive":false,"reply":"..."}`;
 }
 
 export const aiService = {
+  // Always true — key lives server-side in the edge function
   isConfigured(): boolean {
-    return !!import.meta.env.VITE_GEMINI_API_KEY;
+    return true;
   },
 
   async generateReply(request: AIReplyRequest): Promise<AIReplyResponse> {
-    const apiKey = getApiKey();
     const model = 'gemini-2.0-flash-lite';
     const prompt = buildPrompt(request);
-    const startTime = Date.now();
 
-    const response = await fetch(
-      `${GEMINI_API_BASE}/${model}:generateContent?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.6, maxOutputTokens: 400, responseMimeType: 'application/json' },
-        }),
-      }
-    );
+    // Call via Edge Function (GEMINI_API_KEY is a server-side secret)
+    const { data, error } = await supabase.functions.invoke('generate-reply', {
+      body: { prompt, temperature: 0.6, maxOutputTokens: 400 },
+    });
 
-    const durationMs = Date.now() - startTime;
-
-    if (!response.ok) {
-      const errBody = await response.json().catch(() => ({}));
-      const msg = (errBody as { error?: { message?: string } }).error?.message || `Gemini error: ${response.status}`;
-      throw new Error(msg);
-    }
-
-    const data = await response.json();
-    const rawText: string = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    const inputTokens: number = data.usageMetadata?.promptTokenCount || 0;
-    const outputTokens: number = data.usageMetadata?.candidatesTokenCount || 0;
-    const tokensUsed: number = data.usageMetadata?.totalTokenCount || 0;
+    if (error) throw new Error(error.message || 'AI service error');
+    if (data?.error) throw new Error(data.error);
+    const rawText: string = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const inputTokens: number = data?.usageMetadata?.promptTokenCount || 0;
+    const outputTokens: number = data?.usageMetadata?.candidatesTokenCount || 0;
+    const tokensUsed: number = data?.usageMetadata?.totalTokenCount || 0;
+    const durationMs: number = data?.durationMs || 0;
 
     let parsed: { sentiment?: string; category?: string; decision?: string; isAbusive?: boolean; reply?: string };
     try {
@@ -133,7 +123,7 @@ export const aiService = {
     };
   },
 
-  async processNewReview(reviewId: string, organizationName: string, branchName: string, language: 'ar' | 'en' = 'ar'): Promise<void> {
+  async processNewReview(reviewId: string, organizationName: string, branchName: string, language: 'ar' | 'en' = 'ar', tone: 'professional' | 'friendly' | 'luxury' = 'professional'): Promise<void> {
     const { data: reviewData, error: revErr } = await supabase
       .from('reviews')
       .select('*')
@@ -182,6 +172,7 @@ export const aiService = {
         branchName,
         organizationName,
         language,
+        tone,
       });
     } catch (aiErr) {
       // Log error

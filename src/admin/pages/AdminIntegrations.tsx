@@ -6,8 +6,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
   Puzzle, RefreshCw, Settings2, CheckCircle, XCircle, AlertCircle,
-  X, Check, Loader2, Plus, Trash2, Eye, EyeOff, ChevronDown, ChevronUp,
+  X, Check, Loader2, Plus, Trash2, Eye, EyeOff, ChevronDown, ChevronUp, Zap,
 } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 import { adminIntegrationsService, type AdminIntegration } from '../services/adminIntegrations.service';
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -54,6 +55,8 @@ export default function AdminIntegrations() {
   const [adding, setAdding] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [filterCat, setFilterCat] = useState('all');
+  const [testingAI, setTestingAI] = useState(false);
+  const [aiTestResult, setAiTestResult] = useState<{ ok: boolean; message: string } | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -140,6 +143,26 @@ export default function AdminIntegrations() {
     }
   };
 
+  const handleTestAI = async () => {
+    setTestingAI(true);
+    setAiTestResult(null);
+    try {
+      const testPrompt = `You are a review response assistant. A customer left a 5-star review saying "Great service!". Reply in Arabic in one sentence. Respond ONLY with JSON: {"reply":"..."}`;
+      const { data, error } = await supabase.functions.invoke('generate-reply', {
+        body: { prompt: testPrompt, temperature: 0.5, maxOutputTokens: 100 },
+      });
+      if (error || data?.error) throw new Error(error?.message || data?.error || 'Unknown error');
+      const rawText: string = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      if (!rawText) throw new Error('Empty response from Gemini');
+      const parsed = JSON.parse(rawText.replace(/```json\n?|```\n?/g, '').trim());
+      setAiTestResult({ ok: true, message: parsed.reply || rawText });
+    } catch (err) {
+      setAiTestResult({ ok: false, message: err instanceof Error ? err.message : 'فشل الاختبار' });
+    } finally {
+      setTestingAI(false);
+    }
+  };
+
   // Group by category in defined order
   const allCats = CATEGORY_ORDER.filter(c => integrations.some(i => i.category === c));
   const filtered = filterCat === 'all' ? integrations : integrations.filter(i => i.category === filterCat);
@@ -182,6 +205,33 @@ export default function AdminIntegrations() {
             <div className="text-xs text-slate-500">{s.label}</div>
           </div>
         ))}
+      </div>
+
+      {/* Test AI Panel */}
+      <div className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3.5 mb-5 flex items-center gap-4 flex-wrap">
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <span className="text-lg">✨</span>
+          <div>
+            <div className="text-sm font-semibold text-white">Gemini AI</div>
+            <div className="text-[11px] text-slate-500">اختبار اتصال خدمة الذكاء الاصطناعي عبر Edge Function</div>
+          </div>
+        </div>
+        <div className="flex items-center gap-3 flex-shrink-0">
+          {aiTestResult && (
+            <span className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-lg border ${aiTestResult.ok ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' : 'text-red-400 bg-red-500/10 border-red-500/20'}`}>
+              {aiTestResult.ok ? <CheckCircle size={12} /> : <XCircle size={12} />}
+              <span className="max-w-[200px] truncate">{aiTestResult.message}</span>
+            </span>
+          )}
+          <button
+            onClick={handleTestAI}
+            disabled={testingAI}
+            className="flex items-center gap-1.5 px-3 py-2 bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 border border-indigo-500/30 rounded-lg text-xs font-medium transition-colors disabled:opacity-50"
+          >
+            {testingAI ? <Loader2 size={13} className="animate-spin" /> : <Zap size={13} />}
+            {testingAI ? 'جاري الاختبار…' : 'اختبار AI'}
+          </button>
+        </div>
       </div>
 
       {error && <div className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg p-3 mb-4">{error}</div>}

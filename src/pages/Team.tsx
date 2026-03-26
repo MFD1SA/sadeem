@@ -1,19 +1,21 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useLanguage } from '@/i18n';
 import { useAuth } from '@/hooks/useAuth';
+import { usePlan } from '@/hooks/usePlan';
 import { teamService, type TeamMemberRow } from '@/services/team';
 import { LoadingState, ErrorState } from '@/components/ui/LoadingState';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Badge } from '@/components/ui/Badge';
 import { StatusDot } from '@/components/ui/StatusDot';
 import { formatDateTime } from '@/utils/helpers';
-import { UserPlus, X } from 'lucide-react';
+import { UserPlus, X, Lock } from 'lucide-react';
 
 let _cache: TeamMemberRow[] | null = null;
 
 export default function Team() {
   const { t, lang } = useLanguage();
   const { organization } = useAuth();
+  const { limits, trial } = usePlan();
   const [members, setMembers] = useState<TeamMemberRow[]>(_cache ?? []);
   const [loading, setLoading] = useState(_cache === null);
   const [error, setError] = useState('');
@@ -45,6 +47,11 @@ export default function Team() {
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!organization || !inviteEmail.trim()) return;
+    // Re-check limit at submit time (covers race conditions)
+    if (members.length >= limits.maxTeamMembers) {
+      setInviteError(lang === 'ar' ? `وصلت للحد الأقصى (${limits.maxTeamMembers} أعضاء). يرجى ترقية الباقة.` : `Member limit reached (${limits.maxTeamMembers}). Please upgrade your plan.`);
+      return;
+    }
     setInviting(true);
     setInviteError('');
     try {
@@ -67,6 +74,11 @@ export default function Team() {
 
   const activeCount = members.filter(({ membership: m }) => m.status === 'active').length;
   const adminCount = members.filter(({ membership: m }) => m.role === 'owner' || m.role === 'admin').length;
+
+  // Plan limit enforcement
+  const maxMembers = limits.maxTeamMembers;
+  const canAddMember = !trial.isExpired && members.length < maxMembers;
+  const atMemberLimit = !trial.isExpired && members.length >= maxMembers;
 
   return (
     <div className="space-y-5">
@@ -95,12 +107,32 @@ export default function Team() {
       {/* Main Card */}
       <div className="card">
         <div className="card-header">
-          <h3>{t.teamPage.title} ({members.length})</h3>
-          <button className="btn btn-primary btn-sm" type="button" onClick={() => { setShowInvite(true); setInviteError(''); setInviteSuccess(false); }}>
-            <UserPlus size={14} />
+          <h3>
+            {t.teamPage.title} ({members.length}
+            {maxMembers < 999999 && `/${maxMembers}`})
+          </h3>
+          <button
+            className="btn btn-primary btn-sm"
+            type="button"
+            disabled={!canAddMember}
+            title={atMemberLimit ? (lang === 'ar' ? `وصلت للحد الأقصى (${maxMembers} أعضاء). يرجى ترقية الباقة.` : `Member limit reached (${maxMembers}). Upgrade to add more.`) : undefined}
+            onClick={() => { if (canAddMember) { setShowInvite(true); setInviteError(''); setInviteSuccess(false); } }}
+          >
+            {atMemberLimit ? <Lock size={14} /> : <UserPlus size={14} />}
             {lang === 'ar' ? 'دعوة عضو' : 'Invite Member'}
           </button>
         </div>
+
+        {atMemberLimit && (
+          <div className="mx-4 mb-3 flex items-center gap-2 rounded-lg bg-amber-500/10 border border-amber-500/20 px-3 py-2.5 text-xs text-amber-600">
+            <Lock size={13} className="flex-shrink-0" />
+            <span>
+              {lang === 'ar'
+                ? `وصلت للحد الأقصى لعدد الأعضاء في باقتك الحالية (${maxMembers}). قم بترقية الباقة لإضافة المزيد.`
+                : `You've reached the team member limit for your plan (${maxMembers}). Upgrade to add more.`}
+            </span>
+          </div>
+        )}
 
         {members.length === 0 ? (
           <EmptyState message={t.common.noData} />
