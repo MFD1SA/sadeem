@@ -10,22 +10,25 @@ import { SentimentChart } from './SentimentChart';
 import { BranchComparison } from './BranchComparison';
 import { Star, MessageSquare, Percent } from 'lucide-react';
 
+let _cache: AnalyticsData | null = null;
+
 export default function Analytics() {
   const { t } = useLanguage();
   const { organization, isLoading: authLoading } = useAuth();
 
-  const [data, setData] = useState<AnalyticsData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<AnalyticsData | null>(_cache);
+  const [loading, setLoading] = useState(_cache === null);
   const [error, setError] = useState('');
 
   const loadData = useCallback(async () => {
     if (!organization?.id) return;
 
-    setLoading(true);
+    if (_cache === null) setLoading(true);
     setError('');
 
     try {
       const d = await analyticsService.getAnalytics(organization.id);
+      _cache = d;
       setData(d);
     } catch (err: unknown) {
       setError((err as Error).message || 'Failed to load analytics');

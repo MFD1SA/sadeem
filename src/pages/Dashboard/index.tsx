@@ -9,20 +9,22 @@ import { CriticalReviews } from './CriticalReviews';
 import { BranchPerformance } from './BranchPerformance';
 import type { DbReview, DbBranch } from '@/types/database';
 
+let _cache: { stats: DashboardStats; criticalReviews: DbReview[]; branches: DbBranch[] } | null = null;
+
 export default function Dashboard() {
   const { t } = useLanguage();
   const { organization, isLoading: authLoading } = useAuth();
 
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [criticalReviews, setCriticalReviews] = useState<DbReview[]>([]);
-  const [branches, setBranches] = useState<DbBranch[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState<DashboardStats | null>(_cache?.stats ?? null);
+  const [criticalReviews, setCriticalReviews] = useState<DbReview[]>(_cache?.criticalReviews ?? []);
+  const [branches, setBranches] = useState<DbBranch[]>(_cache?.branches ?? []);
+  const [loading, setLoading] = useState(_cache === null);
   const [error, setError] = useState('');
 
   const loadData = useCallback(async () => {
     if (!organization?.id) return;
 
-    setLoading(true);
+    if (_cache === null) setLoading(true);
     setError('');
 
     try {
@@ -32,6 +34,7 @@ export default function Dashboard() {
         branchesService.list(organization.id),
       ]);
 
+      _cache = { stats: s, criticalReviews: cr, branches: br };
       setStats(s);
       setCriticalReviews(cr);
       setBranches(br);

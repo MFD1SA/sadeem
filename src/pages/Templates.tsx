@@ -10,6 +10,8 @@ import { Toggle } from '@/components/ui/Toggle';
 import { Plus, Edit3, Trash2, BarChart2 } from 'lucide-react';
 import type { DbReplyTemplate } from '@/types/database';
 
+let _cache: DbReplyTemplate[] | null = null;
+
 type TemplateForm = { name: string; body: string; category: string; rating_min: number; rating_max: number; is_active: boolean };
 
 function StarDisplay({ min, max }: { min: number; max: number }) {
@@ -36,8 +38,8 @@ function StarDisplay({ min, max }: { min: number; max: number }) {
 export default function Templates() {
   const { t, lang } = useLanguage();
   const { organization } = useAuth();
-  const [templates, setTemplates] = useState<DbReplyTemplate[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [templates, setTemplates] = useState<DbReplyTemplate[]>(_cache ?? []);
+  const [loading, setLoading] = useState(_cache === null);
   const [error, setError] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editTemplate, setEditTemplate] = useState<DbReplyTemplate | null>(null);
@@ -49,10 +51,11 @@ export default function Templates() {
 
   const loadTemplates = useCallback(async () => {
     if (!organization) { setLoading(false); return; }
-    setLoading(true);
+    if (_cache === null) setLoading(true);
     setError('');
     try {
       const data = await templatesService.list(organization.id);
+      _cache = data;
       setTemplates(data);
     } catch (err: unknown) {
       setError((err as Error).message);

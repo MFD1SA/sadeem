@@ -9,23 +9,26 @@ import { Tabs } from '@/components/ui/Tabs';
 import { ResponseCard, type ResponseCardProps } from './ResponseCard';
 import type { DbReplyDraft } from '@/types/database';
 
+let _cache: DbReplyDraft[] | null = null;
+
 export default function ResponsesInbox() {
   const { t, lang } = useLanguage();
   const { organization, user, isLoading: authLoading } = useAuth();
 
-  const [drafts, setDrafts] = useState<DbReplyDraft[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [drafts, setDrafts] = useState<DbReplyDraft[]>(_cache ?? []);
+  const [loading, setLoading] = useState(_cache === null);
   const [error, setError] = useState('');
   const [tab, setTab] = useState('all');
 
   const loadDrafts = useCallback(async () => {
     if (!organization?.id) return;
 
-    setLoading(true);
+    if (_cache === null) setLoading(true);
     setError('');
 
     try {
       const data = await replyDraftsService.list(organization.id);
+      _cache = data;
       setDrafts(data);
     } catch (err: unknown) {
       setError((err as Error).message || 'Failed to load drafts');

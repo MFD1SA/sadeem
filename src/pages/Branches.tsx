@@ -11,6 +11,8 @@ import { useBranchLimit } from '@/components/ui/FeatureGate';
 import { Plus, Edit3, Trash2, Lock, MapPin, Link2, Unlink } from 'lucide-react';
 import type { DbBranch } from '@/types/database';
 
+let _cache: DbBranch[] | null = null;
+
 export default function Branches() {
   const { t, lang } = useLanguage();
   const { organization, isLoading: authLoading } = useAuth();
@@ -20,8 +22,8 @@ export default function Branches() {
     showUpgrade,
   } = useBranchLimit();
 
-  const [branches, setBranches] = useState<DbBranch[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [branches, setBranches] = useState<DbBranch[]>(_cache ?? []);
+  const [loading, setLoading] = useState(_cache === null);
   const [error, setError] = useState('');
   const [limitWarning, setLimitWarning] = useState(false);
 
@@ -39,11 +41,12 @@ export default function Branches() {
   const loadBranches = useCallback(async () => {
     if (!organization?.id) return;
 
-    setLoading(true);
+    if (_cache === null) setLoading(true);
     setError('');
 
     try {
       const data = await branchesService.list(organization.id);
+      _cache = data;
       setBranches(data);
     } catch (err: unknown) {
       setError((err as Error).message || 'Failed to load branches');

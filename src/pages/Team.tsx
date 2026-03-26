@@ -9,19 +9,22 @@ import { StatusDot } from '@/components/ui/StatusDot';
 import { formatDateTime } from '@/utils/helpers';
 import { UserPlus } from 'lucide-react';
 
+let _cache: TeamMemberRow[] | null = null;
+
 export default function Team() {
   const { t, lang } = useLanguage();
   const { organization } = useAuth();
-  const [members, setMembers] = useState<TeamMemberRow[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [members, setMembers] = useState<TeamMemberRow[]>(_cache ?? []);
+  const [loading, setLoading] = useState(_cache === null);
   const [error, setError] = useState('');
 
   const loadMembers = useCallback(async () => {
     if (!organization) { setLoading(false); return; }
-    setLoading(true);
+    if (_cache === null) setLoading(true);
     setError('');
     try {
       const data = await teamService.listMembers(organization.id);
+      _cache = data;
       setMembers(data);
     } catch (err: unknown) {
       setError((err as Error).message);
