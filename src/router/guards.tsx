@@ -201,9 +201,10 @@ export function RedirectIfAuthenticated() {
   const { isAuthenticated, hasOrganization, isLoading } = useAuth();
   const { isAdmin, checking } = useAdminCheck();
 
-  // While auth/admin-check is still resolving, render the login form immediately.
-  // If the user turns out to be authenticated, we redirect once checking is done.
-  if (isLoading || checking) return <Outlet />;
+  // Render login form while auth is loading. Do NOT wait for admin check —
+  // redirect fires as soon as auth resolves. Admin check may still be running;
+  // if the user is an admin the second render redirects them to /admin/dashboard.
+  if (isLoading) return <Outlet />;
 
   if (isAuthenticated) {
     if (isAdmin) return <Navigate to="/admin/dashboard" replace />;

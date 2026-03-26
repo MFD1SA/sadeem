@@ -110,30 +110,49 @@ export default function Login() {
       });
   }, []);
 
-  // PKCE safety fallback
+  // PKCE: listen for SIGNED_IN immediately — redirect as soon as session is ready
   useEffect(() => {
     if (!isOAuthCallback) return;
-    const t = setTimeout(async () => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_IN') window.location.href = '/dashboard';
+    });
+    // Fast fallback at 1s and again at 4s in case the event was missed
+    const t1 = setTimeout(async () => {
       const { data: { session } } = await supabase.auth.getSession().catch(() => ({ data: { session: null } }));
       if (session?.user) window.location.href = '/dashboard';
-    }, 2000);
-    return () => clearTimeout(t);
+    }, 1000);
+    const t2 = setTimeout(async () => {
+      const { data: { session } } = await supabase.auth.getSession().catch(() => ({ data: { session: null } }));
+      if (session?.user) window.location.href = '/dashboard';
+    }, 4000);
+    return () => { subscription.unsubscribe(); clearTimeout(t1); clearTimeout(t2); };
   }, []);
 
   // ── OAuth callback loading screen ─────────────────────────────────────────
   if (isOAuthCallback) {
     const logoUrl = branding?.logo_icon_url || branding?.logo_full_url || '';
     return (
-      <div className="min-h-screen bg-gradient-to-br from-brand-600 to-brand-800 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center mx-auto mb-5 shadow-lg">
-            {logoUrl
-              ? <img src={logoUrl} alt="logo" className="w-10 h-10 object-contain" />
-              : <span className="text-white text-3xl font-bold">س</span>}
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #1e3a8a 0%, #3b5bdb 50%, #1e40af 100%)' }}>
+        <div className="text-center flex flex-col items-center">
+          {/* Logo */}
+          <div className="mb-6">
+            <img
+              src={logoUrl || '/sadeem-logo.png'}
+              alt="SADEEM"
+              className="w-32 h-32 object-contain drop-shadow-2xl mx-auto"
+              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+            />
           </div>
-          <div className="text-white text-base font-semibold mb-1">{branding?.platform_name_ar || 'سديم'}</div>
-          <div className="text-white/70 text-sm mb-6">{isAr ? 'جاري تسجيل الدخول…' : 'Signing you in…'}</div>
-          <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto" />
+          {/* Brand name */}
+          <div className="text-white text-xl font-bold tracking-widest mb-1" style={{ letterSpacing: '0.2em' }}>
+            {branding?.platform_name_en || 'SADEEM'}
+          </div>
+          {/* Loading text */}
+          <div className="text-white/60 text-sm mb-8 font-light">
+            {isAr ? 'جاري التحميل…' : 'Loading…'}
+          </div>
+          {/* Spinner */}
+          <div className="w-8 h-8 rounded-full border-2 border-white/20 border-t-white animate-spin" />
         </div>
       </div>
     );
