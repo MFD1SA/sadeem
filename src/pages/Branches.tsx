@@ -8,7 +8,7 @@ import { StatusDot } from '@/components/ui/StatusDot';
 import { Badge } from '@/components/ui/Badge';
 import { Modal } from '@/components/ui/Modal';
 import { useBranchLimit } from '@/components/ui/FeatureGate';
-import { Plus, Edit3, Trash2, Lock, MapPin, Link2, LinkSlash } from 'lucide-react';
+import { Plus, Edit3, Trash2, Lock, MapPin, Link2, Unlink } from 'lucide-react';
 import type { DbBranch } from '@/types/database';
 
 export default function Branches() {
@@ -215,7 +215,7 @@ export default function Branches() {
         <div className="card card-body text-center">
           <div className="text-2xl font-bold text-content-primary">{unlinkedCount}</div>
           <div className="flex items-center justify-center gap-1 mt-0.5">
-            <LinkSlash size={11} className="text-content-tertiary" />
+            <Unlink size={11} className="text-content-tertiary" />
             <span className="text-xs text-content-tertiary">
               {lang === 'ar' ? 'غير مرتبطة' : 'Not Linked'}
             </span>
@@ -303,7 +303,7 @@ export default function Branches() {
                       </>
                     ) : (
                       <>
-                        <LinkSlash size={13} className="text-content-tertiary flex-shrink-0" />
+                        <Unlink size={13} className="text-content-tertiary flex-shrink-0" />
                         <span className="text-xs text-content-tertiary italic">
                           {lang === 'ar' ? 'غير مرتبط بجوجل' : 'Not linked to Google'}
                         </span>
