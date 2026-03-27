@@ -5,7 +5,7 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Lightbulb, Globe, BookOpen, Zap, MapPin, Rocket, Heart, ArrowUpRight, Sparkles } from 'lucide-react';
 
 const C = {
   bg:     '#0F1117',
@@ -174,42 +174,42 @@ function AiGirl() {
 const SECTIONS = [
   {
     id: 'birth',
-    num: '01',
+    Icon: Lightbulb,
     title: 'ولادة فكرة',
     color: C.cyan,
     text: 'وُلدت سديم من سؤال بسيط لكنه عميق: كيف يمكن أن نفهم الإنسان عندما يتحدث عن تجربته؟ ليس فقط أن نقرأ كلماته، بل أن نفهم ما يقصده فعلاً. أن نفهم رضاه، انزعاجه، اقتراحه، أو حتى صمته بين السطور.\n\nكانت الفكرة بسيطة في ظاهرها، لكنها كبيرة في معناها. أن يتحول الاستماع إلى فهم، وأن يتحول الفهم إلى تحسين حقيقي في التجربة الإنسانية.',
   },
   {
     id: 'world',
-    num: '02',
+    Icon: Globe,
     title: 'حين رأت سديم العالم',
     color: C.purple,
-    text: 'كبرت الفكرة وهي تنظر إلى العالم من حولها. رأت مدناً مزدحمة بالحياة، وجهات تستقبل الزوار من كل مكان، وخدماتٍ يتفاعل معها الناس يومياً. ورأت أيضاً شيئاً آخر.\n\nالناس يكتبون آراءهم بعد كل تجربة. قد تكون كلمات شكر، وقد تكون ملاحظة صادقة، وقد تكون شكوى تبحث عن من يسمعها. لكن كثيراً من هذه الكلمات كانت تضيع في الضجيج. لا لأن أحداً لا يريد الاستماع، بل لأن فهم هذا الكم الهائل من التجارب لم يكن سهلاً.\n\nوهنا أدركت سديم شيئاً مهماً. العالم لا يحتاج مزيداً من الكلمات… بل يحتاج من يفهمها.',
+    text: 'كبرت الفكرة وهي تنظر إلى العالم من حولها. رأت مدناً مزدحمة بالحياة، وجهات تستقبل الزوار من كل مكان، وخدماتٍ يتفاعل معها الناس يومياً. ورأت أيضاً شيئاً آخر.\n\nالناس يكتبون آراءهم بعد كل تجربة. قد تكون كلمات شكر، وقد تكون ملاحظة صادقة، وقد تكون شكوى تبحث عن من يسمعها. لكن كثيراً من هذه الكلمات كانت تضيع في الضجيج. لا لأن أحداً لا يريد الاستماع، بل لأن فهم هذا الكم الهائل من التجارب لم يكن سهلاً.\n\nوهنا أدركت سديم شيئاً مهماً. العالم لا يحتاج مزيداً من الكلمات بل يحتاج من يفهمها.',
   },
   {
     id: 'learn',
-    num: '03',
+    Icon: BookOpen,
     title: 'التعلم',
     color: C.cyan,
     text: 'تعلمت سديم أن الإنسان قد يتحدث بلغات مختلفة، وقد يعبّر عن مشاعره بطرق متعددة، لكن التجربة الإنسانية تبقى مفهوماً واحداً يفهمه الجميع.\n\nولهذا بدأت سديم تتعلم. تعلمت أن تستمع، وتتعلم أن تقرأ ما بين السطور، وتتعلم أن ترى ما قد لا يراه الآخرون في زحمة التفاصيل اليومية. حتى أصبحت قادرة على فهم التجربة الإنسانية بعمق أكبر.',
   },
   {
     id: 'transform',
-    num: '04',
+    Icon: Zap,
     title: 'التحول',
     color: C.purple,
     text: 'في هذه اللحظة لم تعد سديم مجرد فكرة. تحولت إلى عقل يفهم الإنسان. عقل يستطيع قراءة التجارب وتحويلها إلى معرفة، ومعرفة يمكن أن تساعد على تحسين الحياة.\n\nلم يكن الهدف مجرد عرض الآراء، بل فهمها، وتحويلها إلى رؤية تساعد الجهات على تقديم تجربة أفضل.',
   },
   {
     id: 'homeland',
-    num: '05',
+    Icon: MapPin,
     title: 'الوطن',
     color: C.cyan,
     text: 'رأت سديم العالم، وتنقلت بين تجاربه، لكنها أدركت حقيقة واضحة. الأفكار العظيمة تحتاج أرضاً تؤمن بالمستقبل. ولهذا اختارت أن تبدأ من هنا. من المملكة العربية السعودية.\n\nسديم سعودية المنشأ، وُلدت في هذه الأرض التي تعشقها، وتشكلت شخصيتها في وطنٍ يؤمن بأن المستقبل يُبنى بالطموح. ومع رؤية المملكة 2030 التي تسعى إلى تحسين جودة الحياة، وجدت سديم مكانها الطبيعي. أن تكون جزءاً من رحلة تطوير التجربة الإنسانية في هذا الوطن.',
   },
   {
     id: 'launch',
-    num: '06',
+    Icon: Rocket,
     title: 'لحظة الانطلاق',
     color: C.purple,
     text: 'ومع تسارع التحول التقني في العالم، ومع إعلان سمو سيدي ولي العهد حفظه الله أن عام 2026 هو عام الذكاء الاصطناعي، أصبحت اللحظة واضحة. أن يتحول الفهم إلى ذكاء، وأن يصبح الذكاء وسيلة لفهم الإنسان بشكل أعمق.\n\nومن هنا بدأت سديم رحلتها. رحلةٌ وُلدت في هذا الوطن، وتحمل طموحاً أن تساعد على تحسين التجربة الإنسانية في كل مكان.',
@@ -392,12 +392,12 @@ export default function StoryPage() {
             {/* Section header */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 28 }}>
               <div style={{
-                width: 44, height: 44, borderRadius: 12, flexShrink: 0,
+                width: 48, height: 48, borderRadius: 14, flexShrink: 0,
                 background: s.color + '14',
-                border: `1px solid ${s.color}28`,
+                border: `1px solid ${s.color}30`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, fontWeight: 600, color: s.color, letterSpacing: '0.05em' }}>{s.num}</span>
+                <s.Icon size={22} style={{ color: s.color }} />
               </div>
               <h2 style={{ fontSize: 'clamp(20px, 2.8vw, 30px)', fontWeight: 600, color: C.text, margin: 0 }}>{s.title}</h2>
             </div>
@@ -430,8 +430,8 @@ export default function StoryPage() {
             borderRadius: 24, padding: '40px 40px',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
-              <div style={{ width: 44, height: 44, borderRadius: 12, background: C.purple + '14', border: `1px solid ${C.purple}28`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, fontWeight: 600, color: C.purple, letterSpacing: '0.05em' }}>07</span>
+              <div style={{ width: 48, height: 48, borderRadius: 14, background: C.purple + '14', border: `1px solid ${C.purple}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Heart size={22} style={{ color: C.purple }} />
               </div>
               <h2 style={{ fontSize: 'clamp(20px, 2.8vw, 30px)', fontWeight: 600, color: C.text, margin: 0 }}>الرسالة</h2>
             </div>
@@ -451,8 +451,8 @@ export default function StoryPage() {
       <section style={{ background: C.card, borderTop: `1px solid ${C.border}`, padding: '80px 0' }}>
         <div style={{ maxWidth: 720, margin: '0 auto', padding: '0 24px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 28 }}>
-            <div style={{ width: 44, height: 44, borderRadius: 12, background: C.cyan + '14', border: `1px solid ${C.cyan}28`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, fontWeight: 600, color: C.cyan, letterSpacing: '0.05em' }}>08</span>
+            <div style={{ width: 48, height: 48, borderRadius: 14, background: C.cyan + '14', border: `1px solid ${C.cyan}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <ArrowUpRight size={22} style={{ color: C.cyan }} />
             </div>
             <h2 style={{ fontSize: 'clamp(20px, 2.8vw, 30px)', fontWeight: 600, color: C.text, margin: 0 }}>الانطلاق</h2>
           </div>
@@ -483,25 +483,95 @@ export default function StoryPage() {
       </section>
 
       {/* ══════════════════════════════════════════════════════════
-          FOOTER
+          FOOTER — Full homepage-style
       ══════════════════════════════════════════════════════════ */}
-      <div style={{ background: '#0A0D14', borderTop: `1px solid ${C.border}`, padding: '24px 0' }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
-          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-          <img src="/sadeem-logo.png" alt="SADEEM" style={{ height: 22, width: 'auto', opacity: 0.5 }} />
-          <p style={{ fontSize: 12, color: C.muted, margin: 0, opacity: 0.6 }}>© 2026 سديم. جميع الحقوق محفوظة.</p>
-          <div style={{ display: 'flex', gap: 20 }}>
-            {[{ label: 'سياسة الخصوصية', path: '/privacy' }, { label: 'شروط الاستخدام', path: '/terms' }].map(l => (
-              <button key={l.path} onClick={() => navigate(l.path)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: C.muted, opacity: 0.6 }}
-                onMouseOver={e => { e.currentTarget.style.opacity = '1'; }}
-                onMouseOut={e => { e.currentTarget.style.opacity = '0.6'; }}>
-                {l.label}
+      <footer style={{ background: '#0A0D14', borderTop: `1px solid ${C.border}` }}>
+        {/* Upper footer */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ padding: '56px 0 40px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr 1fr 1fr', gap: 48, alignItems: 'start' }}
+            className="grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+
+            {/* Brand column */}
+            <div style={{ minWidth: 220 }}>
+              <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginBottom: 16 }}>
+                <img src="/sadeem-logo.png" alt="SADEEM" style={{ height: 28, width: 'auto', opacity: 0.9 }} />
               </button>
-            ))}
+              <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.7, maxWidth: 220, margin: '0 0 20px' }}>
+                منصة متكاملة لإدارة تقييمات جوجل وتحسين السمعة الرقمية للأعمال العربية
+              </p>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button onClick={() => navigate('/register')}
+                  style={{ background: GRAD, color: 'white', fontSize: 12, padding: '7px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', fontWeight: 500 }}>
+                  ابدأ مجانًا
+                </button>
+              </div>
+            </div>
+
+            {/* Product links */}
+            <div>
+              <h4 style={{ fontSize: 13, fontWeight: 600, color: C.text, marginBottom: 16 }}>المنتج</h4>
+              {['المميزات', 'الخطط والأسعار', 'كيف يعمل', 'قصة سديم'].map(item => (
+                <button key={item} onClick={() => item === 'قصة سديم' ? navigate('/story') : navigate('/')}
+                  style={{ display: 'block', background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: C.muted, padding: '5px 0', textAlign: 'right' }}
+                  onMouseOver={e => (e.currentTarget.style.color = C.text)}
+                  onMouseOut={e => (e.currentTarget.style.color = C.muted)}>
+                  {item}
+                </button>
+              ))}
+            </div>
+
+            {/* Support links */}
+            <div>
+              <h4 style={{ fontSize: 13, fontWeight: 600, color: C.text, marginBottom: 16 }}>الدعم</h4>
+              {['مركز المساعدة', 'تواصل معنا', 'بوابة الدعم الفني', 'التوثيق التقني'].map(item => (
+                <button key={item} onClick={() => navigate('/#contact')}
+                  style={{ display: 'block', background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: C.muted, padding: '5px 0', textAlign: 'right' }}
+                  onMouseOver={e => (e.currentTarget.style.color = C.text)}
+                  onMouseOut={e => (e.currentTarget.style.color = C.muted)}>
+                  {item}
+                </button>
+              ))}
+            </div>
+
+            {/* Legal links */}
+            <div>
+              <h4 style={{ fontSize: 13, fontWeight: 600, color: C.text, marginBottom: 16 }}>قانوني</h4>
+              {[
+                { label: 'سياسة الخصوصية', path: '/privacy' },
+                { label: 'شروط الاستخدام', path: '/terms' },
+                { label: 'إشعار قانوني', path: '/terms' },
+              ].map(l => (
+                <button key={l.label} onClick={() => navigate(l.path)}
+                  style={{ display: 'block', background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: C.muted, padding: '5px 0', textAlign: 'right' }}
+                  onMouseOver={e => (e.currentTarget.style.color = C.text)}
+                  onMouseOut={e => (e.currentTarget.style.color = C.muted)}>
+                  {l.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+
+        {/* Bottom bar */}
+        <div style={{ borderTop: `1px solid ${C.border}` }}>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+            style={{ padding: '16px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+            <p style={{ fontSize: 12, color: C.muted, margin: 0, opacity: 0.55 }}>
+              جميع الحقوق محفوظة لسديم 2026
+            </p>
+            <div style={{ display: 'flex', gap: 20 }}>
+              {[{ label: 'سياسة الخصوصية', path: '/privacy' }, { label: 'شروط الاستخدام', path: '/terms' }, { label: 'الرئيسية', path: '/' }].map(l => (
+                <button key={l.label} onClick={() => navigate(l.path)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: C.muted, opacity: 0.55 }}
+                  onMouseOver={e => { e.currentTarget.style.opacity = '1'; }}
+                  onMouseOut={e => { e.currentTarget.style.opacity = '0.55'; }}>
+                  {l.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </footer>
 
     </div>
   );
