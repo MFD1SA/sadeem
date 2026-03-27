@@ -9,9 +9,15 @@
     box-sizing: border-box;
   }
 
-  html, body, #root {
+  html, body {
     height: 100%;
-    overflow: hidden;
+  }
+
+  #root {
+    height: 100%;
+    /* overflow is managed per-layout:
+       - subscriber / admin shells use overflow-hidden + inner overflow-y-auto
+       - public pages (homepage) need normal document scroll, so no overflow here */
   }
 
   body {
