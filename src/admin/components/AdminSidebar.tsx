@@ -49,73 +49,125 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
 
   return (
     <>
-      {isOpen && <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden" onClick={onClose} />}
+      {/* Mobile overlay */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 lg:hidden"
+          onClick={onClose}
+        />
+      )}
 
       <aside className={`admin-sidebar ${isOpen ? 'translate-x-0' : 'max-lg:rtl:translate-x-full max-lg:ltr:-translate-x-full'}`}>
-        {/* Brand */}
-        <div className="h-16 flex items-center justify-between px-5 border-b border-white/[0.06] flex-shrink-0">
+
+        {/* ── Brand header ── */}
+        <div className="h-16 flex items-center justify-between px-4 flex-shrink-0" style={{ borderBottom: '1px solid #1F2937' }}>
           <div className="flex items-center gap-3">
             {branding?.logo_icon_url ? (
-              <img src={branding.logo_icon_url} alt="" className="w-8 h-8 rounded-lg object-contain" />
+              <img src={branding.logo_icon_url} alt="" className="w-8 h-8 rounded-xl object-contain" />
             ) : (
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
-                <Layers size={16} className="text-white" />
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
+                style={{ background: 'linear-gradient(135deg, #0891b2, #1d4ed8)', boxShadow: '0 4px 12px rgba(6,182,212,0.3)' }}>
+                <Layers size={15} className="text-white" />
               </div>
             )}
-            <div>
-              <span className="text-white text-sm font-semibold tracking-wide">{branding?.platform_name_en || 'SADEEM'}</span>
-              <span className="block text-[10px] text-cyan-400/80 font-medium -mt-0.5">لوحة الإدارة</span>
+            <div className="min-w-0">
+              <div className="text-[13.5px] font-bold text-white tracking-wide leading-none">
+                {branding?.platform_name_en || 'SADEEM'}
+              </div>
+              <div className="text-[10px] font-medium mt-0.5" style={{ color: 'rgba(6,182,212,0.7)' }}>
+                لوحة الإدارة
+              </div>
             </div>
           </div>
-          <button onClick={onClose} className="lg:hidden p-1.5 rounded-md text-slate-500 hover:text-white hover:bg-white/5 transition-colors">
-            <X size={18} />
+          <button
+            onClick={onClose}
+            className="lg:hidden p-1.5 rounded-lg transition-colors"
+            style={{ color: '#6B7280' }}
+            onMouseOver={e => (e.currentTarget.style.color = '#E5E7EB')}
+            onMouseOut={e => (e.currentTarget.style.color = '#6B7280')}
+          >
+            <X size={17} />
           </button>
         </div>
 
-        {/* Nav */}
-        <nav className="flex-1 overflow-y-auto py-4 px-3">
+        {/* ── Navigation ── */}
+        <nav className="flex-1 overflow-y-auto py-3 px-2.5" style={{ scrollbarWidth: 'none' }}>
           <div className="space-y-0.5">
             {filtered.map((item) => (
               <div key={item.id}>
-                <NavLink to={item.path} onClick={onClose}
-                  className={`admin-nav-item ${isActive(item.path) ? 'admin-nav-item-active' : ''}`}>
-                  <item.icon size={18} className="flex-shrink-0" />
-                  <span>{item.label}</span>
-                  {isActive(item.path) && <div className="mr-auto w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-sm shadow-cyan-400/50" />}
+                <NavLink
+                  to={item.path}
+                  onClick={onClose}
+                  className={`admin-nav-item ${isActive(item.path) ? 'admin-nav-item-active' : ''}`}
+                >
+                  <item.icon size={17} />
+                  <span className="flex-1">{item.label}</span>
+                  {isActive(item.path) && (
+                    <span
+                      className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                      style={{ background: '#06B6D4', boxShadow: '0 0 6px rgba(6,182,212,0.6)' }}
+                    />
+                  )}
                 </NavLink>
-                {item.dividerAfter && <div className="my-3 mx-3 border-t border-white/[0.04]" />}
+                {item.dividerAfter && (
+                  <div className="my-2.5 mx-2" style={{ borderTop: '1px solid #1F2937' }} />
+                )}
               </div>
             ))}
           </div>
         </nav>
 
-        {/* User card — single logout location */}
-        <div className="border-t border-white/[0.06] p-3 flex-shrink-0">
-          <div className="flex items-center gap-3 px-3 py-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center text-white text-xs font-bold flex-shrink-0 overflow-hidden">
+        {/* ── User footer ── */}
+        <div className="p-3 flex-shrink-0" style={{ borderTop: '1px solid #1F2937' }}>
+          {/* User info row */}
+          <div className="flex items-center gap-3 px-2 py-2.5 rounded-xl mb-1"
+            style={{ background: 'rgba(255,255,255,0.03)' }}>
+            <div
+              className="w-8 h-8 rounded-xl flex items-center justify-center text-white text-[13px] font-bold flex-shrink-0 overflow-hidden"
+              style={{ background: 'linear-gradient(135deg, #374151, #1F2937)' }}
+            >
               {user?.avatar_url
                 ? <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
                 : user?.full_name_ar?.charAt(0)
-                  ? <span>{user.full_name_ar.charAt(0)}</span>
-                  : <UserCircle size={16} className="text-slate-400" />}
+                  ? user.full_name_ar.charAt(0)
+                  : <UserCircle size={15} style={{ color: '#9CA3AF' }} />}
             </div>
             <div className="flex-1 text-right min-w-0">
-              <div className="text-sm text-white font-medium truncate">{user?.full_name_ar || 'مشرف'}</div>
-              <div className="text-[11px] text-slate-500 truncate">{user?.role?.display_name_ar || user?.email}</div>
+              <div className="text-[13px] font-semibold truncate" style={{ color: '#E5E7EB' }}>
+                {user?.full_name_ar || 'مشرف'}
+              </div>
+              <div className="text-[11px] truncate mt-0.5" style={{ color: '#6B7280' }}>
+                {user?.role?.display_name_ar || user?.email}
+              </div>
             </div>
           </div>
-          <div className="flex items-center gap-1 mt-1">
+
+          {/* Action row */}
+          <div className="flex items-center gap-1">
             <NavLink to={ADMIN_ROUTES.PROFILE} onClick={onClose}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs text-slate-400 hover:text-white hover:bg-white/[0.04] transition-colors">
-              <UserCircle size={14} /> الملف
+              className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs transition-colors"
+              style={{ color: '#6B7280' }}
+              onMouseOver={e => { (e.currentTarget as HTMLElement).style.color = '#E5E7EB'; (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.04)'; }}
+              onMouseOut={e => { (e.currentTarget as HTMLElement).style.color = '#6B7280'; (e.currentTarget as HTMLElement).style.background = ''; }}
+            >
+              <UserCircle size={13} /> الملف
             </NavLink>
             <NavLink to={ADMIN_ROUTES.SECURITY} onClick={onClose}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs text-slate-400 hover:text-white hover:bg-white/[0.04] transition-colors">
-              <Lock size={14} /> الأمان
+              className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs transition-colors"
+              style={{ color: '#6B7280' }}
+              onMouseOver={e => { (e.currentTarget as HTMLElement).style.color = '#E5E7EB'; (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.04)'; }}
+              onMouseOut={e => { (e.currentTarget as HTMLElement).style.color = '#6B7280'; (e.currentTarget as HTMLElement).style.background = ''; }}
+            >
+              <Lock size={13} /> الأمان
             </NavLink>
-            <button onClick={() => { logout(); onClose(); }}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs text-red-400 hover:bg-red-500/10 transition-colors">
-              <LogOut size={14} /> خروج
+            <button
+              onClick={() => { logout(); onClose(); }}
+              className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs transition-colors"
+              style={{ color: '#EF4444' }}
+              onMouseOver={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(239,68,68,0.08)'; }}
+              onMouseOut={e => { (e.currentTarget as HTMLElement).style.background = ''; }}
+            >
+              <LogOut size={13} /> خروج
             </button>
           </div>
         </div>

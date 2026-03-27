@@ -131,13 +131,15 @@
 
 /* ═══════════════════════════════════════════════════════════════════════════ */
 /* ADMIN PANEL STYLES — completely independent from subscriber styles above  */
+/* Design: Dark Premium SaaS · Colors: bg=#0B1220 card=#111827 primary=#06B6D4 */
 /* ═══════════════════════════════════════════════════════════════════════════ */
 
 @layer components {
+
   /* ─── Admin Shell ─── */
   .admin-shell {
     @apply flex h-screen w-full overflow-hidden;
-    background: #0B1121;
+    background: #0B1220;
   }
 
   .admin-main {
@@ -146,7 +148,13 @@
 
   .admin-content {
     @apply flex-1 overflow-y-auto;
+    scrollbar-width: thin;
+    scrollbar-color: #1F2937 transparent;
   }
+  .admin-content::-webkit-scrollbar { width: 4px; }
+  .admin-content::-webkit-scrollbar-track { background: transparent; }
+  .admin-content::-webkit-scrollbar-thumb { background: #1F2937; border-radius: 4px; }
+  .admin-content::-webkit-scrollbar-thumb:hover { background: #374151; }
 
   .admin-content-inner {
     @apply mx-auto w-full max-w-[1400px] px-4 py-6 sm:px-6 lg:px-8;
@@ -154,156 +162,289 @@
 
   /* ─── Admin Sidebar ─── */
   .admin-sidebar {
-    @apply fixed top-0 bottom-0 z-50 w-[264px] flex flex-col overflow-y-auto overflow-x-hidden;
+    @apply fixed top-0 bottom-0 z-50 w-[260px] flex flex-col overflow-y-auto overflow-x-hidden;
     @apply rtl:right-0 ltr:left-0;
     @apply lg:relative lg:z-auto lg:flex;
     @apply lg:transition-none transition-transform duration-200 ease-out;
-    background: #0A0F1E;
-    border-left: 1px solid rgba(255,255,255,0.04);
+    background: #080D1A;
+    border-left: 1px solid #1F2937;
+    scrollbar-width: thin;
+    scrollbar-color: #1F2937 transparent;
   }
   [dir="ltr"] .admin-sidebar {
     border-left: none;
-    border-right: 1px solid rgba(255,255,255,0.04);
+    border-right: 1px solid #1F2937;
   }
   .admin-sidebar::-webkit-scrollbar { width: 3px; }
-  .admin-sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
+  .admin-sidebar::-webkit-scrollbar-thumb { background: #1F2937; border-radius: 3px; }
 
   /* ─── Admin Nav Items ─── */
   .admin-nav-item {
-    @apply flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150;
-    @apply text-slate-400 hover:text-white hover:bg-white/[0.04];
+    @apply relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13.5px] font-medium transition-all duration-150 select-none;
+    color: #9CA3AF;
   }
-  .admin-nav-item svg {
-    @apply text-slate-500 transition-colors;
+  .admin-nav-item:hover {
+    color: #E5E7EB;
+    background: rgba(255,255,255,0.04);
   }
   .admin-nav-item:hover svg {
-    @apply text-slate-300;
+    color: #E5E7EB;
   }
+  .admin-nav-item svg {
+    color: #6B7280;
+    transition: color 0.15s;
+    flex-shrink: 0;
+  }
+  /* Active state — cyan glow strip on the right (RTL) */
   .admin-nav-item-active {
-    @apply bg-cyan-500/10 text-cyan-400 !important;
+    background: rgba(6, 182, 212, 0.08) !important;
+    color: #06B6D4 !important;
+    box-shadow: inset -3px 0 0 #06B6D4;
+  }
+  [dir="ltr"] .admin-nav-item-active {
+    box-shadow: inset 3px 0 0 #06B6D4;
   }
   .admin-nav-item-active svg {
-    @apply text-cyan-400 !important;
+    color: #06B6D4 !important;
+    filter: drop-shadow(0 0 6px rgba(6,182,212,0.4));
+  }
+  .admin-nav-item-active:hover {
+    background: rgba(6, 182, 212, 0.12) !important;
   }
 
   /* ─── Admin Topbar ─── */
   .admin-topbar {
-    @apply h-16 flex items-center justify-between px-4 lg:px-6 sticky top-0 z-20;
-    background: rgba(11, 17, 33, 0.8);
-    backdrop-filter: blur(16px);
-    border-bottom: 1px solid rgba(255,255,255,0.04);
+    @apply h-16 flex items-center justify-between gap-3 px-4 lg:px-6 sticky top-0 z-20 flex-shrink-0;
+    background: rgba(8, 13, 26, 0.92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid #1F2937;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.02);
   }
 
   /* ─── Admin Cards ─── */
   .admin-card {
-    @apply rounded-xl;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255,255,255,0.06);
+    @apply rounded-2xl overflow-hidden;
+    background: #111827;
+    border: 1px solid #1F2937;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
+  }
+  .admin-card:hover {
+    border-color: rgba(255,255,255,0.1);
   }
   .admin-card-header {
-    @apply px-5 py-3.5 border-b flex items-center justify-between gap-3;
-    border-color: rgba(255,255,255,0.06);
+    @apply px-5 py-4 flex items-center justify-between gap-3;
+    border-bottom: 1px solid #1F2937;
   }
   .admin-card-header h3 {
-    @apply text-sm font-semibold text-white;
+    @apply text-sm font-semibold;
+    color: #E5E7EB;
+  }
+  .admin-card-header p {
+    @apply text-xs mt-0.5;
+    color: #6B7280;
   }
   .admin-card-body {
     @apply p-5;
   }
 
+  /* ─── Admin Stat Cards ─── */
   .admin-stat-card {
-    @apply rounded-xl p-5;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255,255,255,0.06);
+    @apply rounded-2xl p-5 transition-all duration-200 cursor-default;
+    background: #111827;
+    border: 1px solid #1F2937;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  }
+  .admin-stat-card:hover {
+    border-color: rgba(6,182,212,0.2);
+    box-shadow: 0 4px 16px rgba(6,182,212,0.05);
+    transform: translateY(-1px);
   }
 
   /* ─── Admin Forms ─── */
   .admin-form-input {
-    @apply w-full px-3 py-2.5 rounded-lg text-sm text-white transition-colors duration-150;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255,255,255,0.08);
+    @apply w-full px-3.5 py-2.5 rounded-xl text-sm transition-all duration-150;
+    color: #E5E7EB;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid #1F2937;
   }
   .admin-form-input::placeholder {
-    @apply text-slate-500;
+    color: #4B5563;
   }
   .admin-form-input:focus {
     @apply outline-none;
-    border-color: rgba(6, 182, 212, 0.4);
-    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(6,182,212,0.5);
+    background: rgba(6,182,212,0.04);
+    box-shadow: 0 0 0 3px rgba(6,182,212,0.08);
+  }
+  .admin-form-input:hover:not(:focus):not(:disabled) {
+    border-color: #374151;
   }
   .admin-form-input:disabled {
-    @apply opacity-50 cursor-not-allowed;
+    @apply opacity-40 cursor-not-allowed;
+  }
+  select.admin-form-input {
+    cursor: pointer;
   }
 
   .admin-search-input {
-    @apply w-56 h-9 pr-9 pl-3 text-sm text-white rounded-lg;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255,255,255,0.08);
+    @apply h-9 pr-9 pl-3 text-sm rounded-xl transition-all duration-150;
+    color: #E5E7EB;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid #1F2937;
+    width: 13rem;
   }
   .admin-search-input::placeholder {
-    @apply text-slate-500;
+    color: #4B5563;
   }
   .admin-search-input:focus {
-    @apply outline-none;
-    border-color: rgba(6, 182, 212, 0.4);
+    @apply outline-none w-64;
+    border-color: rgba(6,182,212,0.5);
+    box-shadow: 0 0 0 3px rgba(6,182,212,0.08);
   }
 
   /* ─── Admin Buttons ─── */
   .admin-btn-primary {
-    @apply inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold text-white transition-all;
-    @apply disabled:opacity-50 disabled:cursor-not-allowed;
-    background: linear-gradient(135deg, #0891b2, #2563eb);
-    box-shadow: 0 4px 12px rgba(6, 182, 212, 0.2);
+    @apply inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-all duration-150 select-none;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none;
+    background: linear-gradient(135deg, #0891b2 0%, #1d4ed8 100%);
+    box-shadow: 0 4px 14px rgba(6,182,212,0.3), 0 1px 3px rgba(0,0,0,0.3);
   }
   .admin-btn-primary:hover:not(:disabled) {
-    background: linear-gradient(135deg, #06b6d4, #3b82f6);
+    background: linear-gradient(135deg, #06b6d4 0%, #2563eb 100%);
+    box-shadow: 0 6px 20px rgba(6,182,212,0.4), 0 1px 3px rgba(0,0,0,0.3);
+    transform: translateY(-1px);
+  }
+  .admin-btn-primary:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(6,182,212,0.2);
   }
 
   .admin-btn-secondary {
-    @apply inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors;
-    @apply text-slate-300 hover:text-white;
-    @apply disabled:opacity-50 disabled:cursor-not-allowed;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255,255,255,0.08);
+    @apply inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 select-none;
+    @apply disabled:opacity-40 disabled:cursor-not-allowed;
+    color: #9CA3AF;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid #1F2937;
   }
   .admin-btn-secondary:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.08);
+    color: #E5E7EB;
+    background: rgba(255,255,255,0.07);
+    border-color: #374151;
+  }
+  .admin-btn-secondary:active:not(:disabled) {
+    background: rgba(255,255,255,0.05);
   }
 
-  /* ─── Admin Dropdown ─── */
+  /* ─── Admin Dropdown Items ─── */
   .admin-dropdown-item {
-    @apply w-full flex items-center gap-3 px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-white/[0.04] transition-colors;
+    @apply w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors duration-100 select-none;
+    color: #9CA3AF;
+  }
+  .admin-dropdown-item:hover {
+    color: #E5E7EB;
+    background: rgba(255,255,255,0.04);
+  }
+  .admin-dropdown-item svg {
+    color: #6B7280;
+    flex-shrink: 0;
+  }
+  .admin-dropdown-item:hover svg {
+    color: #9CA3AF;
   }
 
   /* ─── Admin Table ─── */
   .admin-table {
-    @apply w-full text-sm;
+    @apply w-full text-sm border-collapse;
   }
   .admin-table thead {
-    border-bottom: 1px solid rgba(255,255,255,0.06);
+    border-bottom: 1px solid #1F2937;
   }
   .admin-table th {
-    @apply px-5 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap;
+    @apply px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-wider whitespace-nowrap;
+    color: #6B7280;
+    letter-spacing: 0.06em;
+  }
+  [dir="ltr"] .admin-table th {
+    @apply text-left;
   }
   .admin-table td {
-    @apply px-5 py-3.5 whitespace-nowrap;
-    border-bottom: 1px solid rgba(255,255,255,0.03);
+    @apply px-4 py-3.5 whitespace-nowrap;
+    color: #9CA3AF;
+    border-bottom: 1px solid rgba(31,41,55,0.8);
   }
-  .admin-table tbody tr:hover {
-    background: rgba(255, 255, 255, 0.02);
+  .admin-table tbody tr {
+    transition: background 0.1s;
+  }
+  .admin-table tbody tr:hover td {
+    background: rgba(255,255,255,0.025);
+    color: #E5E7EB;
+  }
+  .admin-table tbody tr:last-child td {
+    border-bottom: none;
   }
 
   /* ─── Admin Spinner ─── */
   .admin-spinner {
-    @apply w-8 h-8 border-2 border-cyan-500/20 border-t-cyan-400 rounded-full animate-spin;
+    @apply rounded-full animate-spin;
+    width: 2rem;
+    height: 2rem;
+    border: 2px solid rgba(6,182,212,0.15);
+    border-top-color: #06B6D4;
+    box-shadow: 0 0 12px rgba(6,182,212,0.2);
   }
 
   /* ─── Admin Guard Loading ─── */
   .admin-guard-loading {
     @apply min-h-screen flex items-center justify-center;
-    background: #0B1121;
+    background: #0B1220;
   }
   .admin-guard-loading-inner {
-    @apply flex flex-col items-center;
+    @apply flex flex-col items-center gap-3;
+  }
+
+  /* ─── Admin Page Header utility ─── */
+  .admin-page-title {
+    @apply text-xl font-bold;
+    color: #E5E7EB;
+  }
+  .admin-page-subtitle {
+    @apply text-sm mt-0.5;
+    color: #6B7280;
+  }
+
+  /* ─── Admin Status Badges ─── */
+  .admin-badge {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg text-xs font-medium whitespace-nowrap;
+  }
+  .admin-badge-success {
+    background: rgba(16,185,129,0.1);
+    color: #10B981;
+    border: 1px solid rgba(16,185,129,0.2);
+  }
+  .admin-badge-danger {
+    background: rgba(239,68,68,0.1);
+    color: #EF4444;
+    border: 1px solid rgba(239,68,68,0.2);
+  }
+  .admin-badge-warning {
+    background: rgba(245,158,11,0.1);
+    color: #F59E0B;
+    border: 1px solid rgba(245,158,11,0.2);
+  }
+  .admin-badge-info {
+    background: rgba(6,182,212,0.1);
+    color: #06B6D4;
+    border: 1px solid rgba(6,182,212,0.2);
+  }
+  .admin-badge-purple {
+    background: rgba(139,92,246,0.1);
+    color: #8B5CF6;
+    border: 1px solid rgba(139,92,246,0.2);
+  }
+  .admin-badge-neutral {
+    background: rgba(107,114,128,0.1);
+    color: #9CA3AF;
+    border: 1px solid rgba(107,114,128,0.2);
   }
 }

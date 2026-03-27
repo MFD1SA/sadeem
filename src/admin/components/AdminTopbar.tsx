@@ -54,68 +54,145 @@ export function AdminTopbar({ onMenuToggle }: AdminTopbarProps) {
 
   return (
     <header className="admin-topbar" dir="rtl">
-      <div className="flex items-center gap-3 min-w-0">
-        <button onClick={onMenuToggle} className="lg:hidden p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors">
+
+      {/* ── Left side: hamburger + page title ── */}
+      <div className="flex items-center gap-3 min-w-0 flex-1">
+        <button
+          onClick={onMenuToggle}
+          className="lg:hidden p-2 rounded-xl transition-colors flex-shrink-0"
+          style={{ color: '#6B7280' }}
+          onMouseOver={e => { (e.currentTarget as HTMLElement).style.color = '#E5E7EB'; (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.04)'; }}
+          onMouseOut={e => { (e.currentTarget as HTMLElement).style.color = '#6B7280'; (e.currentTarget as HTMLElement).style.background = ''; }}
+        >
           <Menu size={18} />
         </button>
 
-        {/* Page title */}
         {pageTitle && (
-          <div className="hidden sm:flex items-center gap-2.5">
-            <h2 className="text-sm font-medium text-white">{pageTitle}</h2>
-            <span className="text-[10px] text-slate-600">|</span>
-            <span className="text-[11px] text-slate-500">{branding?.platform_name_ar || 'سديم'}</span>
+          <div className="hidden sm:flex flex-col min-w-0">
+            <h2 className="text-[14px] font-semibold leading-none truncate" style={{ color: '#E5E7EB' }}>
+              {pageTitle}
+            </h2>
+            <span className="text-[11px] mt-0.5" style={{ color: '#4B5563' }}>
+              {branding?.platform_name_ar || 'سديم'} · لوحة الإدارة
+            </span>
           </div>
         )}
       </div>
 
-      {/* Notification bell */}
-      <div className="relative mr-1">
+      {/* ── Right side: notifications + user ── */}
+      <div className="flex items-center gap-1.5 flex-shrink-0">
+
+        {/* Notification bell */}
         <button
           onClick={() => navigate(ADMIN_ROUTES.TICKETS)}
-          className="relative w-9 h-9 flex items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-white/[0.04] transition-colors"
           title="تذاكر الدعم"
+          className="relative w-9 h-9 flex items-center justify-center rounded-xl transition-all duration-150"
+          style={{ color: '#6B7280' }}
+          onMouseOver={e => {
+            const el = e.currentTarget as HTMLElement;
+            el.style.color = '#E5E7EB';
+            el.style.background = 'rgba(255,255,255,0.05)';
+          }}
+          onMouseOut={e => {
+            const el = e.currentTarget as HTMLElement;
+            el.style.color = '#6B7280';
+            el.style.background = '';
+          }}
         >
           <Bell size={17} />
-          {/* Alert dot — always shown as reminder */}
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-500 ring-2 ring-[#060a13]" />
-        </button>
-      </div>
-
-      {/* User quick menu */}
-      <div className="relative" ref={menuRef}>
-        <button onClick={() => setShowMenu(!showMenu)}
-          className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl hover:bg-white/[0.04] transition-colors">
-          <div className="w-8 h-8 rounded-lg overflow-hidden bg-gradient-to-br from-cyan-600 to-blue-700 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-            {user?.avatar_url
-              ? <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
-              : user?.full_name_ar?.charAt(0)
-                ? <span>{user.full_name_ar.charAt(0)}</span>
-                : <User size={14} className="text-white/80" />}
-          </div>
-          <div className="hidden sm:block text-right">
-            <div className="text-[13px] text-white font-medium leading-tight">{user?.full_name_ar || 'مشرف'}</div>
-            <div className="text-[11px] text-slate-500 leading-tight">{user?.is_super_admin ? 'مدير عام' : user?.role?.display_name_ar}</div>
-          </div>
-          <ChevronDown size={13} className="text-slate-600 hidden sm:block" />
+          <span
+            className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full ring-2 ring-[#080D1A]"
+            style={{ background: '#EF4444' }}
+          />
         </button>
 
-        {showMenu && (
-          <div className="absolute left-0 top-full mt-2 w-52 bg-[#0f1729] border border-white/[0.08] rounded-xl shadow-2xl shadow-black/50 overflow-hidden z-50">
-            <div className="px-4 py-3 bg-white/[0.02] border-b border-white/[0.06]">
-              <div className="text-sm text-white font-medium">{user?.full_name_ar}</div>
-              <div className="text-[11px] text-slate-500 mt-0.5" dir="ltr">{user?.email}</div>
+        {/* Divider */}
+        <div className="w-px h-5 mx-1" style={{ background: '#1F2937' }} />
+
+        {/* User profile button */}
+        <div className="relative" ref={menuRef}>
+          <button
+            onClick={() => setShowMenu(!showMenu)}
+            className="flex items-center gap-2.5 px-2 py-1.5 rounded-xl transition-all duration-150"
+            style={{ color: '#9CA3AF' }}
+            onMouseOver={e => (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.04)'}
+            onMouseOut={e => (e.currentTarget as HTMLElement).style.background = showMenu ? 'rgba(255,255,255,0.04)' : ''}
+          >
+            {/* Avatar */}
+            <div
+              className="w-8 h-8 rounded-xl overflow-hidden flex items-center justify-center text-white text-[13px] font-bold flex-shrink-0"
+              style={{ background: 'linear-gradient(135deg, #0891b2, #1d4ed8)', boxShadow: '0 2px 8px rgba(6,182,212,0.3)' }}
+            >
+              {user?.avatar_url
+                ? <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
+                : user?.full_name_ar?.charAt(0)
+                  ? user.full_name_ar.charAt(0)
+                  : <User size={14} style={{ color: 'rgba(255,255,255,0.8)' }} />}
             </div>
-            <div className="py-1.5">
-              <button onClick={() => { navigate(ADMIN_ROUTES.PROFILE); setShowMenu(false); }} className="admin-dropdown-item">
-                <UserCircle size={15} className="text-slate-500" /> الملف الشخصي
-              </button>
-              <button onClick={() => { navigate(ADMIN_ROUTES.SECURITY); setShowMenu(false); }} className="admin-dropdown-item">
-                <Lock size={15} className="text-slate-500" /> الأمان
-              </button>
+
+            {/* Name + role */}
+            <div className="hidden sm:block text-right min-w-0">
+              <div className="text-[13px] font-semibold leading-none truncate" style={{ color: '#E5E7EB' }}>
+                {user?.full_name_ar || 'مشرف'}
+              </div>
+              <div className="text-[11px] mt-0.5 truncate" style={{ color: '#6B7280' }}>
+                {user?.is_super_admin ? 'مدير عام' : (user?.role?.display_name_ar || 'مشرف')}
+              </div>
             </div>
-          </div>
-        )}
+
+            <ChevronDown
+              size={12}
+              className="hidden sm:block transition-transform duration-150 flex-shrink-0"
+              style={{ color: '#4B5563', transform: showMenu ? 'rotate(180deg)' : 'rotate(0deg)' }}
+            />
+          </button>
+
+          {/* Dropdown */}
+          {showMenu && (
+            <div
+              className="absolute left-0 top-full mt-2 w-56 rounded-2xl overflow-hidden z-50"
+              style={{
+                background: '#111827',
+                border: '1px solid #1F2937',
+                boxShadow: '0 20px 60px rgba(0,0,0,0.6), 0 4px 16px rgba(0,0,0,0.4)',
+              }}
+            >
+              {/* User info header */}
+              <div className="px-4 py-3.5" style={{ borderBottom: '1px solid #1F2937', background: 'rgba(255,255,255,0.02)' }}>
+                <div className="text-[13.5px] font-semibold" style={{ color: '#E5E7EB' }}>
+                  {user?.full_name_ar}
+                </div>
+                <div className="text-[11px] mt-0.5 font-mono" dir="ltr" style={{ color: '#6B7280' }}>
+                  {user?.email}
+                </div>
+                {user?.is_super_admin && (
+                  <span
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-medium mt-1.5"
+                    style={{ background: 'rgba(6,182,212,0.1)', color: '#06B6D4', border: '1px solid rgba(6,182,212,0.2)' }}
+                  >
+                    <AlertCircle size={9} /> مدير عام
+                  </span>
+                )}
+              </div>
+
+              {/* Actions */}
+              <div className="py-1.5">
+                <button
+                  onClick={() => { navigate(ADMIN_ROUTES.PROFILE); setShowMenu(false); }}
+                  className="admin-dropdown-item"
+                >
+                  <UserCircle size={15} /> الملف الشخصي
+                </button>
+                <button
+                  onClick={() => { navigate(ADMIN_ROUTES.SECURITY); setShowMenu(false); }}
+                  className="admin-dropdown-item"
+                >
+                  <Lock size={15} /> الأمان
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );
