@@ -1,18 +1,19 @@
 // ============================================================================
 // SADEEM — send-contact Edge Function
-// Receives contact form data and sends an email to the configured recipient.
-// The destination email is stored as a Supabase secret (CONTACT_EMAIL) and is
-// NEVER exposed to the client. Uses Resend API (RESEND_API_KEY secret).
+// 1. Always saves submission to contact_submissions table (guaranteed storage)
+// 2. Optionally sends email via Resend if RESEND_API_KEY + CONTACT_EMAIL are set
+//    FROM is onboarding@resend.dev (works without domain verification)
 // ============================================================================
 
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { corsHeaders } from '../_shared/cors.ts';
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY') ?? '';
-const CONTACT_EMAIL = Deno.env.get('CONTACT_EMAIL') ?? '';
-const FROM_EMAIL = Deno.env.get('FROM_EMAIL') ?? 'نموذج التواصل <noreply@sadeem.app>';
+const CONTACT_EMAIL  = Deno.env.get('CONTACT_EMAIL')  ?? '';
+// Use Resend's shared domain — works on free tier without domain verification
+const FROM_EMAIL = 'SADEEM Contact <onboarding@resend.dev>';
 
 Deno.serve(async (req: Request) => {
-  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
@@ -27,11 +28,7 @@ Deno.serve(async (req: Request) => {
   try {
     const body = await req.json();
     const { name, email, phone, company, message } = body as {
-      name?: string;
-      email?: string;
-      phone?: string;
-      company?: string;
-      message?: string;
+      name?: string; email?: string; phone?: string; company?: string; message?: string;
     };
 
     // Basic validation
@@ -42,7 +39,6 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    // Simple email format check
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailPattern.test(email.trim())) {
       return new Response(
@@ -51,18 +47,73 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    if (!RESEND_API_KEY || !CONTACT_EMAIL) {
-      console.error('[send-contact] Missing RESEND_API_KEY or CONTACT_EMAIL env vars');
+    // ── Step 1: Save to DB (primary, always attempted) ─────────────────────
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+    );
+
+    const { error: dbError } = await supabase
+      .from('contact_submissions')
+      .insert({
+        name:    name.trim(),
+        email:   email.trim(),
+        phone:   phone?.trim() || null,
+        company: company?.trim() || null,
+        message: message.trim(),
+      });
+
+    if (dbError) {
+      console.error('[send-contact] DB insert error:', dbError);
       return new Response(
-        JSON.stringify({ error: 'خدمة البريد الإلكتروني غير مهيأة' }),
-        { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'فشل حفظ الرسالة. يرجى المحاولة لاحقًا.' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const subject = `رسالة جديدة من سديم — ${name.trim()}${company?.trim() ? ` (${company.trim()})` : ''}`;
+    // ── Step 2: Send email via Resend (best-effort, won't fail the request) ─
+    if (RESEND_API_KEY && CONTACT_EMAIL) {
+      const subject = `رسالة جديدة من سديم — ${name.trim()}${company?.trim() ? ` (${company.trim()})` : ''}`;
+      const htmlBody = buildEmailHtml({ name: name.trim(), email: email.trim(), phone: phone?.trim(), company: company?.trim(), message: message.trim() });
 
-    const htmlBody = `
-<!DOCTYPE html>
+      try {
+        const resendRes = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ from: FROM_EMAIL, to: [CONTACT_EMAIL], reply_to: email.trim(), subject, html: htmlBody }),
+        });
+
+        if (!resendRes.ok) {
+          const errText = await resendRes.text();
+          console.error('[send-contact] Resend error (non-fatal):', resendRes.status, errText);
+        } else {
+          console.log('[send-contact] Email sent successfully');
+        }
+      } catch (emailErr) {
+        console.error('[send-contact] Email exception (non-fatal):', emailErr);
+      }
+    } else {
+      console.log('[send-contact] No email secrets configured — submission saved to DB only');
+    }
+
+    // Submission saved to DB ✓ — always return success
+    return new Response(JSON.stringify({ success: true }), {
+      status: 200,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+
+  } catch (err) {
+    console.error('[send-contact] Unexpected error:', err);
+    return new Response(
+      JSON.stringify({ error: 'خطأ غير متوقع. يرجى المحاولة لاحقًا.' }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+});
+
+// ─── Email HTML builder ───────────────────────────────────────────────────────
+function buildEmailHtml(p: { name: string; email: string; phone?: string; company?: string; message: string }) {
+  return `<!DOCTYPE html>
 <html dir="rtl" lang="ar">
 <head>
   <meta charset="UTF-8">
@@ -89,78 +140,21 @@ Deno.serve(async (req: Request) => {
       <p>سديم — منصة إدارة تقييمات جوجل</p>
     </div>
     <div class="body">
-      <div class="field">
-        <div class="label">الاسم</div>
-        <div class="value">${escapeHtml(name.trim())}</div>
-      </div>
-      <div class="field">
-        <div class="label">البريد الإلكتروني</div>
-        <div class="value" dir="ltr">${escapeHtml(email.trim())}</div>
-      </div>
-      ${phone?.trim() ? `
-      <div class="field">
-        <div class="label">رقم الهاتف</div>
-        <div class="value" dir="ltr">${escapeHtml(phone.trim())}</div>
-      </div>` : ''}
-      ${company?.trim() ? `
-      <div class="field">
-        <div class="label">اسم الشركة / المؤسسة</div>
-        <div class="value">${escapeHtml(company.trim())}</div>
-      </div>` : ''}
+      <div class="field"><div class="label">الاسم</div><div class="value">${esc(p.name)}</div></div>
+      <div class="field"><div class="label">البريد الإلكتروني</div><div class="value" dir="ltr">${esc(p.email)}</div></div>
+      ${p.phone ? `<div class="field"><div class="label">رقم الهاتف</div><div class="value" dir="ltr">${esc(p.phone)}</div></div>` : ''}
+      ${p.company ? `<div class="field"><div class="label">اسم الشركة</div><div class="value">${esc(p.company)}</div></div>` : ''}
       <div class="message-box">
         <div class="message-label">الرسالة</div>
-        <div class="message-text">${escapeHtml(message.trim())}</div>
+        <div class="message-text">${esc(p.message)}</div>
       </div>
     </div>
-    <div class="footer">
-      تم الإرسال عبر نموذج التواصل في sadeem.app • للرد، استخدم البريد: ${escapeHtml(email.trim())}
-    </div>
+    <div class="footer">تم الإرسال عبر نموذج التواصل في sadeem.app • للرد: ${esc(p.email)}</div>
   </div>
 </body>
 </html>`;
+}
 
-    const resendRes = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: FROM_EMAIL,
-        to: [CONTACT_EMAIL],
-        reply_to: email.trim(),
-        subject,
-        html: htmlBody,
-      }),
-    });
-
-    if (!resendRes.ok) {
-      const errText = await resendRes.text();
-      console.error('[send-contact] Resend error:', resendRes.status, errText);
-      return new Response(
-        JSON.stringify({ error: 'فشل إرسال الرسالة. يرجى المحاولة لاحقًا.' }),
-        { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    return new Response(JSON.stringify({ success: true }), {
-      status: 200,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-  } catch (err) {
-    console.error('[send-contact] Unexpected error:', err);
-    return new Response(
-      JSON.stringify({ error: 'خطأ غير متوقع. يرجى المحاولة لاحقًا.' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
-  }
-});
-
-function escapeHtml(str: string): string {
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
+function esc(s: string): string {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
