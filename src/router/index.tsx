@@ -83,7 +83,8 @@ export function AppRouter() {
       <Route path="/s/:city" element={<SeoLanding />} />
 
       <Route element={<RedirectIfAuthenticated />}>
-        <Route path="/login" element={<Login />} />
+        <Route path="/login"    element={<Login />} />
+        <Route path="/register" element={<Login defaultSignup />} />
       </Route>
 
       <Route path="/auth/callback"  element={<AuthCallback />} />

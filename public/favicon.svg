@@ -1,30 +1,23 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <!-- Dark pill background -->
   <rect width="64" height="64" rx="14" fill="#0F1117"/>
   <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%"   stop-color="#82B9D0"/>
-      <stop offset="45%"  stop-color="#C0D8E5"/>
-      <stop offset="100%" stop-color="#505560"/>
+    <linearGradient id="g" x1="44" y1="12" x2="18" y2="52" gradientUnits="userSpaceOnUse">
+      <stop offset="0%"   stop-color="#06B6D4"/>
+      <stop offset="100%" stop-color="#8B5CF6"/>
     </linearGradient>
   </defs>
   <!--
-    S path: single stroke tracing the S shape.
-    Start: top-right (42,10)
-    → curve LEFT across the top arc → upper-left end (16,22)
-    → diagonal cross to center (32,32)
-    → curve RIGHT across the bottom arc → lower-right end (48,42)
-    → curve LEFT down to bottom-left end (22,54)
-    This creates a clear standard S orientation.
+    Standard S: top arc opens RIGHT (bulges left), bottom arc opens LEFT (bulges right).
+    Traced as single stroke from upper-right to lower-left.
+    Segment 1: top arc  — (44,12) curves UP across to (18,22)
+    Segment 2: diagonal — (18,22) crosses to (46,42)
+    Segment 3: bot arc  — (46,42) curves DOWN across to (20,52)
   -->
   <path
-    d="M 42 10
-       C 52 7, 54 18, 46 22
-       C 38 26, 20 26, 16 32
-       C 12 38, 16 46, 28 48
-       C 40 50, 52 48, 52 54
-       C 52 60, 44 58, 32 58
-       C 20 58, 12 54, 12 48"
+    d="M 44 12
+       C 48 6, 16 6, 18 22
+       C 20 32, 46 32, 46 42
+       C 46 58, 16 58, 20 52"
     fill="none"
     stroke="url(#g)"
     stroke-width="5.5"

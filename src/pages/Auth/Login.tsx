@@ -70,7 +70,7 @@ const FEATURES = [
   { icon: GitBranch,     ar: 'إدارة جميع فروعك من مكان واحد', en: 'Manage all branches in one place' },
 ];
 
-export default function Login() {
+export default function Login({ defaultSignup = false }: { defaultSignup?: boolean }) {
   const { lang } = useLanguage();
   const isAr = lang === 'ar';
 
@@ -80,7 +80,7 @@ export default function Login() {
   const [error, setError]               = useState('');
   const [success, setSuccess]           = useState('');
   const [loading, setLoading]           = useState(false);
-  const [isSignUp, setIsSignUp]         = useState(false);
+  const [isSignUp, setIsSignUp]         = useState(defaultSignup);
   const [isForgotPw, setIsForgotPw]     = useState(false);
   const [branding, setBranding]         = useState<BrandingConfig | null>(null);
   const [pwStrength, setPwStrength]     = useState(0);
@@ -241,37 +241,43 @@ export default function Login() {
 
   // ── Shared header for branding panel ──────────────────────────────────────
   const BrandingPanel = (
-    <div className="hidden lg:flex lg:w-[45%] flex-col justify-between bg-gradient-to-br from-brand-600 via-brand-700 to-brand-900 p-10 relative overflow-hidden">
-      <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-white/5 pointer-events-none" />
-      <div className="absolute -bottom-32 -left-16 w-80 h-80 rounded-full bg-white/5 pointer-events-none" />
+    <div
+      className="hidden lg:flex lg:w-[45%] flex-col justify-between p-10 relative overflow-hidden"
+      style={{ background: 'linear-gradient(135deg, #06B6D4 0%, #8B5CF6 100%)' }}
+    >
+      <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full pointer-events-none" style={{ background: 'rgba(255,255,255,0.06)' }} />
+      <div className="absolute -bottom-32 -left-16 w-80 h-80 rounded-full pointer-events-none" style={{ background: 'rgba(0,0,0,0.08)' }} />
+
+      {/* Logo */}
       <div className="relative z-10 flex items-center gap-3">
-        <div className="w-11 h-11 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center flex-shrink-0">
-          {logoIconUrl
-            ? <img src={logoIconUrl} alt="logo" className="w-7 h-7 object-contain" />
-            : <span className="text-white text-xl font-bold">س</span>}
-        </div>
-        <div>
-          <div className="text-white font-bold text-lg leading-tight">{platformNameAr}</div>
-          <div className="text-white/50 text-[11px] tracking-widest uppercase">{platformNameEn}</div>
-        </div>
+        <img
+          src="/sadeem-logo.png"
+          alt="SADEEM"
+          style={{ height: 36, width: 'auto', filter: 'brightness(0) invert(1)', opacity: 0.92 }}
+          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+        />
       </div>
+
+      {/* Body */}
       <div className="relative z-10">
-        {logoFullUrl && <img src={logoFullUrl} alt={platformNameAr} className="h-16 mb-8 object-contain" />}
-        <h1 className="text-3xl font-bold text-white leading-snug mb-3">{isAr ? 'منصة سديم' : 'Sadeem Platform'}</h1>
-        <p className="text-white/70 text-base mb-8 leading-relaxed">{tagline}</p>
+        <h1 className="text-3xl font-bold text-white leading-snug mb-3">
+          {isAr ? 'إدارة تقييماتك بالذكاء الاصطناعي' : 'AI-Powered Review Management'}
+        </h1>
+        <p className="text-base mb-8 leading-relaxed" style={{ color: 'rgba(255,255,255,0.75)' }}>{tagline}</p>
         <div className="space-y-3">
           {FEATURES.map(({ icon: Icon, ar, en }) => (
             <div key={ar} className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-white/15 flex items-center justify-center flex-shrink-0">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(255,255,255,0.18)' }}>
                 <Icon size={15} className="text-white" />
               </div>
-              <span className="text-white/85 text-sm">{isAr ? ar : en}</span>
+              <span className="text-sm" style={{ color: 'rgba(255,255,255,0.88)' }}>{isAr ? ar : en}</span>
             </div>
           ))}
         </div>
       </div>
-      <div className="relative z-10 text-white/40 text-xs">
-        {isAr ? '© 2026 سديم — جميع الحقوق محفوظة' : '© 2026 Sadeem — All rights reserved'}
+
+      <div className="relative z-10 text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
+        {isAr ? '© 2026 سديم — جميع الحقوق محفوظة' : '© 2026 SADEEM — All rights reserved'}
       </div>
     </div>
   );
