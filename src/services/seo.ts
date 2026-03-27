@@ -113,4 +113,42 @@ export const seoService = {
     }
     return `${params.businessName} — Premier ${params.industry} in ${params.city}. We deliver professional quality services and strive for the best customer experience. Visit us and enjoy our outstanding services.`;
   },
+
+  /**
+   * Extract top keywords from review texts.
+   * Returns words sorted by frequency, filtered by stop-words.
+   */
+  extractKeywords(texts: string[], topN = 10): Array<{ word: string; count: number }> {
+    const AR_STOP = new Set([
+      'في','من','إلى','على','هذا','هذه','كان','كانت','هو','هي','أن','لا','ما',
+      'مع','كل','التي','الذي','بعد','قبل','عن','منه','فإن','وقد','أو','وهو',
+      'وهي','ولم','ولا','قد','لم','لن','ثم','حتى','ذلك','تلك','هذين','هاتين',
+      'ليس','كما','حين','أي','أيضا','أيضاً','جدا','جداً','فقط','بشكل','خلال',
+      'ولكن','لكن','لأن','لو','إذا','إذ','بل','غير','حيث','إن','أنا','نحن',
+      'أنت','أنتم','هم','هن','وأن','وكان','وكانت','وهذا','وهذه','الذين',
+    ]);
+    const EN_STOP = new Set([
+      'the','a','an','is','was','were','it','to','of','and','in','that','for',
+      'on','are','with','as','at','be','by','have','has','had','not','this',
+      'but','they','from','or','we','i','my','me','you','your','its','been',
+      'very','so','all','do','did','no','up','out','if','he','she','our',
+    ]);
+
+    const freq: Record<string, number> = {};
+    for (const text of texts) {
+      const words = text
+        .toLowerCase()
+        .replace(/[^\u0600-\u06FFa-zA-Z\s]/g, ' ')
+        .split(/\s+/)
+        .filter(w => w.length > 2 && !AR_STOP.has(w) && !EN_STOP.has(w));
+      for (const w of words) {
+        freq[w] = (freq[w] || 0) + 1;
+      }
+    }
+
+    return Object.entries(freq)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, topN)
+      .map(([word, count]) => ({ word, count }));
+  },
 };
