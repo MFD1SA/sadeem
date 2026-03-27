@@ -27,9 +27,10 @@ export default function StoryPage() {
   return (
     <div dir="rtl" style={{ background: C.bg, color: C.text, minHeight: '100vh' }}>
 
-      {/* ── Topbar ── */}
+      {/* ── Topbar — matches main site header ── */}
       <div style={{ background: 'rgba(15,17,23,0.96)', backdropFilter: 'blur(18px)', borderBottom: `1px solid ${C.border}`, position: 'sticky', top: 0, zIndex: 50 }}>
-        <div className="max-w-5xl mx-auto px-4 sm:px-6" style={{ height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          {/* Back link */}
           <button
             onClick={() => navigate('/')}
             className="flex items-center gap-2"
@@ -38,33 +39,48 @@ export default function StoryPage() {
             onMouseOut={e => (e.currentTarget.style.color = C.muted)}
           >
             <ArrowRight size={16} />
-            العودة للرئيسية
+            <span>العودة للرئيسية</span>
           </button>
-          <div style={{ background: 'white', borderRadius: 8, padding: '4px 12px' }}>
-            <img src="/sadeem-logo.png" alt="SADEEM | سديم" style={{ height: 24, width: 'auto', display: 'block' }} />
-          </div>
+
+          {/* Approved full SADEEM logo — no white background */}
+          <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+            <img src="/sadeem-logo.png" alt="SADEEM | سديم" style={{ height: 30, width: 'auto', display: 'block' }} />
+          </button>
+
+          {/* CTA */}
           <button
-            onClick={() => navigate('/login')}
-            style={{ background: GRAD, color: 'white', fontSize: 13, padding: '7px 18px', borderRadius: 9, border: 'none', cursor: 'pointer', fontWeight: 500 }}
+            onClick={() => navigate('/register')}
+            style={{ background: GRAD, color: 'white', fontSize: 13, padding: '8px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', fontWeight: 500, boxShadow: '0 4px 14px rgba(6,182,212,0.22)' }}
           >ابدأ مجانًا</button>
         </div>
       </div>
 
-      {/* ── Hero ── */}
-      <section style={{ padding: '80px 0 64px', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
-          <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: 700, height: 500, background: 'radial-gradient(ellipse at center, rgba(139,92,246,0.09) 0%, rgba(6,182,212,0.05) 45%, transparent 70%)' }} />
-        </div>
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center" style={{ position: 'relative' }}>
-          <div className="inline-flex items-center gap-2 mb-6" style={{ background: 'rgba(139,92,246,0.07)', border: '1px solid rgba(139,92,246,0.18)', borderRadius: 30, padding: '5px 16px' }}>
+      {/* ── Hero image — approved image exactly as provided ── */}
+      <div style={{ position: 'relative', width: '100%', height: 'clamp(300px, 48vw, 560px)', overflow: 'hidden' }}>
+        <img
+          src="/story-hero.jpg"
+          alt="سديم — الذكاء الاصطناعي يلتقي بالإنسان"
+          style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', display: 'block' }}
+        />
+        {/* Fade to page background at bottom */}
+        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '50%', background: 'linear-gradient(to bottom, transparent, #0F1117)', pointerEvents: 'none' }} />
+        {/* Page heading overlaid on image */}
+        <div style={{ position: 'absolute', bottom: 36, left: 0, right: 0, textAlign: 'center', pointerEvents: 'none' }}>
+          <div className="inline-flex items-center gap-2" style={{ background: 'rgba(139,92,246,0.14)', border: '1px solid rgba(139,92,246,0.28)', borderRadius: 30, padding: '5px 18px', marginBottom: 14, backdropFilter: 'blur(10px)' }}>
             <span style={{ color: C.purple, fontSize: 12, letterSpacing: '0.08em' }}>القصة</span>
           </div>
-          <h1 style={{ fontSize: 'clamp(28px, 5vw, 52px)', fontWeight: 600, lineHeight: 1.3, marginBottom: 20, color: C.text }}>
+          <h1 style={{ fontSize: 'clamp(26px, 4.5vw, 52px)', fontWeight: 600, lineHeight: 1.3, color: C.text, margin: 0, textShadow: '0 2px 24px rgba(0,0,0,0.9)' }}>
             لماذا بنينا{' '}
             <span style={{ background: GRAD, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
               سديم؟
             </span>
           </h1>
+        </div>
+      </div>
+
+      {/* ── Hero intro text ── */}
+      <section style={{ padding: '52px 0 64px' }}>
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
           <p style={{ fontSize: 'clamp(15px, 2vw, 18px)', color: C.muted, lineHeight: 1.8, fontWeight: 400, maxWidth: 560, margin: '0 auto' }}>
             كل فكرة تبدأ بمشكلة حقيقية. سديم بدأ بملاحظة بسيطة: الأعمال العربية تفقد عملاء كل يوم بسبب تقييمات لا يرد عليها أحد.
           </p>
@@ -189,7 +205,7 @@ export default function StoryPage() {
           </p>
           <div className="flex items-center justify-center gap-4 flex-wrap">
             <button
-              onClick={() => navigate('/login')}
+              onClick={() => navigate('/register')}
               style={{ background: GRAD, color: 'white', fontSize: 15, padding: '13px 32px', borderRadius: 12, border: 'none', cursor: 'pointer', boxShadow: '0 8px 28px rgba(6,182,212,0.25)', fontWeight: 500 }}
             >ابدأ تجربتك المجانية</button>
             <button
@@ -203,8 +219,19 @@ export default function StoryPage() {
       </section>
 
       {/* ── Footer strip ── */}
-      <div style={{ background: '#0A0D14', borderTop: `1px solid ${C.border}`, padding: '20px 0', textAlign: 'center' }}>
-        <p style={{ fontSize: 12, color: C.muted, margin: 0 }}>© 2026 سديم. جميع الحقوق محفوظة.</p>
+      <div style={{ background: '#0A0D14', borderTop: `1px solid ${C.border}`, padding: '24px 0' }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+          <img src="/sadeem-logo.png" alt="SADEEM" style={{ height: 22, width: 'auto', opacity: 0.5 }} />
+          <p style={{ fontSize: 12, color: C.muted, margin: 0, opacity: 0.6 }}>© 2026 سديم. جميع الحقوق محفوظة.</p>
+          <div style={{ display: 'flex', gap: 20 }}>
+            {[{ label: 'سياسة الخصوصية', path: '/privacy' }, { label: 'شروط الاستخدام', path: '/terms' }].map(l => (
+              <button key={l.path} onClick={() => navigate(l.path)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: C.muted, opacity: 0.6 }}
+                onMouseOver={e => { e.currentTarget.style.opacity = '1'; }}
+                onMouseOut={e => { e.currentTarget.style.opacity = '0.6'; }}
+              >{l.label}</button>
+            ))}
+          </div>
+        </div>
       </div>
 
     </div>
