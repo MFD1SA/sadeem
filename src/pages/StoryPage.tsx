@@ -4,7 +4,7 @@
 // ============================================================================
 
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Target, Globe, Heart, Zap, Star, Users, Lightbulb, TrendingUp } from 'lucide-react';
+import { ArrowRight, Target, Globe, Heart, Zap, Lightbulb, TrendingUp } from 'lucide-react';
 
 const C = {
   bg:     '#0F1117',
@@ -40,13 +40,8 @@ export default function StoryPage() {
             <ArrowRight size={16} />
             العودة للرئيسية
           </button>
-          <div className="flex items-center gap-2.5">
-            <div style={{ width: 30, height: 30, borderRadius: 8, background: GRAD, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Star size={14} style={{ color: 'white' }} />
-            </div>
-            <span style={{ fontSize: 17, fontWeight: 600, color: C.text }}>SADEEM</span>
-            <span style={{ color: C.muted, fontSize: 14 }}>|</span>
-            <span style={{ fontSize: 16, fontWeight: 500, color: C.brand }}>سديم</span>
+          <div style={{ background: 'white', borderRadius: 8, padding: '4px 12px' }}>
+            <img src="/sadeem-logo.png" alt="SADEEM | سديم" style={{ height: 24, width: 'auto', display: 'block' }} />
           </div>
           <button
             onClick={() => navigate('/login')}

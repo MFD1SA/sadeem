@@ -1,4 +1,72 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="8" fill="#3b5bdb"/>
-  <text x="16" y="22" text-anchor="middle" font-family="Arial" font-size="18" font-weight="bold" fill="white">س</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <!-- Top ribbon: steel blue -->
+    <linearGradient id="gtop" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8BBDD6"/>
+      <stop offset="100%" stop-color="#4F8FAD"/>
+    </linearGradient>
+    <!-- Middle ribbon: white/light -->
+    <linearGradient id="gmid" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E8EFF4"/>
+      <stop offset="100%" stop-color="#C0D3DE"/>
+    </linearGradient>
+    <!-- Bottom ribbon: dark gray -->
+    <linearGradient id="gbot" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#666B74"/>
+      <stop offset="100%" stop-color="#383C42"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background: transparent (shows on any bg) -->
+
+  <!-- TOP CURVE of S — upper bulge going right -->
+  <!-- Ribbon stroke: thick, with blue gradient, rounded ends -->
+  <path
+    d="M 28 28
+       C 28 14, 44 8, 58 10
+       C 72 12, 80 20, 78 30
+       C 76 40, 64 46, 50 50"
+    fill="none"
+    stroke="url(#gtop)"
+    stroke-width="14"
+    stroke-linecap="round"
+  />
+
+  <!-- TOP CURVE inner edge highlight -->
+  <path
+    d="M 34 24
+       C 34 14, 46 10, 58 12
+       C 68 14, 76 22, 74 32
+       C 72 40, 62 46, 50 50"
+    fill="none"
+    stroke="url(#gmid)"
+    stroke-width="5"
+    stroke-linecap="round"
+    opacity="0.6"
+  />
+
+  <!-- BOTTOM CURVE of S — lower bulge going left -->
+  <path
+    d="M 72 72
+       C 72 86, 56 92, 42 90
+       C 28 88, 20 80, 22 70
+       C 24 60, 36 54, 50 50"
+    fill="none"
+    stroke="url(#gbot)"
+    stroke-width="14"
+    stroke-linecap="round"
+  />
+
+  <!-- BOTTOM CURVE inner edge highlight -->
+  <path
+    d="M 66 76
+       C 66 86, 54 90, 42 88
+       C 32 86, 24 78, 26 68
+       C 28 60, 38 54, 50 50"
+    fill="none"
+    stroke="#888"
+    stroke-width="4"
+    stroke-linecap="round"
+    opacity="0.35"
+  />
 </svg>

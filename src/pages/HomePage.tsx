@@ -37,12 +37,13 @@ const GRAD = 'linear-gradient(135deg, #06B6D4, #8B5CF6)';
 
 // ─── Nav links ────────────────────────────────────────────────────────────────
 const NAV: { label: string; id?: string; href?: string }[] = [
-  { label: 'الرئيسية',        id: 'hero'      },
-  { label: 'المميزات',        id: 'features'  },
-  { label: 'الخطط',           id: 'pricing'   },
-  { label: 'الأسئلة الشائعة', id: 'faq'      },
-  { label: 'قصة سديم',        href: '/story'  },
-  { label: 'تواصل معنا',      id: 'contact'   },
+  { label: 'الرئيسية',        id: 'hero'         },
+  { label: 'المميزات',        id: 'features'     },
+  { label: 'كيف تعمل',       id: 'how-it-works' },
+  { label: 'الأسعار',         id: 'pricing'      },
+  { label: 'الأسئلة الشائعة', id: 'faq'         },
+  { label: 'قصة سديم',        href: '/story'     },
+  { label: 'اتصل بنا',        id: 'contact'      },
 ];
 
 // ─── Static QR pixel pattern (8×8 deterministic) ─────────────────────────────
@@ -139,13 +140,11 @@ export default function HomePage() {
       }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
           {/* Logo */}
-          <button onClick={() => scrollTo('hero')} className="flex items-center gap-2.5 flex-shrink-0" style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
-            <div style={{ width: 34, height: 34, borderRadius: 9, background: GRAD, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 14px rgba(6,182,212,0.3)' }}>
-              <Star size={16} style={{ color: 'white' }} />
+          {/* Logo — actual SADEEM PNG in a white container so it renders on dark bg */}
+          <button onClick={() => scrollTo('hero')} className="flex items-center flex-shrink-0" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+            <div style={{ background: 'white', borderRadius: 10, padding: '5px 14px', display: 'flex', alignItems: 'center', boxShadow: '0 2px 10px rgba(0,0,0,0.25)' }}>
+              <img src="/sadeem-logo.png" alt="SADEEM | سديم" style={{ height: 28, width: 'auto', display: 'block' }} />
             </div>
-            <span style={{ fontSize: 18, fontWeight: 600, color: C.text }}>SADEEM</span>
-            <span style={{ color: C.muted, fontSize: 15, margin: '0 1px' }}>|</span>
-            <span style={{ fontSize: 17, fontWeight: 500, color: C.brand }}>سديم</span>
           </button>
 
           {/* Desktop nav */}
@@ -162,18 +161,25 @@ export default function HomePage() {
           </nav>
 
           {/* CTAs */}
-          <div className="flex items-center gap-3 flex-shrink-0">
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {/* Language toggle */}
+            <button
+              style={{ color: C.muted, fontSize: 12, padding: '6px 10px', border: `1px solid ${C.border}`, borderRadius: 8, background: 'none', cursor: 'pointer', letterSpacing: '0.04em' }}
+              className="hidden md:block"
+              onMouseOver={e => { e.currentTarget.style.color = C.text; e.currentTarget.style.borderColor = '#374151'; }}
+              onMouseOut={e => { e.currentTarget.style.color = C.muted; e.currentTarget.style.borderColor = C.border; }}
+            >EN</button>
             <button
               onClick={() => navigate('/login')}
-              style={{ color: C.muted, fontSize: 14, padding: '8px 16px', border: `1px solid ${C.border}`, borderRadius: 10, background: 'none', cursor: 'pointer' }}
+              style={{ color: C.muted, fontSize: 13, padding: '8px 14px', border: `1px solid ${C.border}`, borderRadius: 10, background: 'none', cursor: 'pointer' }}
               className="hidden sm:block"
               onMouseOver={e => { e.currentTarget.style.borderColor = '#374151'; e.currentTarget.style.color = C.text; }}
               onMouseOut={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.muted; }}
-            >دخول</button>
+            >دخول المشتركين</button>
             <button
               onClick={() => navigate('/login')}
-              style={{ background: GRAD, color: 'white', fontSize: 14, padding: '8px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', boxShadow: '0 4px 16px rgba(6,182,212,0.25)', fontWeight: 500 }}
-            >ابدأ مجانًا</button>
+              style={{ background: GRAD, color: 'white', fontSize: 13, padding: '8px 18px', borderRadius: 10, border: 'none', cursor: 'pointer', boxShadow: '0 4px 16px rgba(6,182,212,0.25)', fontWeight: 500 }}
+            >تسجيل جديد</button>
             <button
               onClick={() => setMobileOpen(v => !v)}
               style={{ color: C.muted, background: 'none', border: 'none', cursor: 'pointer', padding: 6 }}
@@ -236,23 +242,34 @@ export default function HomePage() {
             منصة بالذكاء الاصطناعي تساعدك على الرد على تقييمات جوجل، جمع تقييمات جديدة بالـ QR، وقياس أداء سمعتك عبر جميع فروعك — في مكان واحد
           </p>
 
-          {/* CTAs */}
-          <div className="flex items-center justify-center gap-4 flex-wrap" style={{ marginBottom: 64 }}>
+          {/* Hero CTAs — 3 buttons */}
+          <div className="flex items-center justify-center gap-3 flex-wrap" style={{ marginBottom: 64 }}>
             <button
               onClick={() => navigate('/login')}
-              style={{ background: GRAD, color: 'white', fontSize: 16, padding: '14px 34px', borderRadius: 12, border: 'none', cursor: 'pointer', boxShadow: '0 8px 32px rgba(6,182,212,0.28)', fontWeight: 500 }}
-            >ابدأ تجربتك المجانية</button>
+              style={{ background: GRAD, color: 'white', fontSize: 15, padding: '13px 32px', borderRadius: 12, border: 'none', cursor: 'pointer', boxShadow: '0 8px 32px rgba(6,182,212,0.28)', fontWeight: 500 }}
+            >ابدأ الآن</button>
             <button
-              onClick={() => scrollTo('contact')}
-              style={{ background: 'transparent', color: C.text, fontSize: 15, padding: '14px 28px', borderRadius: 12, border: `1px solid ${C.border}`, cursor: 'pointer', fontWeight: 400 }}
+              onClick={() => navigate('/login')}
+              style={{ background: 'transparent', color: C.text, fontSize: 14, padding: '13px 24px', borderRadius: 12, border: `1px solid ${C.border}`, cursor: 'pointer', fontWeight: 400 }}
               onMouseOver={e => { e.currentTarget.style.borderColor = '#374151'; }}
               onMouseOut={e => { e.currentTarget.style.borderColor = C.border; }}
-            >اطلب عرضًا توضيحيًا →</button>
+            >دخول المشتركين</button>
+            <button
+              onClick={() => scrollTo('how-it-works')}
+              style={{ background: 'transparent', color: C.muted, fontSize: 14, padding: '13px 18px', borderRadius: 12, border: 'none', cursor: 'pointer', fontWeight: 400, display: 'flex', alignItems: 'center', gap: 6 }}
+              onMouseOver={e => (e.currentTarget.style.color = C.text)}
+              onMouseOut={e => (e.currentTarget.style.color = C.muted)}
+            >
+              <span style={{ display: 'inline-block', width: 20, height: 20, borderRadius: '50%', border: `1px solid ${C.border}`, textAlign: 'center', lineHeight: '18px', fontSize: 10 }}>▶</span>
+              شاهد كيف تعمل سديم
+            </button>
           </div>
 
-          {/* Dashboard visual */}
-          <div style={{ position: 'relative', maxWidth: 800, margin: '0 auto' }}>
-            <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 22, padding: 24, boxShadow: '0 40px 120px rgba(0,0,0,0.55)' }}>
+          {/* Dashboard visual — Google Reviews + AI reply composition */}
+          <div style={{ position: 'relative', maxWidth: 860, margin: '0 auto' }}>
+            {/* Glow halo behind the dashboard */}
+            <div style={{ position: 'absolute', inset: -32, background: 'radial-gradient(ellipse at center, rgba(6,182,212,0.12) 0%, rgba(139,92,246,0.08) 45%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
+            <div style={{ position: 'relative', zIndex: 1, background: C.card, border: `1px solid rgba(255,255,255,0.07)`, borderRadius: 24, padding: 28, boxShadow: '0 48px 140px rgba(0,0,0,0.65), 0 0 0 1px rgba(6,182,212,0.06)' }}>
               {/* Window chrome */}
               <div className="flex items-center justify-between" style={{ marginBottom: 20 }}>
                 <div className="flex items-center gap-1.5">
@@ -1019,13 +1036,10 @@ export default function HomePage() {
 
             {/* Col 1: About + social */}
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-                <div style={{ width: 32, height: 32, borderRadius: 9, background: GRAD, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(6,182,212,0.25)' }}>
-                  <Star size={15} style={{ color: 'white' }} />
+              <div style={{ marginBottom: 16 }}>
+                <div style={{ background: 'white', borderRadius: 9, padding: '5px 14px', display: 'inline-flex', alignItems: 'center' }}>
+                  <img src="/sadeem-logo.png" alt="SADEEM | سديم" style={{ height: 26, width: 'auto', display: 'block' }} />
                 </div>
-                <span style={{ fontSize: 17, fontWeight: 600, color: C.text }}>SADEEM</span>
-                <span style={{ color: C.muted, fontSize: 14 }}>|</span>
-                <span style={{ fontSize: 16, fontWeight: 500, color: C.brand }}>سديم</span>
               </div>
               <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.7, marginBottom: 20, fontWeight: 400 }}>
                 منصة متكاملة لإدارة تقييمات جوجل وتحسين السمعة الرقمية للأعمال العربية
