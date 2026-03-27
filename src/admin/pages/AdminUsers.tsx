@@ -3,7 +3,8 @@
 // All writes go through RPCs. Permission checks happen in DB.
 // ============================================================================
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useAdminAuth } from '../contexts/AdminAuthContext';
 import { adminUsersService } from '../services/adminUsers.service';
 import { adminRolesService } from '../services/adminRoles.service';
@@ -35,7 +36,17 @@ export default function AdminUsers() {
   const [creating, setCreating] = useState(false);
 
   // Action menu
-  const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const [activeMenu, setActiveMenu] = useState<{ id: string; top: number; right: number } | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!activeMenu) return;
+    const close = (e: MouseEvent) => {
+      if (menuRef.current && menuRef.current.contains(e.target as Node)) return;
+      setActiveMenu(null);
+    };
+    document.addEventListener('mousedown', close);
+    return () => document.removeEventListener('mousedown', close);
+  }, [activeMenu]);
 
   // Role reassignment modal
   const [roleTarget, setRoleTarget] = useState<AdminUserWithRole | null>(null);
@@ -279,13 +290,13 @@ export default function AdminUsers() {
                         {canManage && !isSelf && !u.is_super_admin && (
                           <div className="relative">
                             <button
-                              onClick={() => setActiveMenu(activeMenu === u.id ? null : u.id)}
+                              onClick={(e) => { e.stopPropagation(); const r = e.currentTarget.getBoundingClientRect(); setActiveMenu(activeMenu?.id === u.id ? null : { id: u.id, top: r.bottom + 4, right: window.innerWidth - r.right }); }}
                               className="p-1.5 rounded-lg text-slate-500 hover:text-white hover:bg-white/5 transition-colors"
                             >
                               <MoreVertical size={16} />
                             </button>
-                            {activeMenu === u.id && (
-                              <div className="absolute left-0 bottom-full mb-1 w-44 bg-[#111827] border border-white/[0.08] rounded-xl shadow-2xl py-1.5 z-50">
+                            {activeMenu?.id === u.id && createPortal(
+                              <div ref={menuRef} style={{ position: 'fixed', top: activeMenu.top, right: activeMenu.right, zIndex: 9999 }} className="w-44 bg-[#111827] border border-white/[0.08] rounded-xl shadow-2xl py-1.5">
                                 <PermissionGate permission={PERMISSIONS.ROLES_ASSIGN}>
                                   <button
                                     onClick={() => openRoleModal(u)}
@@ -321,7 +332,8 @@ export default function AdminUsers() {
                                     <Trash2 size={14} /> حذف
                                   </button>
                                 </PermissionGate>
-                              </div>
+                              </div>,
+                              document.body
                             )}
                           </div>
                         )}

@@ -5,13 +5,15 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Package, Edit2, Check, X, ChevronDown, ChevronUp, Star } from 'lucide-react';
-import { plansService, type DbPlan, type DbPlanLimits } from '@/services/plans';
+import { adminSupabase } from '../services/adminSupabase';
+import type { DbPlan, DbPlanLimits } from '@/services/plans';
 
 export default function AdminPlans() {
   const [plans, setPlans] = useState<DbPlan[]>([]);
   const [limits, setLimits] = useState<Record<string, DbPlanLimits>>({});
   const [features, setFeatures] = useState<Record<string, Record<string, string>>>({});
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [editingPlan, setEditingPlan] = useState<string | null>(null);
   const [editingLimits, setEditingLimits] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -22,21 +24,34 @@ export default function AdminPlans() {
 
   const load = useCallback(async () => {
     setLoading(true);
+    setLoadError('');
     try {
-      const ps = await plansService.listActive();
-      setPlans(ps);
+      const { data: ps, error: plansErr } = await adminSupabase
+        .from('plans')
+        .select('*')
+        .eq('is_active', true)
+        .order('sort_order');
+      if (plansErr) throw plansErr;
+      const planList: DbPlan[] = ps || [];
+      setPlans(planList);
+
       const limitsMap: Record<string, DbPlanLimits> = {};
       const featuresMap: Record<string, Record<string, string>> = {};
-      await Promise.all(ps.map(async (p) => {
-        const [l, f] = await Promise.all([
-          plansService.getLimits(p.id),
-          plansService.getFeatures(p.id),
+      await Promise.all(planList.map(async (p) => {
+        const [{ data: lData }, { data: fData }] = await Promise.all([
+          adminSupabase.from('plan_limits').select('*').eq('plan_id', p.id).single(),
+          adminSupabase.from('plan_features').select('feature_key,feature_value').eq('plan_id', p.id),
         ]);
-        if (l) limitsMap[p.id] = l;
-        featuresMap[p.id] = f;
+        if (lData) limitsMap[p.id] = lData as DbPlanLimits;
+        featuresMap[p.id] = Object.fromEntries(
+          ((fData as { feature_key: string; feature_value: string }[]) || [])
+            .map(f => [f.feature_key, f.feature_value])
+        );
       }));
       setLimits(limitsMap);
       setFeatures(featuresMap);
+    } catch (err) {
+      setLoadError(err instanceof Error ? err.message : 'فشل في تحميل الخطط');
     } finally {
       setLoading(false);
     }
@@ -52,10 +67,11 @@ export default function AdminPlans() {
   const savePlan = async (planId: string) => {
     setSaving(true);
     try {
-      await plansService.updatePlan(planId, planEdits);
+      const { error } = await adminSupabase.from('plans').update(planEdits).eq('id', planId);
+      if (error) throw error;
       setEditingPlan(null);
       await load();
-    } finally { setSaving(false); }
+    } catch { /* silent */ } finally { setSaving(false); }
   };
 
   const startEditLimits = (planId: string) => {
@@ -67,17 +83,21 @@ export default function AdminPlans() {
   const saveLimits = async (planId: string) => {
     setSaving(true);
     try {
-      await plansService.updateLimits(planId, limitEdits);
+      const { error } = await adminSupabase.from('plan_limits').update(limitEdits).eq('plan_id', planId);
+      if (error) throw error;
       setEditingLimits(null);
       await load();
-    } finally { setSaving(false); }
+    } catch { /* silent */ } finally { setSaving(false); }
   };
 
   const toggleFeature = async (planId: string, featureKey: string) => {
     const current = features[planId]?.[featureKey] || 'false';
     const newVal = current === 'true' ? 'false' : 'true';
     try {
-      await plansService.updateFeature(planId, featureKey, newVal);
+      const { error } = await adminSupabase
+        .from('plan_features')
+        .upsert({ plan_id: planId, feature_key: featureKey, feature_value: newVal }, { onConflict: 'plan_id,feature_key' });
+      if (error) throw error;
       setFeatures(prev => ({
         ...prev,
         [planId]: { ...prev[planId], [featureKey]: newVal },
@@ -114,6 +134,13 @@ export default function AdminPlans() {
   if (loading) return (
     <div className="flex items-center justify-center h-64">
       <div className="w-8 h-8 border-2 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin" />
+    </div>
+  );
+
+  if (loadError) return (
+    <div className="text-center py-20">
+      <p className="text-sm text-red-400 mb-3">{loadError}</p>
+      <button onClick={load} className="admin-btn-secondary text-sm">إعادة المحاولة</button>
     </div>
   );
 
@@ -285,13 +312,13 @@ export default function AdminPlans() {
                             {editingLimits === plan.id ? (
                               <input
                                 type="number"
-                                value={(limitEdits as Record<string, number>)[key] ?? (planLimits as Record<string, number>)[key]}
+                                value={(limitEdits as unknown as Record<string, number>)[key] ?? (planLimits as unknown as Record<string, number>)[key]}
                                 onChange={e => setLimitEdits(prev => ({ ...prev, [key]: Number(e.target.value) }))}
                                 className="w-full text-center bg-white/5 border border-white/10 rounded px-1 py-0.5 text-white text-sm"
                               />
                             ) : (
                               <div className="text-white font-semibold text-sm">
-                                {formatLimit((planLimits as Record<string, number>)[key])}
+                                {formatLimit((planLimits as unknown as Record<string, number>)[key])}
                               </div>
                             )}
                           </div>

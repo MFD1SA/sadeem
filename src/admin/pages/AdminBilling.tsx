@@ -2,7 +2,8 @@
 // SADEEM Admin — Billing & Finance Page (Phase 5)
 // ============================================================================
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useAdminAuth } from '../contexts/AdminAuthContext';
 import { adminBillingService, type BillingOverview, type InvoiceListItem } from '../services/adminBilling.service';
 import { adminSubscribersService, type SubscriberListItem } from '../services/adminSubscribers.service';
@@ -31,7 +32,17 @@ export default function AdminBilling() {
   const [error, setError] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
   const [msg, setMsg] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
-  const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const [activeMenu, setActiveMenu] = useState<{ id: string; top: number; right: number } | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!activeMenu) return;
+    const close = (e: MouseEvent) => {
+      if (menuRef.current && menuRef.current.contains(e.target as Node)) return;
+      setActiveMenu(null);
+    };
+    document.addEventListener('mousedown', close);
+    return () => document.removeEventListener('mousedown', close);
+  }, [activeMenu]);
 
   // Create invoice modal
   const [showCreate, setShowCreate] = useState(false);
@@ -218,12 +229,13 @@ export default function AdminBilling() {
                       <td>
                         <PermissionGate permission={PERMISSIONS.FINANCE_MANAGE}>
                           <div className="relative">
-                            <button onClick={() => setActiveMenu(activeMenu === inv.id ? null : inv.id)}
+                            <button
+                              onClick={(e) => { e.stopPropagation(); const r = e.currentTarget.getBoundingClientRect(); setActiveMenu(activeMenu?.id === inv.id ? null : { id: inv.id, top: r.bottom + 4, right: window.innerWidth - r.right }); }}
                               className="p-1.5 rounded-lg text-slate-500 hover:text-white hover:bg-white/5 transition-colors">
                               <MoreVertical size={16} />
                             </button>
-                            {activeMenu === inv.id && (
-                              <div className="absolute left-0 bottom-full mb-1 w-48 bg-[#111827] border border-white/[0.08] rounded-xl shadow-2xl py-1.5 z-50">
+                            {activeMenu?.id === inv.id && createPortal(
+                              <div ref={menuRef} style={{ position: 'fixed', top: activeMenu.top, right: activeMenu.right, zIndex: 9999 }} className="w-48 bg-[#111827] border border-white/[0.08] rounded-xl shadow-2xl py-1.5">
                                 {inv.status !== 'paid' && inv.status !== 'cancelled' && (
                                   <button onClick={() => { setActiveMenu(null); setPayTarget(inv); setPayForm(p => ({ ...p, amount: String(inv.total) })); }}
                                     className="w-full flex items-center gap-2 px-3 py-2 text-xs text-emerald-400 hover:bg-emerald-500/10 transition-colors">
@@ -242,7 +254,8 @@ export default function AdminBilling() {
                                     <Ban size={14} /> إلغاء
                                   </button>
                                 )}
-                              </div>
+                              </div>,
+                              document.body
                             )}
                           </div>
                         </PermissionGate>

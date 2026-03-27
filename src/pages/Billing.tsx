@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { usePlan } from '@/hooks/usePlan';
 import { plansService, type DbPlan, type DbPlanLimits } from '@/services/plans';
+import { supabase } from '@/lib/supabase';
 import { useLanguage } from '@/i18n';
 
 const PLAN_ICONS: Record<string, React.ElementType> = {
@@ -82,12 +83,21 @@ export default function Billing() {
   const [featuresMap, setFeaturesMap] = useState<Record<string, Record<string, string>>>({});
   const [loading, setLoading] = useState(true);
   const [yearly, setYearly] = useState(false);
+  const [vatEnabled, setVatEnabled] = useState(false);
+  const [vatRate, setVatRate] = useState(15);
 
   useEffect(() => {
     async function load() {
       try {
-        const ps = await plansService.listActive();
+        const [ps, vatResult] = await Promise.all([
+          plansService.listActive(),
+          supabase.rpc('get_billing_settings'),
+        ]);
         setPlans(ps);
+        if (vatResult.data) {
+          setVatEnabled(vatResult.data.vat_enabled ?? false);
+          setVatRate(vatResult.data.vat_rate ?? 15);
+        }
         const lm: Record<string, DbPlanLimits> = {};
         const fm: Record<string, Record<string, string>> = {};
         await Promise.all(ps.map(async (p) => {
@@ -225,6 +235,23 @@ export default function Billing() {
                       : `Saves ${(plan.price_monthly * 12 - plan.price_yearly).toLocaleString('en-US')} SAR/yr`}
                   </div>
                 )}
+                {/* VAT breakdown */}
+                {vatEnabled && !isCustom && price > 0 && (
+                  <div className="mt-2 pt-2 border-t border-gray-100 space-y-0.5">
+                    <div className="flex justify-between text-[11px] text-content-tertiary">
+                      <span>{isAr ? 'المبلغ قبل الضريبة' : 'Subtotal'}</span>
+                      <span dir="ltr">{price.toLocaleString('en-US')} {isAr ? 'ر.س' : 'SAR'}</span>
+                    </div>
+                    <div className="flex justify-between text-[11px] text-content-tertiary">
+                      <span>{isAr ? `ضريبة القيمة المضافة (${vatRate}%)` : `VAT (${vatRate}%)`}</span>
+                      <span dir="ltr">{(price * vatRate / 100).toFixed(2)} {isAr ? 'ر.س' : 'SAR'}</span>
+                    </div>
+                    <div className="flex justify-between text-[11px] font-semibold text-content-primary pt-0.5 border-t border-gray-100">
+                      <span>{isAr ? 'الإجمالي شامل الضريبة' : 'Total incl. VAT'}</span>
+                      <span dir="ltr">{(price * (1 + vatRate / 100)).toFixed(2)} {isAr ? 'ر.س' : 'SAR'}</span>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Card body */}
@@ -294,8 +321,8 @@ export default function Billing() {
 }
 
 const STATIC_PLANS: DbPlan[] = [
-  { id: 'orbit',    name_ar: 'مدار',      name_en: 'Orbit',    desc_ar: 'للأنشطة الناشئة',    desc_en: 'For small businesses',   price_monthly: 99,  price_yearly: 1009, is_active: true, sort_order: 1, created_at: '', updated_at: '' },
-  { id: 'nova',     name_ar: 'نوفا',      name_en: 'Nova',     desc_ar: 'للأنشطة المتنامية',  desc_en: 'For growing businesses', price_monthly: 199, price_yearly: 2030, is_active: true, sort_order: 2, created_at: '', updated_at: '' },
-  { id: 'galaxy',   name_ar: 'جالاكسي',  name_en: 'Galaxy',   desc_ar: 'للشركات المتقدمة',   desc_en: 'For advanced companies', price_monthly: 399, price_yearly: 4070, is_active: true, sort_order: 3, created_at: '', updated_at: '' },
-  { id: 'infinity', name_ar: 'إنفينيتي', name_en: 'Infinity', desc_ar: 'حلول مخصصة للمؤسسات', desc_en: 'Custom enterprise solutions', price_monthly: 0, price_yearly: 0, is_active: true, sort_order: 4, created_at: '', updated_at: '' },
+  { id: 'orbit',    name_ar: 'مدار',      name_en: 'Orbit',    desc_ar: 'للأنشطة الناشئة',    desc_en: 'For small businesses',   price_monthly: 99,  price_yearly: 1009, is_active: true, sort_order: 1 },
+  { id: 'nova',     name_ar: 'نوفا',      name_en: 'Nova',     desc_ar: 'للأنشطة المتنامية',  desc_en: 'For growing businesses', price_monthly: 199, price_yearly: 2030, is_active: true, sort_order: 2 },
+  { id: 'galaxy',   name_ar: 'جالاكسي',  name_en: 'Galaxy',   desc_ar: 'للشركات المتقدمة',   desc_en: 'For advanced companies', price_monthly: 399, price_yearly: 4070, is_active: true, sort_order: 3 },
+  { id: 'infinity', name_ar: 'إنفينيتي', name_en: 'Infinity', desc_ar: 'حلول مخصصة للمؤسسات', desc_en: 'Custom enterprise solutions', price_monthly: 0, price_yearly: 0, is_active: true, sort_order: 4 },
 ];

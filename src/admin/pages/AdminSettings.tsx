@@ -8,7 +8,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAdminAuth } from '../contexts/AdminAuthContext';
 import { adminSettingsService, type BrandingSettings } from '../services/adminSettings.service';
 import { adminSupabase } from '../services/adminSupabase';
-import { Palette, Shield, Globe, Bell, Server, Save, Upload, Check, Search } from 'lucide-react';
+import { Palette, Shield, Globe, Bell, Server, Save, Upload, Check, Search, CreditCard } from 'lucide-react';
 import { AdminSelect } from '../components/AdminSelect';
 
 export default function AdminSettings() {
@@ -19,6 +19,7 @@ export default function AdminSettings() {
   const sections = [
     { id: 'branding', label: 'هوية المنصة', icon: Palette },
     { id: 'seo', label: 'تحسين محركات البحث', icon: Search },
+    { id: 'billing', label: 'الفوترة والضريبة', icon: CreditCard },
     { id: 'security', label: 'الأمان والسياسات', icon: Shield },
     { id: 'region', label: 'المنطقة والعملة', icon: Globe },
     { id: 'notifications', label: 'الإشعارات', icon: Bell },
@@ -45,6 +46,7 @@ export default function AdminSettings() {
         <div className="flex-1 min-w-0">
           {activeSection === 'branding' && <BrandingSection showMsg={showMsg} />}
           {activeSection === 'seo' && <SeoSection showMsg={showMsg} />}
+          {activeSection === 'billing' && <BillingSection showMsg={showMsg} />}
           {activeSection === 'security' && <SettingSection settingKey="security_policies" showMsg={showMsg} fields={[
             { key: 'min_password_length', label: 'الحد الأدنى لطول كلمة المرور', type: 'number', default: 8 },
             { key: 'max_failed_attempts', label: 'الحد الأقصى لمحاولات الدخول الفاشلة', type: 'number', default: 5 },
@@ -215,9 +217,12 @@ function SeoSection({ showMsg }: { showMsg: (t: string, ty: 'success' | 'error')
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    adminSupabase.rpc('admin_get_setting', { p_key: 'seo' }).then(({ data }) => {
-      if (data) setSeo({ meta_title: data.meta_title || '', meta_description: data.meta_description || '', keywords: data.keywords || '', og_image_url: data.og_image_url || '' });
-    }).catch(() => {}).finally(() => setLoading(false));
+    (async () => {
+      try {
+        const { data } = await adminSupabase.rpc('admin_get_setting', { p_key: 'seo' });
+        if (data) setSeo({ meta_title: data.meta_title || '', meta_description: data.meta_description || '', keywords: data.keywords || '', og_image_url: data.og_image_url || '' });
+      } catch { /* use defaults */ } finally { setLoading(false); }
+    })();
   }, []);
 
   const save = async () => {
@@ -292,6 +297,114 @@ function SeoSection({ showMsg }: { showMsg: (t: string, ty: 'success' | 'error')
               </ul>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Billing / VAT Section ───
+function BillingSection({ showMsg }: { showMsg: (t: string, ty: 'success' | 'error') => void }) {
+  const [vatEnabled, setVatEnabled] = useState(true);
+  const [vatRate, setVatRate] = useState(15);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await adminSupabase.rpc('admin_get_setting', { p_key: 'billing' });
+        if (data) {
+          setVatEnabled(data.vat_enabled ?? true);
+          setVatRate(data.vat_rate ?? 15);
+        }
+      } catch { /* use defaults */ } finally { setLoading(false); }
+    })();
+  }, []);
+
+  const handleSave = async () => {
+    if (vatRate < 0 || vatRate > 100) { showMsg('نسبة الضريبة يجب أن تكون بين 0 و 100', 'error'); return; }
+    setSaving(true);
+    try {
+      const { error } = await adminSupabase.rpc('admin_set_setting', {
+        p_key: 'billing',
+        p_value: { vat_enabled: vatEnabled, vat_rate: vatRate },
+      });
+      if (error) throw error;
+      showMsg('تم حفظ إعدادات الفوترة بنجاح', 'success');
+    } catch (e) { showMsg(e instanceof Error ? e.message : 'فشل الحفظ', 'error'); }
+    finally { setSaving(false); }
+  };
+
+  if (loading) return <div className="flex justify-center py-12"><div className="admin-spinner" /></div>;
+
+  return (
+    <div className="admin-card">
+      <div className="admin-card-header">
+        <h3>إعدادات ضريبة القيمة المضافة (VAT)</h3>
+        <p className="text-xs text-slate-500">تنطبق على جميع الفواتير والعروض السعرية الموضحة للمشتركين</p>
+      </div>
+      <div className="admin-card-body space-y-5">
+        {/* VAT enabled toggle */}
+        <div className="flex items-center justify-between py-2 border-b border-white/[0.05]">
+          <div>
+            <div className="text-sm text-slate-200 font-medium">تفعيل ضريبة القيمة المضافة</div>
+            <div className="text-xs text-slate-500 mt-0.5">عند التفعيل تُضاف الضريبة تلقائياً لجميع الفواتير وتظهر التفاصيل للمشتركين</div>
+          </div>
+          <button
+            onClick={() => setVatEnabled(v => !v)}
+            className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${vatEnabled ? 'bg-cyan-500' : 'bg-slate-700'}`}
+          >
+            <div className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-all duration-200 ${vatEnabled ? 'right-1' : 'left-1'}`} />
+          </button>
+        </div>
+
+        {/* VAT rate */}
+        <div>
+          <label className="block text-xs font-medium text-slate-400 mb-1.5">
+            نسبة الضريبة (%)
+          </label>
+          <div className="flex items-center gap-3">
+            <input
+              type="number"
+              min="0"
+              max="100"
+              step="0.1"
+              dir="ltr"
+              disabled={!vatEnabled}
+              value={vatRate}
+              onChange={(e) => setVatRate(Number(e.target.value))}
+              className="admin-form-input w-28 disabled:opacity-40"
+            />
+            <span className="text-xs text-slate-500">القيمة الافتراضية في المملكة: 15%</span>
+          </div>
+        </div>
+
+        {/* Preview */}
+        {vatEnabled && (
+          <div className="rounded-xl bg-white/[0.03] border border-white/[0.05] p-4">
+            <div className="text-xs text-slate-400 mb-2 font-medium">معاينة — مثال على خطة نوفا (199 ر.س)</div>
+            <div className="space-y-1 text-xs">
+              <div className="flex justify-between text-slate-400">
+                <span>المبلغ قبل الضريبة</span>
+                <span dir="ltr">199.00 ر.س</span>
+              </div>
+              <div className="flex justify-between text-slate-400">
+                <span>ضريبة القيمة المضافة ({vatRate}%)</span>
+                <span dir="ltr">{(199 * vatRate / 100).toFixed(2)} ر.س</span>
+              </div>
+              <div className="flex justify-between text-white font-semibold border-t border-white/[0.06] pt-1 mt-1">
+                <span>الإجمالي شامل الضريبة</span>
+                <span dir="ltr">{(199 * (1 + vatRate / 100)).toFixed(2)} ر.س</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="flex justify-end">
+          <button onClick={handleSave} disabled={saving} className="admin-btn-primary">
+            <Save size={16} /><span>{saving ? 'جاري الحفظ...' : 'حفظ'}</span>
+          </button>
         </div>
       </div>
     </div>

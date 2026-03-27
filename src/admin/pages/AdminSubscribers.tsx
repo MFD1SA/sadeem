@@ -3,7 +3,8 @@
 // All data via RPCs. Permission checks in DB.
 // ============================================================================
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useAdminAuth } from '../contexts/AdminAuthContext';
 import { adminSubscribersService, type SubscriberListItem, type SubscriberDetail } from '../services/adminSubscribers.service';
 import { PERMISSIONS } from '../utils/constants';
@@ -45,7 +46,17 @@ export default function AdminSubscribers() {
   const [detailLoading, setDetailLoading] = useState(false);
 
   // Actions
-  const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const [activeMenu, setActiveMenu] = useState<{ id: string; top: number; right: number } | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!activeMenu) return;
+    const close = (e: MouseEvent) => {
+      if (menuRef.current && menuRef.current.contains(e.target as Node)) return;
+      setActiveMenu(null);
+    };
+    document.addEventListener('mousedown', close);
+    return () => document.removeEventListener('mousedown', close);
+  }, [activeMenu]);
 
   // Plan change modal
   const [planTarget, setPlanTarget] = useState<SubscriberListItem | null>(null);
@@ -410,12 +421,12 @@ export default function AdminSubscribers() {
                       <td onClick={(e) => e.stopPropagation()}>
                         {hasPermission(PERMISSIONS.SUBSCRIBERS_UPDATE) && (
                           <div className="relative">
-                            <button onClick={() => setActiveMenu(activeMenu === item.id ? null : item.id)}
+                            <button onClick={(e) => { e.stopPropagation(); const r = e.currentTarget.getBoundingClientRect(); setActiveMenu(activeMenu?.id === item.id ? null : { id: item.id, top: r.bottom + 4, right: window.innerWidth - r.right }); }}
                               className="p-1.5 rounded-lg text-slate-500 hover:text-white hover:bg-white/5 transition-colors">
                               <MoreVertical size={16} />
                             </button>
-                            {activeMenu === item.id && (
-                              <div className="absolute left-0 bottom-full mb-1 w-48 bg-[#111827] border border-white/[0.08] rounded-xl shadow-2xl py-1.5 z-50">
+                            {activeMenu?.id === item.id && createPortal(
+                              <div ref={menuRef} style={{ position: 'fixed', top: activeMenu.top, right: activeMenu.right, zIndex: 9999 }} className="w-48 bg-[#111827] border border-white/[0.08] rounded-xl shadow-2xl py-1.5">
                                 <button onClick={() => { setActiveMenu(null); setPlanTarget(item); setNewPlan(item.subscription?.plan || 'orbit'); }}
                                   className="w-full flex items-center gap-2 px-3 py-2 text-xs text-cyan-400 hover:bg-cyan-500/10 transition-colors">
                                   <ArrowUpCircle size={14} /> تغيير الخطة
@@ -445,7 +456,8 @@ export default function AdminSubscribers() {
                                     <Play size={14} /> إعادة تفعيل
                                   </button>
                                 )}
-                              </div>
+                              </div>,
+                              document.body
                             )}
                           </div>
                         )}
