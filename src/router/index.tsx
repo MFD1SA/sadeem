@@ -34,6 +34,7 @@ import Support        from '@/pages/Support';
 import Settings       from '@/pages/Settings';
 import ReviewLanding  from '@/pages/ReviewLanding';
 import SeoLanding     from '@/pages/SeoLanding';
+import HomePage       from '@/pages/HomePage';
 
 // ── Lazily loaded admin pages (infrequently visited) ────────────────────────
 import { AdminLayout } from '@/admin/layouts/AdminLayout';
@@ -69,7 +70,7 @@ export function AppRouter() {
       {/* SUBSCRIBER ROUTES                                        */}
       {/* ======================================================= */}
 
-      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="/" element={<HomePage />} />
 
       <Route path="/r/:slug" element={<ReviewLanding />} />
       <Route path="/s/:city/:industry" element={<SeoLanding />} />
