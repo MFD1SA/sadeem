@@ -3,6 +3,7 @@
 // Premium dark public page — matches homepage design tokens
 // ============================================================================
 
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 
@@ -19,6 +20,7 @@ const GRAD = 'linear-gradient(135deg, #06B6D4, #8B5CF6)';
 
 export default function StoryPage() {
   const navigate = useNavigate();
+  const [heroFailed, setHeroFailed] = useState(false);
 
   return (
     <div dir="rtl" style={{ background: C.bg, color: C.text, minHeight: '100vh' }}>
@@ -53,39 +55,51 @@ export default function StoryPage() {
             <img src="/sadeem-logo.png" alt="SADEEM | سديم" style={{ height: 30, width: 'auto', display: 'block' }} />
           </button>
 
-          {/* CTA */}
-          <button
-            onClick={() => navigate('/register')}
-            style={{
-              background: GRAD,
-              color: 'white',
-              fontSize: 13,
-              padding: '8px 20px',
-              borderRadius: 10,
-              border: 'none',
-              cursor: 'pointer',
-              fontWeight: 500,
-              boxShadow: '0 4px 14px rgba(6,182,212,0.22)',
-            }}
-          >ابدأ مجانًا</button>
+          {/* Spacer to balance the back link */}
+          <div style={{ width: 120 }} />
         </div>
       </div>
 
-      {/* ── Hero image — provided image exactly ── */}
-      <div style={{ position: 'relative', width: '100%', height: 'clamp(280px, 46vw, 540px)', overflow: 'hidden' }}>
-        <img
-          src="/story-hero.jpg"
-          alt="سديم"
-          style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', display: 'block' }}
-          onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
-        />
-        {/* Fade bottom */}
+      {/* ── Hero — image when available, clean title block when not ── */}
+      {!heroFailed ? (
+        <div style={{ position: 'relative', width: '100%', height: 'clamp(280px, 46vw, 540px)', overflow: 'hidden' }}>
+          <img
+            src="/story-hero.jpg"
+            alt="سديم"
+            style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', display: 'block' }}
+            onError={() => setHeroFailed(true)}
+          />
+          <div style={{
+            position: 'absolute', bottom: 0, left: 0, right: 0, height: '55%',
+            background: 'linear-gradient(to bottom, transparent, #0F1117)',
+            pointerEvents: 'none',
+          }} />
+        </div>
+      ) : (
+        /* Fallback: clean title section, no broken image, no empty black block */
         <div style={{
-          position: 'absolute', bottom: 0, left: 0, right: 0, height: '55%',
-          background: 'linear-gradient(to bottom, transparent, #0F1117)',
-          pointerEvents: 'none',
-        }} />
-      </div>
+          padding: '80px 24px 64px',
+          textAlign: 'center',
+          borderBottom: `1px solid ${C.border}`,
+        }}>
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: 8,
+            background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.25)',
+            borderRadius: 30, padding: '5px 18px', marginBottom: 20,
+          }}>
+            <span style={{ color: C.purple, fontSize: 12, letterSpacing: '0.08em' }}>القصة</span>
+          </div>
+          <h1 style={{
+            fontSize: 'clamp(26px, 4.5vw, 52px)', fontWeight: 600,
+            lineHeight: 1.35, color: C.text, margin: 0,
+          }}>
+            لماذا بنينا{' '}
+            <span style={{ background: GRAD, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+              سديم؟
+            </span>
+          </h1>
+        </div>
+      )}
 
       {/* ── Story content — exact text as provided ── */}
       <section style={{ padding: '72px 0 96px' }}>
