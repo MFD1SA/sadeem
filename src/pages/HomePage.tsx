@@ -76,6 +76,36 @@ function CheckItem({ children, color = C.cyan }: { children: string; color?: str
   );
 }
 
+// ─── SADEEM S-ribbon mark — dark-bg native SVG (no white box needed) ──────────
+function SadeemMark({ size = 36 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs>
+        <linearGradient id="sm-top" x1="65" y1="15" x2="28" y2="50" gradientUnits="userSpaceOnUse">
+          <stop offset="0%"  stopColor="#7BAFC5"/>
+          <stop offset="60%" stopColor="#A9CDD9"/>
+          <stop offset="100%" stopColor="#BDD5DF"/>
+        </linearGradient>
+        <linearGradient id="sm-bot" x1="35" y1="85" x2="72" y2="50" gradientUnits="userSpaceOnUse">
+          <stop offset="0%"  stopColor="#38404A"/>
+          <stop offset="60%" stopColor="#545C66"/>
+          <stop offset="100%" stopColor="#70787F"/>
+        </linearGradient>
+      </defs>
+      {/* Top arc of the S — steel blue */}
+      <path
+        d="M 65 20 C 78 8, 70 2, 52 4 C 34 6, 22 18, 26 32 C 30 46, 50 50, 50 50"
+        stroke="url(#sm-top)" strokeWidth="11" strokeLinecap="round" strokeLinejoin="round"
+      />
+      {/* Bottom arc of the S — dark charcoal */}
+      <path
+        d="M 35 80 C 22 92, 30 98, 48 96 C 66 94, 78 82, 74 68 C 70 54, 50 50, 50 50"
+        stroke="url(#sm-bot)" strokeWidth="11" strokeLinecap="round" strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 export default function HomePage() {
   const navigate = useNavigate();
@@ -85,6 +115,12 @@ export default function HomePage() {
   const [form, setForm] = useState({ name: '', email: '', phone: '', company: '', message: '' });
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [formError, setFormError] = useState('');
+  const [langToast, setLangToast] = useState(false);
+
+  const toggleLang = () => {
+    setLangToast(true);
+    setTimeout(() => setLangToast(false), 2500);
+  };
 
   // Navbar background on scroll
   useEffect(() => {
@@ -128,6 +164,14 @@ export default function HomePage() {
   return (
     <div dir="rtl" style={{ background: C.bg, color: C.text, minHeight: '100vh', overflowX: 'hidden' }}>
 
+      {/* Language toast */}
+      {langToast && (
+        <div style={{ position: 'fixed', bottom: 28, left: '50%', transform: 'translateX(-50%)', zIndex: 9999, background: C.card, border: `1px solid ${C.border}`, borderRadius: 12, padding: '12px 22px', boxShadow: '0 16px 48px rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', gap: 10, whiteSpace: 'nowrap' }}>
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: C.amber }} className="animate-pulse" />
+          <span style={{ fontSize: 14, color: C.text, fontWeight: 500 }}>قريبًا — النسخة الإنجليزية</span>
+        </div>
+      )}
+
       {/* ══════════════════════════════════════════════════════════
           MAIN NAVBAR (sticky)
       ══════════════════════════════════════════════════════════ */}
@@ -139,11 +183,13 @@ export default function HomePage() {
         transition: 'all 0.25s ease',
       }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
-          {/* Logo */}
-          {/* Logo — actual SADEEM PNG in a white container so it renders on dark bg */}
-          <button onClick={() => scrollTo('hero')} className="flex items-center flex-shrink-0" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
-            <div style={{ background: 'white', borderRadius: 10, padding: '5px 14px', display: 'flex', alignItems: 'center', boxShadow: '0 2px 10px rgba(0,0,0,0.25)' }}>
-              <img src="/sadeem-logo.png" alt="SADEEM | سديم" style={{ height: 28, width: 'auto', display: 'block' }} />
+          {/* Logo — inline SVG mark, transparent bg, works natively on dark navbar */}
+          <button onClick={() => scrollTo('hero')} className="flex items-center gap-2 flex-shrink-0" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+            <SadeemMark size={36} />
+            <div className="flex items-center gap-1.5">
+              <span style={{ fontSize: 17, fontWeight: 600, color: C.text, letterSpacing: '-0.01em' }}>SADEEM</span>
+              <span style={{ color: C.border, fontSize: 14 }}>|</span>
+              <span style={{ fontSize: 16, fontWeight: 500, color: C.brand }}>سديم</span>
             </div>
           </button>
 
@@ -162,8 +208,9 @@ export default function HomePage() {
 
           {/* CTAs */}
           <div className="flex items-center gap-2 flex-shrink-0">
-            {/* Language toggle */}
+            {/* Language toggle — قريبًا */}
             <button
+              onClick={toggleLang}
               style={{ color: C.muted, fontSize: 12, padding: '6px 10px', border: `1px solid ${C.border}`, borderRadius: 8, background: 'none', cursor: 'pointer', letterSpacing: '0.04em' }}
               className="hidden md:block"
               onMouseOver={e => { e.currentTarget.style.color = C.text; e.currentTarget.style.borderColor = '#374151'; }}
@@ -213,157 +260,159 @@ export default function HomePage() {
       </header>
 
       {/* ══════════════════════════════════════════════════════════
-          HERO
+          HERO — 2-column split: text (right) + AI visual (left)
       ══════════════════════════════════════════════════════════ */}
-      <section id="hero" style={{ padding: '88px 0 100px', position: 'relative', overflow: 'hidden' }}>
-        {/* Background glow */}
+      <section id="hero" style={{ padding: '56px 0 72px', position: 'relative', overflow: 'hidden' }}>
+        {/* Ambient glow */}
         <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
-          <div style={{ position: 'absolute', top: '5%', left: '50%', transform: 'translateX(-50%)', width: 900, height: 700, background: 'radial-gradient(ellipse at center, rgba(6,182,212,0.10) 0%, rgba(139,92,246,0.07) 40%, transparent 70%)' }} />
+          <div style={{ position: 'absolute', top: '0%', right: '15%', width: 600, height: 600, background: 'radial-gradient(ellipse, rgba(6,182,212,0.08) 0%, transparent 60%)' }} />
+          <div style={{ position: 'absolute', top: '10%', left: '5%', width: 500, height: 500, background: 'radial-gradient(ellipse, rgba(139,92,246,0.06) 0%, transparent 60%)' }} />
         </div>
 
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center" style={{ position: 'relative' }}>
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 mb-8" style={{ background: 'rgba(6,182,212,0.07)', border: '1px solid rgba(6,182,212,0.18)', borderRadius: 30, padding: '6px 18px' }}>
-            <div style={{ width: 7, height: 7, borderRadius: '50%', background: C.cyan }} className="animate-pulse" />
-            <span style={{ color: C.cyan, fontSize: 13 }}>منصة إدارة تقييمات جوجل رقم 1 عربيًا</span>
-          </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ position: 'relative' }}>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
 
-          {/* Headline */}
-          <h1 style={{ fontSize: 'clamp(30px, 5.5vw, 62px)', fontWeight: 600, lineHeight: 1.28, marginBottom: 24, color: C.text, letterSpacing: '-0.01em' }}>
-            كل تقييم جوجل{' '}
-            <span style={{ background: GRAD, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-              فرصة حقيقية
-            </span>
-            {' '}لنمو عملك
-          </h1>
+            {/* ── TEXT column (right in RTL) ── */}
+            <div>
+              {/* Badge */}
+              <div className="inline-flex items-center gap-2" style={{ background: 'rgba(6,182,212,0.07)', border: '1px solid rgba(6,182,212,0.18)', borderRadius: 30, padding: '5px 16px', marginBottom: 22 }}>
+                <div style={{ width: 6, height: 6, borderRadius: '50%', background: C.cyan }} className="animate-pulse" />
+                <span style={{ color: C.cyan, fontSize: 12 }}>منصة إدارة تقييمات جوجل رقم 1 عربيًا</span>
+              </div>
 
-          {/* Subheadline */}
-          <p style={{ fontSize: 'clamp(15px, 2vw, 18px)', color: C.muted, maxWidth: 620, margin: '0 auto 44px', lineHeight: 1.75, fontWeight: 400 }}>
-            منصة بالذكاء الاصطناعي تساعدك على الرد على تقييمات جوجل، جمع تقييمات جديدة بالـ QR، وقياس أداء سمعتك عبر جميع فروعك — في مكان واحد
-          </p>
+              <h1 style={{ fontSize: 'clamp(26px, 3.8vw, 52px)', fontWeight: 600, lineHeight: 1.3, marginBottom: 18, color: C.text, letterSpacing: '-0.01em' }}>
+                كل تقييم جوجل{' '}
+                <span style={{ background: GRAD, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+                  فرصة حقيقية
+                </span>
+                {' '}لنمو عملك
+              </h1>
 
-          {/* Hero CTAs — 3 buttons */}
-          <div className="flex items-center justify-center gap-3 flex-wrap" style={{ marginBottom: 64 }}>
-            <button
-              onClick={() => navigate('/login')}
-              style={{ background: GRAD, color: 'white', fontSize: 15, padding: '13px 32px', borderRadius: 12, border: 'none', cursor: 'pointer', boxShadow: '0 8px 32px rgba(6,182,212,0.28)', fontWeight: 500 }}
-            >ابدأ الآن</button>
-            <button
-              onClick={() => navigate('/login')}
-              style={{ background: 'transparent', color: C.text, fontSize: 14, padding: '13px 24px', borderRadius: 12, border: `1px solid ${C.border}`, cursor: 'pointer', fontWeight: 400 }}
-              onMouseOver={e => { e.currentTarget.style.borderColor = '#374151'; }}
-              onMouseOut={e => { e.currentTarget.style.borderColor = C.border; }}
-            >دخول المشتركين</button>
-            <button
-              onClick={() => scrollTo('how-it-works')}
-              style={{ background: 'transparent', color: C.muted, fontSize: 14, padding: '13px 18px', borderRadius: 12, border: 'none', cursor: 'pointer', fontWeight: 400, display: 'flex', alignItems: 'center', gap: 6 }}
-              onMouseOver={e => (e.currentTarget.style.color = C.text)}
-              onMouseOut={e => (e.currentTarget.style.color = C.muted)}
-            >
-              <span style={{ display: 'inline-block', width: 20, height: 20, borderRadius: '50%', border: `1px solid ${C.border}`, textAlign: 'center', lineHeight: '18px', fontSize: 10 }}>▶</span>
-              شاهد كيف تعمل سديم
-            </button>
-          </div>
+              <p style={{ fontSize: 'clamp(14px, 1.5vw, 17px)', color: C.muted, marginBottom: 32, lineHeight: 1.8, fontWeight: 400 }}>
+                ردود ذكية بالـ AI، جمع تقييمات بـ QR، وتحليلات السمعة لجميع فروعك — كل شيء في مكان واحد
+              </p>
 
-          {/* Dashboard visual — Google Reviews + AI reply composition */}
-          <div style={{ position: 'relative', maxWidth: 860, margin: '0 auto' }}>
-            {/* Glow halo behind the dashboard */}
-            <div style={{ position: 'absolute', inset: -32, background: 'radial-gradient(ellipse at center, rgba(6,182,212,0.12) 0%, rgba(139,92,246,0.08) 45%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
-            <div style={{ position: 'relative', zIndex: 1, background: C.card, border: `1px solid rgba(255,255,255,0.07)`, borderRadius: 24, padding: 28, boxShadow: '0 48px 140px rgba(0,0,0,0.65), 0 0 0 1px rgba(6,182,212,0.06)' }}>
-              {/* Window chrome */}
-              <div className="flex items-center justify-between" style={{ marginBottom: 20 }}>
-                <div className="flex items-center gap-1.5">
-                  {[C.red, C.amber, C.green].map((c, i) => (
-                    <div key={i} style={{ width: 10, height: 10, borderRadius: '50%', background: c + '90' }} />
+              {/* CTAs */}
+              <div className="flex items-center gap-3 flex-wrap" style={{ marginBottom: 36 }}>
+                <button
+                  onClick={() => navigate('/login')}
+                  style={{ background: GRAD, color: 'white', fontSize: 15, padding: '12px 28px', borderRadius: 11, border: 'none', cursor: 'pointer', boxShadow: '0 8px 28px rgba(6,182,212,0.28)', fontWeight: 500 }}
+                >ابدأ الآن</button>
+                <button
+                  onClick={() => navigate('/login')}
+                  style={{ background: 'transparent', color: C.text, fontSize: 14, padding: '11px 20px', borderRadius: 11, border: `1px solid ${C.border}`, cursor: 'pointer' }}
+                  onMouseOver={e => { e.currentTarget.style.borderColor = '#374151'; }}
+                  onMouseOut={e => { e.currentTarget.style.borderColor = C.border; }}
+                >دخول المشتركين</button>
+                <button
+                  onClick={() => scrollTo('how-it-works')}
+                  style={{ background: 'transparent', color: C.muted, fontSize: 14, padding: '11px 14px', borderRadius: 11, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 7 }}
+                  onMouseOver={e => (e.currentTarget.style.color = C.text)}
+                  onMouseOut={e => (e.currentTarget.style.color = C.muted)}
+                >
+                  <span style={{ width: 22, height: 22, borderRadius: '50%', border: `1px solid ${C.border}`, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 9 }}>▶</span>
+                  شاهد كيف تعمل سديم
+                </button>
+              </div>
+
+              {/* Trust stats */}
+              <div className="flex items-center flex-wrap gap-7">
+                {[
+                  { val: '+500', lbl: 'عمل نشط'    },
+                  { val: '98%',  lbl: 'رضا العملاء' },
+                  { val: '4.8★', lbl: 'تقييمنا'    },
+                  { val: '24/7', lbl: 'دعم مستمر'   },
+                ].map((s, i) => (
+                  <div key={i}>
+                    <div style={{ fontSize: 20, fontWeight: 600, color: C.brand }}>{s.val}</div>
+                    <div style={{ fontSize: 11, color: C.muted }}>{s.lbl}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* ── VISUAL column (left in RTL) — AI review flow ── */}
+            <div style={{ position: 'relative' }}>
+              {/* Glow halo */}
+              <div style={{ position: 'absolute', inset: -20, background: 'radial-gradient(ellipse at 50% 40%, rgba(6,182,212,0.13) 0%, rgba(139,92,246,0.08) 45%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
+
+              {/* Main dashboard card */}
+              <div style={{ position: 'relative', zIndex: 1, background: C.card, border: '1px solid rgba(255,255,255,0.07)', borderRadius: 20, padding: 22, boxShadow: '0 40px 120px rgba(0,0,0,0.6), 0 0 0 1px rgba(6,182,212,0.05)' }}>
+                {/* Window chrome */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    {[C.red, C.amber, C.green].map((c, i) => <div key={i} style={{ width: 9, height: 9, borderRadius: '50%', background: c + '90' }} />)}
+                  </div>
+                  <span style={{ fontSize: 11, color: C.muted }}>لوحة تحكم سديم</span>
+                  <div style={{ width: 56, height: 6, background: C.border, borderRadius: 3 }} />
+                </div>
+
+                {/* Stats row */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8, marginBottom: 14 }}>
+                  {[
+                    { label: 'التقييمات', value: '2,847', color: C.cyan   },
+                    { label: 'المتوسط',   value: '4.8 ★', color: C.amber  },
+                    { label: 'نسبة الرد', value: '94%',   color: C.green  },
+                    { label: 'هذا الشهر', value: '+124',  color: C.purple },
+                  ].map((s, i) => (
+                    <div key={i} style={{ background: C.bg, borderRadius: 10, padding: '10px 6px', textAlign: 'center' }}>
+                      <div style={{ fontSize: 16, fontWeight: 600, color: s.color }}>{s.value}</div>
+                      <div style={{ fontSize: 9, color: C.muted, marginTop: 2 }}>{s.label}</div>
+                    </div>
                   ))}
                 </div>
-                <div style={{ fontSize: 12, color: C.muted }}>لوحة تحكم سديم</div>
-                <div style={{ width: 64, height: 8, background: C.border, borderRadius: 4 }} />
-              </div>
 
-              {/* Stats row */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3" style={{ marginBottom: 20 }}>
-                {[
-                  { label: 'إجمالي التقييمات', value: '2,847', color: C.cyan },
-                  { label: 'متوسط التقييم',    value: '4.8 ★', color: C.amber },
-                  { label: 'نسبة الرد',        value: '94%',   color: C.green },
-                  { label: 'هذا الشهر',        value: '+124',  color: C.purple },
-                ].map((s, i) => (
-                  <div key={i} style={{ background: C.bg, borderRadius: 12, padding: '12px 8px', textAlign: 'center' }}>
-                    <div style={{ fontSize: 20, fontWeight: 600, color: s.color }}>{s.value}</div>
-                    <div style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>{s.label}</div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Reviews list */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {[
-                  { stars: 5, text: 'خدمة ممتازة وسريعة جدًا — سأعود بكل تأكيد!', replied: true },
-                  { stars: 4, text: 'تجربة جيدة بشكل عام، بعض التفاصيل تحتاج تحسينًا',    replied: false },
-                  { stars: 5, text: 'الأفضل في المنطقة بكل تأكيد. أنصح الجميع!',          replied: true  },
-                ].map((r, i) => (
-                  <div key={i} style={{ background: C.bg, borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <div style={{ fontSize: 12, color: C.amber, flexShrink: 0 }}>{'★'.repeat(r.stars)}</div>
-                    <span style={{ fontSize: 11, color: C.muted, flex: 1, textAlign: 'right' }}>{r.text}</span>
-                    <div style={{ fontSize: 10, padding: '2px 10px', borderRadius: 20, flexShrink: 0, background: r.replied ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', color: r.replied ? C.green : C.red }}>
-                      {r.replied ? 'تم الرد' : 'انتظار'}
+                {/* Review list — AI flow: تقييم يصل → AI يرد → تم النشر */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                  {[
+                    { stars: 5, text: 'خدمة ممتازة وسريعة جدًا — سأعود بكل تأكيد!', state: 'done'    },
+                    { stars: 3, text: 'تجربة جيدة لكن التوصيل كان بطيئًا قليلًا',   state: 'ai'      },
+                    { stars: 5, text: 'الأفضل في المنطقة بكل تأكيد. أنصح الجميع!', state: 'done'    },
+                  ].map((r, i) => (
+                    <div key={i} style={{ background: C.bg, borderRadius: 9, padding: '9px 12px', display: 'flex', alignItems: 'center', gap: 10, border: r.state === 'ai' ? '1px solid rgba(6,182,212,0.2)' : '1px solid rgba(255,255,255,0.03)' }}>
+                      <span style={{ fontSize: 11, color: C.amber, flexShrink: 0 }}>{'★'.repeat(r.stars)}</span>
+                      <span style={{ fontSize: 10, color: C.muted, flex: 1, textAlign: 'right' }}>{r.text}</span>
+                      <span style={{ fontSize: 9, padding: '2px 8px', borderRadius: 20, flexShrink: 0,
+                        background: r.state === 'done' ? 'rgba(16,185,129,0.1)' : 'rgba(6,182,212,0.1)',
+                        color:      r.state === 'done' ? C.green                : C.cyan,
+                        border:     `1px solid ${r.state === 'done' ? 'rgba(16,185,129,0.2)' : 'rgba(6,182,212,0.2)'}`,
+                      }}>{r.state === 'done' ? 'تم الرد' : 'AI يرد…'}</span>
                     </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Floating card — AI generating reply (bottom-right in RTL = bottom-left visually) */}
+              <div style={{ position: 'absolute', bottom: -18, right: -20, background: C.card2, border: '1px solid rgba(6,182,212,0.22)', borderRadius: 14, padding: 14, boxShadow: '0 20px 56px rgba(0,0,0,0.5)', width: 205, zIndex: 2 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                  <div style={{ width: 26, height: 26, borderRadius: 8, background: GRAD, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Brain size={12} style={{ color: 'white' }} />
                   </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Floating: AI reply card */}
-            <div
-              style={{ position: 'absolute', bottom: 32, left: -72, background: C.card, border: `1px solid ${C.border}`, borderRadius: 16, padding: 16, boxShadow: '0 24px 64px rgba(0,0,0,0.45)', width: 220 }}
-              className="hidden xl:block"
-            >
-              <div className="flex items-center gap-2" style={{ marginBottom: 10 }}>
-                <div style={{ width: 28, height: 28, borderRadius: 8, background: GRAD, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Brain size={13} style={{ color: 'white' }} />
+                  <span style={{ fontSize: 11, color: C.cyan, fontWeight: 500 }}>رد ذكي جاهز</span>
                 </div>
-                <span style={{ fontSize: 12, color: C.cyan, fontWeight: 500 }}>رد ذكي جاهز</span>
-              </div>
-              <p style={{ fontSize: 12, color: C.muted, lineHeight: 1.55, marginBottom: 10 }}>
-                "شكرًا جزيلًا على تقييمك الرائع! يسعدنا دائمًا..."
-              </p>
-              <div className="flex gap-2">
-                <div style={{ flex: 1, background: 'rgba(6,182,212,0.1)', border: '1px solid rgba(6,182,212,0.2)', borderRadius: 7, padding: '5px 0', fontSize: 11, color: C.cyan, textAlign: 'center' }}>نشر</div>
-                <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 7, padding: '5px 10px', fontSize: 11, color: C.muted }}>تعديل</div>
-              </div>
-            </div>
-
-            {/* Floating: Google review card */}
-            <div
-              style={{ position: 'absolute', top: 24, right: -80, background: 'white', borderRadius: 16, padding: 16, boxShadow: '0 24px 64px rgba(0,0,0,0.4)', width: 210 }}
-              className="hidden xl:block"
-            >
-              <div className="flex items-center gap-2" style={{ marginBottom: 8 }}>
-                <div style={{ width: 30, height: 30, borderRadius: 8, background: '#EA4335', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 15, fontWeight: 700 }}>G</div>
-                <div>
-                  <div style={{ fontSize: 11, fontWeight: 600, color: '#111827' }}>تقييم جوجل جديد</div>
-                  <div style={{ fontSize: 10, color: '#6B7280' }}>منذ دقيقتين</div>
+                <p style={{ fontSize: 10, color: C.muted, lineHeight: 1.55, marginBottom: 9, margin: '0 0 9px' }}>
+                  "شكرًا على ملاحظتك القيّمة! نعمل باستمرار على تحسين..."
+                </p>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <div style={{ flex: 1, background: 'rgba(6,182,212,0.1)', border: '1px solid rgba(6,182,212,0.22)', borderRadius: 7, padding: '4px 0', fontSize: 10, color: C.cyan, textAlign: 'center' }}>نشر</div>
+                  <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 7, padding: '4px 10px', fontSize: 10, color: C.muted }}>تعديل</div>
                 </div>
               </div>
-              <div style={{ fontSize: 14, color: '#F59E0B', marginBottom: 4 }}>★★★★★</div>
-              <p style={{ fontSize: 12, color: '#374151', lineHeight: 1.4 }}>"أحسنتم! السرعة والجودة في مكان واحد"</p>
-            </div>
-          </div>
 
-          {/* Trust bar */}
-          <div className="flex items-center justify-center flex-wrap gap-8" style={{ marginTop: 60 }}>
-            {[
-              { val: '+500',  lbl: 'عمل نشط'       },
-              { val: '98%',   lbl: 'رضا العملاء'    },
-              { val: '4.8★',  lbl: 'تقييمنا'        },
-              { val: '24/7',  lbl: 'دعم مستمر'      },
-            ].map((s, i) => (
-              <div key={i} className="text-center">
-                <div style={{ fontSize: 24, fontWeight: 600, color: C.brand }}>{s.val}</div>
-                <div style={{ fontSize: 12, color: C.muted }}>{s.lbl}</div>
+              {/* Floating card — Google review notification (top-left in RTL = top-right visually) */}
+              <div style={{ position: 'absolute', top: -18, left: -20, background: 'white', borderRadius: 14, padding: 13, boxShadow: '0 16px 44px rgba(0,0,0,0.35)', width: 192, zIndex: 2 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                  <div style={{ width: 28, height: 28, borderRadius: 7, background: '#EA4335', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 14, fontWeight: 700 }}>G</div>
+                  <div>
+                    <div style={{ fontSize: 10, fontWeight: 600, color: '#111827' }}>تقييم جوجل جديد</div>
+                    <div style={{ fontSize: 9, color: '#6B7280' }}>منذ دقيقة</div>
+                  </div>
+                </div>
+                <div style={{ fontSize: 13, color: '#F59E0B', marginBottom: 3 }}>★★★★★</div>
+                <p style={{ fontSize: 10, color: '#374151', lineHeight: 1.4, margin: 0 }}>"أحسنتم! السرعة والجودة في مكان واحد"</p>
               </div>
-            ))}
+            </div>
+
           </div>
         </div>
       </section>
@@ -1036,9 +1085,12 @@ export default function HomePage() {
 
             {/* Col 1: About + social */}
             <div>
-              <div style={{ marginBottom: 16 }}>
-                <div style={{ background: 'white', borderRadius: 9, padding: '5px 14px', display: 'inline-flex', alignItems: 'center' }}>
-                  <img src="/sadeem-logo.png" alt="SADEEM | سديم" style={{ height: 26, width: 'auto', display: 'block' }} />
+              <div className="flex items-center gap-2" style={{ marginBottom: 16 }}>
+                <SadeemMark size={32} />
+                <div className="flex items-center gap-1">
+                  <span style={{ fontSize: 16, fontWeight: 600, color: C.text }}>SADEEM</span>
+                  <span style={{ color: C.border, fontSize: 13, margin: '0 2px' }}>|</span>
+                  <span style={{ fontSize: 15, fontWeight: 500, color: C.brand }}>سديم</span>
                 </div>
               </div>
               <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.7, marginBottom: 20, fontWeight: 400 }}>
