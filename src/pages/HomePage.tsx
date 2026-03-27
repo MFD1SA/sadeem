@@ -243,7 +243,7 @@ export default function HomePage() {
       <section id="hero" style={{ padding: '88px 0 100px', position: 'relative', overflow: 'hidden' }}>
         {/* Background glow */}
         <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
-          <div style={{ position: 'absolute', top: '5%', left: '50%', transform: 'translateX(-50%)', width: 900, height: 700, background: 'radial-gradient(ellipse at center, rgba(6,182,212,0.07) 0%, rgba(139,92,246,0.05) 40%, transparent 70%)' }} />
+          <div style={{ position: 'absolute', top: '5%', left: '50%', transform: 'translateX(-50%)', width: 900, height: 700, background: 'radial-gradient(ellipse at center, rgba(6,182,212,0.10) 0%, rgba(139,92,246,0.07) 40%, transparent 70%)' }} />
         </div>
 
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center" style={{ position: 'relative' }}>
@@ -254,7 +254,7 @@ export default function HomePage() {
           </div>
 
           {/* Headline */}
-          <h1 style={{ fontSize: 'clamp(30px, 5.5vw, 62px)', fontWeight: 600, lineHeight: 1.18, marginBottom: 24, color: C.text, letterSpacing: '-0.01em' }}>
+          <h1 style={{ fontSize: 'clamp(30px, 5.5vw, 62px)', fontWeight: 600, lineHeight: 1.28, marginBottom: 24, color: C.text, letterSpacing: '-0.01em' }}>
             كل تقييم جوجل{' '}
             <span style={{ background: GRAD, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
               فرصة حقيقية
@@ -278,7 +278,7 @@ export default function HomePage() {
               style={{ background: 'transparent', color: C.text, fontSize: 15, padding: '14px 28px', borderRadius: 12, border: `1px solid ${C.border}`, cursor: 'pointer', fontWeight: 400 }}
               onMouseOver={e => { e.currentTarget.style.borderColor = '#374151'; }}
               onMouseOut={e => { e.currentTarget.style.borderColor = C.border; }}
-            >اطلب عرضًا توضيحيًا ←</button>
+            >اطلب عرضًا توضيحيًا →</button>
           </div>
 
           {/* Dashboard visual */}
@@ -385,7 +385,7 @@ export default function HomePage() {
       {/* ══════════════════════════════════════════════════════════
           BENEFITS STRIP
       ══════════════════════════════════════════════════════════ */}
-      <div style={{ background: C.card, borderTop: `1px solid ${C.border}`, borderBottom: `1px solid ${C.border}`, padding: '18px 0' }}>
+      <div style={{ background: C.card, borderTop: `1px solid ${C.border}`, borderBottom: `1px solid ${C.border}`, padding: '22px 0' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
             {[
@@ -503,7 +503,7 @@ export default function HomePage() {
 
           {/* ── 2: QR Code ── */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <div style={{ order: 1 }} className="lg:order-2">
+            <div className="lg:order-2">
               <SectionLabel color={C.purple}>QR Reviews</SectionLabel>
               <h2 style={{ fontSize: 'clamp(22px, 3vw, 36px)', fontWeight: 600, color: C.text, marginBottom: 16, lineHeight: 1.3, letterSpacing: '-0.01em' }}>
                 اجمع تقييمات جوجل بمسح بسيط
@@ -517,7 +517,7 @@ export default function HomePage() {
                 ))}
               </ul>
             </div>
-            <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 22, padding: 32, display: 'flex', flexDirection: 'column', alignItems: 'center', order: 2 }} className="lg:order-1">
+            <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 22, padding: 32, display: 'flex', flexDirection: 'column', alignItems: 'center' }} className="lg:order-1">
               {/* QR visual */}
               <div style={{ width: 156, height: 156, background: 'white', borderRadius: 16, padding: 14, marginBottom: 20, display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gap: 3 }}>
                 {QR_GRID.map((v, i) => (
@@ -592,7 +592,7 @@ export default function HomePage() {
 
           {/* ── 4: Team ── */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <div style={{ order: 1 }} className="lg:order-2">
+            <div className="lg:order-2">
               <SectionLabel color={C.pink}>إدارة الفريق</SectionLabel>
               <h2 style={{ fontSize: 'clamp(22px, 3vw, 36px)', fontWeight: 600, color: C.text, marginBottom: 16, lineHeight: 1.3, letterSpacing: '-0.01em' }}>
                 فريقك الكامل في بيئة عمل واحدة
@@ -606,7 +606,7 @@ export default function HomePage() {
                 ))}
               </ul>
             </div>
-            <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 22, padding: 24, order: 2 }} className="lg:order-1">
+            <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 22, padding: 24 }} className="lg:order-1">
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {[
                   { name: 'أحمد المطيري', role: 'مدير عام',            replies: 24, color: C.cyan   },
@@ -1085,8 +1085,8 @@ export default function HomePage() {
           </div>
 
           {/* Bottom bar */}
-          <div style={{ borderTop: `1px solid ${C.border}`, padding: '22px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 20px' }}>
+          <div style={{ borderTop: `1px solid ${C.border}`, padding: '20px 0' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '6px 20px', marginBottom: 12 }}>
               {['سياسة الخصوصية', 'شروط الاستخدام', 'سياسة الاسترداد', 'إشعار قانوني', 'خريطة الموقع'].map((t, i) => (
                 <button key={i} style={{ color: C.muted, fontSize: 12, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
                   onMouseOver={e => (e.currentTarget.style.color = C.brand)}
@@ -1094,7 +1094,7 @@ export default function HomePage() {
                 >{t}</button>
               ))}
             </div>
-            <p style={{ fontSize: 12, color: C.muted, margin: 0, textAlign: 'center', flex: 1, minWidth: 200 }}>
+            <p style={{ fontSize: 12, color: C.muted, margin: 0, textAlign: 'center' }}>
               © 2026 سديم. جميع الحقوق محفوظة.
             </p>
           </div>
