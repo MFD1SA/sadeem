@@ -3,7 +3,6 @@
 // Premium dark public page — matches homepage design tokens
 // ============================================================================
 
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 
@@ -20,7 +19,6 @@ const GRAD = 'linear-gradient(135deg, #06B6D4, #8B5CF6)';
 
 export default function StoryPage() {
   const navigate = useNavigate();
-  const [heroFailed, setHeroFailed] = useState(false);
 
   return (
     <div dir="rtl" style={{ background: C.bg, color: C.text, minHeight: '100vh' }}>
@@ -60,28 +58,10 @@ export default function StoryPage() {
         </div>
       </div>
 
-      {/* ── Hero — image when available, clean title block when not ── */}
-      {!heroFailed ? (
-        <div style={{ position: 'relative', width: '100%', height: 'clamp(280px, 46vw, 540px)', overflow: 'hidden' }}>
-          <img
-            src="/story-hero.jpg"
-            alt="سديم"
-            style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', display: 'block' }}
-            onError={() => setHeroFailed(true)}
-          />
-          <div style={{
-            position: 'absolute', bottom: 0, left: 0, right: 0, height: '55%',
-            background: 'linear-gradient(to bottom, transparent, #0F1117)',
-            pointerEvents: 'none',
-          }} />
-        </div>
-      ) : (
-        /* Fallback: clean title section, no broken image, no empty black block */
-        <div style={{
-          padding: '80px 24px 64px',
-          textAlign: 'center',
-          borderBottom: `1px solid ${C.border}`,
-        }}>
+      {/* ── Hero — fallback title always rendered; image overlaid when available ── */}
+      <div style={{ position: 'relative', width: '100%', overflow: 'hidden', borderBottom: `1px solid ${C.border}` }}>
+        {/* Fallback title — always present, image covers it when loaded */}
+        <div style={{ padding: '80px 24px 72px', textAlign: 'center' }}>
           <div style={{
             display: 'inline-flex', alignItems: 'center', gap: 8,
             background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.25)',
@@ -99,7 +79,25 @@ export default function StoryPage() {
             </span>
           </h1>
         </div>
-      )}
+        {/* Image — absolutely covers the fallback when it loads successfully */}
+        <img
+          src="/story-hero.jpg"
+          alt="سديم"
+          style={{
+            position: 'absolute', inset: 0,
+            width: '100%', height: '100%',
+            objectFit: 'cover', objectPosition: 'center',
+            display: 'block',
+          }}
+          onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
+        />
+        {/* Bottom fade — only visible when image loads */}
+        <div style={{
+          position: 'absolute', bottom: 0, left: 0, right: 0, height: '50%',
+          background: 'linear-gradient(to bottom, transparent, #0F1117)',
+          pointerEvents: 'none',
+        }} />
+      </div>
 
       {/* ── Story content — exact text as provided ── */}
       <section style={{ padding: '72px 0 96px' }}>
