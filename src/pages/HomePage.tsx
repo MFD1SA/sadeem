@@ -36,14 +36,13 @@ const C = {
 const GRAD = 'linear-gradient(135deg, #06B6D4, #8B5CF6)';
 
 // ─── Nav links ────────────────────────────────────────────────────────────────
-const NAV = [
-  { label: 'الرئيسية',      id: 'hero'       },
-  { label: 'المميزات',      id: 'features'   },
-  { label: 'كيف يعمل',     id: 'how-it-works'},
-  { label: 'الخطط',         id: 'pricing'    },
-  { label: 'الأسئلة الشائعة', id: 'faq'     },
-  { label: 'من نحن',        id: 'philosophy' },
-  { label: 'تواصل معنا',   id: 'contact'    },
+const NAV: { label: string; id?: string; href?: string }[] = [
+  { label: 'الرئيسية',        id: 'hero'      },
+  { label: 'المميزات',        id: 'features'  },
+  { label: 'الخطط',           id: 'pricing'   },
+  { label: 'الأسئلة الشائعة', id: 'faq'      },
+  { label: 'قصة سديم',        href: '/story'  },
+  { label: 'تواصل معنا',      id: 'contact'   },
 ];
 
 // ─── Static QR pixel pattern (8×8 deterministic) ─────────────────────────────
@@ -129,38 +128,6 @@ export default function HomePage() {
     <div dir="rtl" style={{ background: C.bg, color: C.text, minHeight: '100vh', overflowX: 'hidden' }}>
 
       {/* ══════════════════════════════════════════════════════════
-          TOP STRIP
-      ══════════════════════════════════════════════════════════ */}
-      <div style={{ background: '#0A0D14', borderBottom: `1px solid ${C.border}` }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ height: 40, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          {/* Brand mark */}
-          <div className="flex items-center gap-2">
-            <div style={{ width: 20, height: 20, borderRadius: 5, background: GRAD, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Star size={11} style={{ color: 'white' }} />
-            </div>
-            <span style={{ color: C.brand, fontSize: 13, fontWeight: 500 }}>سديم</span>
-          </div>
-          {/* Quick links */}
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => navigate('/login')}
-              style={{ color: C.muted, fontSize: 12, background: 'none', border: 'none', cursor: 'pointer' }}
-              className="hidden sm:block hover:text-white transition-colors"
-            >دخول المشتركين</button>
-            <button
-              onClick={() => navigate('/login')}
-              style={{ color: C.muted, fontSize: 12, background: 'none', border: 'none', cursor: 'pointer' }}
-              className="hidden sm:block hover:text-white transition-colors"
-            >تسجيل جديد</button>
-            <button
-              onClick={() => scrollTo('contact')}
-              style={{ background: GRAD, color: 'white', fontSize: 12, padding: '4px 14px', borderRadius: 20, border: 'none', cursor: 'pointer' }}
-            >اطلب عرضًا توضيحيًا</button>
-          </div>
-        </div>
-      </div>
-
-      {/* ══════════════════════════════════════════════════════════
           MAIN NAVBAR (sticky)
       ══════════════════════════════════════════════════════════ */}
       <header style={{
@@ -173,18 +140,20 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
           {/* Logo */}
           <button onClick={() => scrollTo('hero')} className="flex items-center gap-2.5 flex-shrink-0" style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
-            <div style={{ width: 36, height: 36, borderRadius: 10, background: GRAD, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 14px rgba(6,182,212,0.3)' }}>
-              <Star size={18} style={{ color: 'white' }} />
+            <div style={{ width: 34, height: 34, borderRadius: 9, background: GRAD, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 14px rgba(6,182,212,0.3)' }}>
+              <Star size={16} style={{ color: 'white' }} />
             </div>
-            <span style={{ fontSize: 20, fontWeight: 600, color: C.text }}>سديم</span>
+            <span style={{ fontSize: 18, fontWeight: 600, color: C.text }}>SADEEM</span>
+            <span style={{ color: C.muted, fontSize: 15, margin: '0 1px' }}>|</span>
+            <span style={{ fontSize: 17, fontWeight: 500, color: C.brand }}>سديم</span>
           </button>
 
           {/* Desktop nav */}
           <nav className="hidden lg:flex items-center gap-5">
             {NAV.map(n => (
               <button
-                key={n.id}
-                onClick={() => scrollTo(n.id)}
+                key={n.id ?? n.href}
+                onClick={() => n.href ? navigate(n.href) : scrollTo(n.id!)}
                 style={{ color: C.muted, fontSize: 14, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 400 }}
                 onMouseOver={e => (e.currentTarget.style.color = C.text)}
                 onMouseOut={e => (e.currentTarget.style.color = C.muted)}
@@ -221,8 +190,8 @@ export default function HomePage() {
             <div style={{ padding: '12px 16px 16px' }}>
               {NAV.map(n => (
                 <button
-                  key={n.id}
-                  onClick={() => scrollTo(n.id)}
+                  key={n.id ?? n.href}
+                  onClick={() => n.href ? navigate(n.href) : scrollTo(n.id!)}
                   style={{ display: 'block', width: '100%', textAlign: 'right', padding: '12px 16px', color: C.muted, fontSize: 14, background: 'none', border: 'none', cursor: 'pointer', borderRadius: 10 }}
                   onMouseOver={e => { e.currentTarget.style.background = C.card; e.currentTarget.style.color = C.text; }}
                   onMouseOut={e => { e.currentTarget.style.background = ''; e.currentTarget.style.color = C.muted; }}
@@ -609,10 +578,10 @@ export default function HomePage() {
             <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 22, padding: 24 }} className="lg:order-1">
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {[
-                  { name: 'أحمد المطيري', role: 'مدير عام',            replies: 24, color: C.cyan   },
-                  { name: 'سارة الغامدي', role: 'مدير فرع الرياض',   replies: 31, color: C.purple },
-                  { name: 'خالد العنزي',  role: 'مشرف جدة',           replies: 18, color: C.green  },
-                  { name: 'نورة السعيدي', role: 'موظف دعم',           replies: 12, color: C.amber  },
+                  { name: 'أحمد', role: 'مدير عام',           replies: 24, color: C.cyan   },
+                  { name: 'سارة', role: 'مديرة فرع الرياض',  replies: 31, color: C.purple },
+                  { name: 'خالد', role: 'مشرف فرع جدة',      replies: 18, color: C.green  },
+                  { name: 'نورة', role: 'موظفة دعم العملاء', replies: 12, color: C.amber  },
                 ].map((m, i) => (
                   <div key={i} style={{ background: C.bg, borderRadius: 12, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
                     <div style={{ width: 36, height: 36, borderRadius: 10, background: m.color + '20', display: 'flex', alignItems: 'center', justifyContent: 'center', color: m.color, fontSize: 15, fontWeight: 600, flexShrink: 0 }}>
@@ -749,65 +718,74 @@ export default function HomePage() {
             <p style={{ fontSize: 15, color: C.muted, fontWeight: 400 }}>جميع الخطط تشمل فترة تجريبية مجانية — لا بطاقة ائتمان مطلوبة</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Plan cards — 4 plans */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
             {[
               {
-                name: 'Orbit', nameAr: 'المبتدئ',
-                desc: 'مثالي للمشاريع الصغيرة التي تريد تحسين سمعتها على جوجل',
-                highlight: false,
-                badge: null as string | null,
-                features: ['فرع واحد', 'رد تلقائي بالذكاء الاصطناعي', 'QR Code مخصص', 'تقارير أساسية', 'دعم عبر البريد الإلكتروني'],
+                name: 'Orbit', nameAr: 'الأساسي',
+                desc: 'للمشاريع الصغيرة التي تبدأ رحلتها في إدارة السمعة',
+                highlight: false, badge: null as string | null,
+                color: C.cyan,
+                features: ['فرع واحد', 'رد ذكي بالـ AI', 'QR Code مخصص', 'تقارير أساسية', 'دعم عبر البريد'],
               },
               {
                 name: 'Nova', nameAr: 'المتقدم',
-                desc: 'الخيار الأمثل للأعمال المتنامية التي تدير عدة فروع',
-                highlight: true,
-                badge: 'الأكثر طلبًا' as string | null,
-                features: ['حتى 5 فروع', 'كل مميزات Orbit', 'إدارة الفريق الكاملة', 'تحليلات متقدمة', 'قوالب مخصصة', 'دعم أولوية'],
+                desc: 'للأعمال المتنامية التي تدير أكثر من فرع وفريق عمل',
+                highlight: true, badge: 'الأكثر طلبًا' as string | null,
+                color: C.cyan,
+                features: ['حتى 5 فروع', 'كل مميزات Orbit', 'إدارة الفريق', 'تحليلات متقدمة', 'قوالب مخصصة', 'دعم أولوية'],
               },
               {
                 name: 'Galaxy', nameAr: 'المحترف',
                 desc: 'للمؤسسات الكبيرة التي تحتاج حلولًا متكاملة وغير محدودة',
-                highlight: false,
-                badge: null as string | null,
+                highlight: false, badge: null as string | null,
+                color: C.purple,
                 features: ['فروع غير محدودة', 'كل مميزات Nova', 'تكاملات API', 'تقارير مخصصة', 'مدير حساب مخصص', 'SLA مضمون'],
+              },
+              {
+                name: 'Infinity', nameAr: 'المؤسسي',
+                desc: 'للمجموعات والامتيازات الكبيرة — حل مؤسسي شامل بلا قيود',
+                highlight: false, badge: null as string | null,
+                color: C.amber,
+                features: ['فروع غير محدودة', 'كل مميزات Galaxy', 'API كامل', 'تقارير white-label', 'فريق دعم مخصص', 'SLA 99.9%', 'تدريب الفريق'],
               },
             ].map((plan, i) => (
               <div
                 key={i}
                 style={{
                   background: plan.highlight ? C.card2 : C.bg,
-                  border: plan.highlight ? '1px solid rgba(6,182,212,0.3)' : `1px solid ${C.border}`,
-                  borderRadius: 22, padding: 28, position: 'relative',
+                  border: plan.highlight ? `1px solid rgba(6,182,212,0.35)` : `1px solid ${C.border}`,
+                  borderRadius: 20, padding: '26px 22px', position: 'relative',
                   boxShadow: plan.highlight ? '0 24px 64px rgba(6,182,212,0.1)' : 'none',
+                  display: 'flex', flexDirection: 'column',
                 }}
               >
                 {plan.badge && (
-                  <div style={{ position: 'absolute', top: -13, right: 24, background: GRAD, color: 'white', fontSize: 11, padding: '4px 16px', borderRadius: 20, fontWeight: 500 }}>
+                  <div style={{ position: 'absolute', top: -13, right: 20, background: GRAD, color: 'white', fontSize: 11, padding: '4px 14px', borderRadius: 20, fontWeight: 500 }}>
                     {plan.badge}
                   </div>
                 )}
-                <div style={{ marginBottom: 24 }}>
-                  <div style={{ fontSize: 11, color: plan.highlight ? C.cyan : C.muted, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{plan.name}</div>
-                  <div style={{ fontSize: 24, fontWeight: 600, color: C.text, marginBottom: 10 }}>{plan.nameAr}</div>
-                  <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.55, margin: 0 }}>{plan.desc}</p>
+                <div style={{ marginBottom: 20 }}>
+                  <div style={{ fontSize: 11, color: plan.highlight ? C.cyan : plan.color, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{plan.name}</div>
+                  <div style={{ fontSize: 20, fontWeight: 600, color: C.text, marginBottom: 8 }}>{plan.nameAr}</div>
+                  <p style={{ fontSize: 12, color: C.muted, lineHeight: 1.55, margin: 0 }}>{plan.desc}</p>
                 </div>
-                <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 28px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 24px', display: 'flex', flexDirection: 'column', gap: 9, flex: 1 }}>
                   {plan.features.map((f, fi) => (
-                    <li key={fi} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <CheckCircle2 size={15} style={{ color: plan.highlight ? C.cyan : C.green, flexShrink: 0 }} />
-                      <span style={{ fontSize: 13, color: C.muted }}>{f}</span>
+                    <li key={fi} style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+                      <CheckCircle2 size={14} style={{ color: plan.highlight ? C.cyan : plan.color, flexShrink: 0 }} />
+                      <span style={{ fontSize: 12, color: C.muted }}>{f}</span>
                     </li>
                   ))}
                 </ul>
                 <button
                   onClick={() => navigate('/login')}
                   style={{
-                    width: '100%', padding: '12px 0',
+                    width: '100%', padding: '11px 0',
                     background: plan.highlight ? GRAD : 'transparent',
                     color: plan.highlight ? 'white' : C.text,
                     border: plan.highlight ? 'none' : `1px solid ${C.border}`,
-                    borderRadius: 12, fontSize: 14, cursor: 'pointer', fontWeight: 500,
+                    borderRadius: 11, fontSize: 13, cursor: 'pointer', fontWeight: 500,
                     boxShadow: plan.highlight ? '0 8px 24px rgba(6,182,212,0.22)' : 'none',
                   }}
                   onMouseOver={e => { if (!plan.highlight) e.currentTarget.style.borderColor = '#374151'; }}
@@ -819,7 +797,45 @@ export default function HomePage() {
             ))}
           </div>
 
-          <p style={{ textAlign: 'center', marginTop: 32, fontSize: 14, color: C.muted }}>
+          {/* Comparison table */}
+          <div style={{ marginTop: 56 }}>
+            <h3 style={{ fontSize: 18, fontWeight: 600, color: C.text, textAlign: 'center', marginBottom: 28 }}>مقارنة بين الخطط</h3>
+            <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 18, overflow: 'hidden' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ borderBottom: `1px solid ${C.border}` }}>
+                    <th style={{ padding: '14px 20px', textAlign: 'right', fontSize: 13, color: C.muted, fontWeight: 500, width: '35%' }}>الميزة</th>
+                    {['Orbit', 'Nova', 'Galaxy', 'Infinity'].map((p, i) => (
+                      <th key={i} style={{ padding: '14px 12px', textAlign: 'center', fontSize: 12, color: i === 1 ? C.cyan : C.muted, fontWeight: i === 1 ? 600 : 500 }}>{p}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    { label: 'عدد الفروع',              vals: ['1', '5', 'غير محدود', 'غير محدود'] },
+                    { label: 'رد ذكي بالـ AI',           vals: ['✓', '✓', '✓', '✓'] },
+                    { label: 'QR Code مخصص',             vals: ['✓', '✓', '✓', '✓'] },
+                    { label: 'إدارة الفريق',             vals: ['—', '✓', '✓', '✓'] },
+                    { label: 'تحليلات متقدمة',          vals: ['—', '✓', '✓', '✓'] },
+                    { label: 'تكامل API',               vals: ['—', '—', '✓', '✓'] },
+                    { label: 'مدير حساب مخصص',          vals: ['—', '—', '✓', '✓'] },
+                    { label: 'White-label',              vals: ['—', '—', '—', '✓'] },
+                    { label: 'SLA مضمون',                vals: ['—', '—', '✓', '99.9%'] },
+                    { label: 'دعم',                     vals: ['بريد', 'أولوية', 'مخصص', 'فريق كامل'] },
+                  ].map((row, ri) => (
+                    <tr key={ri} style={{ borderBottom: ri < 9 ? `1px solid ${C.border}` : 'none', background: ri % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.015)' }}>
+                      <td style={{ padding: '12px 20px', fontSize: 13, color: C.muted }}>{row.label}</td>
+                      {row.vals.map((v, vi) => (
+                        <td key={vi} style={{ padding: '12px 12px', textAlign: 'center', fontSize: 13, color: v === '✓' ? C.green : v === '—' ? '#3A4150' : vi === 1 ? C.cyan : C.muted, fontWeight: v === '✓' ? 600 : 400 }}>{v}</td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <p style={{ textAlign: 'center', marginTop: 28, fontSize: 14, color: C.muted }}>
             تحتاج خطة مخصصة لمؤسستك؟{' '}
             <button onClick={() => scrollTo('contact')} style={{ color: C.cyan, background: 'none', border: 'none', cursor: 'pointer', fontSize: 14 }}>
               تواصل معنا
@@ -1004,36 +1020,34 @@ export default function HomePage() {
             {/* Col 1: About + social */}
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-                <div style={{ width: 34, height: 34, borderRadius: 9, background: GRAD, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(6,182,212,0.25)' }}>
-                  <Star size={16} style={{ color: 'white' }} />
+                <div style={{ width: 32, height: 32, borderRadius: 9, background: GRAD, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(6,182,212,0.25)' }}>
+                  <Star size={15} style={{ color: 'white' }} />
                 </div>
-                <span style={{ fontSize: 19, fontWeight: 600, color: C.text }}>سديم</span>
+                <span style={{ fontSize: 17, fontWeight: 600, color: C.text }}>SADEEM</span>
+                <span style={{ color: C.muted, fontSize: 14 }}>|</span>
+                <span style={{ fontSize: 16, fontWeight: 500, color: C.brand }}>سديم</span>
               </div>
               <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.7, marginBottom: 20, fontWeight: 400 }}>
                 منصة متكاملة لإدارة تقييمات جوجل وتحسين السمعة الرقمية للأعمال العربية
               </p>
-              {/* Social icons */}
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {/* Social icons — 5 key platforms */}
+              <div style={{ display: 'flex', gap: 8 }}>
                 {[
-                  { name: 'X (Twitter)',  label: 'X'  },
-                  { name: 'LinkedIn',     label: 'in' },
-                  { name: 'Instagram',    label: '📷' },
-                  { name: 'YouTube',      label: '▶'  },
-                  { name: 'TikTok',       label: '♫'  },
-                  { name: 'Facebook',     label: 'f'  },
-                  { name: 'Snapchat',     label: '👻' },
-                  { name: 'WhatsApp',     label: '💬' },
-                  { name: 'Telegram',     label: '✈'  },
+                  { name: 'X',         sym: '𝕏',  hov: '#E7E9EA' },
+                  { name: 'Instagram', sym: '◈',  hov: '#E1306C' },
+                  { name: 'TikTok',    sym: '▲',  hov: '#FF0050' },
+                  { name: 'Snapchat',  sym: '◎',  hov: '#FFFC00' },
+                  { name: 'LinkedIn',  sym: 'in', hov: '#0A66C2' },
                 ].map((s, i) => (
                   <a
                     key={i}
                     href="#"
                     title={s.name}
                     aria-label={s.name}
-                    style={{ width: 34, height: 34, borderRadius: 9, background: C.card, border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.muted, fontSize: 13, textDecoration: 'none', transition: 'all 0.18s' }}
-                    onMouseOver={e => { const el = e.currentTarget as HTMLAnchorElement; el.style.borderColor = C.cyan + '55'; el.style.color = C.cyan; }}
-                    onMouseOut={e => { const el = e.currentTarget as HTMLAnchorElement; el.style.borderColor = C.border; el.style.color = C.muted; }}
-                  >{s.label}</a>
+                    style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8A94A6', fontSize: s.sym === 'in' ? 12 : 14, fontWeight: s.sym === 'in' ? 700 : 400, textDecoration: 'none', transition: 'all 0.18s', letterSpacing: s.sym === 'in' ? '-0.02em' : 0 }}
+                    onMouseOver={e => { const el = e.currentTarget as HTMLAnchorElement; el.style.color = s.hov; el.style.borderColor = s.hov + '55'; el.style.background = s.hov + '12'; }}
+                    onMouseOut={e => { const el = e.currentTarget as HTMLAnchorElement; el.style.color = '#8A94A6'; el.style.borderColor = C.border; el.style.background = 'rgba(255,255,255,0.04)'; }}
+                  >{s.sym}</a>
                 ))}
               </div>
             </div>
@@ -1072,12 +1086,20 @@ export default function HomePage() {
             <div>
               <h4 style={{ fontSize: 14, fontWeight: 600, color: C.text, marginBottom: 18 }}>قانوني</h4>
               <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {['سياسة الخصوصية', 'شروط الاستخدام', 'سياسة الاسترداد', 'إشعار قانوني', 'خريطة الموقع'].map((t, i) => (
+                {[
+                  { label: 'سياسة الخصوصية', path: '/privacy' },
+                  { label: 'شروط الاستخدام',  path: '/terms'   },
+                  { label: 'قصة سديم',         path: '/story'   },
+                  { label: 'إشعار قانوني',     path: '/terms'   },
+                  { label: 'خريطة الموقع',     path: '/'        },
+                ].map((l, i) => (
                   <li key={i}>
-                    <button style={{ color: C.muted, fontSize: 13, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                    <button
+                      onClick={() => navigate(l.path)}
+                      style={{ color: C.muted, fontSize: 13, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
                       onMouseOver={e => (e.currentTarget.style.color = C.text)}
                       onMouseOut={e => (e.currentTarget.style.color = C.muted)}
-                    >{t}</button>
+                    >{l.label}</button>
                   </li>
                 ))}
               </ul>
@@ -1087,11 +1109,19 @@ export default function HomePage() {
           {/* Bottom bar */}
           <div style={{ borderTop: `1px solid ${C.border}`, padding: '20px 0' }}>
             <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '6px 20px', marginBottom: 12 }}>
-              {['سياسة الخصوصية', 'شروط الاستخدام', 'سياسة الاسترداد', 'إشعار قانوني', 'خريطة الموقع'].map((t, i) => (
-                <button key={i} style={{ color: C.muted, fontSize: 12, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+              {[
+                { label: 'سياسة الخصوصية', path: '/privacy' },
+                { label: 'شروط الاستخدام',  path: '/terms'   },
+                { label: 'قصة سديم',         path: '/story'   },
+                { label: 'إشعار قانوني',     path: '/terms'   },
+                { label: 'الرئيسية',          path: '/'        },
+              ].map((l, i) => (
+                <button key={i}
+                  onClick={() => navigate(l.path)}
+                  style={{ color: C.muted, fontSize: 12, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
                   onMouseOver={e => (e.currentTarget.style.color = C.brand)}
                   onMouseOut={e => (e.currentTarget.style.color = C.muted)}
-                >{t}</button>
+                >{l.label}</button>
               ))}
             </div>
             <p style={{ fontSize: 12, color: C.muted, margin: 0, textAlign: 'center' }}>

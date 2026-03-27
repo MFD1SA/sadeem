@@ -35,6 +35,9 @@ import Settings       from '@/pages/Settings';
 import ReviewLanding  from '@/pages/ReviewLanding';
 import SeoLanding     from '@/pages/SeoLanding';
 import HomePage       from '@/pages/HomePage';
+import StoryPage      from '@/pages/StoryPage';
+import PrivacyPage    from '@/pages/legal/PrivacyPage';
+import TermsPage      from '@/pages/legal/TermsPage';
 
 // ── Lazily loaded admin pages (infrequently visited) ────────────────────────
 import { AdminLayout } from '@/admin/layouts/AdminLayout';
@@ -71,6 +74,9 @@ export function AppRouter() {
       {/* ======================================================= */}
 
       <Route path="/" element={<HomePage />} />
+      <Route path="/story"   element={<StoryPage />} />
+      <Route path="/privacy" element={<PrivacyPage />} />
+      <Route path="/terms"   element={<TermsPage />} />
 
       <Route path="/r/:slug" element={<ReviewLanding />} />
       <Route path="/s/:city/:industry" element={<SeoLanding />} />
