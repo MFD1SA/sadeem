@@ -43,18 +43,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Track in-flight hydration to prevent concurrent calls.
   const hydrating = useRef(false);
 
-  const loadProfile = useCallback(async (userId: string): Promise<DbUser | null> => {
+  const loadProfile = useCallback(async (userId: string, session: any): Promise<DbUser | null> => {
     try {
       const { data, error } = await supabase
         .from('users')
         .select('*')
         .eq('id', userId)
         .single();
-      if (error) {
-        console.warn('[Sadeem] Profile load error:', error.message);
-        return null;
+      if (!error) return (data as DbUser) || null;
+
+      // Profile row missing (trigger may not have fired yet for OAuth users).
+      // Create it now so downstream code always has a profile.
+      if (error.code === 'PGRST116') {
+        const meta = session?.user?.user_metadata || {};
+        const { data: created, error: insErr } = await supabase
+          .from('users')
+          .upsert({
+            id: userId,
+            email: session?.user?.email || '',
+            full_name: meta.full_name || meta.name || '',
+            avatar_url: meta.avatar_url || meta.picture || '',
+          }, { onConflict: 'id' })
+          .select()
+          .single();
+        if (!insErr && created) return created as DbUser;
       }
-      return (data as DbUser) || null;
+
+      console.warn('[Sadeem] Profile load error:', error.message);
+      return null;
     } catch (err) {
       console.warn('[Sadeem] Profile load failed:', err);
       return null;
@@ -93,7 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       try {
         const [profile, orgData] = await Promise.all([
-          loadProfile(session.user.id),
+          loadProfile(session.user.id, session),
           loadOrganization(session.user.id),
         ]);
 
@@ -209,9 +225,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refreshProfile = useCallback(async () => {
     if (!state.user) return;
-    const profile = await loadProfile(state.user.id);
+    const profile = await loadProfile(state.user.id, state.session);
     setState((prev) => ({ ...prev, profile }));
-  }, [state.user, loadProfile]);
+  }, [state.user, state.session, loadProfile]);
 
   const refreshOrganization = useCallback(async () => {
     if (!state.user) return;

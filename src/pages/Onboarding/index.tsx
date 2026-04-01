@@ -2,7 +2,7 @@
 // SADEEM — Onboarding (5-Step)
 // ============================================================================
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { organizationService } from '@/services/organizations';
@@ -78,12 +78,21 @@ const STEPS = [
 
 export default function Onboarding() {
   const navigate = useNavigate();
-  const { user, refreshOrganization } = useAuth();
+  const { user, refreshOrganization, hasOrganization } = useAuth();
   const [step, setStep] = useState(1);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
   const [form, setForm] = useState<FormData>({
     businessName: '', businessType: '', country: 'SA', city: '', language: 'ar', tone: 'professional',
   });
+
+  // Navigate to dashboard once organization is confirmed in auth state.
+  // This eliminates the race between React setState batching and navigate().
+  useEffect(() => {
+    if (hasOrganization) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [hasOrganization, navigate]);
 
   const selectedCountry = GCC_COUNTRIES.find(c => c.code === form.country);
 
@@ -100,6 +109,7 @@ export default function Onboarding() {
 
   const handleFinish = async () => {
     setSaving(true);
+    setError('');
     try {
       await organizationService.createOrganization(user!.id, {
         name: form.businessName,
@@ -109,10 +119,11 @@ export default function Onboarding() {
         language: form.language,
         tone: form.tone,
       });
+      // Refresh auth state — useEffect above navigates when hasOrganization becomes true
       await refreshOrganization();
-      navigate('/dashboard', { replace: true });
     } catch (err) {
       console.error('[Onboarding] Failed:', err);
+      setError('حدث خطأ أثناء إنشاء الحساب. يرجى المحاولة مرة أخرى.');
     } finally {
       setSaving(false);
     }
@@ -319,6 +330,11 @@ export default function Onboarding() {
             <div className="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto">
               <CheckCircle size={32} className="text-emerald-400" />
             </div>
+            {error && (
+              <div className="bg-red-500/10 border border-red-500/30 text-red-300 text-sm rounded-xl p-3 text-right">
+                {error}
+              </div>
+            )}
             <div>
               <h2 className="text-xl font-bold text-white mb-2">جاهز للبدء!</h2>
               <p className="text-sm text-slate-400">
