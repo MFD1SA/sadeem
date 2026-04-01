@@ -11,7 +11,6 @@ const handleFinish = async () => {
     });
 
     await refreshOrganization();
-
   } catch (err) {
     console.error('[Onboarding] Failed:', err);
     setError('حدث خطأ أثناء إنشاء الحساب. يرجى المحاولة مرة أخرى.');
