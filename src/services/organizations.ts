@@ -70,10 +70,6 @@ export const organizationService = {
       logo_url: input.logoUrl || null,
     };
 
-    // Add optional fields if provided (columns may not exist yet — handled gracefully)
-    if (input.language !== undefined) insertPayload['language'] = input.language;
-    if (input.tone !== undefined) insertPayload['tone'] = input.tone;
-
     const { data: org, error: orgErr } = await supabase
       .from('organizations')
       .insert(insertPayload)
@@ -86,14 +82,20 @@ export const organizationService = {
 
     const created = org as DbOrganization;
 
-    const { error: memErr } = await supabase.from('memberships').insert({
-      user_id: userId,
-      organization_id: created.id,
-      role: 'owner',
-      status: 'active',
-    });
+    const { data: mem, error: memErr } = await supabase
+      .from('memberships')
+      .insert({
+        user_id: userId,
+        organization_id: created.id,
+        role: 'owner',
+        status: 'active',
+      })
+      .select()
+      .single();
 
-    if (memErr) throw memErr;
+    if (memErr || !mem) {
+      throw memErr || new Error('Failed to create membership');
+    }
 
     return created;
   },
