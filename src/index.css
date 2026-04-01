@@ -1,0 +1,333 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html, body, #root {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  body {
+    font-family: 'IBM Plex Sans Arabic', 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    color: #1a1d2e;
+    background: #f8f9fb;
+    letter-spacing: -0.01em;
+  }
+
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #ddd;
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #bbb;
+  }
+}
+
+@layer components {
+  /* ─── Sidebar ─── */
+  .sidebar-item {
+    @apply flex items-center gap-3 px-5 py-2 text-[13px] font-normal text-sidebar-text cursor-pointer transition-all duration-150 border-r-[3px] border-transparent whitespace-nowrap;
+  }
+  .sidebar-item:hover {
+    @apply bg-sidebar-hover text-gray-100;
+  }
+  .sidebar-item.active {
+    @apply bg-sidebar-active text-white font-medium border-r-sidebar-accent;
+  }
+  .sidebar-item svg {
+    @apply w-[17px] h-[17px] flex-shrink-0 opacity-50;
+  }
+  .sidebar-item:hover svg {
+    @apply opacity-70;
+  }
+  .sidebar-item.active svg {
+    @apply opacity-100;
+  }
+
+  [dir="ltr"] .sidebar-item {
+    @apply border-r-0 border-l-[3px];
+  }
+  [dir="ltr"] .sidebar-item.active {
+    @apply border-l-sidebar-accent;
+  }
+
+  /* ─── Cards ─── */
+  .card {
+    @apply bg-white border border-border/80 rounded-xl;
+  }
+  .card-header {
+    @apply px-5 py-3.5 border-b border-border/60 flex items-center justify-between gap-3 flex-wrap;
+  }
+  .card-header h3 {
+    @apply text-[13px] font-semibold text-content-primary;
+  }
+  .card-body {
+    @apply p-5;
+  }
+
+  /* ─── Buttons ─── */
+  .btn {
+    @apply inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-lg text-[13px] font-medium cursor-pointer border transition-all duration-150 whitespace-nowrap;
+  }
+  .btn-primary {
+    @apply bg-brand-600 text-white border-brand-600 hover:bg-brand-700 shadow-sm;
+  }
+  .btn-secondary {
+    @apply bg-white text-content-primary border-border hover:bg-surface-secondary;
+  }
+  .btn-danger {
+    @apply bg-white text-state-danger border-red-200 hover:bg-state-danger-light;
+  }
+  .btn-sm {
+    @apply px-2.5 py-1.5 text-xs rounded-md;
+  }
+  .btn-icon {
+    @apply w-8 h-8 p-0 inline-flex items-center justify-center rounded-lg border border-border/70 bg-white cursor-pointer text-content-tertiary hover:bg-surface-secondary hover:text-content-primary transition-all duration-150;
+  }
+
+  /* ─── Forms ─── */
+  .form-label {
+    @apply block text-xs font-medium text-content-secondary mb-1.5;
+  }
+  .form-input {
+    @apply w-full px-3 py-2 border border-border rounded-lg text-sm text-content-primary bg-white transition-colors duration-150 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/10;
+  }
+  .form-select {
+    @apply w-full px-3 py-2 border border-border rounded-lg text-sm text-content-primary bg-white cursor-pointer focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/10;
+  }
+  .form-textarea {
+    @apply w-full px-3 py-2 border border-border rounded-lg text-sm text-content-primary bg-white min-h-[80px] resize-y focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/10;
+  }
+
+  /* ─── Badges ─── */
+  .badge {
+    @apply inline-flex items-center px-2 py-0.5 rounded-md text-2xs font-medium whitespace-nowrap;
+  }
+
+  /* ─── Tabs ─── */
+  .tab-item {
+    @apply px-4 py-2.5 text-[13px] font-medium text-content-tertiary cursor-pointer border-b-2 border-transparent transition-all duration-150 whitespace-nowrap hover:text-content-primary;
+  }
+  .tab-item.active {
+    @apply text-brand-600 border-brand-600 font-semibold;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/* ADMIN PANEL STYLES — completely independent from subscriber styles above  */
+/* ═══════════════════════════════════════════════════════════════════════════ */
+
+@layer components {
+  /* ─── Admin Shell ─── */
+  .admin-shell {
+    @apply flex h-screen w-full overflow-hidden;
+    background: #0B1121;
+  }
+
+  .admin-main {
+    @apply flex min-w-0 flex-1 flex-col overflow-hidden;
+  }
+
+  .admin-content {
+    @apply flex-1 overflow-y-auto;
+  }
+
+  .admin-content-inner {
+    @apply mx-auto w-full max-w-[1400px] px-4 py-6 sm:px-6 lg:px-8;
+  }
+
+  /* ─── Admin Sidebar ─── */
+  .admin-sidebar {
+    @apply fixed top-0 bottom-0 z-50 w-[264px] flex flex-col overflow-y-auto overflow-x-hidden;
+    @apply rtl:right-0 ltr:left-0;
+    @apply lg:relative lg:z-auto lg:flex;
+    @apply lg:transition-none transition-transform duration-200 ease-out;
+    background: #0A0F1E;
+    border-left: 1px solid rgba(255,255,255,0.04);
+  }
+  [dir="ltr"] .admin-sidebar {
+    border-left: none;
+    border-right: 1px solid rgba(255,255,255,0.04);
+  }
+  .admin-sidebar::-webkit-scrollbar { width: 3px; }
+  .admin-sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
+
+  /* ─── Admin Nav Items ─── */
+  .admin-nav-item {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150;
+    @apply text-slate-400 hover:text-white hover:bg-white/[0.04];
+  }
+  .admin-nav-item svg {
+    @apply text-slate-500 transition-colors;
+  }
+  .admin-nav-item:hover svg {
+    @apply text-slate-300;
+  }
+  .admin-nav-item-active {
+    @apply bg-cyan-500/10 text-cyan-400 !important;
+  }
+  .admin-nav-item-active svg {
+    @apply text-cyan-400 !important;
+  }
+
+  /* ─── Admin Topbar ─── */
+  .admin-topbar {
+    @apply h-16 flex items-center justify-between px-4 lg:px-6 sticky top-0 z-20;
+    background: rgba(11, 17, 33, 0.8);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+
+  /* ─── Admin Cards ─── */
+  .admin-card {
+    @apply rounded-xl;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .admin-card-header {
+    @apply px-5 py-3.5 border-b flex items-center justify-between gap-3;
+    border-color: rgba(255,255,255,0.06);
+  }
+  .admin-card-header h3 {
+    @apply text-sm font-semibold text-white;
+  }
+  .admin-card-body {
+    @apply p-5;
+  }
+
+  .admin-stat-card {
+    @apply rounded-xl p-5;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+
+  /* ─── Admin Forms ─── */
+  .admin-form-input {
+    @apply w-full px-3 py-2.5 rounded-lg text-sm text-white transition-colors duration-150;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .admin-form-input::placeholder {
+    @apply text-slate-500;
+  }
+  .admin-form-input:focus {
+    @apply outline-none;
+    border-color: rgba(6, 182, 212, 0.4);
+    background: rgba(255, 255, 255, 0.06);
+  }
+  .admin-form-input:disabled {
+    @apply opacity-50 cursor-not-allowed;
+  }
+
+  /* ─── Admin Select (native <select>) ─── */
+  select.admin-form-input {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: left 12px center;
+    padding-left: 32px;
+    cursor: pointer;
+  }
+  select.admin-form-input option {
+    background: #111827;
+    color: #e2e8f0;
+    padding: 8px 12px;
+  }
+  select.admin-form-input option:checked {
+    background: #164e63;
+    color: #fff;
+  }
+  select.admin-form-input:hover {
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  .admin-search-input {
+    @apply w-56 h-9 pr-9 pl-3 text-sm text-white rounded-lg;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .admin-search-input::placeholder {
+    @apply text-slate-500;
+  }
+  .admin-search-input:focus {
+    @apply outline-none;
+    border-color: rgba(6, 182, 212, 0.4);
+  }
+
+  /* ─── Admin Buttons ─── */
+  .admin-btn-primary {
+    @apply inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold text-white transition-all;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed;
+    background: linear-gradient(135deg, #0891b2, #2563eb);
+    box-shadow: 0 4px 12px rgba(6, 182, 212, 0.2);
+  }
+  .admin-btn-primary:hover:not(:disabled) {
+    background: linear-gradient(135deg, #06b6d4, #3b82f6);
+  }
+
+  .admin-btn-secondary {
+    @apply inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors;
+    @apply text-slate-300 hover:text-white;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .admin-btn-secondary:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  /* ─── Admin Dropdown ─── */
+  .admin-dropdown-item {
+    @apply w-full flex items-center gap-3 px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-white/[0.04] transition-colors;
+  }
+
+  /* ─── Admin Table ─── */
+  .admin-table {
+    @apply w-full text-sm;
+  }
+  .admin-table thead {
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .admin-table th {
+    @apply px-5 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap;
+  }
+  .admin-table td {
+    @apply px-5 py-3.5 whitespace-nowrap;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+  }
+  .admin-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  /* ─── Admin Spinner ─── */
+  .admin-spinner {
+    @apply w-8 h-8 border-2 border-cyan-500/20 border-t-cyan-400 rounded-full animate-spin;
+  }
+
+  /* ─── Admin Guard Loading ─── */
+  .admin-guard-loading {
+    @apply min-h-screen flex items-center justify-center;
+    background: #0B1121;
+  }
+  .admin-guard-loading-inner {
+    @apply flex flex-col items-center;
+  }
+}
