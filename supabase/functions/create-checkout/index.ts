@@ -5,7 +5,7 @@
 // Creates a payment checkout session with the configured gateway.
 // Returns checkout URL to redirect user.
 //
-// SECRETS: STRIPE_SECRET_KEY, MOYASAR_SECRET_KEY, GATEWAY_PROVIDER
+// SECRETS: STRIPE_SECRET_KEY, MOYASAR_SECRET_KEY, GATEWAY_PROVIDER, APP_URL
 //
 // Deploy: supabase functions deploy create-checkout
 // ============================================================================
@@ -25,23 +25,30 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json()
-    const { organization_id, plan, success_url, cancel_url } = body
+    const { organization_id, plan } = body
 
     if (!organization_id || !plan) {
       return jsonResponse({ error: 'organization_id and plan are required' }, 400)
     }
 
-    // --- Verify caller owns the organization ---
+    // --- Authenticate caller and get user ID ---
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!
     const callerClient = createClient(supabaseUrl, anonKey, {
       global: { headers: { Authorization: authHeader } },
     })
 
+    const { data: { user }, error: userErr } = await callerClient.auth.getUser()
+    if (userErr || !user) {
+      return jsonResponse({ error: 'Invalid or expired token' }, 401)
+    }
+
+    // --- Verify caller owns the organization (explicit user_id binding) ---
     const { data: membership } = await callerClient
       .from('memberships')
       .select('role')
       .eq('organization_id', organization_id)
+      .eq('user_id', user.id)
       .eq('status', 'active')
       .single()
 
@@ -61,6 +68,16 @@ Deno.serve(async (req) => {
 
     const provider = Deno.env.get('GATEWAY_PROVIDER') || 'stripe'
 
+    // --- Resolve app origin for redirects (never use SUPABASE_URL) ---
+    const appUrl = Deno.env.get('APP_URL')
+      || Deno.env.get('PUBLIC_SITE_URL')
+      || req.headers.get('origin')
+    if (!appUrl) {
+      return jsonResponse({ error: 'APP_URL not configured' }, 500)
+    }
+    const successUrl = `${appUrl}/dashboard?payment=success`
+    const cancelUrl = `${appUrl}/dashboard?payment=cancelled`
+
     // --- Plan pricing (SAR) ---
     const PLAN_PRICES: Record<string, number> = {
       starter: 99,
@@ -79,8 +96,8 @@ Deno.serve(async (req) => {
         orgName: org?.name || 'Sadeem Customer',
         plan,
         priceAmount: price * 100, // SAR to halalas
-        successUrl: success_url || `${supabaseUrl}/dashboard?payment=success`,
-        cancelUrl: cancel_url || `${supabaseUrl}/dashboard?payment=cancelled`,
+        successUrl,
+        cancelUrl,
       })
     }
 
@@ -90,7 +107,7 @@ Deno.serve(async (req) => {
         orgName: org?.name || 'Sadeem Customer',
         plan,
         priceAmount: price * 100, // SAR to halalas for Moyasar
-        successUrl: success_url || `${supabaseUrl}/dashboard?payment=success`,
+        successUrl,
       })
     }
 

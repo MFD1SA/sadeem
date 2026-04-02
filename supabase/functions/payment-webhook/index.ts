@@ -30,9 +30,15 @@ Deno.serve(async (req) => {
   try {
     const url = new URL(req.url)
     const provider = url.searchParams.get('provider') || 'stripe'
+
+    // Reject unknown providers before reading body
+    if (provider !== PROVIDER_STRIPE && provider !== PROVIDER_MOYASAR) {
+      return jsonResponse({ error: 'Unknown provider' }, 400)
+    }
+
     const rawBody = await req.text()
 
-    // --- Signature verification ---
+    // --- Signature verification (fail closed) ---
     const isValid = await verifySignature(req, rawBody, provider)
     if (!isValid) {
       return jsonResponse({ error: 'Invalid webhook signature' }, 401)
@@ -61,6 +67,22 @@ Deno.serve(async (req) => {
 })
 
 
+// ─── Idempotency check ───
+// Returns true if this event_id was already processed (skip it).
+async function isAlreadyProcessed(
+  client: ReturnType<typeof createClient>,
+  eventId: string
+): Promise<boolean> {
+  const { data } = await client
+    .from('payment_events')
+    .select('id')
+    .eq('event_id', eventId)
+    .limit(1)
+    .maybeSingle()
+  return !!data
+}
+
+
 // ─── Stripe Handler ───
 async function handleStripeEvent(client: ReturnType<typeof createClient>, event: Record<string, unknown>) {
   const eventType = event.type as string
@@ -69,20 +91,26 @@ async function handleStripeEvent(client: ReturnType<typeof createClient>, event:
 
   if (!obj) return jsonResponse({ received: true })
 
+  // Idempotency: skip if already processed
+  if (eventId && await isAlreadyProcessed(client, eventId)) {
+    return jsonResponse({ received: true, skipped: 'duplicate' })
+  }
+
   // Extract org_id from metadata
   const metadata = (obj.metadata || {}) as Record<string, string>
   const orgId = metadata.organization_id
 
   if (!orgId) {
     // Log event without org linking
-    await client.rpc('gateway_process_payment_failure', {
-      p_gateway_provider: PROVIDER_STRIPE,
-      p_event_id: eventId,
-      p_event_type: eventType,
-      p_org_id: null,
-      p_failure_reason: 'Missing organization_id in metadata',
-      p_payload: event,
-    })
+    await client.from('payment_events').insert({
+      gateway_provider: PROVIDER_STRIPE,
+      event_type: eventType,
+      event_id: eventId,
+      payload: event,
+      status: 'failed',
+      error_message: 'Missing organization_id in metadata',
+      processed_at: new Date().toISOString(),
+    }).throwOnError().catch(() => {}) // best-effort log, don't break response
     return jsonResponse({ received: true, warning: 'no org_id' })
   }
 
@@ -138,7 +166,7 @@ async function handleStripeEvent(client: ReturnType<typeof createClient>, event:
     }
 
     default: {
-      // Log unknown events for monitoring
+      // Log unknown events for monitoring — never process them
       await client.from('payment_events').insert({
         gateway_provider: PROVIDER_STRIPE,
         event_type: eventType,
@@ -147,7 +175,7 @@ async function handleStripeEvent(client: ReturnType<typeof createClient>, event:
         payload: event,
         status: 'ignored',
         processed_at: new Date().toISOString(),
-      })
+      }).throwOnError().catch(() => {})
     }
   }
 
@@ -165,6 +193,11 @@ async function handleMoyasarEvent(client: ReturnType<typeof createClient>, paylo
 
   if (!orgId) {
     return jsonResponse({ received: true, warning: 'no org_id' })
+  }
+
+  // Idempotency: skip if already processed
+  if (await isAlreadyProcessed(client, eventId)) {
+    return jsonResponse({ received: true, skipped: 'duplicate' })
   }
 
   const status = data.status as string
@@ -199,11 +232,14 @@ async function handleMoyasarEvent(client: ReturnType<typeof createClient>, paylo
 }
 
 
-// ─── Signature Verification ───
+// ─── Signature Verification (fail closed) ───
 async function verifySignature(req: Request, body: string, provider: string): Promise<boolean> {
   if (provider === PROVIDER_STRIPE) {
     const secret = Deno.env.get('STRIPE_WEBHOOK_SECRET')
-    if (!secret) return true // Allow in dev without secret (log warning)
+    if (!secret) {
+      console.error('STRIPE_WEBHOOK_SECRET not configured — rejecting webhook')
+      return false
+    }
 
     const sigHeader = req.headers.get('stripe-signature')
     if (!sigHeader) return false
@@ -220,6 +256,10 @@ async function verifySignature(req: Request, body: string, provider: string): Pr
       const expectedSig = parts['v1']
       if (!timestamp || !expectedSig) return false
 
+      // Reject signatures older than 5 minutes (replay window)
+      const ageSeconds = Math.floor(Date.now() / 1000) - parseInt(timestamp, 10)
+      if (isNaN(ageSeconds) || ageSeconds > 300) return false
+
       // Compute HMAC SHA-256
       const signedPayload = `${timestamp}.${body}`
       const key = await crypto.subtle.importKey(
@@ -234,7 +274,13 @@ async function verifySignature(req: Request, body: string, provider: string): Pr
         .map(b => b.toString(16).padStart(2, '0'))
         .join('')
 
-      return computedSig === expectedSig
+      // Constant-time comparison
+      if (computedSig.length !== expectedSig.length) return false
+      let mismatch = 0
+      for (let i = 0; i < computedSig.length; i++) {
+        mismatch |= computedSig.charCodeAt(i) ^ expectedSig.charCodeAt(i)
+      }
+      return mismatch === 0
     } catch {
       return false
     }
@@ -242,17 +288,27 @@ async function verifySignature(req: Request, body: string, provider: string): Pr
 
   if (provider === PROVIDER_MOYASAR) {
     const secret = Deno.env.get('MOYASAR_WEBHOOK_SECRET')
-    if (!secret) return true // Allow in dev
+    if (!secret) {
+      console.error('MOYASAR_WEBHOOK_SECRET not configured — rejecting webhook')
+      return false
+    }
 
     // Moyasar uses basic auth or HMAC depending on config
-    // For now, accept if secret matches header
     const authHeader = req.headers.get('authorization')
-    if (authHeader && authHeader.includes(secret)) return true
+    if (!authHeader) return false
 
-    return false
+    // Constant-time comparison of the secret portion
+    const expected = `Basic ${btoa(secret + ':')}`
+    if (authHeader.length !== expected.length) return false
+    let mismatch = 0
+    for (let i = 0; i < expected.length; i++) {
+      mismatch |= authHeader.charCodeAt(i) ^ expected.charCodeAt(i)
+    }
+    return mismatch === 0
   }
 
-  return true
+  // Unknown provider — fail closed
+  return false
 }
 
 
