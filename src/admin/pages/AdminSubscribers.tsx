@@ -54,7 +54,7 @@ export default function AdminSubscribers() {
   const [detailLoading, setDetailLoading] = useState(false);
 
   // Actions
-  const [activeMenu, setActiveMenu] = useState<{ id: string; top: number; right: number; openUp?: boolean } | null>(null);
+  const [activeMenu, setActiveMenu] = useState<{ id: string; top: number; left: number; openUp?: boolean } | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!activeMenu) return;
@@ -431,12 +431,12 @@ export default function AdminSubscribers() {
                       <td onClick={(e) => e.stopPropagation()}>
                         {hasPermission(PERMISSIONS.SUBSCRIBERS_UPDATE) && (
                           <div className="relative">
-                            <button onClick={(e) => { e.stopPropagation(); const r = e.currentTarget.getBoundingClientRect(); const menuH = 180; const openUp = r.bottom + menuH > window.innerHeight; setActiveMenu(activeMenu?.id === item.id ? null : { id: item.id, top: openUp ? r.top - menuH : r.bottom + 4, right: window.innerWidth - r.right, openUp }); }}
+                            <button onClick={(e) => { e.stopPropagation(); const r = e.currentTarget.getBoundingClientRect(); const menuH = 180; const openUp = r.bottom + menuH > window.innerHeight; setActiveMenu(activeMenu?.id === item.id ? null : { id: item.id, top: openUp ? r.top - menuH : r.bottom + 4, left: r.left, openUp }); }}
                               className="p-1.5 rounded-lg text-slate-500 hover:text-gray-900 hover:bg-gray-100 transition-colors">
                               <MoreVertical size={16} />
                             </button>
                             {activeMenu?.id === item.id && createPortal(
-                              <div ref={menuRef} style={{ position: 'fixed', top: activeMenu.top, right: activeMenu.right, zIndex: 9999 }} className="w-48 bg-white border border-gray-200 rounded-xl shadow-lg py-1.5">
+                              <div ref={menuRef} style={{ position: 'fixed', top: activeMenu.top, left: activeMenu.left, zIndex: 9999 }} className="w-48 bg-white border border-gray-200 rounded-xl shadow-lg py-1.5">
                                 <button onClick={() => { setActiveMenu(null); setPlanTarget(item); setNewPlan(item.subscription?.plan || 'orbit'); }}
                                   className="w-full flex items-center gap-2 px-3 py-2 text-xs text-cyan-600 hover:bg-cyan-500/10 transition-colors">
                                   <ArrowUpCircle size={14} /> تغيير الخطة

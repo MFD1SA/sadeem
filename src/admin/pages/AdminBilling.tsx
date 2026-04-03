@@ -37,7 +37,7 @@ export default function AdminBilling() {
   const [error, setError] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
   const [msg, setMsg] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
-  const [activeMenu, setActiveMenu] = useState<{ id: string; top: number; right: number; openUp?: boolean } | null>(null);
+  const [activeMenu, setActiveMenu] = useState<{ id: string; top: number; left: number; openUp?: boolean } | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!activeMenu) return;
@@ -235,12 +235,12 @@ export default function AdminBilling() {
                         <PermissionGate permission={PERMISSIONS.FINANCE_MANAGE}>
                           <div className="relative">
                             <button
-                              onClick={(e) => { e.stopPropagation(); const r = e.currentTarget.getBoundingClientRect(); const menuH = 140; const openUp = r.bottom + menuH > window.innerHeight; setActiveMenu(activeMenu?.id === inv.id ? null : { id: inv.id, top: openUp ? r.top - menuH : r.bottom + 4, right: window.innerWidth - r.right, openUp }); }}
+                              onClick={(e) => { e.stopPropagation(); const r = e.currentTarget.getBoundingClientRect(); const menuH = 140; const openUp = r.bottom + menuH > window.innerHeight; setActiveMenu(activeMenu?.id === inv.id ? null : { id: inv.id, top: openUp ? r.top - menuH : r.bottom + 4, left: r.left, openUp }); }}
                               className="p-1.5 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-50 transition-colors">
                               <MoreVertical size={16} />
                             </button>
                             {activeMenu?.id === inv.id && createPortal(
-                              <div ref={menuRef} style={{ position: 'fixed', top: activeMenu.top, right: activeMenu.right, zIndex: 9999 }} className="w-48 bg-white border border-gray-200 rounded-xl shadow-lg py-1.5">
+                              <div ref={menuRef} style={{ position: 'fixed', top: activeMenu.top, left: activeMenu.left, zIndex: 9999 }} className="w-48 bg-white border border-gray-200 rounded-xl shadow-lg py-1.5">
                                 {inv.status !== 'paid' && inv.status !== 'cancelled' && (
                                   <button onClick={() => { setActiveMenu(null); setPayTarget(inv); setPayForm(p => ({ ...p, amount: String(inv.total) })); }}
                                     className="w-full flex items-center gap-2 px-3 py-2 text-xs text-emerald-600 hover:bg-emerald-500/10 transition-colors">
