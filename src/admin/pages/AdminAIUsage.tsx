@@ -141,7 +141,7 @@ export default function AdminAIUsage() {
             <table className="admin-table">
               <thead>
                 <tr>
-                  <th>المنظمة</th>
+                  <th>المشترك</th>
                   <th>النموذج</th>
                   <th>التوكنز</th>
                   <th>التكلفة</th>

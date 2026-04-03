@@ -14,6 +14,11 @@ import {
   Plus, Search, MoreVertical, X, Check, Ban, RotateCcw,
 } from 'lucide-react';
 
+const PLAN_LABELS: Record<string, string> = {
+  orbit: 'مدار', nova: 'نوفا', galaxy: 'جالاكسي', infinity: 'إنفينيتي',
+  starter: 'المبتدئ', growth: 'النمو', pro: 'الاحترافي', enterprise: 'المؤسسات',
+};
+
 const INV_STATUS: Record<string, { ar: string; color: string }> = {
   draft: { ar: 'مسودة', color: 'slate' },
   sent: { ar: 'مُرسلة', color: 'blue' },
@@ -32,7 +37,7 @@ export default function AdminBilling() {
   const [error, setError] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
   const [msg, setMsg] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
-  const [activeMenu, setActiveMenu] = useState<{ id: string; top: number; right: number } | null>(null);
+  const [activeMenu, setActiveMenu] = useState<{ id: string; top: number; right: number; openUp?: boolean } | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!activeMenu) return;
@@ -201,7 +206,7 @@ export default function AdminBilling() {
               <thead>
                 <tr>
                   <th>رقم الفاتورة</th>
-                  <th>المنظمة</th>
+                  <th>المشترك</th>
                   <th>الخطة</th>
                   <th>المبلغ</th>
                   <th>الحالة</th>
@@ -216,7 +221,7 @@ export default function AdminBilling() {
                     <tr key={inv.id}>
                       <td><span className="text-sm text-cyan-600 font-mono" dir="ltr">{inv.invoice_number}</span></td>
                       <td><span className="text-sm text-gray-900">{inv.org_name}</span></td>
-                      <td><span className="text-sm text-gray-700">{inv.plan}</span></td>
+                      <td><span className="text-sm text-gray-700">{PLAN_LABELS[inv.plan] || inv.plan}</span></td>
                       <td><span className="text-sm text-gray-900 font-medium" dir="ltr">{inv.total.toLocaleString()} {inv.currency}</span></td>
                       <td>
                         <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium
@@ -230,7 +235,7 @@ export default function AdminBilling() {
                         <PermissionGate permission={PERMISSIONS.FINANCE_MANAGE}>
                           <div className="relative">
                             <button
-                              onClick={(e) => { e.stopPropagation(); const r = e.currentTarget.getBoundingClientRect(); setActiveMenu(activeMenu?.id === inv.id ? null : { id: inv.id, top: r.bottom + 4, right: window.innerWidth - r.right }); }}
+                              onClick={(e) => { e.stopPropagation(); const r = e.currentTarget.getBoundingClientRect(); const menuH = 140; const openUp = r.bottom + menuH > window.innerHeight; setActiveMenu(activeMenu?.id === inv.id ? null : { id: inv.id, top: openUp ? r.top - menuH : r.bottom + 4, right: window.innerWidth - r.right, openUp }); }}
                               className="p-1.5 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-50 transition-colors">
                               <MoreVertical size={16} />
                             </button>
@@ -274,10 +279,10 @@ export default function AdminBilling() {
         <Modal title="إنشاء فاتورة" onClose={() => setShowCreate(false)}>
           <div className="space-y-4">
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1.5">المنظمة *</label>
+              <label className="block text-xs font-medium text-gray-500 mb-1.5">المشترك *</label>
               <select className="admin-form-input" value={createForm.org_id}
                 onChange={(e) => setCreateForm(p => ({ ...p, org_id: e.target.value }))}>
-                <option value="">اختر المنظمة</option>
+                <option value="">اختر المشترك</option>
                 {orgs.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
               </select>
             </div>

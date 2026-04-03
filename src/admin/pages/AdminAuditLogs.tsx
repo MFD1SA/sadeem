@@ -158,14 +158,21 @@ function SubscriberOpsTab() {
 
   const exportCsv = () => {
     const esc = (v: string) => { const s = String(v ?? ''); return s.includes(',') || s.includes('\n') || s.includes('"') ? `"${s.replace(/"/g, '""')}"` : s; };
+    const headers = ['التاريخ', 'الحدث', 'وصف الحدث', 'الفاعل', 'نوع الكيان', 'معرف الكيان', 'معرف المنشأة', 'التفاصيل'];
     const csv = logs.map(l => [
-      l.created_at, l.event, l.actor_type, l.entity_type || '', l.entity_id || '',
+      new Date(l.created_at).toLocaleString('en-US'),
+      l.event,
+      EVENT_LABELS[l.event] || l.event,
+      ACTOR_LABELS[l.actor_type]?.ar || l.actor_type,
+      l.entity_type ? (ENTITY_LABELS[l.entity_type] || l.entity_type) : '',
+      l.entity_id || '',
+      l.organization_id || '',
       l.details ? JSON.stringify(l.details) : '',
     ].map(esc).join(',')).join('\n');
     const bom = '\uFEFF';
-    const blob = new Blob([bom + `التاريخ,الحدث,الفاعل,نوع الكيان,معرف الكيان,التفاصيل\n${csv}`], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob([bom + headers.join(',') + '\n' + csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = `subscriber-audit-${new Date().toISOString().slice(0,10)}.csv`; a.click();
+    const a = document.createElement('a'); a.href = url; a.download = `سجل-عمليات-المشتركين-${new Date().toISOString().slice(0,10)}.csv`; a.click();
     URL.revokeObjectURL(url);
   };
 
@@ -384,11 +391,22 @@ function AdminOpsTab() {
 
   const exportCsv = () => {
     const esc = (v: string) => { const s = String(v ?? ''); return s.includes(',') || s.includes('\n') || s.includes('"') ? `"${s.replace(/"/g, '""')}"` : s; };
-    const csv = logs.map(l => [l.created_at, l.action, l.module, l.admin_email || 'system', l.severity].map(esc).join(',')).join('\n');
+    const headers = ['التاريخ', 'الإجراء', 'القسم', 'اسم القسم', 'المنفذ', 'المستوى', 'وصف المستوى', 'الهدف', 'معرف الهدف'];
+    const csv = logs.map(l => [
+      new Date(l.created_at).toLocaleString('en-US'),
+      l.action,
+      l.module,
+      MODULE_LABELS[l.module] || l.module,
+      l.admin_email || 'system',
+      l.severity,
+      SEVERITY_MAP[l.severity]?.ar || l.severity,
+      l.target_type || '',
+      l.target_id || '',
+    ].map(esc).join(',')).join('\n');
     const bom = '\uFEFF';
-    const blob = new Blob([bom + `التاريخ,الإجراء,القسم,المنفذ,المستوى\n${csv}`], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob([bom + headers.join(',') + '\n' + csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = `admin-audit-${new Date().toISOString().slice(0,10)}.csv`; a.click();
+    const a = document.createElement('a'); a.href = url; a.download = `سجل-عمليات-الأدمن-${new Date().toISOString().slice(0,10)}.csv`; a.click();
     URL.revokeObjectURL(url);
   };
 

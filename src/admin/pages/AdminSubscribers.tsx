@@ -54,7 +54,7 @@ export default function AdminSubscribers() {
   const [detailLoading, setDetailLoading] = useState(false);
 
   // Actions
-  const [activeMenu, setActiveMenu] = useState<{ id: string; top: number; right: number } | null>(null);
+  const [activeMenu, setActiveMenu] = useState<{ id: string; top: number; right: number; openUp?: boolean } | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!activeMenu) return;
@@ -388,7 +388,7 @@ export default function AdminSubscribers() {
             <table className="admin-table">
               <thead>
                 <tr>
-                  <th>المنظمة</th>
+                  <th>المشترك</th>
                   <th>الخطة</th>
                   <th>الحالة</th>
                   <th>الفروع</th>
@@ -431,7 +431,7 @@ export default function AdminSubscribers() {
                       <td onClick={(e) => e.stopPropagation()}>
                         {hasPermission(PERMISSIONS.SUBSCRIBERS_UPDATE) && (
                           <div className="relative">
-                            <button onClick={(e) => { e.stopPropagation(); const r = e.currentTarget.getBoundingClientRect(); setActiveMenu(activeMenu?.id === item.id ? null : { id: item.id, top: r.bottom + 4, right: window.innerWidth - r.right }); }}
+                            <button onClick={(e) => { e.stopPropagation(); const r = e.currentTarget.getBoundingClientRect(); const menuH = 180; const openUp = r.bottom + menuH > window.innerHeight; setActiveMenu(activeMenu?.id === item.id ? null : { id: item.id, top: openUp ? r.top - menuH : r.bottom + 4, right: window.innerWidth - r.right, openUp }); }}
                               className="p-1.5 rounded-lg text-slate-500 hover:text-gray-900 hover:bg-gray-100 transition-colors">
                               <MoreVertical size={16} />
                             </button>

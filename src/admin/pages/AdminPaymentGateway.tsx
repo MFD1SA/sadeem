@@ -148,7 +148,7 @@ export default function AdminPaymentGateway() {
                 <tr>
                   <th>البوابة</th>
                   <th>نوع الحدث</th>
-                  <th>المنظمة</th>
+                  <th>المشترك</th>
                   <th>الحالة</th>
                   <th>المعالجة</th>
                   <th>التاريخ</th>

@@ -96,7 +96,7 @@ export default function AdminDashboard() {
       {/* ── Primary KPIs ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard icon={Building2} iconColor="#0891b2" iconBg="rgba(8,145,178,0.08)"
-          label="المنظمات" value={stats?.total_organizations ?? 0} />
+          label="المشتركين" value={stats?.total_organizations ?? 0} />
         <StatCard icon={Users} iconColor="#7c3aed" iconBg="rgba(124,58,237,0.08)"
           label="مشتركين نشطين" value={(stats?.total_subscribers_active ?? 0) + (stats?.total_subscribers_trial ?? 0)} />
         <StatCard icon={GitBranch} iconColor="#059669" iconBg="rgba(5,150,105,0.08)"
@@ -125,7 +125,7 @@ export default function AdminDashboard() {
           <div className="admin-card-header">
             <div>
               <h3>توزيع الخطط</h3>
-              <p>تفاصيل اشتراكات المنظمات الحالية</p>
+              <p>تفاصيل اشتراكات المشتركين الحالية</p>
             </div>
           </div>
           <div className="admin-card-body">
@@ -198,7 +198,7 @@ export default function AdminDashboard() {
 
           {/* Recent organizations */}
           <div className="admin-card">
-            <div className="admin-card-header"><h3>أحدث المنظمات</h3></div>
+            <div className="admin-card-header"><h3>أحدث المشتركين</h3></div>
             <div className="admin-card-body p-0">
               {stats?.recent_organizations && stats.recent_organizations.length > 0 ? (
                 <div className="divide-y" style={{ borderColor: '#e5e7eb' }}>
@@ -225,7 +225,7 @@ export default function AdminDashboard() {
               ) : (
                 <div className="flex flex-col items-center justify-center py-6 gap-1.5">
                   <Building2 size={24} style={{ color: '#9ca3af' }} />
-                  <p className="text-xs" style={{ color: '#6b7280' }}>لا توجد منظمات بعد</p>
+                  <p className="text-xs" style={{ color: '#6b7280' }}>لا يوجد مشتركين بعد</p>
                 </div>
               )}
             </div>
