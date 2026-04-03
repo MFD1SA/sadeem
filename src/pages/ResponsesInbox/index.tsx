@@ -3,6 +3,7 @@ import { useLanguage } from '@/i18n';
 import { useAuth } from '@/hooks/useAuth';
 import { replyDraftsService, reviewsService } from '@/services/reviews';
 import { usageService } from '@/services/usage';
+import { reviewSyncService } from '@/services/sync';
 import { LoadingState, ErrorState } from '@/components/ui/LoadingState';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Tabs } from '@/components/ui/Tabs';
@@ -58,12 +59,7 @@ export default function ResponsesInbox() {
         return;
       }
 
-      await replyDraftsService.approve(draftId, user.id, finalReply);
-
-      const draft = drafts.find((d: DbReplyDraft) => d.id === draftId);
-      if (draft?.review_id) {
-        await reviewsService.updateStatus(draft.review_id, 'replied');
-      }
+      await reviewSyncService.sendReplyToGoogle(draftId, user.id);
 
       await loadDrafts();
     } catch (err: unknown) {
@@ -73,7 +69,7 @@ export default function ResponsesInbox() {
 
   const handleReject = async (draftId: string) => {
     try {
-      await replyDraftsService.reject(draftId);
+      await replyDraftsService.reject(draftId, user?.id);
       await loadDrafts();
     } catch (err: unknown) {
       setError((err as Error).message || 'Failed to reject draft');
@@ -82,7 +78,7 @@ export default function ResponsesInbox() {
 
   const handleDefer = async (draftId: string) => {
     try {
-      await replyDraftsService.defer(draftId);
+      await replyDraftsService.defer(draftId, user?.id);
       await loadDrafts();
     } catch (err: unknown) {
       setError((err as Error).message || 'Failed to defer draft');

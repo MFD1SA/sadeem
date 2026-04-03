@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import type { DbReview, DbReplyDraft } from '@/types/database';
+import { auditLog } from '@/services/audit';
 
 export const reviewsService = {
   async list(organizationId: string, filters?: {
@@ -122,6 +123,14 @@ export const replyDraftsService = {
   },
 
   async approve(draftId: string, userId: string, finalReply: string): Promise<void> {
+    // Fetch draft context for audit before updating
+    const { data: draftData } = await supabase
+      .from('reply_drafts')
+      .select('review_id, organization_id, ai_reply, source')
+      .eq('id', draftId)
+      .single();
+    const ctx = draftData as { review_id: string; organization_id: string; ai_reply: string | null; source: string } | null;
+
     const { error } = await supabase
       .from('reply_drafts')
       .update({
@@ -133,23 +142,79 @@ export const replyDraftsService = {
       .eq('id', draftId);
 
     if (error) throw error;
+
+    if (ctx) {
+      const wasEdited = ctx.ai_reply !== null && finalReply !== ctx.ai_reply;
+      auditLog.track({
+        event: 'draft_approved',
+        organization_id: ctx.organization_id,
+        entity_id: draftId,
+        entity_type: 'draft',
+        user_id: userId,
+        actor_type: 'user',
+        details: {
+          draft_id: draftId,
+          review_id: ctx.review_id,
+          source: ctx.source,
+          ...(wasEdited ? { message: 'Reply was edited before approval' } : {}),
+        },
+      });
+    }
   },
 
-  async reject(draftId: string): Promise<void> {
+  async reject(draftId: string, userId?: string): Promise<void> {
+    const { data: draftData } = await supabase
+      .from('reply_drafts')
+      .select('review_id, organization_id, source')
+      .eq('id', draftId)
+      .single();
+    const ctx = draftData as { review_id: string; organization_id: string; source: string } | null;
+
     const { error } = await supabase
       .from('reply_drafts')
       .update({ status: 'rejected' } as Record<string, unknown>)
       .eq('id', draftId);
 
     if (error) throw error;
+
+    if (ctx) {
+      auditLog.track({
+        event: 'draft_rejected',
+        organization_id: ctx.organization_id,
+        entity_id: draftId,
+        entity_type: 'draft',
+        user_id: userId,
+        actor_type: 'user',
+        details: { draft_id: draftId, review_id: ctx.review_id, source: ctx.source },
+      });
+    }
   },
 
-  async defer(draftId: string): Promise<void> {
+  async defer(draftId: string, userId?: string): Promise<void> {
+    const { data: draftData } = await supabase
+      .from('reply_drafts')
+      .select('review_id, organization_id, source')
+      .eq('id', draftId)
+      .single();
+    const ctx = draftData as { review_id: string; organization_id: string; source: string } | null;
+
     const { error } = await supabase
       .from('reply_drafts')
       .update({ status: 'deferred' } as Record<string, unknown>)
       .eq('id', draftId);
 
     if (error) throw error;
+
+    if (ctx) {
+      auditLog.track({
+        event: 'draft_deferred',
+        organization_id: ctx.organization_id,
+        entity_id: draftId,
+        entity_type: 'draft',
+        user_id: userId,
+        actor_type: 'user',
+        details: { draft_id: draftId, review_id: ctx.review_id, source: ctx.source },
+      });
+    }
   },
 };

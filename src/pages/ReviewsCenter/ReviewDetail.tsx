@@ -4,8 +4,11 @@ import { useAuth } from '@/hooks/useAuth';
 import { Badge } from '@/components/ui/Badge';
 import { formatDateTime, renderStars, getStatusColor, getSentimentColor } from '@/utils/helpers';
 import { reviewsService, replyDraftsService } from '@/services/reviews';
+import { reviewSyncService } from '@/services/sync';
+import { usageService } from '@/services/usage';
 import { Send, Clock, X, Edit3, MessageSquare, AlertTriangle } from 'lucide-react';
 import type { DbReview, DbReplyDraft } from '@/types/database';
+import { auditLog } from '@/services/audit';
 
 interface Props {
   review: DbReview | null;
@@ -21,6 +24,7 @@ export function ReviewDetail({ review, branchName, onUpdate }: Props) {
   const [replyText, setReplyText] = useState('');
   const [manualReply, setManualReply] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
+  const [actionError, setActionError] = useState('');
 
   useEffect(() => {
     if (!review) { setDrafts([]); return; }
@@ -45,48 +49,99 @@ export function ReviewDetail({ review, branchName, onUpdate }: Props) {
   const isFollowUp = review.is_followup || review.status === 'manual_review_required';
 
   const handleApprove = async () => {
-    if (!latestDraft || !user) return;
+    if (!latestDraft || !user || !review) return;
     setActionLoading(true);
+    setActionError('');
     try {
-      await replyDraftsService.approve(latestDraft.id, user.id, replyText || suggestedReply);
-      await reviewsService.updateStatus(review.id, 'replied');
+      // Check quota before sending
+      const usageCheck = await usageService.checkAndIncrementTemplateReply(review.organization_id);
+      if (!usageCheck.allowed) {
+        setActionError(lang === 'ar' ? 'تم الوصول للحد المسموح من الردود. يرجى ترقية الخطة.' : (usageCheck.reason || 'Reply limit reached'));
+        return;
+      }
+      const finalText = replyText || suggestedReply;
+      // If user edited the text, save it and audit the edit
+      if (replyText && replyText !== suggestedReply) {
+        auditLog.track({
+          event: 'draft_edited',
+          organization_id: review.organization_id,
+          entity_id: latestDraft.id,
+          entity_type: 'draft',
+          user_id: user.id,
+          actor_type: 'user',
+          details: {
+            draft_id: latestDraft.id,
+            review_id: review.id,
+            previous_text: suggestedReply.substring(0, 200),
+            new_text: replyText.substring(0, 200),
+          },
+        });
+        await replyDraftsService.approve(latestDraft.id, user.id, finalText);
+      }
+      // Always send through the Google-posting path
+      await reviewSyncService.sendReplyToGoogle(latestDraft.id, user.id);
       onUpdate();
-    } catch {} finally { setActionLoading(false); }
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : lang === 'ar' ? 'فشل في إرسال الرد' : 'Failed to send reply');
+    } finally { setActionLoading(false); }
   };
 
   const handleDefer = async () => {
     if (!latestDraft) return;
     setActionLoading(true);
+    setActionError('');
     try {
-      await replyDraftsService.defer(latestDraft.id);
+      await replyDraftsService.defer(latestDraft.id, user?.id);
       onUpdate();
-    } catch {} finally { setActionLoading(false); }
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : lang === 'ar' ? 'فشل' : 'Failed');
+    } finally { setActionLoading(false); }
   };
 
   const handleReject = async () => {
     if (!latestDraft) return;
     setActionLoading(true);
+    setActionError('');
     try {
-      await replyDraftsService.reject(latestDraft.id);
+      await replyDraftsService.reject(latestDraft.id, user?.id);
       onUpdate();
-    } catch {} finally { setActionLoading(false); }
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : lang === 'ar' ? 'فشل' : 'Failed');
+    } finally { setActionLoading(false); }
   };
 
   const handleManualSend = async () => {
     if (!manualReply.trim() || !user || !review) return;
     setActionLoading(true);
+    setActionError('');
     try {
+      // Check quota before sending
+      const usageCheck = await usageService.checkAndIncrementTemplateReply(review.organization_id);
+      if (!usageCheck.allowed) {
+        setActionError(lang === 'ar' ? 'تم الوصول للحد المسموح من الردود. يرجى ترقية الخطة.' : (usageCheck.reason || 'Reply limit reached'));
+        return;
+      }
       const draft = await replyDraftsService.create({
         review_id: review.id,
         organization_id: review.organization_id,
         edited_reply: manualReply,
         source: 'manual',
       });
-      await replyDraftsService.approve(draft.id, user.id, manualReply);
-      await reviewsService.updateStatus(review.id, 'replied');
+      auditLog.track({
+        event: 'draft_created',
+        organization_id: review.organization_id,
+        entity_id: draft.id,
+        entity_type: 'draft',
+        user_id: user.id,
+        actor_type: 'user',
+        details: { draft_id: draft.id, review_id: review.id, source: 'manual' },
+      });
+      await reviewSyncService.sendReplyToGoogle(draft.id, user.id);
       setManualReply('');
       onUpdate();
-    } catch {} finally { setActionLoading(false); }
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : lang === 'ar' ? 'فشل في إرسال الرد' : 'Failed to send reply');
+    } finally { setActionLoading(false); }
   };
 
   return (
@@ -140,6 +195,14 @@ export function ReviewDetail({ review, branchName, onUpdate }: Props) {
                 : 'This reviewer has a previous replied review. Sadeem policy: no auto-reply on follow-up reviews.'}
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Error banner */}
+      {actionError && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4 flex items-start gap-2">
+          <AlertTriangle size={14} className="text-red-600 flex-shrink-0 mt-0.5" />
+          <span className="text-xs text-red-700">{actionError}</span>
         </div>
       )}
 
