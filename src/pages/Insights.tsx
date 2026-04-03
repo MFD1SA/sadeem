@@ -66,17 +66,20 @@ export default function Insights() {
 
       // Review Insights
       const positiveReviews = reviews.filter((r: DbReview) => r.sentiment === 'positive' || r.rating >= 4);
-      const complaintReviews = reviews.filter((r: DbReview) => r.category === 'complaint' || r.sentiment === 'negative' || r.rating <= 2);
+      const complaintReviews = reviews.filter((r: DbReview) => r.sentiment === 'negative' || r.rating <= 2);
       const positiveTexts = positiveReviews.map((r: DbReview) => r.review_text || '').filter(Boolean);
       const complaintTexts = complaintReviews.map((r: DbReview) => r.review_text || '').filter(Boolean);
 
       const catDist = { positive: 0, complaint: 0, suggestion: 0, neutral: 0, sarcasm: 0 };
       const sentDist = { positive: 0, neutral: 0, negative: 0 };
       for (const r of reviews as DbReview[]) {
-        const cat = r.category as keyof typeof catDist;
-        if (cat in catDist) catDist[cat]++;
         const sent = (r.sentiment || 'neutral') as keyof typeof sentDist;
         if (sent in sentDist) sentDist[sent]++;
+        // Derive category from sentiment + rating (category column doesn't exist in DB)
+        const cat: keyof typeof catDist =
+          sent === 'positive' ? 'positive' :
+          sent === 'negative' ? 'complaint' : 'neutral';
+        catDist[cat]++;
       }
 
       setReviewInsights({
@@ -260,7 +263,7 @@ export default function Insights() {
                       { key: 'positive',   labelAr: 'إيجابي',   labelEn: 'Positive',    variant: 'success'  },
                       { key: 'complaint',  labelAr: 'شكوى',     labelEn: 'Complaint',   variant: 'danger'   },
                       { key: 'suggestion', labelAr: 'اقتراح',   labelEn: 'Suggestion',  variant: 'info'     },
-                      { key: 'neutral',    labelAr: 'محايد',    labelEn: 'Neutral',     variant: 'default'  },
+                      { key: 'neutral',    labelAr: 'محايد',    labelEn: 'Neutral',     variant: 'neutral'  },
                       { key: 'sarcasm',    labelAr: 'سخرية',    labelEn: 'Sarcasm',     variant: 'warning'  },
                     ] as const).map(({ key, labelAr, labelEn, variant }) => (
                       <div key={key} className="card card-body text-center py-3">

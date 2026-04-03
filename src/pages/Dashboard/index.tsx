@@ -83,7 +83,7 @@ export default function Dashboard() {
         {subscription && (
           <div className="flex items-center gap-1.5 bg-brand-50 text-brand-700 text-xs font-semibold px-3 py-1.5 rounded-full border border-brand-200">
             <Zap size={12} />
-            {subscription.plan_id?.toUpperCase()}
+            {subscription.plan?.toUpperCase()}
             {trial.isTrial && <span className="font-normal opacity-70">· {isAr ? `${trial.hoursRemaining}س` : `${trial.hoursRemaining}h`}</span>}
           </div>
         )}

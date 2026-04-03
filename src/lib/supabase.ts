@@ -10,7 +10,7 @@ const clientOptions = {
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
-    flowType: 'pkce',
+    flowType: 'pkce' as const,
     storageKey: 'sadeem-auth',
     // Bypass the Web Locks API (navigator.locks) entirely.
     // The default lock mechanism serialises every getSession() / token-refresh
@@ -18,7 +18,7 @@ const clientOptions = {
     // conditions the lock takes 5 000 ms to forcefully acquire, causing the
     // login page and every subscriber page to show a stuck "جاري التحميل..."
     // spinner. This SPA is single-tab — cross-tab coordination isn't needed.
-    lock: (_name: string, _timeout: number, fn: () => Promise<unknown>) => fn(),
+    lock: <R>(_name: string, _timeout: number, fn: () => Promise<R>) => fn(),
   },
 };
 

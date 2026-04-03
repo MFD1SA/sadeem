@@ -120,7 +120,7 @@ export default function Support() {
         subject: form.subject.trim(),
         description: form.body.trim(),
         submitted_by_email: user.email || null,
-        submitted_by_name: user.user_metadata?.full_name || user.email || null,
+        submitted_by_name: user.email || null,
         priority: form.priority,
         status: 'open',
       });
