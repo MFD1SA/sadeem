@@ -4,7 +4,7 @@
 // ============================================================================
 
 import { useState, useEffect, useCallback } from 'react';
-import { Package, Edit2, Check, X, ChevronDown, ChevronUp, Star } from 'lucide-react';
+import { Package, Edit2, Check, X, ChevronDown, ChevronUp, Star, AlertTriangle } from 'lucide-react';
 import { adminSupabase } from '../services/adminSupabase';
 import type { DbPlan, DbPlanLimits } from '@/services/plans';
 
@@ -21,6 +21,7 @@ export default function AdminPlans() {
 
   const [planEdits, setPlanEdits] = useState<Partial<DbPlan>>({});
   const [limitEdits, setLimitEdits] = useState<Partial<DbPlanLimits>>({});
+  const [saveError, setSaveError] = useState('');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -66,12 +67,15 @@ export default function AdminPlans() {
 
   const savePlan = async (planId: string) => {
     setSaving(true);
+    setSaveError('');
     try {
       const { error } = await adminSupabase.from('plans').update(planEdits).eq('id', planId);
       if (error) throw error;
       setEditingPlan(null);
       await load();
-    } catch { /* silent */ } finally { setSaving(false); }
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : 'فشل حفظ الخطة');
+    } finally { setSaving(false); }
   };
 
   const startEditLimits = (planId: string) => {
@@ -82,12 +86,15 @@ export default function AdminPlans() {
 
   const saveLimits = async (planId: string) => {
     setSaving(true);
+    setSaveError('');
     try {
       const { error } = await adminSupabase.from('plan_limits').update(limitEdits).eq('plan_id', planId);
       if (error) throw error;
       setEditingLimits(null);
       await load();
-    } catch { /* silent */ } finally { setSaving(false); }
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : 'فشل حفظ الحدود');
+    } finally { setSaving(false); }
   };
 
   const toggleFeature = async (planId: string, featureKey: string) => {
@@ -102,7 +109,9 @@ export default function AdminPlans() {
         ...prev,
         [planId]: { ...prev[planId], [featureKey]: newVal },
       }));
-    } catch { /* silent */ }
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : 'فشل تحديث الميزة');
+    }
   };
 
   const formatLimit = (v: number) => v === -1 || v === 999999 ? '∞' : v.toString();
@@ -133,13 +142,13 @@ export default function AdminPlans() {
 
   if (loading) return (
     <div className="flex items-center justify-center h-64">
-      <div className="w-8 h-8 border-2 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin" />
+      <div className="w-8 h-8 border-2 border-cyan-500/30 border-t-cyan-600 rounded-full animate-spin" />
     </div>
   );
 
   if (loadError) return (
     <div className="text-center py-20">
-      <p className="text-sm text-red-400 mb-3">{loadError}</p>
+      <p className="text-sm text-red-600 mb-3">{loadError}</p>
       <button onClick={load} className="admin-btn-secondary text-sm">إعادة المحاولة</button>
     </div>
   );
@@ -149,13 +158,21 @@ export default function AdminPlans() {
       {/* Header */}
       <div className="flex items-center gap-4 mb-8">
         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 flex items-center justify-center">
-          <Package size={20} className="text-cyan-400" />
+          <Package size={20} className="text-cyan-600" />
         </div>
         <div>
-          <h1 className="text-xl font-bold text-white">إدارة الخطط والأسعار</h1>
-          <p className="text-sm text-slate-400">تحكم كامل في خطط الاشتراك وحدودها وميزاتها</p>
+          <h1 className="text-xl font-bold text-gray-900">إدارة الخطط والأسعار</h1>
+          <p className="text-sm text-gray-500">تحكم كامل في خطط الاشتراك وحدودها وميزاتها</p>
         </div>
       </div>
+
+      {saveError && (
+        <div className="flex items-start gap-2.5 bg-red-500/10 border border-red-500/20 text-red-600 text-xs rounded-xl p-3.5 mb-4">
+          <AlertTriangle size={15} className="flex-shrink-0 mt-0.5" />
+          <span>{saveError}</span>
+          <button onClick={() => setSaveError('')} className="mr-auto text-red-600/60 hover:text-red-600"><X size={14} /></button>
+        </div>
+      )}
 
       {/* Plans Grid */}
       <div className="space-y-4">
@@ -178,13 +195,13 @@ export default function AdminPlans() {
                             value={planEdits.name_ar || ''}
                             onChange={e => setPlanEdits(prev => ({ ...prev, name_ar: e.target.value }))}
                             placeholder="الاسم بالعربية"
-                            className="px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm"
+                            className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 text-sm"
                           />
                           <input
                             value={planEdits.name_en || ''}
                             onChange={e => setPlanEdits(prev => ({ ...prev, name_en: e.target.value }))}
                             placeholder="Name in English"
-                            className="px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm"
+                            className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 text-sm"
                             dir="ltr"
                           />
                         </div>
@@ -194,23 +211,23 @@ export default function AdminPlans() {
                             value={planEdits.price_monthly || 0}
                             onChange={e => setPlanEdits(prev => ({ ...prev, price_monthly: Number(e.target.value) }))}
                             placeholder="السعر الشهري (ريال)"
-                            className="px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm"
+                            className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 text-sm"
                           />
                           <input
                             type="number"
                             value={planEdits.price_yearly || 0}
                             onChange={e => setPlanEdits(prev => ({ ...prev, price_yearly: Number(e.target.value) }))}
                             placeholder="السعر السنوي (ريال)"
-                            className="px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm"
+                            className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 text-sm"
                           />
                         </div>
                         <div className="flex gap-2">
                           <button onClick={() => savePlan(plan.id)} disabled={saving}
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/20 text-emerald-400 rounded-lg text-xs hover:bg-emerald-500/30 transition-colors">
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 text-emerald-600 rounded-lg text-xs hover:bg-emerald-500/20 transition-colors">
                             <Check size={14} /> حفظ
                           </button>
                           <button onClick={() => setEditingPlan(null)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 text-slate-400 rounded-lg text-xs hover:bg-white/10 transition-colors">
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 text-gray-500 rounded-lg text-xs hover:bg-gray-100 transition-colors">
                             <X size={14} /> إلغاء
                           </button>
                         </div>
@@ -218,10 +235,10 @@ export default function AdminPlans() {
                     ) : (
                       <div>
                         <div className="flex items-center gap-2 mb-1">
-                          <h3 className="text-lg font-bold text-white">{plan.name_ar}</h3>
-                          <span className="text-sm text-slate-400">/ {plan.name_en}</span>
+                          <h3 className="text-lg font-bold text-gray-900">{plan.name_ar}</h3>
+                          <span className="text-sm text-gray-500">/ {plan.name_en}</span>
                           {plan.id === 'nova' && (
-                            <span className="flex items-center gap-1 px-2 py-0.5 bg-purple-500/20 text-purple-300 rounded-full text-[10px] font-medium">
+                            <span className="flex items-center gap-1 px-2 py-0.5 bg-purple-500/10 text-purple-600 rounded-full text-[10px] font-medium">
                               <Star size={10} /> الأكثر شعبية
                             </span>
                           )}
@@ -229,11 +246,11 @@ export default function AdminPlans() {
                         <div className="flex items-center gap-4 text-sm">
                           {plan.price_monthly > 0 ? (
                             <>
-                              <span className="text-white font-semibold">{plan.price_monthly} ريال<span className="text-slate-400 text-xs font-normal">/شهر</span></span>
-                              <span className="text-slate-400">{plan.price_yearly} ريال/سنة</span>
+                              <span className="text-gray-900 font-semibold">{plan.price_monthly} ريال<span className="text-gray-500 text-xs font-normal">/شهر</span></span>
+                              <span className="text-gray-500">{plan.price_yearly} ريال/سنة</span>
                             </>
                           ) : (
-                            <span className="text-white font-semibold">تسعير مخصص</span>
+                            <span className="text-gray-900 font-semibold">تسعير مخصص</span>
                           )}
                         </div>
                       </div>
@@ -243,12 +260,12 @@ export default function AdminPlans() {
                   <div className="flex items-center gap-2">
                     {editingPlan !== plan.id && (
                       <button onClick={() => startEditPlan(plan)}
-                        className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-colors">
+                        className="p-2 rounded-lg bg-gray-50 hover:bg-gray-100 text-gray-500 hover:text-gray-900 transition-colors">
                         <Edit2 size={15} />
                       </button>
                     )}
                     <button onClick={() => setExpanded(isExpanded ? null : plan.id)}
-                      className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-colors">
+                      className="p-2 rounded-lg bg-gray-50 hover:bg-gray-100 text-gray-500 hover:text-gray-900 transition-colors">
                       {isExpanded ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
                     </button>
                   </div>
@@ -264,9 +281,9 @@ export default function AdminPlans() {
                       { label: 'قوالب', val: formatLimit(planLimits.max_template_replies) },
                       { label: 'QR', val: formatLimit(planLimits.max_qr_codes) },
                     ].map(item => (
-                      <div key={item.label} className="flex items-center gap-1 px-2 py-1 bg-white/5 rounded-lg text-xs">
-                        <span className="text-white font-semibold">{item.val}</span>
-                        <span className="text-slate-400">{item.label}</span>
+                      <div key={item.label} className="flex items-center gap-1 px-2 py-1 bg-gray-50 rounded-lg text-xs">
+                        <span className="text-gray-900 font-semibold">{item.val}</span>
+                        <span className="text-gray-500">{item.label}</span>
                       </div>
                     ))}
                   </div>
@@ -275,24 +292,24 @@ export default function AdminPlans() {
 
               {/* Expanded content */}
               {isExpanded && (
-                <div className="border-t border-white/5 p-5 space-y-6">
+                <div className="border-t border-gray-200 p-5 space-y-6">
                   {/* Limits Editor */}
                   <div>
                     <div className="flex items-center justify-between mb-3">
-                      <h4 className="text-sm font-medium text-slate-300">الحدود الكمية</h4>
+                      <h4 className="text-sm font-medium text-gray-700">الحدود الكمية</h4>
                       {editingLimits !== plan.id ? (
                         <button onClick={() => startEditLimits(plan.id)}
-                          className="flex items-center gap-1.5 px-2.5 py-1 bg-white/5 text-slate-400 hover:text-white rounded-lg text-xs hover:bg-white/10 transition-colors">
+                          className="flex items-center gap-1.5 px-2.5 py-1 bg-gray-50 text-gray-500 hover:text-gray-900 rounded-lg text-xs hover:bg-gray-100 transition-colors">
                           <Edit2 size={12} /> تعديل
                         </button>
                       ) : (
                         <div className="flex gap-2">
                           <button onClick={() => saveLimits(plan.id)} disabled={saving}
-                            className="flex items-center gap-1 px-2.5 py-1 bg-emerald-500/20 text-emerald-400 rounded-lg text-xs hover:bg-emerald-500/30">
+                            className="flex items-center gap-1 px-2.5 py-1 bg-emerald-500/10 text-emerald-600 rounded-lg text-xs hover:bg-emerald-500/20">
                             <Check size={12} /> حفظ
                           </button>
                           <button onClick={() => setEditingLimits(null)}
-                            className="flex items-center gap-1 px-2.5 py-1 bg-white/5 text-slate-400 rounded-lg text-xs hover:bg-white/10">
+                            className="flex items-center gap-1 px-2.5 py-1 bg-gray-50 text-gray-500 rounded-lg text-xs hover:bg-gray-100">
                             <X size={12} /> إلغاء
                           </button>
                         </div>
@@ -307,17 +324,17 @@ export default function AdminPlans() {
                           { key: 'max_template_replies', label: 'القوالب' },
                           { key: 'max_qr_codes', label: 'رموز QR' },
                         ].map(({ key, label }) => (
-                          <div key={key} className="bg-white/5 rounded-lg p-3 text-center">
-                            <div className="text-xs text-slate-400 mb-1">{label}</div>
+                          <div key={key} className="bg-gray-50 rounded-lg p-3 text-center">
+                            <div className="text-xs text-gray-500 mb-1">{label}</div>
                             {editingLimits === plan.id ? (
                               <input
                                 type="number"
                                 value={(limitEdits as unknown as Record<string, number>)[key] ?? (planLimits as unknown as Record<string, number>)[key]}
                                 onChange={e => setLimitEdits(prev => ({ ...prev, [key]: Number(e.target.value) }))}
-                                className="w-full text-center bg-white/5 border border-white/10 rounded px-1 py-0.5 text-white text-sm"
+                                className="w-full text-center bg-gray-50 border border-gray-200 rounded px-1 py-0.5 text-gray-900 text-sm"
                               />
                             ) : (
-                              <div className="text-white font-semibold text-sm">
+                              <div className="text-gray-900 font-semibold text-sm">
                                 {formatLimit((planLimits as unknown as Record<string, number>)[key])}
                               </div>
                             )}
@@ -329,7 +346,7 @@ export default function AdminPlans() {
 
                   {/* Feature Toggles */}
                   <div>
-                    <h4 className="text-sm font-medium text-slate-300 mb-3">الميزات</h4>
+                    <h4 className="text-sm font-medium text-gray-700 mb-3">الميزات</h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       {Object.entries(featureLabels).map(([key, label]) => {
                         const isOn = planFeatures[key] === 'true';
@@ -339,12 +356,12 @@ export default function AdminPlans() {
                             onClick={() => toggleFeature(plan.id, key)}
                             className={`flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg border transition-all text-sm ${
                               isOn
-                                ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300'
-                                : 'bg-white/3 border-white/5 text-slate-400 hover:bg-white/5'
+                                ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600'
+                                : 'bg-gray-50 border-gray-200 text-gray-500 hover:bg-gray-100'
                             }`}
                           >
                             <span>{label}</span>
-                            <div className={`w-8 h-4 rounded-full relative transition-colors flex-shrink-0 ${isOn ? 'bg-emerald-500' : 'bg-slate-600'}`}>
+                            <div className={`w-8 h-4 rounded-full relative transition-colors flex-shrink-0 ${isOn ? 'bg-emerald-500' : 'bg-gray-300'}`}>
                               <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-transform ${isOn ? 'ltr:translate-x-4 rtl:-translate-x-4' : 'ltr:translate-x-0.5 rtl:-translate-x-0.5'}`} />
                             </div>
                           </button>

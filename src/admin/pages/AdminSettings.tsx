@@ -29,16 +29,16 @@ export default function AdminSettings() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-xl font-bold text-white mb-1">الإعدادات</h1>
-        <p className="text-sm text-slate-400">إعدادات المنصة والنظام — تُحفظ تلقائيًا في قاعدة البيانات</p>
+        <h1 className="text-xl font-bold text-gray-900 mb-1">الإعدادات</h1>
+        <p className="text-sm text-gray-600">إعدادات المنصة والنظام — تُحفظ تلقائيًا في قاعدة البيانات</p>
       </div>
-      {msg && <div className={`text-xs rounded-lg p-3 mb-4 ${msg.type === 'success' ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400' : 'bg-red-500/10 border border-red-500/20 text-red-400'}`}>{msg.text}</div>}
+      {msg && <div className={`text-xs rounded-lg p-3 mb-4 ${msg.type === 'success' ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-600' : 'bg-red-500/10 border border-red-500/20 text-red-600'}`}>{msg.text}</div>}
 
       <div className="flex flex-col lg:flex-row gap-4">
         <div className="lg:w-56 flex-shrink-0"><div className="admin-card"><div className="p-2">
           {sections.map((s) => { const Icon = s.icon; return (
             <button key={s.id} onClick={() => setActiveSection(s.id)}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors mb-0.5 ${activeSection === s.id ? 'bg-cyan-500/10 text-cyan-400' : 'text-slate-400 hover:text-white hover:bg-white/[0.03]'}`}>
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors mb-0.5 ${activeSection === s.id ? 'bg-cyan-500/10 text-cyan-600' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'}`}>
               <Icon size={16} /><span>{s.label}</span>
             </button>); })}
         </div></div></div>
@@ -113,12 +113,12 @@ function BrandingSection({ showMsg }: { showMsg: (t: string, ty: 'success' | 'er
       <div className="admin-card"><div className="admin-card-header"><h3>الهوية الأساسية</h3></div>
         <div className="admin-card-body space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div><label className="block text-xs font-medium text-slate-400 mb-1.5">اسم المنصة (عربي)</label>
+            <div><label className="block text-xs font-medium text-gray-500 mb-1.5">اسم المنصة (عربي)</label>
               <input className="admin-form-input" value={branding.platform_name_ar} onChange={(e) => setBranding(p => ({ ...p, platform_name_ar: e.target.value }))} /></div>
-            <div><label className="block text-xs font-medium text-slate-400 mb-1.5">اسم المنصة (إنجليزي)</label>
+            <div><label className="block text-xs font-medium text-gray-500 mb-1.5">اسم المنصة (إنجليزي)</label>
               <input className="admin-form-input" dir="ltr" value={branding.platform_name_en} onChange={(e) => setBranding(p => ({ ...p, platform_name_en: e.target.value }))} /></div>
           </div>
-          <div><label className="block text-xs font-medium text-slate-400 mb-1.5">الوصف المختصر</label>
+          <div><label className="block text-xs font-medium text-gray-500 mb-1.5">الوصف المختصر</label>
             <input className="admin-form-input" value={branding.tagline} onChange={(e) => setBranding(p => ({ ...p, tagline: e.target.value }))} /></div>
         </div></div>
 
@@ -140,9 +140,9 @@ function BrandingSection({ showMsg }: { showMsg: (t: string, ty: 'success' | 'er
 
 function LogoSlot({ label, desc, url, onUpload }: { label: string; desc: string; url: string; onUpload: (f: File) => void }) {
   return (
-    <div><label className="block text-xs font-medium text-slate-400 mb-1">{label}</label>
+    <div><label className="block text-xs font-medium text-gray-500 mb-1">{label}</label>
       <p className="text-[11px] text-slate-600 mb-2">{desc}</p>
-      <label className="flex flex-col items-center justify-center w-full h-28 rounded-xl border-2 border-dashed border-white/[0.08] hover:border-cyan-500/30 bg-white/[0.02] cursor-pointer transition-colors">
+      <label className="flex flex-col items-center justify-center w-full h-28 rounded-xl border-2 border-dashed border-gray-300 hover:border-cyan-500/30 bg-gray-50 cursor-pointer transition-colors">
         {url ? <img src={url} alt={label} className="max-h-20 max-w-full object-contain" /> : <div className="flex flex-col items-center gap-1.5 text-slate-500"><Upload size={20} /><span className="text-[11px]">اختر ملفًا</span></div>}
         <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) onUpload(f); }} />
       </label>
@@ -179,14 +179,14 @@ function SettingSection({ settingKey, fields, showMsg }: { settingKey: string; f
         <div key={f.key}>
           {f.type === 'toggle' ? (
             <div className="flex items-center justify-between py-2">
-              <span className="text-sm text-slate-300">{f.label}</span>
+              <span className="text-sm text-gray-700">{f.label}</span>
               <button onClick={() => setValues(p => ({ ...p, [f.key]: !p[f.key] }))}
-                className={`relative w-10 h-5 rounded-full transition-colors flex-shrink-0 ${values[f.key] ? 'bg-cyan-500' : 'bg-slate-700'}`}>
+                className={`relative w-10 h-5 rounded-full transition-colors flex-shrink-0 ${values[f.key] ? 'bg-cyan-500' : 'bg-gray-300'}`}>
                 <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all duration-200 ${values[f.key] ? 'right-0.5' : 'left-0.5'}`} />
               </button>
             </div>
           ) : (
-            <div><label className="block text-xs font-medium text-slate-400 mb-1.5">{f.label}</label>
+            <div><label className="block text-xs font-medium text-gray-500 mb-1.5">{f.label}</label>
               {f.type === 'select' ? (
                 <AdminSelect wrapperClassName="w-auto min-w-[200px]" value={String(values[f.key] ?? f.default)}
                   onChange={(e) => setValues(p => ({ ...p, [f.key]: e.target.value }))}>
@@ -245,32 +245,32 @@ function SeoSection({ showMsg }: { showMsg: (t: string, ty: 'success' | 'error')
         </div>
         <div className="admin-card-body space-y-4">
           <div>
-            <label className="block text-xs text-slate-400 mb-1.5 font-medium">عنوان الصفحة (Meta Title)</label>
+            <label className="block text-xs text-gray-500 mb-1.5 font-medium">عنوان الصفحة (Meta Title)</label>
             <input value={seo.meta_title} onChange={e => setSeo(p => ({ ...p, meta_title: e.target.value }))}
               placeholder="سديم — نظام إدارة التقييمات بالذكاء الاصطناعي"
-              className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm placeholder-slate-600 focus:outline-none focus:border-indigo-500/50" />
+              className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-indigo-500/50" />
             <p className="text-[10px] text-slate-600 mt-1">{seo.meta_title.length}/60 حرف — الموصى به: 50-60</p>
           </div>
           <div>
-            <label className="block text-xs text-slate-400 mb-1.5 font-medium">وصف الصفحة (Meta Description)</label>
+            <label className="block text-xs text-gray-500 mb-1.5 font-medium">وصف الصفحة (Meta Description)</label>
             <textarea value={seo.meta_description} onChange={e => setSeo(p => ({ ...p, meta_description: e.target.value }))}
               rows={3} placeholder="منصة سديم لإدارة تقييمات Google تلقائياً بالذكاء الاصطناعي — ردود فورية، تحليلات متقدمة، وإدارة جميع الفروع من مكان واحد."
-              className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm placeholder-slate-600 focus:outline-none focus:border-indigo-500/50 resize-none" />
+              className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-indigo-500/50 resize-none" />
             <p className="text-[10px] text-slate-600 mt-1">{seo.meta_description.length}/160 حرف — الموصى به: 120-160</p>
           </div>
           <div>
-            <label className="block text-xs text-slate-400 mb-1.5 font-medium">الكلمات المفتاحية (Keywords)</label>
+            <label className="block text-xs text-gray-500 mb-1.5 font-medium">الكلمات المفتاحية (Keywords)</label>
             <input value={seo.keywords} onChange={e => setSeo(p => ({ ...p, keywords: e.target.value }))}
               placeholder="إدارة تقييمات Google، ردود تلقائية، ذكاء اصطناعي، سديم"
-              className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm placeholder-slate-600 focus:outline-none focus:border-indigo-500/50" />
+              className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-indigo-500/50" />
             <p className="text-[10px] text-slate-600 mt-1">افصل بين الكلمات بفاصلة</p>
           </div>
           <div>
-            <label className="block text-xs text-slate-400 mb-1.5 font-medium">صورة Open Graph (للمشاركة)</label>
+            <label className="block text-xs text-gray-500 mb-1.5 font-medium">صورة Open Graph (للمشاركة)</label>
             <input value={seo.og_image_url} onChange={e => setSeo(p => ({ ...p, og_image_url: e.target.value }))}
               placeholder="https://..."
               dir="ltr"
-              className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm placeholder-slate-600 focus:outline-none focus:border-indigo-500/50" />
+              className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-indigo-500/50" />
           </div>
           <div className="flex justify-end pt-1">
             <button onClick={save} disabled={saving} className="admin-btn-primary">
@@ -280,14 +280,14 @@ function SeoSection({ showMsg }: { showMsg: (t: string, ty: 'success' | 'error')
         </div>
       </div>
 
-      <div className="admin-card border-dashed border-white/10">
+      <div className="admin-card border-dashed border-gray-200">
         <div className="admin-card-body">
           <div className="flex items-start gap-3">
             <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-              <Search size={15} className="text-amber-400" />
+              <Search size={15} className="text-amber-600" />
             </div>
             <div>
-              <div className="text-sm font-semibold text-white mb-1">Programmatic SEO <span className="text-[10px] text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded-full border border-amber-500/20 mr-1">قريباً</span></div>
+              <div className="text-sm font-semibold text-gray-900 mb-1">Programmatic SEO <span className="text-[10px] text-amber-600 bg-amber-500/10 px-1.5 py-0.5 rounded-full border border-amber-500/20 mr-1">قريباً</span></div>
               <p className="text-xs text-slate-500 leading-relaxed">إنشاء صفحات SEO تلقائية لكل فرع، مدينة، وخدمة — يُمكن المنصة من التصنيف في نتائج البحث لكلمات طويلة الذيل مثل "إدارة تقييمات Google في الرياض".</p>
               <ul className="mt-2 space-y-1 text-[11px] text-slate-600">
                 <li>• صفحة مخصصة لكل فرع تلقائياً</li>
@@ -346,14 +346,14 @@ function BillingSection({ showMsg }: { showMsg: (t: string, ty: 'success' | 'err
       </div>
       <div className="admin-card-body space-y-5">
         {/* VAT enabled toggle */}
-        <div className="flex items-center justify-between py-2 border-b border-white/[0.05]">
+        <div className="flex items-center justify-between py-2 border-b border-gray-200">
           <div>
-            <div className="text-sm text-slate-200 font-medium">تفعيل ضريبة القيمة المضافة</div>
+            <div className="text-sm text-gray-700 font-medium">تفعيل ضريبة القيمة المضافة</div>
             <div className="text-xs text-slate-500 mt-0.5">عند التفعيل تُضاف الضريبة تلقائياً لجميع الفواتير وتظهر التفاصيل للمشتركين</div>
           </div>
           <button
             onClick={() => setVatEnabled(v => !v)}
-            className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${vatEnabled ? 'bg-cyan-500' : 'bg-slate-700'}`}
+            className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${vatEnabled ? 'bg-cyan-500' : 'bg-gray-300'}`}
           >
             <div className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-all duration-200 ${vatEnabled ? 'right-1' : 'left-1'}`} />
           </button>
@@ -361,7 +361,7 @@ function BillingSection({ showMsg }: { showMsg: (t: string, ty: 'success' | 'err
 
         {/* VAT rate */}
         <div>
-          <label className="block text-xs font-medium text-slate-400 mb-1.5">
+          <label className="block text-xs font-medium text-gray-500 mb-1.5">
             نسبة الضريبة (%)
           </label>
           <div className="flex items-center gap-3">
@@ -382,18 +382,18 @@ function BillingSection({ showMsg }: { showMsg: (t: string, ty: 'success' | 'err
 
         {/* Preview */}
         {vatEnabled && (
-          <div className="rounded-xl bg-white/[0.03] border border-white/[0.05] p-4">
-            <div className="text-xs text-slate-400 mb-2 font-medium">معاينة — مثال على خطة نوفا (199 ر.س)</div>
+          <div className="rounded-xl bg-gray-50 border border-gray-200 p-4">
+            <div className="text-xs text-gray-500 mb-2 font-medium">معاينة — مثال على خطة نوفا (199 ر.س)</div>
             <div className="space-y-1 text-xs">
-              <div className="flex justify-between text-slate-400">
+              <div className="flex justify-between text-gray-500">
                 <span>المبلغ قبل الضريبة</span>
                 <span dir="ltr">199.00 ر.س</span>
               </div>
-              <div className="flex justify-between text-slate-400">
+              <div className="flex justify-between text-gray-500">
                 <span>ضريبة القيمة المضافة ({vatRate}%)</span>
                 <span dir="ltr">{(199 * vatRate / 100).toFixed(2)} ر.س</span>
               </div>
-              <div className="flex justify-between text-white font-semibold border-t border-white/[0.06] pt-1 mt-1">
+              <div className="flex justify-between text-gray-900 font-semibold border-t border-gray-200 pt-1 mt-1">
                 <span>الإجمالي شامل الضريبة</span>
                 <span dir="ltr">{(199 * (1 + vatRate / 100)).toFixed(2)} ر.س</span>
               </div>
@@ -416,14 +416,19 @@ function SystemInfo() {
     <div className="admin-card"><div className="admin-card-header"><h3>معلومات النظام</h3></div>
       <div className="admin-card-body space-y-2 text-sm">
         {[['إصدار النظام', '1.0.0'], ['Frontend', 'React 18 + TypeScript + Vite'], ['Backend', 'Supabase (PostgreSQL)'], ['AI Provider', 'Google Gemini Flash Lite'], ['Hosting', 'Vercel'], ['Payment', 'Stripe / Moyasar']].map(([l, v]) => (
-          <div key={l} className="flex justify-between py-1"><span className="text-slate-400">{l}</span><span className="text-slate-200" dir="ltr">{v}</span></div>
+          <div key={l} className="flex justify-between py-1"><span className="text-gray-500">{l}</span><span className="text-gray-700" dir="ltr">{v}</span></div>
         ))}
       </div></div>
     <div className="admin-card"><div className="admin-card-header"><h3>حالة الخدمات</h3></div>
       <div className="admin-card-body space-y-2 text-sm">
-        {[['قاعدة البيانات', 'emerald'], ['خدمة المصادقة', 'emerald'], ['AI Service', 'emerald'], ['بوابة الدفع', 'blue']].map(([l, c]) => (
-          <div key={l} className="flex items-center justify-between py-1"><span className="text-slate-400">{l}</span>
-            <div className="flex items-center gap-2"><div className={`w-2 h-2 rounded-full bg-${c}-400`} /><span className="text-xs text-slate-300">{c === 'emerald' ? 'يعمل' : 'جاهز'}</span></div>
+        {[
+          { l: 'قاعدة البيانات', dot: 'bg-emerald-400', s: 'يعمل' },
+          { l: 'خدمة المصادقة', dot: 'bg-emerald-400', s: 'يعمل' },
+          { l: 'AI Service', dot: 'bg-emerald-400', s: 'يعمل' },
+          { l: 'بوابة الدفع', dot: 'bg-blue-400', s: 'جاهز' },
+        ].map(({ l, dot, s }) => (
+          <div key={l} className="flex items-center justify-between py-1"><span className="text-gray-500">{l}</span>
+            <div className="flex items-center gap-2"><div className={`w-2 h-2 rounded-full ${dot}`} /><span className="text-xs text-gray-700">{s}</span></div>
           </div>))}
       </div></div>
   </div>);

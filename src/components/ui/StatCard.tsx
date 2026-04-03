@@ -6,19 +6,22 @@ interface StatCardProps {
   valueColor?: string;
   icon?: ReactNode;
   iconColor?: string;
+  iconBg?: string;
   trend?: { value: string; positive: boolean };
 }
 
-export function StatCard({ label, value, sub, valueColor, icon, iconColor, trend }: StatCardProps) {
+export function StatCard({ label, value, sub, valueColor, icon, iconColor, iconBg, trend }: StatCardProps) {
   return (
     <div className="card group hover:shadow-md transition-shadow duration-200">
       <div className="px-5 py-4">
         <div className="flex items-center justify-between mb-3">
           <span className="text-xs font-medium text-content-tertiary uppercase tracking-wider">{label}</span>
           {icon && (
-            <span className={iconColor || 'text-content-tertiary'}>
-              {icon}
-            </span>
+            <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: iconBg || '#f3f4f6' }}>
+              <span className={iconColor || 'text-content-tertiary'}>
+                {icon}
+              </span>
+            </div>
           )}
         </div>
         <div className="flex items-baseline gap-2">

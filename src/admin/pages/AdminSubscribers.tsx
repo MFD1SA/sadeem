@@ -10,17 +10,22 @@ import { adminSubscribersService, type SubscriberListItem, type SubscriberDetail
 import { PERMISSIONS } from '../utils/constants';
 import { PermissionGate } from '../guards';
 import {
-  Building2, Search, ChevronLeft, Users, GitBranch,
+  Building2, Search, ChevronLeft, ChevronRight, Users, GitBranch,
   MessageSquare, Zap, FileText, MoreVertical,
   Pause, Play, ArrowUpCircle, X, Calendar, RefreshCw,
 } from 'lucide-react';
 import { AdminSelect } from '../components/AdminSelect';
 
-const PLAN_LABELS: Record<string, { ar: string; color: string }> = {
-  orbit:    { ar: 'مدار',      color: 'blue' },
-  nova:     { ar: 'نوفا',      color: 'violet' },
-  galaxy:   { ar: 'جالاكسي',  color: 'amber' },
-  infinity: { ar: 'إنفينيتي', color: 'emerald' },
+const PLAN_LABELS: Record<string, { ar: string; color: string; textClass: string }> = {
+  orbit:      { ar: 'مدار',      color: 'blue',    textClass: 'text-blue-600' },
+  nova:       { ar: 'نوفا',      color: 'violet',  textClass: 'text-violet-600' },
+  galaxy:     { ar: 'جالاكسي',  color: 'amber',   textClass: 'text-amber-600' },
+  infinity:   { ar: 'إنفينيتي', color: 'emerald', textClass: 'text-emerald-600' },
+  // Legacy plan IDs (backward compat display)
+  starter:    { ar: 'المبتدئ',    color: 'blue',    textClass: 'text-blue-600' },
+  growth:     { ar: 'النمو',      color: 'violet',  textClass: 'text-violet-600' },
+  pro:        { ar: 'الاحترافي',  color: 'amber',   textClass: 'text-amber-600' },
+  enterprise: { ar: 'المؤسسات',  color: 'emerald', textClass: 'text-emerald-600' },
 };
 
 const SUB_STATUS: Record<string, { ar: string; color: string }> = {
@@ -40,6 +45,9 @@ export default function AdminSubscribers() {
   const [filterPlan, setFilterPlan] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
   const [msg, setMsg] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 20;
+  const totalPages = Math.ceil(total / PAGE_SIZE);
 
   // Detail
   const [detail, setDetail] = useState<SubscriberDetail | null>(null);
@@ -76,6 +84,8 @@ export default function AdminSubscribers() {
         search: search || undefined,
         plan: filterPlan || undefined,
         status: filterStatus || undefined,
+        limit: PAGE_SIZE,
+        offset: (page - 1) * PAGE_SIZE,
       });
       setItems(result.data);
       setTotal(result.total);
@@ -84,7 +94,7 @@ export default function AdminSubscribers() {
     } finally {
       setIsLoading(false);
     }
-  }, [search, filterPlan, filterStatus]);
+  }, [search, filterPlan, filterStatus, page]);
 
   useEffect(() => { loadList(); }, [loadList]);
 
@@ -169,11 +179,11 @@ export default function AdminSubscribers() {
       <div>
         <div className="flex items-center gap-3 mb-6">
           <button onClick={() => setDetail(null)}
-            className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors">
+            className="p-2 rounded-lg text-slate-400 hover:text-gray-900 hover:bg-gray-100 transition-colors">
             <ChevronLeft size={18} />
           </button>
           <div>
-            <h1 className="text-xl font-bold text-white mb-1">{detail.organization.name}</h1>
+            <h1 className="text-xl font-bold text-gray-900 mb-1">{detail.organization.name}</h1>
             <p className="text-sm text-slate-400">{detail.organization.slug} — {detail.organization.industry || 'غير محدد'}</p>
           </div>
         </div>
@@ -185,15 +195,15 @@ export default function AdminSubscribers() {
             <div className="admin-card-body space-y-3 text-sm">
               <div className="flex justify-between">
                 <span className="text-slate-400">الخطة</span>
-                <span className={`text-${planInfo.color}-400 font-medium`}>{planInfo.ar}</span>
+                <span className={`${planInfo.textClass} font-medium`}>{planInfo.ar}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-400">الحالة</span>
                 <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium
-                  ${sub?.status === 'active' ? 'bg-emerald-500/10 text-emerald-400' :
-                    sub?.status === 'trial' ? 'bg-blue-500/10 text-blue-400' :
-                    sub?.status === 'cancelled' ? 'bg-slate-500/10 text-slate-400' :
-                    'bg-red-500/10 text-red-400'}`}>
+                  ${sub?.status === 'active' ? 'bg-emerald-500/10 text-emerald-600' :
+                    sub?.status === 'trial' ? 'bg-blue-500/10 text-blue-600' :
+                    sub?.status === 'cancelled' ? 'bg-slate-500/10 text-slate-600' :
+                    'bg-red-500/10 text-red-600'}`}>
                   {statusInfo.ar}
                 </span>
               </div>
@@ -201,9 +211,9 @@ export default function AdminSubscribers() {
                 <div className="flex justify-between">
                   <span className="text-slate-400">ينتهي في</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-slate-300">{new Date(sub.ends_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
+                    <span className="text-gray-700">{new Date(sub.ends_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
                     {new Date(sub.ends_at) < new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) && (
-                      <span className="text-[10px] text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded font-medium">قريب</span>
+                      <span className="text-[10px] text-amber-600 bg-amber-500/10 px-1.5 py-0.5 rounded font-medium">قريب</span>
                     )}
                   </div>
                 </div>
@@ -217,15 +227,15 @@ export default function AdminSubscribers() {
             <div className="admin-card-body space-y-3 text-sm">
               <div className="flex justify-between">
                 <span className="text-slate-400 flex items-center gap-1.5"><Zap size={14} /> ردود AI</span>
-                <span className="text-white font-medium">{sub?.ai_replies_used ?? 0}</span>
+                <span className="text-gray-900 font-medium">{sub?.ai_replies_used ?? 0}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-400 flex items-center gap-1.5"><FileText size={14} /> ردود القوالب</span>
-                <span className="text-white font-medium">{sub?.template_replies_used ?? 0}</span>
+                <span className="text-gray-900 font-medium">{sub?.template_replies_used ?? 0}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-400 flex items-center gap-1.5"><MessageSquare size={14} /> التقييمات</span>
-                <span className="text-white font-medium">{detail.stats.total_reviews}</span>
+                <span className="text-gray-900 font-medium">{detail.stats.total_reviews}</span>
               </div>
             </div>
           </div>
@@ -236,15 +246,15 @@ export default function AdminSubscribers() {
             <div className="admin-card-body space-y-3 text-sm">
               <div className="flex justify-between">
                 <span className="text-slate-400 flex items-center gap-1.5"><GitBranch size={14} /> الفروع النشطة</span>
-                <span className="text-white font-medium">{detail.stats.active_branches}</span>
+                <span className="text-gray-900 font-medium">{detail.stats.active_branches}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-400 flex items-center gap-1.5"><Users size={14} /> الأعضاء</span>
-                <span className="text-white font-medium">{detail.members.length}</span>
+                <span className="text-gray-900 font-medium">{detail.members.length}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-400">تقييمات هذا الشهر</span>
-                <span className="text-white font-medium">{detail.stats.reviews_this_month}</span>
+                <span className="text-gray-900 font-medium">{detail.stats.reviews_this_month}</span>
               </div>
             </div>
           </div>
@@ -255,11 +265,11 @@ export default function AdminSubscribers() {
           <div className="admin-card-header"><h3>المالك</h3></div>
           <div className="admin-card-body">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-slate-700 flex items-center justify-center text-white text-sm font-bold">
+              <div className="w-10 h-10 rounded-xl bg-gray-200 flex items-center justify-center text-gray-700 text-sm font-bold">
                 {detail.owner.full_name?.charAt(0) || '?'}
               </div>
               <div>
-                <div className="text-sm text-white font-medium">{detail.owner.full_name}</div>
+                <div className="text-sm text-gray-900 font-medium">{detail.owner.full_name}</div>
                 <div className="text-xs text-slate-500" dir="ltr">{detail.owner.email}</div>
               </div>
             </div>
@@ -277,12 +287,12 @@ export default function AdminSubscribers() {
             ) : (
               <div className="space-y-2">
                 {detail.branches.map((b) => (
-                  <div key={b.id} className="flex items-center justify-between py-2 px-3 rounded-lg bg-white/[0.02]">
+                  <div key={b.id} className="flex items-center justify-between py-2 px-3 rounded-lg bg-gray-50">
                     <div>
-                      <div className="text-sm text-white">{b.internal_name}</div>
+                      <div className="text-sm text-gray-900">{b.internal_name}</div>
                       <div className="text-xs text-slate-500">{b.city || '—'}</div>
                     </div>
-                    <span className={`text-xs ${b.status === 'active' ? 'text-emerald-400' : 'text-slate-500'}`}>
+                    <span className={`text-xs ${b.status === 'active' ? 'text-emerald-600' : 'text-slate-500'}`}>
                       {b.status === 'active' ? 'نشط' : b.status}
                     </span>
                   </div>
@@ -300,9 +310,9 @@ export default function AdminSubscribers() {
           <div className="admin-card-body">
             <div className="space-y-2">
               {detail.members.map((m) => (
-                <div key={m.user_id} className="flex items-center justify-between py-2 px-3 rounded-lg bg-white/[0.02]">
+                <div key={m.user_id} className="flex items-center justify-between py-2 px-3 rounded-lg bg-gray-50">
                   <div>
-                    <div className="text-sm text-white">{m.full_name}</div>
+                    <div className="text-sm text-gray-900">{m.full_name}</div>
                     <div className="text-xs text-slate-500" dir="ltr">{m.email}</div>
                   </div>
                   <span className="text-xs text-slate-400">{m.role}</span>
@@ -319,14 +329,14 @@ export default function AdminSubscribers() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-xl font-bold text-white mb-1">إدارة المشتركين</h1>
+        <h1 className="text-xl font-bold text-gray-900 mb-1">إدارة المشتركين</h1>
         <p className="text-sm text-slate-400">عرض وإدارة جميع المشتركين في المنصة ({total} مشترك)</p>
       </div>
 
       {msg && (
         <div className={`text-xs rounded-lg p-3 mb-4 ${
-          msg.type === 'success' ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'
-            : 'bg-red-500/10 border border-red-500/20 text-red-400'
+          msg.type === 'success' ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-600'
+            : 'bg-red-500/10 border border-red-500/20 text-red-600'
         }`}>{msg.text}</div>
       )}
 
@@ -336,12 +346,12 @@ export default function AdminSubscribers() {
           <div className="relative flex-1 min-w-[200px] max-w-sm">
             <Search size={15} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500" />
             <input type="text" placeholder="بحث بالاسم..." value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
               onKeyDown={(e) => e.key === 'Enter' && loadList()}
               className="admin-form-input pr-9" />
           </div>
           <AdminSelect wrapperClassName="w-auto min-w-[140px]" value={filterPlan}
-            onChange={(e) => setFilterPlan(e.target.value)}>
+            onChange={(e) => { setFilterPlan(e.target.value); setPage(1); }}>
             <option value="">كل الخطط</option>
             <option value="orbit">مدار</option>
             <option value="nova">نوفا</option>
@@ -349,7 +359,7 @@ export default function AdminSubscribers() {
             <option value="infinity">إنفينيتي</option>
           </AdminSelect>
           <AdminSelect wrapperClassName="w-auto min-w-[140px]" value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}>
+            onChange={(e) => { setFilterStatus(e.target.value); setPage(1); }}>
             <option value="">كل الحالات</option>
             <option value="active">نشط</option>
             <option value="trial">تجريبي</option>
@@ -365,7 +375,7 @@ export default function AdminSubscribers() {
           <div className="flex items-center justify-center py-16"><div className="admin-spinner" /></div>
         ) : error ? (
           <div className="text-center py-16">
-            <p className="text-sm text-red-400 mb-3">{error}</p>
+            <p className="text-sm text-red-600 mb-3">{error}</p>
             <button onClick={loadList} className="admin-btn-secondary text-sm">إعادة المحاولة</button>
           </div>
         ) : items.length === 0 ? (
@@ -374,7 +384,7 @@ export default function AdminSubscribers() {
             <p className="text-sm text-slate-400">لا يوجد مشتركين</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto overflow-y-visible">
             <table className="admin-table">
               <thead>
                 <tr>
@@ -398,61 +408,61 @@ export default function AdminSubscribers() {
                     <tr key={item.id} className="cursor-pointer" onClick={() => viewDetail(item.id)}>
                       <td>
                         <div>
-                          <div className="text-sm text-white font-medium">{item.name}</div>
+                          <div className="text-sm text-gray-900 font-medium">{item.name}</div>
                           <div className="text-xs text-slate-500">{item.owner_name} — {item.owner_email}</div>
                         </div>
                       </td>
                       <td>
-                        <span className={`text-xs font-medium text-${planInfo.color}-400`}>{planInfo.ar}</span>
+                        <span className={`text-xs font-medium ${planInfo.textClass}`}>{planInfo.ar}</span>
                       </td>
                       <td>
                         <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium
-                          ${subStatus === 'active' ? 'bg-emerald-500/10 text-emerald-400' :
-                            subStatus === 'trial' ? 'bg-blue-500/10 text-blue-400' :
-                            subStatus === 'cancelled' ? 'bg-slate-500/10 text-slate-400' :
-                            'bg-red-500/10 text-red-400'}`}>
+                          ${subStatus === 'active' ? 'bg-emerald-500/10 text-emerald-600' :
+                            subStatus === 'trial' ? 'bg-blue-500/10 text-blue-600' :
+                            subStatus === 'cancelled' ? 'bg-slate-500/10 text-slate-600' :
+                            'bg-red-500/10 text-red-600'}`}>
                           {statusInfo.ar}
                         </span>
                       </td>
-                      <td><span className="text-sm text-slate-300">{item.branch_count}</span></td>
-                      <td><span className="text-sm text-slate-300">{item.subscription?.ai_replies_used ?? 0}</span></td>
-                      <td><span className="text-sm text-slate-300">{item.review_count}</span></td>
-                      <td><span className="text-sm text-slate-300">{item.created_at ? new Date(item.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '—'}</span></td>
+                      <td><span className="text-sm text-gray-700">{item.branch_count}</span></td>
+                      <td><span className="text-sm text-gray-700">{item.subscription?.ai_replies_used ?? 0}</span></td>
+                      <td><span className="text-sm text-gray-700">{item.review_count}</span></td>
+                      <td><span className="text-sm text-gray-700">{item.created_at ? new Date(item.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '—'}</span></td>
                       <td onClick={(e) => e.stopPropagation()}>
                         {hasPermission(PERMISSIONS.SUBSCRIBERS_UPDATE) && (
                           <div className="relative">
                             <button onClick={(e) => { e.stopPropagation(); const r = e.currentTarget.getBoundingClientRect(); setActiveMenu(activeMenu?.id === item.id ? null : { id: item.id, top: r.bottom + 4, right: window.innerWidth - r.right }); }}
-                              className="p-1.5 rounded-lg text-slate-500 hover:text-white hover:bg-white/5 transition-colors">
+                              className="p-1.5 rounded-lg text-slate-500 hover:text-gray-900 hover:bg-gray-100 transition-colors">
                               <MoreVertical size={16} />
                             </button>
                             {activeMenu?.id === item.id && createPortal(
-                              <div ref={menuRef} style={{ position: 'fixed', top: activeMenu.top, right: activeMenu.right, zIndex: 9999 }} className="w-48 bg-[#111827] border border-white/[0.08] rounded-xl shadow-2xl py-1.5">
+                              <div ref={menuRef} style={{ position: 'fixed', top: activeMenu.top, right: activeMenu.right, zIndex: 9999 }} className="w-48 bg-white border border-gray-200 rounded-xl shadow-lg py-1.5">
                                 <button onClick={() => { setActiveMenu(null); setPlanTarget(item); setNewPlan(item.subscription?.plan || 'orbit'); }}
-                                  className="w-full flex items-center gap-2 px-3 py-2 text-xs text-cyan-400 hover:bg-cyan-500/10 transition-colors">
+                                  className="w-full flex items-center gap-2 px-3 py-2 text-xs text-cyan-600 hover:bg-cyan-500/10 transition-colors">
                                   <ArrowUpCircle size={14} /> تغيير الخطة
                                 </button>
                                 <PermissionGate permission={PERMISSIONS.SUBSCRIBERS_UPDATE}>
                                   <button onClick={() => handleExtendSub(item)}
-                                    className="w-full flex items-center gap-2 px-3 py-2 text-xs text-blue-400 hover:bg-blue-500/10 transition-colors">
+                                    className="w-full flex items-center gap-2 px-3 py-2 text-xs text-blue-600 hover:bg-blue-500/10 transition-colors">
                                     <Calendar size={14} /> تمديد 30 يوم
                                   </button>
                                 </PermissionGate>
                                 <PermissionGate permission={PERMISSIONS.SUBSCRIBERS_UPDATE}>
                                   <button onClick={() => handleResetAI(item.id)}
-                                    className="w-full flex items-center gap-2 px-3 py-2 text-xs text-amber-400 hover:bg-amber-500/10 transition-colors">
+                                    className="w-full flex items-center gap-2 px-3 py-2 text-xs text-amber-600 hover:bg-amber-500/10 transition-colors">
                                     <RefreshCw size={14} /> إعادة تعيين AI
                                   </button>
                                 </PermissionGate>
                                 {(subStatus === 'active' || subStatus === 'trial') ? (
                                   <PermissionGate permission={PERMISSIONS.SUBSCRIBERS_SUSPEND}>
                                     <button onClick={() => handleSuspend(item.id)}
-                                      className="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-400 hover:bg-red-500/10 transition-colors">
+                                      className="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-600 hover:bg-red-500/10 transition-colors">
                                       <Pause size={14} /> إيقاف الاشتراك
                                     </button>
                                   </PermissionGate>
                                 ) : (
                                   <button onClick={() => handleReactivate(item.id)}
-                                    className="w-full flex items-center gap-2 px-3 py-2 text-xs text-emerald-400 hover:bg-emerald-500/10 transition-colors">
+                                    className="w-full flex items-center gap-2 px-3 py-2 text-xs text-emerald-600 hover:bg-emerald-500/10 transition-colors">
                                     <Play size={14} /> إعادة تفعيل
                                   </button>
                                 )}
@@ -471,14 +481,33 @@ export default function AdminSubscribers() {
         )}
       </div>
 
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between mt-4 px-1">
+          <span className="text-xs text-slate-500">
+            {total} مشترك — صفحة {page} من {totalPages}
+          </span>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page <= 1}
+              className="admin-btn-secondary text-xs px-3 py-1.5 disabled:opacity-40">
+              <ChevronRight size={14} /> السابق
+            </button>
+            <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page >= totalPages}
+              className="admin-btn-secondary text-xs px-3 py-1.5 disabled:opacity-40">
+              التالي <ChevronLeft size={14} />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Plan Change Modal */}
       {planTarget && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4"
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60] flex items-center justify-center p-4"
           onClick={(e) => { if (e.target === e.currentTarget) setPlanTarget(null); }}>
-          <div className="bg-[#0d1322] border border-white/[0.08] rounded-2xl w-full max-w-sm shadow-2xl" dir="rtl">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
-              <h2 className="text-base font-semibold text-white">تغيير الخطة</h2>
-              <button onClick={() => setPlanTarget(null)} className="text-slate-500 hover:text-white"><X size={18} /></button>
+          <div className="bg-white border border-gray-200 rounded-2xl w-full max-w-sm shadow-lg" dir="rtl">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200">
+              <h2 className="text-base font-semibold text-gray-900">تغيير الخطة</h2>
+              <button onClick={() => setPlanTarget(null)} className="text-slate-500 hover:text-gray-900"><X size={18} /></button>
             </div>
             <div className="p-5">
               <p className="text-sm text-slate-400 mb-4">تغيير خطة "{planTarget.name}"</p>
@@ -489,7 +518,7 @@ export default function AdminSubscribers() {
                 <option value="infinity">إنفينيتي</option>
               </AdminSelect>
             </div>
-            <div className="flex items-center justify-end gap-3 px-5 py-4 border-t border-white/[0.06]">
+            <div className="flex items-center justify-end gap-3 px-5 py-4 border-t border-gray-200">
               <button onClick={() => setPlanTarget(null)} className="admin-btn-secondary text-sm">إلغاء</button>
               <button onClick={handleChangePlan} disabled={changingPlan || newPlan === planTarget.subscription?.plan}
                 className="admin-btn-primary text-sm">

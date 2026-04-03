@@ -60,7 +60,7 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
       <aside className={`admin-sidebar ${isOpen ? 'translate-x-0' : 'max-lg:rtl:translate-x-full max-lg:ltr:-translate-x-full'}`}>
 
         {/* ── Brand header ── */}
-        <div className="h-16 flex items-center justify-between px-4 flex-shrink-0" style={{ borderBottom: '1px solid #1F2937' }}>
+        <div className="h-16 flex items-center justify-between px-4 flex-shrink-0" style={{ borderBottom: '1px solid #1e293b' }}>
           <div className="flex items-center gap-3">
             {branding?.logo_icon_url ? (
               <img src={branding.logo_icon_url} alt="" className="w-8 h-8 rounded-xl object-contain" />
@@ -82,9 +82,9 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
           <button
             onClick={onClose}
             className="lg:hidden p-1.5 rounded-lg transition-colors"
-            style={{ color: '#6B7280' }}
-            onMouseOver={e => (e.currentTarget.style.color = '#E5E7EB')}
-            onMouseOut={e => (e.currentTarget.style.color = '#6B7280')}
+            style={{ color: '#64748b' }}
+            onMouseOver={e => (e.currentTarget.style.color = '#e2e8f0')}
+            onMouseOut={e => (e.currentTarget.style.color = '#64748b')}
           >
             <X size={17} />
           </button>
@@ -110,7 +110,7 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
                   )}
                 </NavLink>
                 {item.dividerAfter && (
-                  <div className="my-2.5 mx-2" style={{ borderTop: '1px solid #1F2937' }} />
+                  <div className="my-2.5 mx-2" style={{ borderTop: '1px solid #1e293b' }} />
                 )}
               </div>
             ))}
@@ -118,25 +118,25 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
         </nav>
 
         {/* ── User footer ── */}
-        <div className="p-3 flex-shrink-0" style={{ borderTop: '1px solid #1F2937' }}>
+        <div className="p-3 flex-shrink-0" style={{ borderTop: '1px solid #1e293b' }}>
           {/* User info row */}
           <div className="flex items-center gap-3 px-2 py-2.5 rounded-xl mb-1"
-            style={{ background: 'rgba(255,255,255,0.03)' }}>
+            style={{ background: 'rgba(255,255,255,0.04)' }}>
             <div
               className="w-8 h-8 rounded-xl flex items-center justify-center text-white text-[13px] font-bold flex-shrink-0 overflow-hidden"
-              style={{ background: 'linear-gradient(135deg, #374151, #1F2937)' }}
+              style={{ background: 'linear-gradient(135deg, #334155, #1e293b)' }}
             >
               {user?.avatar_url
                 ? <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
                 : user?.full_name_ar?.charAt(0)
                   ? user.full_name_ar.charAt(0)
-                  : <UserCircle size={15} style={{ color: '#9CA3AF' }} />}
+                  : <UserCircle size={15} style={{ color: '#94a3b8' }} />}
             </div>
             <div className="flex-1 text-right min-w-0">
-              <div className="text-[13px] font-semibold truncate" style={{ color: '#E5E7EB' }}>
+              <div className="text-[13px] font-semibold truncate" style={{ color: '#e2e8f0' }}>
                 {user?.full_name_ar || 'مشرف'}
               </div>
-              <div className="text-[11px] truncate mt-0.5" style={{ color: '#6B7280' }}>
+              <div className="text-[11px] truncate mt-0.5" style={{ color: '#94a3b8' }}>
                 {user?.role?.display_name_ar || user?.email}
               </div>
             </div>
@@ -146,17 +146,17 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
           <div className="flex items-center gap-1">
             <NavLink to={ADMIN_ROUTES.PROFILE} onClick={onClose}
               className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs transition-colors"
-              style={{ color: '#6B7280' }}
-              onMouseOver={e => { (e.currentTarget as HTMLElement).style.color = '#E5E7EB'; (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.04)'; }}
-              onMouseOut={e => { (e.currentTarget as HTMLElement).style.color = '#6B7280'; (e.currentTarget as HTMLElement).style.background = ''; }}
+              style={{ color: '#64748b' }}
+              onMouseOver={e => { (e.currentTarget as HTMLElement).style.color = '#e2e8f0'; (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.04)'; }}
+              onMouseOut={e => { (e.currentTarget as HTMLElement).style.color = '#64748b'; (e.currentTarget as HTMLElement).style.background = ''; }}
             >
               <UserCircle size={13} /> الملف
             </NavLink>
             <NavLink to={ADMIN_ROUTES.SECURITY} onClick={onClose}
               className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs transition-colors"
-              style={{ color: '#6B7280' }}
-              onMouseOver={e => { (e.currentTarget as HTMLElement).style.color = '#E5E7EB'; (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.04)'; }}
-              onMouseOut={e => { (e.currentTarget as HTMLElement).style.color = '#6B7280'; (e.currentTarget as HTMLElement).style.background = ''; }}
+              style={{ color: '#64748b' }}
+              onMouseOver={e => { (e.currentTarget as HTMLElement).style.color = '#e2e8f0'; (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.04)'; }}
+              onMouseOut={e => { (e.currentTarget as HTMLElement).style.color = '#64748b'; (e.currentTarget as HTMLElement).style.background = ''; }}
             >
               <Lock size={13} /> الأمان
             </NavLink>

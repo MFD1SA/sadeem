@@ -54,8 +54,8 @@ export default function AdminAIUsage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-xl font-bold text-white mb-1">استهلاك الذكاء الاصطناعي</h1>
-        <p className="text-sm text-slate-400">تتبع استهلاك AI والتكاليف عبر المنصة</p>
+        <h1 className="text-xl font-bold text-gray-900 mb-1">استهلاك الذكاء الاصطناعي</h1>
+        <p className="text-sm text-gray-500">تتبع استهلاك AI والتكاليف عبر المنصة</p>
       </div>
 
       {/* Overview cards */}
@@ -70,24 +70,24 @@ export default function AdminAIUsage() {
       {/* Secondary stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <div className="admin-stat-card flex items-center gap-4">
-          <CheckCircle size={24} className="text-emerald-400" />
+          <CheckCircle size={24} className="text-emerald-600" />
           <div>
-            <div className="text-lg font-bold text-white">{overview?.successful_calls ?? 0}</div>
-            <div className="text-xs text-slate-400">ناجحة</div>
+            <div className="text-lg font-bold text-gray-900">{overview?.successful_calls ?? 0}</div>
+            <div className="text-xs text-gray-500">ناجحة</div>
           </div>
         </div>
         <div className="admin-stat-card flex items-center gap-4">
-          <XCircle size={24} className="text-red-400" />
+          <XCircle size={24} className="text-red-600" />
           <div>
-            <div className="text-lg font-bold text-white">{overview?.failed_calls ?? 0}</div>
-            <div className="text-xs text-slate-400">فاشلة</div>
+            <div className="text-lg font-bold text-gray-900">{overview?.failed_calls ?? 0}</div>
+            <div className="text-xs text-gray-500">فاشلة</div>
           </div>
         </div>
         <div className="admin-stat-card flex items-center gap-4">
-          <AlertTriangle size={24} className="text-amber-400" />
+          <AlertTriangle size={24} className="text-amber-600" />
           <div>
-            <div className="text-lg font-bold text-white">{overview?.limit_exceeded_calls ?? 0}</div>
-            <div className="text-xs text-slate-400">تجاوز الحد</div>
+            <div className="text-lg font-bold text-gray-900">{overview?.limit_exceeded_calls ?? 0}</div>
+            <div className="text-xs text-gray-500">تجاوز الحد</div>
           </div>
         </div>
       </div>
@@ -99,15 +99,15 @@ export default function AdminAIUsage() {
           <div className="admin-card-body">
             <div className="space-y-2">
               {overview.top_consumers.map((c, i) => (
-                <div key={c.org_id} className="flex items-center justify-between py-2 px-3 rounded-lg bg-white/[0.02]">
+                <div key={c.org_id} className="flex items-center justify-between py-2 px-3 rounded-lg bg-gray-50">
                   <div className="flex items-center gap-3">
-                    <span className="text-xs text-slate-500 w-5 text-center">{i + 1}</span>
-                    <span className="text-sm text-white">{c.org_name}</span>
+                    <span className="text-xs text-gray-500 w-5 text-center">{i + 1}</span>
+                    <span className="text-sm text-gray-900">{c.org_name}</span>
                   </div>
                   <div className="flex items-center gap-6 text-xs">
-                    <span className="text-slate-400">{c.total_calls} طلب</span>
-                    <span className="text-slate-400">{Number(c.total_tokens).toLocaleString()} توكن</span>
-                    <span className="text-cyan-400">{(Number(c.total_cost) * 3.75).toFixed(3)} ر.س</span>
+                    <span className="text-gray-500">{c.total_calls} طلب</span>
+                    <span className="text-gray-500">{Number(c.total_tokens).toLocaleString()} توكن</span>
+                    <span className="text-cyan-600">{(Number(c.total_cost) * 3.75).toFixed(3)} ر.س</span>
                   </div>
                 </div>
               ))}
@@ -133,8 +133,8 @@ export default function AdminAIUsage() {
       <div className="admin-card">
         {logs.length === 0 ? (
           <div className="text-center py-16">
-            <Zap size={40} className="text-slate-600 mx-auto mb-3" />
-            <p className="text-sm text-slate-400">لا توجد سجلات بعد</p>
+            <Zap size={40} className="text-gray-400 mx-auto mb-3" />
+            <p className="text-sm text-gray-500">لا توجد سجلات بعد</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -155,21 +155,21 @@ export default function AdminAIUsage() {
                   const si = STATUS_MAP[log.status] || STATUS_MAP.error;
                   return (
                     <tr key={log.id}>
-                      <td><span className="text-sm text-white">{log.org_name}</span></td>
-                      <td><span className="text-xs text-slate-400 font-mono" dir="ltr">{log.model}</span></td>
-                      <td><span className="text-sm text-slate-300">{log.total_tokens.toLocaleString()}</span></td>
-                      <td><span className="text-sm text-slate-300" dir="ltr">{(Number(log.estimated_cost_usd) * 3.75).toFixed(5)} ر.س</span></td>
+                      <td><span className="text-sm text-gray-900">{log.org_name}</span></td>
+                      <td><span className="text-xs text-gray-500 font-mono" dir="ltr">{log.model}</span></td>
+                      <td><span className="text-sm text-gray-700">{log.total_tokens.toLocaleString()}</span></td>
+                      <td><span className="text-sm text-gray-700" dir="ltr">{(Number(log.estimated_cost_usd) * 3.75).toFixed(5)} ر.س</span></td>
                       <td>
-                        <span className="text-sm text-slate-400 flex items-center gap-1">
+                        <span className="text-sm text-gray-500 flex items-center gap-1">
                           <Clock size={12} />
                           {log.duration_ms ? `${log.duration_ms}ms` : '—'}
                         </span>
                       </td>
                       <td>
                         <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium
-                          ${log.status === 'success' ? 'bg-emerald-500/10 text-emerald-400' :
-                            log.status === 'limit_exceeded' ? 'bg-amber-500/10 text-amber-400' :
-                            'bg-red-500/10 text-red-400'}`}>
+                          ${log.status === 'success' ? 'bg-emerald-500/10 text-emerald-600' :
+                            log.status === 'limit_exceeded' ? 'bg-amber-500/10 text-amber-600' :
+                            'bg-red-500/10 text-red-600'}`}>
                           {si.ar}
                         </span>
                       </td>
@@ -186,16 +186,24 @@ export default function AdminAIUsage() {
   );
 }
 
+const STAT_COLORS: Record<string, { bg: string; text: string }> = {
+  emerald: { bg: 'bg-emerald-500/10', text: 'text-emerald-600' },
+  cyan:    { bg: 'bg-cyan-500/10',    text: 'text-cyan-600' },
+  blue:    { bg: 'bg-blue-500/10',    text: 'text-blue-600' },
+  red:     { bg: 'bg-red-500/10',     text: 'text-red-600' },
+};
+
 function StatCard({ icon: Icon, color, label, value }: {
   icon: React.ElementType; color: string; label: string; value: string;
 }) {
+  const c = STAT_COLORS[color] || STAT_COLORS.blue;
   return (
     <div className="admin-stat-card">
-      <div className={`w-10 h-10 rounded-xl bg-${color}-500/10 flex items-center justify-center mb-3`}>
-        <Icon size={20} className={`text-${color}-400`} />
+      <div className={`w-10 h-10 rounded-xl ${c.bg} flex items-center justify-center mb-3`}>
+        <Icon size={20} className={c.text} />
       </div>
-      <div className="text-lg font-bold text-white mb-1">{value}</div>
-      <div className="text-xs text-slate-400">{label}</div>
+      <div className="text-lg font-bold text-gray-900 mb-1">{value}</div>
+      <div className="text-xs text-gray-500">{label}</div>
     </div>
   );
 }

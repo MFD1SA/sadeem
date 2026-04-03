@@ -67,7 +67,7 @@ export function Sidebar({ mobileSidebarOpen, onCloseMobile }: SidebarProps) {
             : 'max-lg:rtl:translate-x-full max-lg:ltr:-translate-x-full',
         ].join(' ')}
       >
-        <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.05]">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
           <div className="flex items-center gap-2.5">
             <span className="text-lg font-bold text-white tracking-tight">{t.appName}</span>
             <span className="text-[9px] font-semibold text-brand-300/80 bg-brand-500/15 px-1.5 py-0.5 rounded">
@@ -99,8 +99,8 @@ export function Sidebar({ mobileSidebarOpen, onCloseMobile }: SidebarProps) {
           ))}
         </nav>
 
-        <div className="px-5 py-2.5 border-t border-white/[0.04]">
-          <div className="text-[10px] text-sidebar-text/30">سديم v0.1.0</div>
+        <div className="px-5 py-2.5 border-t border-white/[0.06]">
+          <div className="text-[10px] text-sidebar-text/40">سديم v0.1.0</div>
         </div>
       </aside>
     </>

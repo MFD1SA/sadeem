@@ -4,7 +4,7 @@
 // ============================================================================
 
 import { type ReactNode } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate, useLocation, Link } from 'react-router-dom';
 import { useAdminAuth } from '../contexts/AdminAuthContext';
 import { ADMIN_ROUTES } from '../utils/constants';
 import type { PermissionKey } from '../types';
@@ -16,7 +16,7 @@ function AdminGuardLoading() {
     <div className="admin-guard-loading">
       <div className="admin-guard-loading-inner">
         <div className="admin-spinner" />
-        <span className="text-sm text-slate-400 tracking-wide mt-4">جاري التحقق...</span>
+        <span className="text-sm text-gray-600 tracking-wide mt-4">جاري التحقق...</span>
       </div>
     </div>
   );
@@ -29,25 +29,25 @@ function AdminUnauthorized() {
   return (
     <div className="admin-guard-loading" dir="rtl">
       <div className="text-center max-w-md mx-auto px-6">
-        <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-red-500/10 flex items-center justify-center">
-          <svg className="w-8 h-8 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-red-100 flex items-center justify-center">
+          <svg className="w-8 h-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
           </svg>
         </div>
-        <h1 className="text-xl font-semibold text-white mb-2">غير مصرّح بالوصول</h1>
-        <p className="text-slate-400 text-sm mb-8">
+        <h1 className="text-xl font-semibold text-gray-900 mb-2">غير مصرّح بالوصول</h1>
+        <p className="text-gray-600 text-sm mb-8">
           ليس لديك الصلاحيات الكافية للوصول إلى هذه الصفحة.
         </p>
         <div className="flex items-center justify-center gap-3">
-          <a
-            href={ADMIN_ROUTES.DASHBOARD}
+          <Link
+            to={ADMIN_ROUTES.DASHBOARD}
             className="px-5 py-2.5 text-sm font-medium text-white bg-cyan-600 hover:bg-cyan-500 rounded-lg transition-colors"
           >
             العودة للوحة التحكم
-          </a>
+          </Link>
           <button
             onClick={() => logout()}
-            className="px-5 py-2.5 text-sm font-medium text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-colors"
+            className="px-5 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
           >
             تسجيل الخروج
           </button>
@@ -60,12 +60,16 @@ function AdminUnauthorized() {
 // --- RequireAdminAuth ---
 
 export function RequireAdminAuth({ children }: { children: ReactNode }) {
-  const { isAuthenticated, isLoading } = useAdminAuth();
+  const { isAuthenticated, isLoading, requiresPasswordReset } = useAdminAuth();
   const location = useLocation();
 
   if (isLoading) return <AdminGuardLoading />;
   if (!isAuthenticated) {
     return <Navigate to={ADMIN_ROUTES.LOGIN} state={{ from: location }} replace />;
+  }
+  // Force password reset — only allow access to the security page
+  if (requiresPasswordReset && location.pathname !== ADMIN_ROUTES.SECURITY) {
+    return <Navigate to={ADMIN_ROUTES.SECURITY} replace />;
   }
   return <>{children}</>;
 }
@@ -127,7 +131,9 @@ export function PermissionGate({
   permission: PermissionKey;
   fallback?: ReactNode;
 }) {
-  const { hasPermission } = useAdminAuth();
+  const { hasPermission, isLoading } = useAdminAuth();
+  // While loading, hide gated content to prevent flash of wrong state
+  if (isLoading) return null;
   if (!hasPermission(permission)) return <>{fallback}</>;
   return <>{children}</>;
 }

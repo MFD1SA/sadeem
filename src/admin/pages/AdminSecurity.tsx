@@ -9,7 +9,7 @@ import { adminSupabase } from '../services/adminSupabase';
 import { Lock, Shield, Eye, EyeOff, Save, Smartphone, X, CheckCircle, AlertTriangle } from 'lucide-react';
 
 export default function AdminSecurity() {
-  const { user, changePassword } = useAdminAuth();
+  const { user, changePassword, refreshUser } = useAdminAuth();
 
   // Password state
   const [currentPassword, setCurrentPassword] = useState('');
@@ -101,10 +101,12 @@ export default function AdminSecurity() {
       if (vErr) throw vErr;
 
       // Update admin_users record
-      await adminSupabase.from('admin_users').update({ two_factor_enabled: true }).eq('id', user?.id);
+      const { error: dbErr } = await adminSupabase.from('admin_users').update({ two_factor_enabled: true }).eq('id', user?.id);
+      if (dbErr) throw dbErr;
 
       setMfaStep('idle'); setMfaCode('');
       setPwMsg({ text: 'تم تفعيل المصادقة الثنائية بنجاح', type: 'success' });
+      refreshUser();
     } catch (err) {
       setMfaError(err instanceof Error ? err.message : 'فشل التحقق — تأكد من الرمز');
     } finally { setMfaLoading(false); }
@@ -120,14 +122,14 @@ export default function AdminSecurity() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-xl font-bold text-white mb-1">الأمان</h1>
-        <p className="text-sm text-slate-400">إدارة كلمة المرور والمصادقة الثنائية</p>
+        <h1 className="text-xl font-bold text-gray-900 mb-1">الأمان</h1>
+        <p className="text-sm text-gray-600">إدارة كلمة المرور والمصادقة الثنائية</p>
       </div>
 
       <div className="max-w-2xl space-y-4">
         {/* Force password reset warning */}
         {user?.force_password_reset && (
-          <div className="flex items-start gap-2.5 bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs rounded-xl p-3.5">
+          <div className="flex items-start gap-2.5 bg-amber-500/10 border border-amber-500/20 text-amber-600 text-xs rounded-xl p-3.5">
             <AlertTriangle size={15} className="flex-shrink-0 mt-0.5" />
             <span>يجب تغيير كلمة المرور الحالية لأسباب أمنية قبل استخدام النظام.</span>
           </div>
@@ -135,40 +137,40 @@ export default function AdminSecurity() {
 
         {pwMsg && (
           <div className={`text-xs rounded-lg p-3 ${
-            pwMsg.type === 'success' ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'
-              : 'bg-red-500/10 border border-red-500/20 text-red-400'}`}>{pwMsg.text}</div>
+            pwMsg.type === 'success' ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-600'
+              : 'bg-red-500/10 border border-red-500/20 text-red-600'}`}>{pwMsg.text}</div>
         )}
 
         {/* ─── Password change ─── */}
         <div className="admin-card">
           <div className="admin-card-header">
-            <div className="flex items-center gap-2"><Lock size={16} className="text-slate-400" /><h3>تغيير كلمة المرور</h3></div>
+            <div className="flex items-center gap-2"><Lock size={16} className="text-gray-500" /><h3>تغيير كلمة المرور</h3></div>
           </div>
           <div className="admin-card-body space-y-4">
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1.5">كلمة المرور الحالية</label>
+              <label className="block text-xs font-medium text-gray-500 mb-1.5">كلمة المرور الحالية</label>
               <div className="relative">
                 <input type={showCurrent ? 'text' : 'password'} value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)} className="admin-form-input pl-10" autoComplete="current-password" />
                 <button type="button" onClick={() => setShowCurrent(!showCurrent)}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300" tabIndex={-1}>
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700" tabIndex={-1}>
                   {showCurrent ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1.5">كلمة المرور الجديدة</label>
+              <label className="block text-xs font-medium text-gray-500 mb-1.5">كلمة المرور الجديدة</label>
               <div className="relative">
                 <input type={showNew ? 'text' : 'password'} value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)} className="admin-form-input pl-10" autoComplete="new-password" minLength={8} />
                 <button type="button" onClick={() => setShowNew(!showNew)}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300" tabIndex={-1}>
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700" tabIndex={-1}>
                   {showNew ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
               {newPassword.length > 0 && (
                 <div className="mt-2 flex items-center gap-2">
-                  <div className="flex-1 h-1.5 bg-white/[0.06] rounded-full overflow-hidden flex gap-0.5">
+                  <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden flex gap-0.5">
                     {[1, 2, 3, 4].map((i) => (
                       <div key={i} className={`flex-1 rounded-full transition-colors ${i <= pwStrength.level ? pwStrength.color : 'bg-transparent'}`} />
                     ))}
@@ -178,11 +180,11 @@ export default function AdminSecurity() {
               )}
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1.5">تأكيد كلمة المرور الجديدة</label>
+              <label className="block text-xs font-medium text-gray-500 mb-1.5">تأكيد كلمة المرور الجديدة</label>
               <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
                 className="admin-form-input" autoComplete="new-password" />
               {confirmPassword && confirmPassword !== newPassword && (
-                <p className="text-[11px] text-red-400 mt-1">كلمة المرور غير متطابقة</p>
+                <p className="text-[11px] text-red-600 mt-1">كلمة المرور غير متطابقة</p>
               )}
             </div>
             <div className="flex justify-end pt-2">
@@ -196,21 +198,21 @@ export default function AdminSecurity() {
         {/* ─── 2FA ─── */}
         <div className="admin-card">
           <div className="admin-card-header">
-            <div className="flex items-center gap-2"><Shield size={16} className="text-slate-400" /><h3>المصادقة الثنائية (2FA)</h3></div>
+            <div className="flex items-center gap-2"><Shield size={16} className="text-gray-500" /><h3>المصادقة الثنائية (2FA)</h3></div>
           </div>
           <div className="admin-card-body">
             {mfaStep === 'idle' && (
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                    user?.two_factor_enabled ? 'bg-emerald-500/10' : 'bg-slate-700/50'}`}>
-                    <Smartphone size={18} className={user?.two_factor_enabled ? 'text-emerald-400' : 'text-slate-500'} />
+                    user?.two_factor_enabled ? 'bg-emerald-500/10' : 'bg-gray-100'}`}>
+                    <Smartphone size={18} className={user?.two_factor_enabled ? 'text-emerald-600' : 'text-gray-500'} />
                   </div>
                   <div>
-                    <p className="text-sm text-slate-300">
+                    <p className="text-sm text-gray-700">
                       {user?.two_factor_enabled ? 'المصادقة الثنائية مفعّلة' : 'المصادقة الثنائية غير مفعّلة'}
                     </p>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-gray-500">
                       {user?.two_factor_enabled
                         ? 'حسابك محمي بطبقة أمان إضافية'
                         : 'أضف حماية إضافية عبر تطبيق المصادقة'}
@@ -228,29 +230,29 @@ export default function AdminSecurity() {
             {mfaStep === 'verify' && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h4 className="text-sm font-medium text-white">تفعيل المصادقة الثنائية</h4>
-                  <button onClick={cancelEnroll} className="text-slate-500 hover:text-white"><X size={16} /></button>
+                  <h4 className="text-sm font-medium text-gray-900">تفعيل المصادقة الثنائية</h4>
+                  <button onClick={cancelEnroll} className="text-gray-500 hover:text-gray-900"><X size={16} /></button>
                 </div>
 
-                <div className="bg-white/[0.03] rounded-xl p-4">
-                  <p className="text-xs text-slate-400 mb-3">1. امسح رمز QR بتطبيق المصادقة (Google Authenticator أو Authy)</p>
+                <div className="bg-gray-50 rounded-xl p-4">
+                  <p className="text-xs text-gray-500 mb-3">1. امسح رمز QR بتطبيق المصادقة (Google Authenticator أو Authy)</p>
                   {qrUri && (
                     <div className="flex justify-center mb-3">
                       <img src={qrUri} alt="QR Code" className="w-44 h-44 rounded-lg" />
                     </div>
                   )}
-                  <p className="text-xs text-slate-400 mb-1">أو أدخل الرمز يدويًا:</p>
-                  <code className="block text-xs text-cyan-400 bg-black/30 rounded-lg p-2 font-mono break-all select-all" dir="ltr">{mfaSecret}</code>
+                  <p className="text-xs text-gray-500 mb-1">أو أدخل الرمز يدويًا:</p>
+                  <code className="block text-xs text-cyan-600 bg-gray-100 rounded-lg p-2 font-mono break-all select-all" dir="ltr">{mfaSecret}</code>
                 </div>
 
                 <div>
-                  <p className="text-xs text-slate-400 mb-2">2. أدخل الرمز المكوّن من 6 أرقام</p>
+                  <p className="text-xs text-gray-500 mb-2">2. أدخل الرمز المكوّن من 6 أرقام</p>
                   <input type="text" value={mfaCode} onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                     className="admin-form-input text-center text-lg font-mono tracking-[0.3em]" dir="ltr" maxLength={6} placeholder="000000" autoFocus />
                 </div>
 
                 {mfaError && (
-                  <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-xs rounded-lg p-3">{mfaError}</div>
+                  <div className="bg-red-500/10 border border-red-500/20 text-red-600 text-xs rounded-lg p-3">{mfaError}</div>
                 )}
 
                 <div className="flex justify-end gap-2">
@@ -267,34 +269,23 @@ export default function AdminSecurity() {
         {/* ─── Active Sessions ─── */}
         <div className="admin-card">
           <div className="admin-card-header">
-            <div className="flex items-center gap-2"><Shield size={16} className="text-slate-400" /><h3>الجلسات النشطة</h3></div>
+            <div className="flex items-center gap-2"><Shield size={16} className="text-gray-500" /><h3>الجلسات النشطة</h3></div>
           </div>
           <div className="admin-card-body space-y-4">
-            <div className="flex items-start gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/[0.05]">
+            <div className="flex items-start gap-3 p-3 rounded-xl bg-gray-50 border border-gray-200">
               <div className="w-9 h-9 rounded-lg bg-cyan-500/10 flex items-center justify-center flex-shrink-0">
-                <Shield size={16} className="text-cyan-400" />
+                <Shield size={16} className="text-cyan-600" />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-sm text-white font-medium mb-0.5">الجلسة الحالية</div>
-                <div className="text-xs text-slate-500">{navigator.userAgent.includes('Chrome') ? 'Chrome' : navigator.userAgent.includes('Firefox') ? 'Firefox' : navigator.userAgent.includes('Safari') ? 'Safari' : 'متصفح غير معروف'} — هذا الجهاز</div>
-                <div className="text-[11px] text-emerald-400 mt-1 flex items-center gap-1">
-                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                <div className="text-sm text-gray-900 font-medium mb-0.5">الجلسة الحالية</div>
+                <div className="text-xs text-gray-500">{navigator.userAgent.includes('Chrome') ? 'Chrome' : navigator.userAgent.includes('Firefox') ? 'Firefox' : navigator.userAgent.includes('Safari') ? 'Safari' : 'متصفح غير معروف'} — هذا الجهاز</div>
+                <div className="text-[11px] text-emerald-600 mt-1 flex items-center gap-1">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                   نشطة الآن
                 </div>
               </div>
             </div>
-            <div className="flex justify-end">
-              <button
-                onClick={() => {
-                  if (confirm('هل تريد إنهاء جميع الجلسات الأخرى؟ ستبقى جلستك الحالية نشطة.')) {
-                    alert('تم إنهاء جميع الجلسات الأخرى.');
-                  }
-                }}
-                className="admin-btn-secondary text-sm text-red-400 hover:text-red-300"
-              >
-                إنهاء جميع الجلسات الأخرى
-              </button>
-            </div>
+            <p className="text-xs text-slate-600 mt-2">إدارة الجلسات المتعددة ستكون متوفرة قريبًا</p>
           </div>
         </div>
 
@@ -302,15 +293,15 @@ export default function AdminSecurity() {
         <div className="admin-card">
           <div className="admin-card-header"><h3>معلومات الأمان</h3></div>
           <div className="admin-card-body space-y-3 text-sm">
-            <div className="flex justify-between"><span className="text-slate-400">آخر تغيير لكلمة المرور</span>
-              <span className="text-slate-300">{user?.password_changed_at ? new Date(user.password_changed_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'لم يتم التغيير بعد'}</span></div>
-            <div className="flex justify-between"><span className="text-slate-400">محاولات الدخول الفاشلة</span>
-              <span className="text-slate-300">{user?.failed_login_attempts || 0}</span></div>
-            <div className="flex justify-between"><span className="text-slate-400">المصادقة الثنائية</span>
+            <div className="flex justify-between"><span className="text-gray-500">آخر تغيير لكلمة المرور</span>
+              <span className="text-gray-700">{user?.password_changed_at ? new Date(user.password_changed_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'لم يتم التغيير بعد'}</span></div>
+            <div className="flex justify-between"><span className="text-gray-500">محاولات الدخول الفاشلة</span>
+              <span className="text-gray-700">{user?.failed_login_attempts || 0}</span></div>
+            <div className="flex justify-between"><span className="text-gray-500">المصادقة الثنائية</span>
               <span className="flex items-center gap-1.5">
                 {user?.two_factor_enabled
-                  ? <><CheckCircle size={13} className="text-emerald-400" /><span className="text-emerald-400">مفعّلة</span></>
-                  : <span className="text-slate-500">غير مفعّلة</span>}
+                  ? <><CheckCircle size={13} className="text-emerald-600" /><span className="text-emerald-600">مفعّلة</span></>
+                  : <span className="text-gray-500">غير مفعّلة</span>}
               </span></div>
           </div>
         </div>

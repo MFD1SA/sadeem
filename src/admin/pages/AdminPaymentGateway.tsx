@@ -56,8 +56,8 @@ export default function AdminPaymentGateway() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-xl font-bold text-white mb-1">بوابة الدفع</h1>
-        <p className="text-sm text-slate-400">مراقبة أحداث الدفع وحالة البوابة</p>
+        <h1 className="text-xl font-bold text-gray-900 mb-1">بوابة الدفع</h1>
+        <p className="text-sm text-gray-500">مراقبة أحداث الدفع وحالة البوابة</p>
       </div>
 
       {/* Overview */}
@@ -73,8 +73,8 @@ export default function AdminPaymentGateway() {
         <div className="admin-card">
           <div className="admin-card-header"><h3>الاشتراكات النشطة عبر البوابة</h3></div>
           <div className="admin-card-body text-center py-6">
-            <div className="text-3xl font-bold text-white">{overview?.active_gateway_subs ?? 0}</div>
-            <div className="text-xs text-slate-400 mt-1">اشتراك مرتبط ببوابة دفع</div>
+            <div className="text-3xl font-bold text-gray-900">{overview?.active_gateway_subs ?? 0}</div>
+            <div className="text-xs text-gray-500 mt-1">اشتراك مرتبط ببوابة دفع</div>
           </div>
         </div>
         <div className="admin-card">
@@ -83,14 +83,14 @@ export default function AdminPaymentGateway() {
             {overview?.gateway_revenue && Object.keys(overview.gateway_revenue).length > 0 ? (
               <div className="space-y-2">
                 {Object.entries(overview.gateway_revenue).map(([gw, rev]) => (
-                  <div key={gw} className="flex items-center justify-between py-2 px-3 rounded-lg bg-white/[0.02]">
-                    <span className="text-sm text-white capitalize">{gw}</span>
-                    <span className="text-sm text-emerald-400 font-medium" dir="ltr">{Number(rev).toLocaleString()} ر.س</span>
+                  <div key={gw} className="flex items-center justify-between py-2 px-3 rounded-lg bg-gray-50">
+                    <span className="text-sm text-gray-900 capitalize">{gw}</span>
+                    <span className="text-sm text-emerald-600 font-medium" dir="ltr">{Number(rev).toLocaleString()} ر.س</span>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-slate-500 text-center py-4">لا توجد إيرادات مسجلة عبر البوابة بعد</p>
+              <p className="text-sm text-gray-500 text-center py-4">لا توجد إيرادات مسجلة عبر البوابة بعد</p>
             )}
           </div>
         </div>
@@ -103,9 +103,9 @@ export default function AdminPaymentGateway() {
           <div className="admin-card-body">
             <div className="flex flex-wrap gap-3">
               {Object.entries(overview.by_event_type).map(([type, cnt]) => (
-                <div key={type} className="px-3 py-2 rounded-lg bg-white/[0.03] text-xs">
-                  <span className="text-slate-400 font-mono" dir="ltr">{type}</span>
-                  <span className="text-white font-medium mr-2">{cnt}</span>
+                <div key={type} className="px-3 py-2 rounded-lg bg-gray-50 text-xs">
+                  <span className="text-gray-500 font-mono" dir="ltr">{type}</span>
+                  <span className="text-gray-900 font-medium mr-2">{cnt}</span>
                 </div>
               ))}
             </div>
@@ -138,8 +138,8 @@ export default function AdminPaymentGateway() {
       <div className="admin-card">
         {events.length === 0 ? (
           <div className="text-center py-16">
-            <Webhook size={40} className="text-slate-600 mx-auto mb-3" />
-            <p className="text-sm text-slate-400">لا توجد أحداث دفع بعد</p>
+            <Webhook size={40} className="text-gray-400 mx-auto mb-3" />
+            <p className="text-sm text-gray-500">لا توجد أحداث دفع بعد</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -159,15 +159,15 @@ export default function AdminPaymentGateway() {
                   const si = EVT_STATUS[ev.status] || EVT_STATUS.received;
                   return (
                     <tr key={ev.id}>
-                      <td><span className="text-xs text-cyan-400 capitalize">{ev.gateway_provider}</span></td>
-                      <td><span className="text-xs text-slate-300 font-mono" dir="ltr">{ev.event_type}</span></td>
-                      <td><span className="text-sm text-white">{ev.org_name || '—'}</span></td>
+                      <td><span className="text-xs text-cyan-600 capitalize">{ev.gateway_provider}</span></td>
+                      <td><span className="text-xs text-gray-700 font-mono" dir="ltr">{ev.event_type}</span></td>
+                      <td><span className="text-sm text-gray-900">{ev.org_name || '—'}</span></td>
                       <td>
                         <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium
-                          ${ev.status === 'processed' ? 'bg-emerald-500/10 text-emerald-400' :
-                            ev.status === 'failed' ? 'bg-red-500/10 text-red-400' :
-                            ev.status === 'ignored' ? 'bg-slate-500/10 text-slate-400' :
-                            'bg-blue-500/10 text-blue-400'}`}>{si.ar}</span>
+                          ${ev.status === 'processed' ? 'bg-emerald-500/10 text-emerald-600' :
+                            ev.status === 'failed' ? 'bg-red-500/10 text-red-600' :
+                            ev.status === 'ignored' ? 'bg-slate-500/10 text-slate-600' :
+                            'bg-blue-500/10 text-blue-600'}`}>{si.ar}</span>
                       </td>
                       <td><span className="text-xs text-slate-500">
                         {ev.processed_at ? new Date(ev.processed_at).toLocaleString('en-US') : '—'}
@@ -185,16 +185,24 @@ export default function AdminPaymentGateway() {
   );
 }
 
+const OV_COLORS: Record<string, { bg: string; text: string }> = {
+  emerald: { bg: 'bg-emerald-500/10', text: 'text-emerald-600' },
+  cyan:    { bg: 'bg-cyan-500/10',    text: 'text-cyan-600' },
+  blue:    { bg: 'bg-blue-500/10',    text: 'text-blue-600' },
+  red:     { bg: 'bg-red-500/10',     text: 'text-red-600' },
+};
+
 function OvCard({ icon: Icon, color, label, value }: {
   icon: React.ElementType; color: string; label: string; value: string;
 }) {
+  const c = OV_COLORS[color] || OV_COLORS.blue;
   return (
     <div className="admin-stat-card">
-      <div className={`w-10 h-10 rounded-xl bg-${color}-500/10 flex items-center justify-center mb-3`}>
-        <Icon size={20} className={`text-${color}-400`} />
+      <div className={`w-10 h-10 rounded-xl ${c.bg} flex items-center justify-center mb-3`}>
+        <Icon size={20} className={c.text} />
       </div>
-      <div className="text-lg font-bold text-white mb-1">{value}</div>
-      <div className="text-xs text-slate-400">{label}</div>
+      <div className="text-lg font-bold text-gray-900 mb-1">{value}</div>
+      <div className="text-xs text-gray-500">{label}</div>
     </div>
   );
 }

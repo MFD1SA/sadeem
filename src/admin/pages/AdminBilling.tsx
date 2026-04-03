@@ -144,8 +144,8 @@ export default function AdminBilling() {
     <div>
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div>
-          <h1 className="text-xl font-bold text-white mb-1">المالية والفوترة</h1>
-          <p className="text-sm text-slate-400">إدارة الفواتير والمدفوعات</p>
+          <h1 className="text-xl font-bold text-gray-900 mb-1">المالية والفوترة</h1>
+          <p className="text-sm text-gray-500">إدارة الفواتير والمدفوعات</p>
         </div>
         <PermissionGate permission={PERMISSIONS.FINANCE_MANAGE}>
           <button onClick={openCreateModal} className="admin-btn-primary text-sm">
@@ -156,8 +156,8 @@ export default function AdminBilling() {
 
       {msg && (
         <div className={`text-xs rounded-lg p-3 mb-4 ${
-          msg.type === 'success' ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'
-            : 'bg-red-500/10 border border-red-500/20 text-red-400'}`}>{msg.text}</div>
+          msg.type === 'success' ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-600'
+            : 'bg-red-500/10 border border-red-500/20 text-red-600'}`}>{msg.text}</div>
       )}
 
       {/* Overview cards */}
@@ -192,8 +192,8 @@ export default function AdminBilling() {
       <div className="admin-card">
         {invoices.length === 0 ? (
           <div className="text-center py-16">
-            <FileText size={40} className="text-slate-600 mx-auto mb-3" />
-            <p className="text-sm text-slate-400">لا توجد فواتير</p>
+            <FileText size={40} className="text-gray-400 mx-auto mb-3" />
+            <p className="text-sm text-gray-500">لا توجد فواتير</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -214,16 +214,16 @@ export default function AdminBilling() {
                   const si = INV_STATUS[inv.status] || INV_STATUS.draft;
                   return (
                     <tr key={inv.id}>
-                      <td><span className="text-sm text-cyan-400 font-mono" dir="ltr">{inv.invoice_number}</span></td>
-                      <td><span className="text-sm text-white">{inv.org_name}</span></td>
-                      <td><span className="text-sm text-slate-300">{inv.plan}</span></td>
-                      <td><span className="text-sm text-white font-medium" dir="ltr">{inv.total.toLocaleString()} {inv.currency}</span></td>
+                      <td><span className="text-sm text-cyan-600 font-mono" dir="ltr">{inv.invoice_number}</span></td>
+                      <td><span className="text-sm text-gray-900">{inv.org_name}</span></td>
+                      <td><span className="text-sm text-gray-700">{inv.plan}</span></td>
+                      <td><span className="text-sm text-gray-900 font-medium" dir="ltr">{inv.total.toLocaleString()} {inv.currency}</span></td>
                       <td>
                         <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium
-                          ${inv.status === 'paid' ? 'bg-emerald-500/10 text-emerald-400' :
-                            inv.status === 'overdue' ? 'bg-red-500/10 text-red-400' :
-                            inv.status === 'sent' ? 'bg-blue-500/10 text-blue-400' :
-                            'bg-slate-500/10 text-slate-400'}`}>{si.ar}</span>
+                          ${inv.status === 'paid' ? 'bg-emerald-500/10 text-emerald-600' :
+                            inv.status === 'overdue' ? 'bg-red-500/10 text-red-600' :
+                            inv.status === 'sent' ? 'bg-blue-500/10 text-blue-600' :
+                            'bg-slate-500/10 text-slate-600'}`}>{si.ar}</span>
                       </td>
                       <td><span className="text-sm text-slate-500">{inv.due_date ? new Date(inv.due_date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '—'}</span></td>
                       <td>
@@ -231,26 +231,26 @@ export default function AdminBilling() {
                           <div className="relative">
                             <button
                               onClick={(e) => { e.stopPropagation(); const r = e.currentTarget.getBoundingClientRect(); setActiveMenu(activeMenu?.id === inv.id ? null : { id: inv.id, top: r.bottom + 4, right: window.innerWidth - r.right }); }}
-                              className="p-1.5 rounded-lg text-slate-500 hover:text-white hover:bg-white/5 transition-colors">
+                              className="p-1.5 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-50 transition-colors">
                               <MoreVertical size={16} />
                             </button>
                             {activeMenu?.id === inv.id && createPortal(
-                              <div ref={menuRef} style={{ position: 'fixed', top: activeMenu.top, right: activeMenu.right, zIndex: 9999 }} className="w-48 bg-[#111827] border border-white/[0.08] rounded-xl shadow-2xl py-1.5">
+                              <div ref={menuRef} style={{ position: 'fixed', top: activeMenu.top, right: activeMenu.right, zIndex: 9999 }} className="w-48 bg-white border border-gray-200 rounded-xl shadow-lg py-1.5">
                                 {inv.status !== 'paid' && inv.status !== 'cancelled' && (
                                   <button onClick={() => { setActiveMenu(null); setPayTarget(inv); setPayForm(p => ({ ...p, amount: String(inv.total) })); }}
-                                    className="w-full flex items-center gap-2 px-3 py-2 text-xs text-emerald-400 hover:bg-emerald-500/10 transition-colors">
+                                    className="w-full flex items-center gap-2 px-3 py-2 text-xs text-emerald-600 hover:bg-emerald-500/10 transition-colors">
                                     <Check size={14} /> تسجيل دفعة
                                   </button>
                                 )}
                                 {inv.status === 'draft' && (
                                   <button onClick={() => handleStatusChange(inv.id, 'sent')}
-                                    className="w-full flex items-center gap-2 px-3 py-2 text-xs text-blue-400 hover:bg-blue-500/10 transition-colors">
+                                    className="w-full flex items-center gap-2 px-3 py-2 text-xs text-blue-600 hover:bg-blue-500/10 transition-colors">
                                     <FileText size={14} /> إرسال الفاتورة
                                   </button>
                                 )}
                                 {inv.status !== 'cancelled' && inv.status !== 'paid' && (
                                   <button onClick={() => handleStatusChange(inv.id, 'cancelled')}
-                                    className="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-400 hover:bg-red-500/10 transition-colors">
+                                    className="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-600 hover:bg-red-500/10 transition-colors">
                                     <Ban size={14} /> إلغاء
                                   </button>
                                 )}
@@ -274,7 +274,7 @@ export default function AdminBilling() {
         <Modal title="إنشاء فاتورة" onClose={() => setShowCreate(false)}>
           <div className="space-y-4">
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1.5">المنظمة *</label>
+              <label className="block text-xs font-medium text-gray-500 mb-1.5">المنظمة *</label>
               <select className="admin-form-input" value={createForm.org_id}
                 onChange={(e) => setCreateForm(p => ({ ...p, org_id: e.target.value }))}>
                 <option value="">اختر المنظمة</option>
@@ -282,7 +282,7 @@ export default function AdminBilling() {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1.5">الخطة *</label>
+              <label className="block text-xs font-medium text-gray-500 mb-1.5">الخطة *</label>
               <select className="admin-form-input" value={createForm.plan}
                 onChange={(e) => setCreateForm(p => ({ ...p, plan: e.target.value }))}>
                 <option value="orbit">مدار</option>
@@ -292,7 +292,7 @@ export default function AdminBilling() {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1.5">المبلغ قبل الضريبة (ر.س) *</label>
+              <label className="block text-xs font-medium text-gray-500 mb-1.5">المبلغ قبل الضريبة (ر.س) *</label>
               <input className="admin-form-input" type="number" dir="ltr" min="0" step="0.01"
                 value={createForm.subtotal}
                 onChange={(e) => setCreateForm(p => ({ ...p, subtotal: e.target.value }))} />
@@ -303,7 +303,7 @@ export default function AdminBilling() {
               )}
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1.5">ملاحظات</label>
+              <label className="block text-xs font-medium text-gray-500 mb-1.5">ملاحظات</label>
               <input className="admin-form-input" value={createForm.notes}
                 onChange={(e) => setCreateForm(p => ({ ...p, notes: e.target.value }))} />
             </div>
@@ -321,20 +321,20 @@ export default function AdminBilling() {
       {payTarget && (
         <Modal title={`تسجيل دفعة — ${payTarget.invoice_number}`} onClose={() => setPayTarget(null)}>
           <div className="space-y-4">
-            <div className="p-3 rounded-lg bg-white/[0.03] text-sm">
+            <div className="p-3 rounded-lg bg-gray-50 text-sm">
               <div className="flex justify-between mb-1">
-                <span className="text-slate-400">المبلغ المستحق</span>
-                <span className="text-white font-medium" dir="ltr">{payTarget.total.toLocaleString()} {payTarget.currency}</span>
+                <span className="text-gray-500">المبلغ المستحق</span>
+                <span className="text-gray-900 font-medium" dir="ltr">{payTarget.total.toLocaleString()} {payTarget.currency}</span>
               </div>
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1.5">المبلغ المدفوع (ر.س) *</label>
+              <label className="block text-xs font-medium text-gray-500 mb-1.5">المبلغ المدفوع (ر.س) *</label>
               <input className="admin-form-input" type="number" dir="ltr" min="0" step="0.01"
                 value={payForm.amount}
                 onChange={(e) => setPayForm(p => ({ ...p, amount: e.target.value }))} />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1.5">طريقة الدفع</label>
+              <label className="block text-xs font-medium text-gray-500 mb-1.5">طريقة الدفع</label>
               <select className="admin-form-input" value={payForm.method}
                 onChange={(e) => setPayForm(p => ({ ...p, method: e.target.value }))}>
                 <option value="bank_transfer">تحويل بنكي</option>
@@ -346,12 +346,12 @@ export default function AdminBilling() {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1.5">رقم المرجع</label>
+              <label className="block text-xs font-medium text-gray-500 mb-1.5">رقم المرجع</label>
               <input className="admin-form-input" dir="ltr" value={payForm.reference}
                 onChange={(e) => setPayForm(p => ({ ...p, reference: e.target.value }))} />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1.5">ملاحظات</label>
+              <label className="block text-xs font-medium text-gray-500 mb-1.5">ملاحظات</label>
               <input className="admin-form-input" value={payForm.notes}
                 onChange={(e) => setPayForm(p => ({ ...p, notes: e.target.value }))} />
             </div>
@@ -370,16 +370,24 @@ export default function AdminBilling() {
 
 // --- Reusable components ---
 
+const OV_COLORS: Record<string, { bg: string; text: string }> = {
+  emerald: { bg: 'bg-emerald-500/10', text: 'text-emerald-600' },
+  cyan:    { bg: 'bg-cyan-500/10',    text: 'text-cyan-600' },
+  blue:    { bg: 'bg-blue-500/10',    text: 'text-blue-600' },
+  red:     { bg: 'bg-red-500/10',     text: 'text-red-600' },
+};
+
 function OvCard({ icon: Icon, color, label, value }: {
   icon: React.ElementType; color: string; label: string; value: string;
 }) {
+  const c = OV_COLORS[color] || OV_COLORS.blue;
   return (
     <div className="admin-stat-card">
-      <div className={`w-10 h-10 rounded-xl bg-${color}-500/10 flex items-center justify-center mb-3`}>
-        <Icon size={20} className={`text-${color}-400`} />
+      <div className={`w-10 h-10 rounded-xl ${c.bg} flex items-center justify-center mb-3`}>
+        <Icon size={20} className={c.text} />
       </div>
-      <div className="text-xl font-bold text-white mb-1">{value}</div>
-      <div className="text-xs text-slate-400">{label}</div>
+      <div className="text-xl font-bold text-gray-900 mb-1">{value}</div>
+      <div className="text-xs text-gray-500">{label}</div>
     </div>
   );
 }
@@ -388,16 +396,16 @@ function Modal({ title, children, onClose }: {
   title: string; children: React.ReactNode; onClose: () => void;
 }) {
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4"
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60] flex items-center justify-center p-4"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="bg-[#0d1322] border border-white/[0.08] rounded-2xl w-full max-w-md shadow-2xl" dir="rtl">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
-          <h2 className="text-base font-semibold text-white">{title}</h2>
-          <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors">
+      <div className="bg-white border border-gray-200 rounded-2xl w-full max-w-md shadow-lg max-h-[90vh] flex flex-col" dir="rtl">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 flex-shrink-0">
+          <h2 className="text-base font-semibold text-gray-900">{title}</h2>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-900 transition-colors">
             <X size={18} />
           </button>
         </div>
-        <div className="p-5">{children}</div>
+        <div className="p-5 overflow-y-auto">{children}</div>
       </div>
     </div>
   );

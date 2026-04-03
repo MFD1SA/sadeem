@@ -67,15 +67,18 @@ export default function AdminAuditLogs() {
     <div>
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div>
-          <h1 className="text-xl font-bold text-white mb-1">سجل العمليات</h1>
-          <p className="text-sm text-slate-400">جميع العمليات الإدارية المسجّلة في النظام ({total} سجل)</p>
+          <h1 className="text-xl font-bold text-gray-900 mb-1">سجل العمليات</h1>
+          <p className="text-sm text-gray-600">جميع العمليات الإدارية المسجّلة في النظام ({total} سجل)</p>
         </div>
         <button
           onClick={() => {
-            const csv = logs.map(l => `${l.created_at},${l.action},${l.module},${l.admin_email || 'system'},${l.severity}`).join('\n');
-            const blob = new Blob([`التاريخ,الإجراء,القسم,المنفذ,المستوى\n${csv}`], { type: 'text/csv;charset=utf-8;' });
+            const esc = (v: string) => { const s = String(v ?? ''); return s.includes(',') || s.includes('\n') || s.includes('"') ? `"${s.replace(/"/g, '""')}"` : s; };
+            const csv = logs.map(l => [l.created_at, l.action, l.module, l.admin_email || 'system', l.severity].map(esc).join(',')).join('\n');
+            const bom = '\uFEFF'; // UTF-8 BOM for Arabic support in Excel
+            const blob = new Blob([bom + `التاريخ,الإجراء,القسم,المنفذ,المستوى\n${csv}`], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a'); a.href = url; a.download = `audit-logs-${new Date().toISOString().slice(0,10)}.csv`; a.click();
+            URL.revokeObjectURL(url);
           }}
           className="admin-btn-secondary text-sm flex items-center gap-2"
         >
@@ -127,7 +130,7 @@ export default function AdminAuditLogs() {
         ) : logs.length === 0 ? (
           <div className="text-center py-16">
             <ClipboardList size={40} className="text-slate-600 mx-auto mb-3" />
-            <p className="text-sm text-slate-400">لا توجد سجلات</p>
+            <p className="text-sm text-gray-500">لا توجد سجلات</p>
           </div>
         ) : (
           <>
@@ -151,23 +154,23 @@ export default function AdminAuditLogs() {
                       <tr key={log.id}>
                         <td>
                           <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium
-                            ${log.severity === 'critical' ? 'bg-red-500/10 text-red-400' :
-                              log.severity === 'warning' ? 'bg-amber-500/10 text-amber-400' :
-                              'bg-blue-500/10 text-blue-400'}`}>
+                            ${log.severity === 'critical' ? 'bg-red-500/10 text-red-600' :
+                              log.severity === 'warning' ? 'bg-amber-500/10 text-amber-600' :
+                              'bg-blue-500/10 text-blue-600'}`}>
                             <SevIcon size={12} />
                             {sev.ar}
                           </span>
                         </td>
                         <td>
-                          <span className="text-sm text-white font-mono" dir="ltr">{log.action}</span>
+                          <span className="text-sm text-gray-900 font-mono" dir="ltr">{log.action}</span>
                         </td>
                         <td>
-                          <span className="text-sm text-slate-300">{MODULE_LABELS[log.module] || log.module}</span>
+                          <span className="text-sm text-gray-700">{MODULE_LABELS[log.module] || log.module}</span>
                         </td>
                         <td>
                           <div className="flex items-center gap-2">
                             <User size={14} className="text-slate-500 flex-shrink-0" />
-                            <span className="text-xs text-slate-400" dir="ltr">{log.admin_email || 'system'}</span>
+                            <span className="text-xs text-gray-500" dir="ltr">{log.admin_email || 'system'}</span>
                           </div>
                         </td>
                         <td>

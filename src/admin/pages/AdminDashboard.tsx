@@ -4,8 +4,10 @@
 // ============================================================================
 
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAdminAuth } from '../contexts/AdminAuthContext';
 import { adminSubscribersService, type DashboardStats } from '../services/adminSubscribers.service';
+import { adminIntegrationsService, type AdminIntegration } from '../services/adminIntegrations.service';
 import {
   Building2, Users, GitBranch, MessageSquare,
   Zap, FileText, ShieldCheck, TrendingUp,
@@ -15,6 +17,7 @@ import {
 export default function AdminDashboard() {
   const { user } = useAdminAuth();
   const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [integrations, setIntegrations] = useState<AdminIntegration[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -25,8 +28,12 @@ export default function AdminDashboard() {
   const loadStats = async () => {
     try {
       setIsLoading(true);
-      const data = await adminSubscribersService.getDashboardStats();
+      const [data, intgs] = await Promise.all([
+        adminSubscribersService.getDashboardStats(),
+        adminIntegrationsService.list().catch(() => [] as AdminIntegration[]),
+      ]);
       setStats(data);
+      setIntegrations(intgs);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'فشل في تحميل الإحصائيات');
     } finally {
@@ -58,14 +65,14 @@ export default function AdminDashboard() {
 
   // Plan color map
   const planColors: Record<string, { bar: string; bg: string; text: string }> = {
-    orbit:    { bar: '#06B6D4', bg: 'rgba(6,182,212,0.1)',   text: '#06B6D4' },
-    nova:     { bar: '#8B5CF6', bg: 'rgba(139,92,246,0.1)',  text: '#8B5CF6' },
-    galaxy:   { bar: '#F59E0B', bg: 'rgba(245,158,11,0.1)',  text: '#F59E0B' },
-    infinity: { bar: '#10B981', bg: 'rgba(16,185,129,0.1)',  text: '#10B981' },
-    starter:  { bar: '#06B6D4', bg: 'rgba(6,182,212,0.1)',   text: '#06B6D4' },
-    growth:   { bar: '#8B5CF6', bg: 'rgba(139,92,246,0.1)',  text: '#8B5CF6' },
-    pro:      { bar: '#F59E0B', bg: 'rgba(245,158,11,0.1)',  text: '#F59E0B' },
-    enterprise:{ bar: '#10B981', bg: 'rgba(16,185,129,0.1)', text: '#10B981' },
+    orbit:    { bar: '#0891b2', bg: 'rgba(8,145,178,0.08)',   text: '#0891b2' },
+    nova:     { bar: '#7c3aed', bg: 'rgba(124,58,237,0.08)',  text: '#7c3aed' },
+    galaxy:   { bar: '#d97706', bg: 'rgba(217,119,6,0.08)',  text: '#d97706' },
+    infinity: { bar: '#059669', bg: 'rgba(5,150,105,0.08)',  text: '#059669' },
+    starter:  { bar: '#0891b2', bg: 'rgba(8,145,178,0.08)',   text: '#0891b2' },
+    growth:   { bar: '#7c3aed', bg: 'rgba(124,58,237,0.08)',  text: '#7c3aed' },
+    pro:      { bar: '#d97706', bg: 'rgba(217,119,6,0.08)',  text: '#d97706' },
+    enterprise:{ bar: '#059669', bg: 'rgba(5,150,105,0.08)', text: '#059669' },
   };
 
   return (
@@ -75,38 +82,38 @@ export default function AdminDashboard() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="admin-page-title">
-            {greeting()}، <span style={{ color: '#06B6D4' }}>{user?.full_name_ar || 'مشرف'}</span>
+            {greeting()}، <span style={{ color: '#0891b2' }}>{user?.full_name_ar || 'مشرف'}</span>
           </h1>
           <p className="admin-page-subtitle">مركز التحكم الإداري — نظرة عامة على المنصة</p>
         </div>
         <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-medium"
-          style={{ background: 'rgba(16,185,129,0.1)', color: '#10B981', border: '1px solid rgba(16,185,129,0.2)' }}>
-          <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#10B981' }} />
+          style={{ background: 'rgba(5,150,105,0.08)', color: '#059669', border: '1px solid rgba(5,150,105,0.2)' }}>
+          <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#059669' }} />
           النظام يعمل بشكل طبيعي
         </div>
       </div>
 
       {/* ── Primary KPIs ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard icon={Building2} iconColor="#06B6D4" iconBg="rgba(6,182,212,0.1)"
+        <StatCard icon={Building2} iconColor="#0891b2" iconBg="rgba(8,145,178,0.08)"
           label="المنظمات" value={stats?.total_organizations ?? 0} />
-        <StatCard icon={Users} iconColor="#8B5CF6" iconBg="rgba(139,92,246,0.1)"
+        <StatCard icon={Users} iconColor="#7c3aed" iconBg="rgba(124,58,237,0.08)"
           label="مشتركين نشطين" value={(stats?.total_subscribers_active ?? 0) + (stats?.total_subscribers_trial ?? 0)} />
-        <StatCard icon={GitBranch} iconColor="#10B981" iconBg="rgba(16,185,129,0.1)"
+        <StatCard icon={GitBranch} iconColor="#059669" iconBg="rgba(5,150,105,0.08)"
           label="الفروع النشطة" value={stats?.total_branches ?? 0} />
-        <StatCard icon={MessageSquare} iconColor="#F59E0B" iconBg="rgba(245,158,11,0.1)"
+        <StatCard icon={MessageSquare} iconColor="#d97706" iconBg="rgba(217,119,6,0.08)"
           label="إجمالي التقييمات" value={stats?.total_reviews ?? 0} />
       </div>
 
       {/* ── Secondary KPIs ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard icon={Zap} iconColor="#F59E0B" iconBg="rgba(245,158,11,0.1)"
+        <StatCard icon={Zap} iconColor="#d97706" iconBg="rgba(217,119,6,0.08)"
           label="ردود AI" value={stats?.total_ai_replies_used ?? 0} />
-        <StatCard icon={FileText} iconColor="#9CA3AF" iconBg="rgba(107,114,128,0.1)"
+        <StatCard icon={FileText} iconColor="#6b7280" iconBg="rgba(107,114,128,0.08)"
           label="ردود القوالب" value={stats?.total_template_replies_used ?? 0} />
-        <StatCard icon={TrendingUp} iconColor="#10B981" iconBg="rgba(16,185,129,0.1)"
+        <StatCard icon={TrendingUp} iconColor="#059669" iconBg="rgba(5,150,105,0.08)"
           label="تقييمات الشهر" value={stats?.reviews_this_month ?? 0} />
-        <StatCard icon={ShieldCheck} iconColor="#06B6D4" iconBg="rgba(6,182,212,0.1)"
+        <StatCard icon={ShieldCheck} iconColor="#0891b2" iconBg="rgba(8,145,178,0.08)"
           label="المشرفين النشطين" value={stats?.admin_count ?? 0} />
       </div>
 
@@ -131,13 +138,13 @@ export default function AdminDashboard() {
                     orbit: 'مدار', nova: 'نوفا', galaxy: 'جالاكسي', infinity: 'إنفينيتي',
                     starter: 'المبتدئ', growth: 'النمو', pro: 'الاحترافي', enterprise: 'المؤسسات',
                   };
-                  const pc = planColors[plan] || { bar: '#6B7280', bg: 'rgba(107,114,128,0.1)', text: '#9CA3AF' };
+                  const pc = planColors[plan] || { bar: '#6b7280', bg: 'rgba(107,114,128,0.08)', text: '#6b7280' };
                   return (
                     <div key={plan}>
                       <div className="flex items-center justify-between mb-1.5">
                         <div className="flex items-center gap-2">
                           <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: pc.bar }} />
-                          <span className="text-[13px] font-medium" style={{ color: '#E5E7EB' }}>
+                          <span className="text-[13px] font-medium" style={{ color: '#111827' }}>
                             {labels[plan] || plan}
                           </span>
                         </div>
@@ -146,14 +153,14 @@ export default function AdminDashboard() {
                             style={{ background: pc.bg, color: pc.text }}>
                             {count}
                           </span>
-                          <span className="text-xs tabular-nums" style={{ color: '#6B7280' }}>
+                          <span className="text-xs tabular-nums" style={{ color: '#6b7280' }}>
                             {pct}%
                           </span>
                         </div>
                       </div>
-                      <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.05)' }}>
+                      <div className="h-1.5 rounded-full overflow-hidden" style={{ background: '#f3f4f6' }}>
                         <div className="h-full rounded-full transition-all duration-500"
-                          style={{ width: `${pct}%`, background: pc.bar, boxShadow: `0 0 8px ${pc.bar}50` }} />
+                          style={{ width: `${pct}%`, background: pc.bar }} />
                       </div>
                     </div>
                   );
@@ -161,8 +168,8 @@ export default function AdminDashboard() {
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-8 gap-2">
-                <Activity size={28} style={{ color: '#374151' }} />
-                <p className="text-sm" style={{ color: '#6B7280' }}>لا توجد بيانات متاحة</p>
+                <Activity size={28} style={{ color: '#9ca3af' }} />
+                <p className="text-sm" style={{ color: '#6b7280' }}>لا توجد بيانات متاحة</p>
               </div>
             )}
           </div>
@@ -178,13 +185,13 @@ export default function AdminDashboard() {
             <div className="admin-card-body">
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <MiniStat label="نشط" value={stats?.total_subscribers_active ?? 0}
-                  color="#10B981" bg="rgba(16,185,129,0.1)" />
+                  color="#059669" bg="rgba(5,150,105,0.08)" />
                 <MiniStat label="تجريبي" value={stats?.total_subscribers_trial ?? 0}
-                  color="#06B6D4" bg="rgba(6,182,212,0.1)" />
+                  color="#0891b2" bg="rgba(8,145,178,0.08)" />
                 <MiniStat label="منتهي" value={stats?.total_subscribers_expired ?? 0}
-                  color="#EF4444" bg="rgba(239,68,68,0.1)" />
+                  color="#dc2626" bg="rgba(220,38,38,0.08)" />
                 <MiniStat label="إجمالي" value={stats?.total_organizations ?? 0}
-                  color="#9CA3AF" bg="rgba(107,114,128,0.1)" />
+                  color="#6b7280" bg="rgba(107,114,128,0.08)" />
               </div>
             </div>
           </div>
@@ -194,20 +201,20 @@ export default function AdminDashboard() {
             <div className="admin-card-header"><h3>أحدث المنظمات</h3></div>
             <div className="admin-card-body p-0">
               {stats?.recent_organizations && stats.recent_organizations.length > 0 ? (
-                <div className="divide-y" style={{ borderColor: '#1F2937' }}>
+                <div className="divide-y" style={{ borderColor: '#e5e7eb' }}>
                   {stats.recent_organizations.slice(0, 5).map((org) => (
                     <div key={org.id}
                       className="flex items-center justify-between px-5 py-3 transition-colors"
-                      style={{ color: '#9CA3AF' }}
-                      onMouseOver={e => (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.02)'}
+                      style={{ color: '#6b7280' }}
+                      onMouseOver={e => (e.currentTarget as HTMLElement).style.background = '#f9fafb'}
                       onMouseOut={e => (e.currentTarget as HTMLElement).style.background = ''}
                     >
                       <div className="flex items-center gap-3">
                         <div className="w-7 h-7 rounded-lg flex items-center justify-center text-[11px] font-bold flex-shrink-0"
-                          style={{ background: 'rgba(6,182,212,0.1)', color: '#06B6D4' }}>
+                          style={{ background: 'rgba(8,145,178,0.08)', color: '#0891b2' }}>
                           {org.name.charAt(0)}
                         </div>
-                        <span className="text-[13px] font-medium" style={{ color: '#E5E7EB' }}>{org.name}</span>
+                        <span className="text-[13px] font-medium" style={{ color: '#111827' }}>{org.name}</span>
                       </div>
                       <span className="text-[11px]">
                         {new Date(org.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
@@ -217,8 +224,8 @@ export default function AdminDashboard() {
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center py-6 gap-1.5">
-                  <Building2 size={24} style={{ color: '#374151' }} />
-                  <p className="text-xs" style={{ color: '#6B7280' }}>لا توجد منظمات بعد</p>
+                  <Building2 size={24} style={{ color: '#9ca3af' }} />
+                  <p className="text-xs" style={{ color: '#6b7280' }}>لا توجد منظمات بعد</p>
                 </div>
               )}
             </div>
@@ -233,7 +240,7 @@ export default function AdminDashboard() {
         <div className="admin-card lg:col-span-2">
           <div className="admin-card-header">
             <div className="flex items-center gap-2">
-              <Activity size={15} style={{ color: '#8B5CF6' }} />
+              <Activity size={15} style={{ color: '#7c3aed' }} />
               <h3>نظرة عامة على النظام</h3>
             </div>
             <span className="admin-badge admin-badge-success">نشط</span>
@@ -241,42 +248,50 @@ export default function AdminDashboard() {
           <div className="admin-card-body">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {[
-                { icon: Star,      color: '#F59E0B', bg: 'rgba(245,158,11,0.1)',  value: (stats?.total_reviews ?? 0).toLocaleString('en-US'),          label: 'تقييمات Google' },
-                { icon: Zap,       color: '#8B5CF6', bg: 'rgba(139,92,246,0.1)', value: (stats?.total_ai_replies_used ?? 0).toLocaleString('en-US'), label: 'ردود AI' },
-                { icon: Puzzle,    color: '#10B981', bg: 'rgba(16,185,129,0.1)', value: '5',                                                           label: 'تكاملات مفعّلة' },
-                { icon: TrendingUp,color: '#06B6D4', bg: 'rgba(6,182,212,0.1)',  value: (stats?.reviews_this_month ?? 0).toLocaleString('en-US'),     label: 'تقييمات الشهر' },
+                { icon: Star,      color: '#d97706', bg: 'rgba(217,119,6,0.08)',  value: (stats?.total_reviews ?? 0).toLocaleString('en-US'),          label: 'تقييمات Google' },
+                { icon: Zap,       color: '#7c3aed', bg: 'rgba(124,58,237,0.08)', value: (stats?.total_ai_replies_used ?? 0).toLocaleString('en-US'), label: 'ردود AI' },
+                { icon: Puzzle,    color: '#059669', bg: 'rgba(5,150,105,0.08)', value: integrations.filter(i => i.enabled).length.toLocaleString('en-US'), label: 'تكاملات مفعّلة' },
+                { icon: TrendingUp,color: '#0891b2', bg: 'rgba(8,145,178,0.08)',  value: (stats?.reviews_this_month ?? 0).toLocaleString('en-US'),     label: 'تقييمات الشهر' },
               ].map(({ icon: Icon, color, bg, value, label }) => (
                 <div key={label}
                   className="flex items-center gap-3 p-3 rounded-xl transition-colors"
-                  style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid #1F2937' }}
-                  onMouseOver={e => (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.05)'}
-                  onMouseOut={e => (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.03)'}
+                  style={{ background: '#f9fafb', border: '1px solid #e5e7eb' }}
+                  onMouseOver={e => (e.currentTarget as HTMLElement).style.background = '#f3f4f6'}
+                  onMouseOut={e => (e.currentTarget as HTMLElement).style.background = '#f9fafb'}
                 >
                   <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
                     style={{ background: bg }}>
                     <Icon size={16} style={{ color }} />
                   </div>
                   <div className="min-w-0">
-                    <div className="text-[15px] font-bold" style={{ color: '#E5E7EB' }}>{value}</div>
-                    <div className="text-[10px] truncate" style={{ color: '#6B7280' }}>{label}</div>
+                    <div className="text-[15px] font-bold" style={{ color: '#111827' }}>{value}</div>
+                    <div className="text-[10px] truncate" style={{ color: '#6b7280' }}>{label}</div>
                   </div>
                 </div>
               ))}
             </div>
-            <div className="mt-4 pt-4 grid grid-cols-3 gap-2" style={{ borderTop: '1px solid #1F2937' }}>
-              {[
-                { label: 'Gemini AI', status: 'نشط', color: '#10B981', bg: 'rgba(16,185,129,0.1)' },
-                { label: 'Google Business', status: 'مربوط', color: '#10B981', bg: 'rgba(16,185,129,0.1)' },
-                { label: 'ChatGPT', status: 'قريباً', color: '#F59E0B', bg: 'rgba(245,158,11,0.1)' },
-              ].map(s => (
-                <div key={s.label} className="flex items-center justify-between p-2.5 rounded-lg"
-                  style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid #1F2937' }}>
-                  <span className="text-[11px]" style={{ color: '#9CA3AF' }}>{s.label}</span>
-                  <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-md"
-                    style={{ color: s.color, background: s.bg }}>{s.status}</span>
-                </div>
-              ))}
-            </div>
+            {integrations.length > 0 && (
+              <div className="mt-4 pt-4 grid grid-cols-3 gap-2" style={{ borderTop: '1px solid #e5e7eb' }}>
+                {integrations.slice(0, 3).map(intg => {
+                  const statusMap: Record<string, { label: string; color: string; bg: string }> = {
+                    connected:    { label: 'مربوط', color: '#059669', bg: 'rgba(5,150,105,0.08)' },
+                    disconnected: { label: 'غير مربوط', color: '#6b7280', bg: 'rgba(107,114,128,0.08)' },
+                    error:        { label: 'خطأ', color: '#dc2626', bg: 'rgba(220,38,38,0.08)' },
+                  };
+                  const s = intg.enabled
+                    ? (statusMap[intg.status] || statusMap.disconnected)
+                    : { label: 'معطّل', color: '#6b7280', bg: 'rgba(107,114,128,0.08)' };
+                  return (
+                    <div key={intg.id} className="flex items-center justify-between p-2.5 rounded-lg"
+                      style={{ background: '#f9fafb', border: '1px solid #e5e7eb' }}>
+                      <span className="text-[11px]" style={{ color: '#6b7280' }}>{intg.name_ar || intg.name_en}</span>
+                      <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-md"
+                        style={{ color: s.color, background: s.bg }}>{s.label}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
 
@@ -286,12 +301,12 @@ export default function AdminDashboard() {
           <div className="admin-card-body">
             <div className="space-y-2.5">
               {[
-                { label: 'إدارة المشتركين', path: '/admin/subscribers', color: '#06B6D4', bg: 'rgba(6,182,212,0.08)',  border: 'rgba(6,182,212,0.2)',  icon: Building2 },
-                { label: 'الفواتير المعلّقة', path: '/admin/billing',    color: '#F59E0B', bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.2)', icon: FileText },
-                { label: 'تذاكر الدعم',      path: '/admin/tickets',    color: '#8B5CF6', bg: 'rgba(139,92,246,0.08)', border: 'rgba(139,92,246,0.2)', icon: MessageSquare },
-                { label: 'استهلاك AI',       path: '/admin/ai-usage',   color: '#10B981', bg: 'rgba(16,185,129,0.08)', border: 'rgba(16,185,129,0.2)', icon: Zap },
+                { label: 'إدارة المشتركين', path: '/admin/subscribers', color: '#0891b2', bg: 'rgba(8,145,178,0.06)',  border: 'rgba(8,145,178,0.2)',  icon: Building2 },
+                { label: 'الفواتير المعلّقة', path: '/admin/billing',    color: '#d97706', bg: 'rgba(217,119,6,0.06)', border: 'rgba(217,119,6,0.2)', icon: FileText },
+                { label: 'تذاكر الدعم',      path: '/admin/tickets',    color: '#7c3aed', bg: 'rgba(124,58,237,0.06)', border: 'rgba(124,58,237,0.2)', icon: MessageSquare },
+                { label: 'استهلاك AI',       path: '/admin/ai-usage',   color: '#059669', bg: 'rgba(5,150,105,0.06)', border: 'rgba(5,150,105,0.2)', icon: Zap },
               ].map(({ label, path, color, bg, border, icon: Icon }) => (
-                <a key={path} href={path}
+                <Link key={path} to={path}
                   className="flex items-center gap-3 px-4 py-3 rounded-xl text-[13px] font-medium transition-all duration-150"
                   style={{ color, background: bg, border: `1px solid ${border}` }}
                   onMouseOver={e => (e.currentTarget as HTMLElement).style.opacity = '0.8'}
@@ -299,7 +314,7 @@ export default function AdminDashboard() {
                 >
                   <Icon size={15} />
                   {label}
-                </a>
+                </Link>
               ))}
             </div>
           </div>
@@ -324,10 +339,10 @@ function StatCard({ icon: Icon, iconColor, iconBg, label, value }: {
           <Icon size={19} style={{ color: iconColor }} />
         </div>
       </div>
-      <div className="text-2xl font-bold mb-1" style={{ color: '#E5E7EB' }}>
+      <div className="text-2xl font-bold mb-1" style={{ color: '#111827' }}>
         {value.toLocaleString('en-US')}
       </div>
-      <div className="text-xs" style={{ color: '#6B7280' }}>{label}</div>
+      <div className="text-xs" style={{ color: '#6b7280' }}>{label}</div>
     </div>
   );
 }
@@ -337,7 +352,7 @@ function MiniStat({ label, value, color, bg }: { label: string; value: number; c
     <div className="text-center py-3 px-2 rounded-xl transition-colors"
       style={{ background: bg, border: `1px solid ${color}30` }}>
       <div className="text-xl font-bold mb-0.5" style={{ color }}>{value}</div>
-      <div className="text-[11px]" style={{ color: '#9CA3AF' }}>{label}</div>
+      <div className="text-[11px]" style={{ color: '#6b7280' }}>{label}</div>
     </div>
   );
 }
