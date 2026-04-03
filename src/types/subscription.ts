@@ -31,6 +31,8 @@ export type NewPlanId = 'orbit' | 'nova' | 'galaxy' | 'infinity';
 export type LegacyPlanId = 'starter' | 'growth' | 'pro' | 'enterprise';
 export type PlanId = NewPlanId | LegacyPlanId;
 
+export type EmojiSupport = 'basic' | 'normal' | 'advanced' | 'full';
+
 export interface PlanLimits {
   maxBranches: number;
   maxTeamMembers: number;
@@ -52,6 +54,7 @@ export interface PlanLimits {
   tasks: boolean;
   teamManagement: boolean;
   notifications: boolean;
+  emojiSupport: EmojiSupport;
 }
 
 export interface PlanInfo {
@@ -78,13 +81,14 @@ export const PLANS: Record<string, PlanInfo> = {
     descEn: 'For small & emerging businesses',
     priceMonthly: 99,
     priceYearly: 990,
-    templateCount: 3,
+    templateCount: 10,
     limits: {
       maxBranches: 1, maxTeamMembers: 1, maxAiReplies: 50, maxTemplateReplies: 100, maxQrCodes: 1,
       qrPerBranch: false, qrLandingPage: false, qrEmployeeField: false, qrAnalytics: false,
       advancedAnalytics: false, branchComparison: false, advancedReporting: false,
       logoUpload: false, apiAccess: false, premiumSupport: false,
-      aiAutoReply: false, tasks: false, teamManagement: false, notifications: true,
+      aiAutoReply: true, tasks: false, teamManagement: false, notifications: true,
+      emojiSupport: 'basic',
     },
   },
   nova: {
@@ -95,13 +99,14 @@ export const PLANS: Record<string, PlanInfo> = {
     descEn: 'For growing businesses',
     priceMonthly: 199,
     priceYearly: 1990,
-    templateCount: 6,
+    templateCount: 30,
     limits: {
       maxBranches: 3, maxTeamMembers: 3, maxAiReplies: 300, maxTemplateReplies: 500, maxQrCodes: 3,
       qrPerBranch: true, qrLandingPage: true, qrEmployeeField: false, qrAnalytics: true,
       advancedAnalytics: true, branchComparison: true, advancedReporting: false,
       logoUpload: true, apiAccess: false, premiumSupport: false,
       aiAutoReply: true, tasks: true, teamManagement: true, notifications: true,
+      emojiSupport: 'normal',
     },
   },
   galaxy: {
@@ -112,13 +117,14 @@ export const PLANS: Record<string, PlanInfo> = {
     descEn: 'For advanced multi-branch companies',
     priceMonthly: 399,
     priceYearly: 3990,
-    templateCount: 10,
+    templateCount: 100,
     limits: {
       maxBranches: 10, maxTeamMembers: 10, maxAiReplies: 1500, maxTemplateReplies: UNLIMITED, maxQrCodes: 10,
       qrPerBranch: true, qrLandingPage: true, qrEmployeeField: true, qrAnalytics: true,
       advancedAnalytics: true, branchComparison: true, advancedReporting: true,
       logoUpload: true, apiAccess: false, premiumSupport: true,
       aiAutoReply: true, tasks: true, teamManagement: true, notifications: true,
+      emojiSupport: 'advanced',
     },
   },
   infinity: {
@@ -136,6 +142,7 @@ export const PLANS: Record<string, PlanInfo> = {
       advancedAnalytics: true, branchComparison: true, advancedReporting: true,
       logoUpload: true, apiAccess: true, premiumSupport: true,
       aiAutoReply: true, tasks: true, teamManagement: true, notifications: true,
+      emojiSupport: 'full',
     },
   },
   // ── Legacy (backward compat) ──
@@ -147,13 +154,14 @@ export const PLANS: Record<string, PlanInfo> = {
     descEn: 'For small businesses',
     priceMonthly: 99,
     priceYearly: 990,
-    templateCount: 3,
+    templateCount: 10,
     limits: {
       maxBranches: 1, maxTeamMembers: 1, maxAiReplies: 50, maxTemplateReplies: 100, maxQrCodes: 1,
       qrPerBranch: false, qrLandingPage: false, qrEmployeeField: false, qrAnalytics: false,
       advancedAnalytics: false, branchComparison: false, advancedReporting: false,
       logoUpload: false, apiAccess: false, premiumSupport: false,
-      aiAutoReply: false, tasks: false, teamManagement: false, notifications: true,
+      aiAutoReply: true, tasks: false, teamManagement: false, notifications: true,
+      emojiSupport: 'basic',
     },
   },
   growth: {
@@ -164,13 +172,14 @@ export const PLANS: Record<string, PlanInfo> = {
     descEn: 'For growing businesses',
     priceMonthly: 199,
     priceYearly: 1990,
-    templateCount: 6,
+    templateCount: 30,
     limits: {
       maxBranches: 5, maxTeamMembers: 5, maxAiReplies: 300, maxTemplateReplies: 500, maxQrCodes: 3,
       qrPerBranch: true, qrLandingPage: true, qrEmployeeField: false, qrAnalytics: true,
       advancedAnalytics: true, branchComparison: false, advancedReporting: false,
       logoUpload: true, apiAccess: false, premiumSupport: false,
       aiAutoReply: true, tasks: true, teamManagement: true, notifications: true,
+      emojiSupport: 'normal',
     },
   },
   pro: {
@@ -181,13 +190,14 @@ export const PLANS: Record<string, PlanInfo> = {
     descEn: 'For advanced businesses',
     priceMonthly: 399,
     priceYearly: 3990,
-    templateCount: 10,
+    templateCount: 100,
     limits: {
       maxBranches: 20, maxTeamMembers: 10, maxAiReplies: 1500, maxTemplateReplies: UNLIMITED, maxQrCodes: 10,
       qrPerBranch: true, qrLandingPage: true, qrEmployeeField: true, qrAnalytics: true,
       advancedAnalytics: true, branchComparison: true, advancedReporting: true,
       logoUpload: true, apiAccess: false, premiumSupport: false,
       aiAutoReply: true, tasks: true, teamManagement: true, notifications: true,
+      emojiSupport: 'advanced',
     },
   },
   enterprise: {
@@ -205,6 +215,7 @@ export const PLANS: Record<string, PlanInfo> = {
       advancedAnalytics: true, branchComparison: true, advancedReporting: true,
       logoUpload: true, apiAccess: true, premiumSupport: true,
       aiAutoReply: true, tasks: true, teamManagement: true, notifications: true,
+      emojiSupport: 'full',
     },
   },
 };

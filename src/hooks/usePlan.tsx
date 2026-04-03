@@ -101,6 +101,10 @@ export function PlanProvider({ children }: { children: ReactNode }) {
       setBranchCount(branches.filter((b: { status: string }) => b.status === 'active').length);
     } catch (err) {
       console.warn('[Sadeem] Plan load failed:', err);
+      // Clear stale data from previous org so we don't show wrong plan state
+      setSubscription(null);
+      setTrial(noSubscriptionTrial);
+      setBranchCount(0);
     } finally {
       clearTimeout(safetyTimer);
       setIsLoading(false);

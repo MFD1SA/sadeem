@@ -2,6 +2,8 @@ import { supabase } from '@/lib/supabase';
 import type { DbReview } from '@/types/database';
 import { notificationService } from '@/services/notifications';
 
+export type EmojiLevel = 'basic' | 'normal' | 'advanced' | 'full';
+
 export interface AIReplyRequest {
   reviewText: string;
   reviewerName: string;
@@ -10,6 +12,7 @@ export interface AIReplyRequest {
   organizationName: string;
   language: 'ar' | 'en';
   tone?: 'professional' | 'friendly' | 'luxury';
+  emojiSupport?: EmojiLevel;
 }
 
 export interface AIReplyResponse {
@@ -46,6 +49,19 @@ function buildPrompt(req: AIReplyRequest): string {
   else if (req.tone === 'friendly') toneGuide += ' Brand style: warm, casual, personable.';
   else toneGuide += ' Brand style: professional and respectful.';
 
+  // Emoji instructions based on plan level
+  let emojiInstruction = '';
+  const emojiLevel = req.emojiSupport || 'basic';
+  if (emojiLevel === 'basic') {
+    emojiInstruction = 'You may use at most 1 simple emoji (thumbs up or smile only) at the very end of the reply. No emojis inside the text body.';
+  } else if (emojiLevel === 'normal') {
+    emojiInstruction = 'You may use up to 1 simple emoji (thumbs up, smile) at the end of the reply only.';
+  } else if (emojiLevel === 'advanced') {
+    emojiInstruction = 'You may use up to 2 relevant emojis naturally within the reply.';
+  } else {
+    emojiInstruction = 'You may use emojis freely and naturally throughout the reply to enhance warmth and engagement.';
+  }
+
   return `You are a professional review response assistant for "${req.organizationName}" (branch: "${req.branchName}").
 A customer named "${req.reviewerName}" left a ${req.rating}-star review:
 """
@@ -63,7 +79,7 @@ Tasks:
 4. Detect if abusive/spam: true/false
 5. Write a professional reply in ${langInstruction}
 ${toneGuide}
-Rules: Keep short (2-3 sentences), NO emojis, NO @ symbols, NO hashtags.
+Rules: Keep short (2-3 sentences), ${emojiInstruction} NO @ symbols, NO hashtags.
 Use customer first name only if it is a clear real name.
 IMPORTANT: Text analysis OVERRIDES star rating. A 5-star review with complaint text should be "manual".
 Respond ONLY with JSON: {"sentiment":"...","category":"...","decision":"...","isAbusive":false,"reply":"..."}`;
@@ -100,7 +116,33 @@ export const aiService = {
     }
 
     let reply = (parsed.reply || '').trim();
-    reply = reply.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '');
+    // Post-process emojis based on plan level
+    const emojiLevel = request.emojiSupport || 'basic';
+    const emojiPattern = /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{200D}\u{FE0F}]/gu;
+    if (emojiLevel === 'basic') {
+      // Basic: allow at most 1 emoji at the very end, strip all others
+      const allEmojis = reply.match(emojiPattern) || [];
+      if (allEmojis.length > 1) {
+        // Strip all emojis from body, keep last one at end
+        const lastEmoji = allEmojis[allEmojis.length - 1];
+        reply = reply.replace(emojiPattern, '').trim() + ' ' + lastEmoji;
+      }
+    } else if (emojiLevel === 'normal') {
+      // Normal: allow up to 1 emoji total
+      const allEmojis = reply.match(emojiPattern) || [];
+      if (allEmojis.length > 1) {
+        let kept = 0;
+        reply = reply.replace(emojiPattern, (m) => { kept++; return kept <= 1 ? m : ''; });
+      }
+    } else if (emojiLevel === 'advanced') {
+      // Advanced: allow up to 2 emojis
+      const allEmojis = reply.match(emojiPattern) || [];
+      if (allEmojis.length > 2) {
+        let kept = 0;
+        reply = reply.replace(emojiPattern, (m) => { kept++; return kept <= 2 ? m : ''; });
+      }
+    }
+    // Full: no stripping at all
     reply = reply.replace(/@/g, '');
 
     // Validate category and decision
@@ -123,7 +165,7 @@ export const aiService = {
     };
   },
 
-  async processNewReview(reviewId: string, organizationName: string, branchName: string, language: 'ar' | 'en' = 'ar', tone: 'professional' | 'friendly' | 'luxury' = 'professional'): Promise<void> {
+  async processNewReview(reviewId: string, organizationName: string, branchName: string, language: 'ar' | 'en' = 'ar', tone: 'professional' | 'friendly' | 'luxury' = 'professional', emojiSupport: EmojiLevel = 'basic'): Promise<void> {
     const { data: reviewData, error: revErr } = await supabase
       .from('reviews')
       .select('*')
@@ -159,7 +201,11 @@ export const aiService = {
         return;
       }
     } catch {
-      // If limit check fails, proceed anyway (fail-open for AI, fail-closed in billing)
+      // Fail-closed: if limit check is unavailable, block AI to prevent quota overrun
+      await supabase.from('reviews').update({
+        status: 'manual_review_required',
+      } as Record<string, unknown>).eq('id', reviewId);
+      return;
     }
 
     // ── Call AI ──
@@ -173,6 +219,7 @@ export const aiService = {
         organizationName,
         language,
         tone,
+        emojiSupport,
       });
     } catch (aiErr) {
       // Log error

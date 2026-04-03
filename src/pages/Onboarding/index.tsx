@@ -78,7 +78,7 @@ const STEPS = [
 
 export default function Onboarding() {
   const navigate = useNavigate();
-  const { user, refreshOrganization, hasOrganization } = useAuth();
+  const { user, hasOrganization } = useAuth();
   const [step, setStep] = useState(1);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -110,23 +110,23 @@ export default function Onboarding() {
   const handleFinish = async () => {
     setSaving(true);
     setError('');
-    console.log('[Onboarding] handleFinish started', { userId: user?.id });
     try {
-      console.log('[Onboarding] Step 1: createOrganization…');
       await organizationService.createOrganization(user!.id, {
         name: form.businessName,
         industry: form.businessType,
         country: form.country,
         city: form.city,
       });
-      console.log('[Onboarding] Step 1 done. Step 2: refreshOrganization…');
-      await refreshOrganization();
-      console.log('[Onboarding] Step 2 done. hasOrganization should update via useEffect.');
+      // Org + membership created in DB. Force a full page reload so
+      // AuthProvider re-hydrates from scratch and picks up the new org.
+      // This is more reliable than refreshOrganization() + useEffect,
+      // which silently strands the user on step 5 if the org query
+      // errors transiently (hasOrganization stays false, no error shown).
+      window.location.href = '/dashboard';
     } catch (err) {
       console.error('[Onboarding] Failed:', err);
       setError('حدث خطأ أثناء إنشاء الحساب. يرجى المحاولة مرة أخرى.');
     } finally {
-      console.log('[Onboarding] finally — clearing saving state');
       setSaving(false);
     }
   };

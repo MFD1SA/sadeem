@@ -36,6 +36,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     isAuthenticated: false,
     isLoading: true,
     error: null,
+    requiresPasswordReset: false,
   });
 
   // Guard against concurrent validateSession() calls (e.g., rapid navigation)
@@ -59,6 +60,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
             isAuthenticated: true,
             isLoading: false,
             error: null,
+            requiresPasswordReset: session.adminUser.force_password_reset ?? false,
           });
         } else {
           setState({
@@ -67,6 +69,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
             isAuthenticated: false,
             isLoading: false,
             error: null,
+            requiresPasswordReset: false,
           });
         }
       } catch {
@@ -77,6 +80,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
             isAuthenticated: false,
             isLoading: false,
             error: null,
+            requiresPasswordReset: false,
           });
         }
       } finally {
@@ -98,6 +102,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
         isAuthenticated: true,
         isLoading: false,
         error: null,
+        requiresPasswordReset: session.adminUser.force_password_reset ?? false,
       });
     } catch (err) {
       const message = err instanceof Error ? err.message : 'فشل تسجيل الدخول';
@@ -114,6 +119,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
       isAuthenticated: false,
       isLoading: false,
       error: null,
+      requiresPasswordReset: false,
     });
   }, []);
 
@@ -140,6 +146,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     async (payload: ChangePasswordPayload) => {
       if (!state.user) throw new Error('غير مصرّح');
       await adminAuthService.changePassword(state.user.id, payload);
+      setState((prev) => ({ ...prev, requiresPasswordReset: false }));
     },
     [state.user]
   );
@@ -170,7 +177,18 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
           ...prev,
           user: session.adminUser,
           permissions: session.permissions,
+          requiresPasswordReset: session.adminUser.force_password_reset ?? false,
         }));
+      } else {
+        // Session revoked/expired/locked — force logout on client
+        setState({
+          user: null,
+          permissions: [],
+          isAuthenticated: false,
+          isLoading: false,
+          error: null,
+          requiresPasswordReset: false,
+        });
       }
     } finally {
       validatingRef.current = false;

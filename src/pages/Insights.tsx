@@ -27,6 +27,7 @@ export default function Insights() {
   const [competitors, setCompetitors] = useState<CompetitorReport | null>(null);
   const [reviewInsights, setReviewInsights] = useState<ReviewInsights | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [tab, setTab] = useState<'seo' | 'reviews' | 'competitors'>('seo');
 
   const loadData = useCallback(async () => {
@@ -85,15 +86,28 @@ export default function Insights() {
         sentimentDist: sentDist,
         total: reviews.length,
       });
-    } catch {
+    } catch (err: unknown) {
+      setLoadError((err as Error).message || (lang === 'ar' ? 'فشل تحميل البيانات' : 'Failed to load data'));
     } finally {
       setLoading(false);
     }
-  }, [organization]);
+  }, [organization, lang]);
 
   useEffect(() => { loadData(); }, [loadData]);
 
   if (loading) return <LoadingState />;
+
+  if (loadError) {
+    return (
+      <div className="text-center py-16">
+        <AlertTriangle size={36} className="mx-auto mb-3 text-red-400" />
+        <p className="text-sm text-red-600 mb-3">{loadError}</p>
+        <button onClick={loadData} className="btn btn-secondary text-sm">
+          {lang === 'ar' ? 'إعادة المحاولة' : 'Retry'}
+        </button>
+      </div>
+    );
+  }
 
   return (
     <FeatureGate feature="advancedAnalytics">

@@ -65,7 +65,7 @@ function useAdminCheck() {
           sessionStorage.removeItem(ADMIN_CACHE_KEY);
         }
 
-        // Fresh RPC check — race against a 5-second timeout so the
+        // Fresh RPC check — race against a 2-second timeout so the
         // guard never blocks the UI indefinitely on network failure.
         const rpcPromise = supabase.rpc('check_is_admin').then(({ data }) => data === true);
         const timeoutPromise = new Promise<boolean>((resolve) =>

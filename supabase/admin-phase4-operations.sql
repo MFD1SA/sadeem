@@ -212,8 +212,11 @@ BEGIN
     RAISE EXCEPTION 'No subscription found for this organization';
   END IF;
 
-  -- Validate plan
-  IF p_plan IS NOT NULL AND p_plan NOT IN ('starter', 'growth', 'pro', 'enterprise') THEN
+  -- Validate plan (both legacy and new plan IDs)
+  IF p_plan IS NOT NULL AND p_plan NOT IN (
+    'starter', 'growth', 'pro', 'enterprise',
+    'orbit', 'nova', 'galaxy', 'infinity'
+  ) THEN
     RAISE EXCEPTION 'Invalid plan: %', p_plan;
   END IF;
 

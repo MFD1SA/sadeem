@@ -9,7 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { tasksService, type DbTask } from '@/services/tasks';
 import { dashboardService } from '@/services/dashboard';
 import { Badge } from '@/components/ui/Badge';
-import { LoadingState } from '@/components/ui/LoadingState';
+import { LoadingState, ErrorState } from '@/components/ui/LoadingState';
 import { Modal } from '@/components/ui/Modal';
 import {
   CheckCircle, Circle, Plus, Trash2, Sparkles,
@@ -33,6 +33,7 @@ export default function Tasks() {
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ title: '', description: '', priority: 'medium' as DbTask['priority'] });
   const [formError, setFormError] = useState('');
+  const [loadError, setLoadError] = useState('');
 
   // Smart suggestions generated from live stats
   const [suggestions, setSuggestions] = useState<Array<{
@@ -42,6 +43,7 @@ export default function Tasks() {
 
   const loadAll = useCallback(async () => {
     if (!organization) { setLoading(false); return; }
+    setLoadError('');
     try {
       const [dbTasks, stats] = await Promise.all([
         tasksService.list(organization.id),
@@ -96,6 +98,8 @@ export default function Tasks() {
         }
       );
       setSuggestions(s);
+    } catch (err) {
+      setLoadError(err instanceof Error ? err.message : String(err));
     } finally {
       setLoading(false);
     }
@@ -153,10 +157,13 @@ export default function Tasks() {
         source: 'smart',
       });
       await loadAll();
-    } catch {}
+    } catch (err) {
+      console.warn('[Sadeem] Failed to add suggestion:', err);
+    }
   };
 
   if (loading) return <LoadingState />;
+  if (loadError && tasks.length === 0) return <ErrorState message={loadError} onRetry={loadAll} />;
 
   const pending = tasks.filter(t => t.status === 'pending');
   const done = tasks.filter(t => t.status === 'done');

@@ -9,11 +9,11 @@ export const subscriptionService = {
       .eq('organization_id', organizationId)
       .order('created_at', { ascending: false })
       .limit(1)
-      .single();
+      .maybeSingle();
 
-    if (error && error.code !== 'PGRST116') {
-      console.warn('[Sadeem] Subscription load error:', error.message);
-      return null;
+    if (error) {
+      // Real DB / network error — throw so callers can distinguish from "no subscription"
+      throw new Error(`Subscription load failed: ${error.message}`);
     }
     return (data as DbSubscription) || null;
   },

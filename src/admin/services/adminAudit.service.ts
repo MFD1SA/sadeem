@@ -5,7 +5,7 @@
 // ============================================================================
 
 import { adminSupabase } from './adminSupabase';
-import type { AdminAuditLog, PaginationParams, PaginatedResult } from '../types';
+import type { AdminAuditLog, SubscriberAuditLog, PaginationParams, PaginatedResult } from '../types';
 
 class AdminAuditService {
   private static instance: AdminAuditService;
@@ -42,6 +42,40 @@ class AdminAuditService {
     const total = count ?? 0;
     return {
       data: (data ?? []) as AdminAuditLog[],
+      total,
+      page,
+      pageSize,
+      totalPages: Math.ceil(total / pageSize),
+    };
+  }
+
+  /** List subscriber audit logs from audit_logs table — protected by RLS is_active_admin() */
+  async listSubscriberAudit(
+    params: PaginationParams & { event?: string; actorType?: string; organizationId?: string }
+  ): Promise<PaginatedResult<SubscriberAuditLog>> {
+    const { page, pageSize, search, event, actorType, organizationId, sortOrder = 'desc' } = params;
+    const from = (page - 1) * pageSize;
+    const to = from + pageSize - 1;
+
+    let query = adminSupabase
+      .from('audit_logs')
+      .select('*', { count: 'exact' });
+
+    if (search) {
+      query = query.or(`event.ilike.%${search}%,entity_type.ilike.%${search}%`);
+    }
+    if (event) query = query.eq('event', event);
+    if (actorType) query = query.eq('actor_type', actorType);
+    if (organizationId) query = query.eq('organization_id', organizationId);
+
+    query = query.order('created_at', { ascending: sortOrder === 'asc' }).range(from, to);
+
+    const { data, error, count } = await query;
+    if (error) throw new Error('فشل في جلب سجل عمليات المشتركين: ' + error.message);
+
+    const total = count ?? 0;
+    return {
+      data: (data ?? []) as SubscriberAuditLog[],
       total,
       page,
       pageSize,

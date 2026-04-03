@@ -169,7 +169,8 @@ class AdminAuthService {
       }
 
       const adminUser = adminUserJson as AdminUser;
-      if (adminUser.status !== 'active' || adminUser.deleted_at) {
+      if (adminUser.status !== 'active' || adminUser.deleted_at
+        || (adminUser.locked_until && new Date(adminUser.locked_until) > new Date())) {
         this.clearLocal();
         await adminSupabase.auth.signOut();
         return null;

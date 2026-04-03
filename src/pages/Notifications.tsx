@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useLanguage } from '@/i18n';
 import { useAuth } from '@/hooks/useAuth';
 import { notificationService, type DbNotification } from '@/services/notifications';
-import { LoadingState } from '@/components/ui/LoadingState';
+import { LoadingState, ErrorState } from '@/components/ui/LoadingState';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Badge } from '@/components/ui/Badge';
 import { Bell, Star, AlertTriangle, CheckCircle } from 'lucide-react';
@@ -13,13 +13,17 @@ export default function Notifications() {
   const { organization } = useAuth();
   const [items, setItems] = useState<DbNotification[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   const loadNotifications = useCallback(async () => {
     if (!organization) { setLoading(false); return; }
+    setError('');
     try {
       const data = await notificationService.list(organization.id);
       setItems(data);
-    } catch {} finally {
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
       setLoading(false);
     }
   }, [organization]);
@@ -28,11 +32,16 @@ export default function Notifications() {
 
   const handleMarkAllRead = async () => {
     if (!organization) return;
-    await notificationService.markAllRead(organization.id);
-    await loadNotifications();
+    try {
+      await notificationService.markAllRead(organization.id);
+      await loadNotifications();
+    } catch (err) {
+      console.warn('[Sadeem] Mark all read failed:', err);
+    }
   };
 
   if (loading) return <LoadingState />;
+  if (error && items.length === 0) return <ErrorState message={error} onRetry={loadNotifications} />;
 
   const unreadCount = items.filter((n: DbNotification) => !n.is_read).length;
 

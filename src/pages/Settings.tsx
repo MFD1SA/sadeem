@@ -44,6 +44,7 @@ export default function Settings() {
   const [isGoogleUser, setIsGoogleUser] = useState(false);
 
   const [autoReplyFirstOnly, setAutoReplyFirstOnly] = useState(true);
+  const [smartTemplateMode, setSmartTemplateMode] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }: { data: any }) => {
@@ -57,6 +58,7 @@ export default function Settings() {
       setOrgName(organization.name || '');
       setOrgIndustry(organization.industry || '');
       setOrgCity(organization.city || '');
+      setSmartTemplateMode(!!organization.smart_template_mode);
     }
 
     if (profile) {
@@ -182,11 +184,15 @@ export default function Settings() {
   };
 
   const handleSavePolicy = async () => {
+    if (!organization) return;
     setPolicySaving(true);
     setPolicyMessage('');
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 300));
+      await organizationService.updateOrganization(organization.id, {
+        smart_template_mode: smartTemplateMode,
+      } as Partial<typeof organization>);
+      if (refreshOrganization) await refreshOrganization();
       setPolicyMessage(lang === 'ar' ? 'تم الحفظ بنجاح' : 'Saved successfully');
     } catch (err: unknown) {
       setPolicyMessage((err as Error).message || (lang === 'ar' ? 'فشل الحفظ' : 'Save failed'));
@@ -482,7 +488,7 @@ export default function Settings() {
                   <Toggle value={true} disabled />
                 </div>
 
-                <div className="flex items-center justify-between gap-4 px-4 py-4 sm:px-5">
+                <div className="flex items-center justify-between gap-4 border-b border-border px-4 py-4 sm:px-5">
                   <div>
                     <div className="text-sm font-medium text-content-primary">
                       {lang === 'ar'
@@ -494,6 +500,20 @@ export default function Settings() {
                     </div>
                   </div>
                   <Toggle value={true} disabled />
+                </div>
+
+                <div className="flex items-center justify-between gap-4 px-4 py-4 sm:px-5">
+                  <div>
+                    <div className="text-sm font-medium text-content-primary">
+                      {lang === 'ar' ? 'وضع القالب الذكي' : 'Smart Template Mode'}
+                    </div>
+                    <div className="mt-1 text-2xs text-content-tertiary">
+                      {lang === 'ar'
+                        ? 'استخدم القوالب الجاهزة أولاً عند تطابقها بقوة مع التقييم، وارجع للذكاء الاصطناعي فقط عند عدم وجود تطابق. يوفّر رصيد الردود الذكية.'
+                        : 'Use ready templates first when they strongly match the review, fall back to AI only when no match exists. Saves AI reply quota.'}
+                    </div>
+                  </div>
+                  <Toggle value={smartTemplateMode} onChange={setSmartTemplateMode} />
                 </div>
               </div>
 

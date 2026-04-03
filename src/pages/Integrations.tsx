@@ -661,8 +661,8 @@ export default function Integrations() {
                 ) : (
                   <div className="mt-3 text-xs text-content-tertiary bg-surface-secondary rounded-lg px-3 py-2.5">
                     {lang === 'ar'
-                      ? 'يرجى إضافة VITE_GEMINI_API_KEY لتفعيل الذكاء الاصطناعي'
-                      : 'Add VITE_GEMINI_API_KEY to .env to enable AI'}
+                      ? 'محرك الذكاء الاصطناعي غير متاح حالياً. تواصل مع الدعم.'
+                      : 'AI engine is currently unavailable. Contact support.'}
                   </div>
                 )}
               </div>

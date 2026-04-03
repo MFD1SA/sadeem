@@ -81,6 +81,19 @@ export interface AdminAuditLog {
   created_at: string;
 }
 
+/** Subscriber-side audit log (from audit_logs table) */
+export interface SubscriberAuditLog {
+  id: string;
+  event: string;
+  organization_id: string;
+  entity_id: string | null;
+  entity_type: string | null;
+  user_id: string | null;
+  actor_type: string;
+  details: Record<string, unknown> | null;
+  created_at: string;
+}
+
 export interface AdminSession {
   id: string;
   admin_user_id: string;
@@ -106,6 +119,7 @@ export interface AdminAuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
+  requiresPasswordReset: boolean;
 }
 
 export interface AdminSessionData {
