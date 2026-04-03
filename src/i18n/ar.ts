@@ -73,7 +73,7 @@ export const ar = {
     flagged: 'مُبلَّغ',
     ignored: 'مُتجاهل',
     open: 'مفتوح',
-    in_progress: 'قيد التنفيذ',
+    in_progress: 'قيد المعالجة',
     done: 'مكتمل',
     cancelled: 'ملغي',
     resolved: 'محلول',
