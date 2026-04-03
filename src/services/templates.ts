@@ -1,5 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import type { DbReplyTemplate } from '@/types/database';
+import { getPlanLimits } from '@/types/subscription';
+import type { PlanId } from '@/types/subscription';
 
 export const templatesService = {
   async list(organizationId: string): Promise<DbReplyTemplate[]> {
@@ -21,7 +23,34 @@ export const templatesService = {
     rating_min: number;
     rating_max: number;
     is_active?: boolean;
+    language?: 'ar' | 'en' | 'any';
   }): Promise<DbReplyTemplate> {
+    // Enforce template creation limit based on plan
+    const { data: subData } = await supabase
+      .from('subscriptions')
+      .select('plan')
+      .eq('organization_id', template.organization_id)
+      .eq('status', 'active')
+      .single();
+
+    const planId = (subData as { plan: string } | null)?.plan as PlanId | undefined;
+    const planInfo = await import('@/types/subscription').then(m => m.PLANS[planId || 'orbit']);
+    const maxTemplates = planInfo?.templateCount ?? 10;
+
+    // Count existing templates for this org
+    const { count, error: countErr } = await supabase
+      .from('reply_templates')
+      .select('id', { count: 'exact', head: true })
+      .eq('organization_id', template.organization_id);
+
+    if (countErr) throw countErr;
+
+    if ((count ?? 0) >= maxTemplates) {
+      throw new Error(
+        `Template limit reached (${maxTemplates}). Upgrade your plan to create more templates.`
+      );
+    }
+
     const { data, error } = await supabase
       .from('reply_templates')
       .insert({
@@ -32,6 +61,7 @@ export const templatesService = {
         rating_min: template.rating_min,
         rating_max: template.rating_max,
         is_active: template.is_active ?? true,
+        language: template.language ?? 'ar',
       })
       .select()
       .single();

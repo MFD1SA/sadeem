@@ -18,6 +18,7 @@ export interface DbOrganization {
   industry: string | null;
   country: string | null;
   city: string | null;
+  smart_template_mode: boolean;
   created_at: string;
 }
 
@@ -83,5 +84,7 @@ export interface DbReplyTemplate {
   rating_max: number;
   is_active: boolean;
   usage_count: number;
+  /** 'ar' = Arabic only, 'en' = English only, 'any' = matches both languages */
+  language: 'ar' | 'en' | 'any';
   created_at: string;
 }

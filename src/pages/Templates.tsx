@@ -2,17 +2,64 @@ import { useState, useEffect, useCallback, type ChangeEvent } from 'react';
 import { useLanguage } from '@/i18n';
 import { useAuth } from '@/hooks/useAuth';
 import { templatesService } from '@/services/templates';
+import { DEFAULT_TEMPLATES, type BuiltInTemplate } from '@/services/default-templates';
 import { LoadingState, ErrorState } from '@/components/ui/LoadingState';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Badge } from '@/components/ui/Badge';
 import { Modal } from '@/components/ui/Modal';
 import { Toggle } from '@/components/ui/Toggle';
-import { Plus, Edit3, Trash2, BarChart2 } from 'lucide-react';
+import { Plus, Edit3, Trash2, BarChart2, Lock } from 'lucide-react';
 import type { DbReplyTemplate } from '@/types/database';
 
 let _cache: DbReplyTemplate[] | null = null;
 
-type TemplateForm = { name: string; body: string; category: string; rating_min: number; rating_max: number; is_active: boolean };
+/** Unified display type for both custom and built-in templates */
+type DisplayTemplate = {
+  id: string;
+  name: string;
+  body: string;
+  category: string;
+  rating_min: number;
+  rating_max: number;
+  is_active: boolean;
+  usage_count: number;
+  language: 'ar' | 'en' | 'any';
+  isBuiltIn: boolean;
+  original?: DbReplyTemplate;
+};
+
+function builtInToDisplay(tpl: BuiltInTemplate, index: number, lang: 'ar' | 'en'): DisplayTemplate {
+  return {
+    id: `builtin-${index}`,
+    name: lang === 'ar' ? tpl.nameAr : tpl.nameEn,
+    body: lang === 'ar' ? tpl.bodyAr : tpl.bodyEn,
+    category: tpl.category,
+    rating_min: tpl.ratingMin,
+    rating_max: tpl.ratingMax,
+    is_active: true,
+    usage_count: 0,
+    language: 'any',
+    isBuiltIn: true,
+  };
+}
+
+function customToDisplay(tpl: DbReplyTemplate): DisplayTemplate {
+  return {
+    id: tpl.id,
+    name: tpl.name,
+    body: tpl.body,
+    category: tpl.category,
+    rating_min: tpl.rating_min,
+    rating_max: tpl.rating_max,
+    is_active: tpl.is_active,
+    usage_count: tpl.usage_count,
+    language: tpl.language || 'ar',
+    isBuiltIn: false,
+    original: tpl,
+  };
+}
+
+type TemplateForm = { name: string; body: string; category: string; rating_min: number; rating_max: number; is_active: boolean; language: 'ar' | 'en' | 'any' };
 
 function StarDisplay({ min, max }: { min: number; max: number }) {
   const renderStars = (filled: number) =>
@@ -38,16 +85,26 @@ function StarDisplay({ min, max }: { min: number; max: number }) {
 export default function Templates() {
   const { t, lang } = useLanguage();
   const { organization } = useAuth();
-  const [templates, setTemplates] = useState<DbReplyTemplate[]>(_cache ?? []);
+  const [customTemplates, setCustomTemplates] = useState<DbReplyTemplate[]>(_cache ?? []);
   const [loading, setLoading] = useState(_cache === null);
   const [error, setError] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editTemplate, setEditTemplate] = useState<DbReplyTemplate | null>(null);
   const [saving, setSaving] = useState(false);
+  const [viewTab, setViewTab] = useState<'all' | 'custom' | 'builtin'>('all');
 
   const [form, setForm] = useState<TemplateForm>({
-    name: '', body: '', category: 'general', rating_min: 1, rating_max: 5, is_active: true,
+    name: '', body: '', category: 'general', rating_min: 1, rating_max: 5, is_active: true, language: 'ar',
   });
+
+  // Merge built-in + custom templates for display
+  const builtInDisplay = DEFAULT_TEMPLATES.map((tpl, i) => builtInToDisplay(tpl, i, lang as 'ar' | 'en'));
+  const customDisplay = customTemplates.map(customToDisplay);
+  const allTemplates: DisplayTemplate[] = viewTab === 'custom' ? customDisplay
+    : viewTab === 'builtin' ? builtInDisplay
+    : [...customDisplay, ...builtInDisplay];
+  // Keep "templates" alias for stats that reference it
+  const templates = customTemplates;
 
   const loadTemplates = useCallback(async () => {
     if (!organization) { setLoading(false); return; }
@@ -56,7 +113,7 @@ export default function Templates() {
     try {
       const data = await templatesService.list(organization.id);
       _cache = data;
-      setTemplates(data);
+      setCustomTemplates(data);
     } catch (err: unknown) {
       setError((err as Error).message);
     } finally {
@@ -68,7 +125,7 @@ export default function Templates() {
 
   const openCreate = () => {
     setEditTemplate(null);
-    setForm({ name: '', body: '', category: 'general', rating_min: 1, rating_max: 5, is_active: true });
+    setForm({ name: '', body: '', category: 'general', rating_min: 1, rating_max: 5, is_active: true, language: 'ar' });
     setShowModal(true);
   };
 
@@ -77,6 +134,7 @@ export default function Templates() {
     setForm({
       name: tpl.name, body: tpl.body, category: tpl.category,
       rating_min: tpl.rating_min, rating_max: tpl.rating_max, is_active: tpl.is_active,
+      language: tpl.language || 'ar',
     });
     setShowModal(true);
   };
@@ -89,12 +147,14 @@ export default function Templates() {
         await templatesService.update(editTemplate.id, {
           name: form.name, body: form.body, category: form.category as DbReplyTemplate['category'],
           rating_min: form.rating_min, rating_max: form.rating_max, is_active: form.is_active,
+          language: form.language,
         });
       } else {
         await templatesService.create({
           organization_id: organization.id,
           name: form.name, body: form.body, category: form.category,
           rating_min: form.rating_min, rating_max: form.rating_max, is_active: form.is_active,
+          language: form.language,
         });
       }
       setShowModal(false);
@@ -111,18 +171,22 @@ export default function Templates() {
     try {
       await templatesService.remove(id);
       await loadTemplates();
-    } catch {}
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    }
   };
 
   const handleToggle = async (id: string, current: boolean) => {
     try {
       await templatesService.toggleActive(id, !current);
       await loadTemplates();
-    } catch {}
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    }
   };
 
   if (loading) return <LoadingState message={t.common.loading} />;
-  if (error && templates.length === 0) return <ErrorState message={error} onRetry={loadTemplates} />;
+  if (error && customTemplates.length === 0 && builtInDisplay.length === 0) return <ErrorState message={error} onRetry={loadTemplates} />;
 
   const categoryColors: Record<string, 'success' | 'danger' | 'warning' | 'neutral'> = {
     positive: 'success', negative: 'danger', neutral: 'warning', general: 'neutral',
@@ -135,11 +199,11 @@ export default function Templates() {
     general: 'bg-slate-400',
   };
 
-  const activeCount = templates.filter((tpl) => tpl.is_active).length;
+  const activeCount = allTemplates.filter((tpl) => tpl.is_active).length;
   const categoryCounts = ['positive', 'negative', 'neutral', 'general'].map((cat) => ({
     key: cat,
     label: t.templatesPage[cat as keyof typeof t.templatesPage] as string,
-    count: templates.filter((tpl) => tpl.category === cat).length,
+    count: allTemplates.filter((tpl) => tpl.category === cat).length,
   }));
 
   return (
@@ -147,7 +211,7 @@ export default function Templates() {
       {/* Stats Summary */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         <div className="card card-body text-center">
-          <div className="text-2xl font-bold text-content-primary">{templates.length}</div>
+          <div className="text-2xl font-bold text-content-primary">{allTemplates.length}</div>
           <div className="text-xs text-content-tertiary mt-0.5">
             {lang === 'ar' ? 'إجمالي القوالب' : 'Total Templates'}
           </div>
@@ -174,16 +238,37 @@ export default function Templates() {
         </div>
       </div>
 
+      {/* View tabs */}
+      <div className="flex items-center gap-2">
+        {([
+          { key: 'all' as const, label: lang === 'ar' ? 'الكل' : 'All', count: customDisplay.length + builtInDisplay.length },
+          { key: 'custom' as const, label: lang === 'ar' ? 'مخصصة' : 'Custom', count: customDisplay.length },
+          { key: 'builtin' as const, label: lang === 'ar' ? 'جاهزة' : 'Built-in', count: builtInDisplay.length },
+        ]).map(tab => (
+          <button
+            key={tab.key}
+            onClick={() => setViewTab(tab.key)}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              viewTab === tab.key
+                ? 'bg-primary text-white'
+                : 'bg-surface-secondary text-content-secondary hover:text-content-primary'
+            }`}
+          >
+            {tab.label} ({tab.count})
+          </button>
+        ))}
+      </div>
+
       {/* Main Card */}
       <div className="card">
         <div className="card-header">
-          <h3>{t.templatesPage.title} ({templates.length})</h3>
+          <h3>{t.templatesPage.title} ({allTemplates.length})</h3>
           <button className="btn btn-primary btn-sm" onClick={openCreate}>
             <Plus size={14} /> {t.templatesPage.addTemplate}
           </button>
         </div>
 
-        {templates.length === 0 ? (
+        {allTemplates.length === 0 ? (
           <EmptyState
             message={lang === 'ar' ? 'لا توجد قوالب بعد. أنشئ أول قالب.' : 'No templates yet.'}
             action={
@@ -195,22 +280,34 @@ export default function Templates() {
         ) : (
           <div className="p-4">
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-              {templates.map((tpl: DbReplyTemplate) => (
+              {allTemplates.map((tpl) => (
                 <div
                   key={tpl.id}
-                  className={`card card-body flex flex-col gap-3 transition-shadow hover:shadow-md ${!tpl.is_active ? 'opacity-60' : ''}`}
+                  className={`card card-body flex flex-col gap-3 transition-shadow hover:shadow-md ${!tpl.is_active ? 'opacity-60' : ''} ${tpl.isBuiltIn ? 'border-dashed' : ''}`}
                 >
                   {/* Header Row */}
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0 flex-1">
                       <div className="text-sm font-semibold text-content-primary truncate">{tpl.name}</div>
-                      <div className="mt-1">
+                      <div className="mt-1 flex items-center gap-1.5 flex-wrap">
                         <Badge variant={categoryColors[tpl.category]}>
                           {t.templatesPage[tpl.category as keyof typeof t.templatesPage] as string}
                         </Badge>
+                        {tpl.isBuiltIn ? (
+                          <Badge variant="info">
+                            <Lock size={9} className="inline -mt-px" />{' '}
+                            {lang === 'ar' ? 'جاهز' : 'Built-in'}
+                          </Badge>
+                        ) : (
+                          <Badge variant="info">
+                            {tpl.language === 'ar' ? (lang === 'ar' ? 'عربي' : 'AR') : tpl.language === 'en' ? (lang === 'ar' ? 'إنجليزي' : 'EN') : (lang === 'ar' ? 'الكل' : 'Any')}
+                          </Badge>
+                        )}
                       </div>
                     </div>
-                    <Toggle value={tpl.is_active} onChange={() => handleToggle(tpl.id, tpl.is_active)} />
+                    {!tpl.isBuiltIn && tpl.original && (
+                      <Toggle value={tpl.is_active} onChange={() => handleToggle(tpl.id, tpl.is_active)} />
+                    )}
                   </div>
 
                   {/* Body Preview */}
@@ -224,21 +321,25 @@ export default function Templates() {
                   {/* Star Rating Range */}
                   <div className="flex items-center justify-between">
                     <StarDisplay min={tpl.rating_min} max={tpl.rating_max} />
-                    <div className="flex items-center gap-1 text-xs text-content-tertiary">
-                      <BarChart2 size={12} />
-                      <span>{tpl.usage_count}</span>
-                    </div>
+                    {!tpl.isBuiltIn && (
+                      <div className="flex items-center gap-1 text-xs text-content-tertiary">
+                        <BarChart2 size={12} />
+                        <span>{tpl.usage_count}</span>
+                      </div>
+                    )}
                   </div>
 
-                  {/* Actions */}
-                  <div className="flex items-center justify-end gap-1 pt-1">
-                    <button className="btn-icon" onClick={() => openEdit(tpl)} title={t.common.edit}>
-                      <Edit3 size={14} />
-                    </button>
-                    <button className="btn-icon" onClick={() => handleDelete(tpl.id)} title={t.common.delete}>
-                      <Trash2 size={14} className="text-red-500" />
-                    </button>
-                  </div>
+                  {/* Actions — only for custom templates */}
+                  {!tpl.isBuiltIn && tpl.original && (
+                    <div className="flex items-center justify-end gap-1 pt-1">
+                      <button className="btn-icon" onClick={() => openEdit(tpl.original!)} title={t.common.edit}>
+                        <Edit3 size={14} />
+                      </button>
+                      <button className="btn-icon" onClick={() => handleDelete(tpl.id)} title={t.common.delete}>
+                        <Trash2 size={14} className="text-red-500" />
+                      </button>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -279,11 +380,19 @@ export default function Templates() {
                 </select>
               </div>
               <div>
-                <label className="form-label">{t.templatesPage.ratingRange}</label>
-                <div className="flex gap-2">
-                  <input className="form-input" type="number" min={1} max={5} value={form.rating_min} onChange={(e: ChangeEvent<HTMLInputElement>) => setForm((p: TemplateForm) => ({ ...p, rating_min: +e.target.value }))} />
-                  <input className="form-input" type="number" min={1} max={5} value={form.rating_max} onChange={(e: ChangeEvent<HTMLInputElement>) => setForm((p: TemplateForm) => ({ ...p, rating_max: +e.target.value }))} />
-                </div>
+                <label className="form-label">{lang === 'ar' ? 'اللغة' : 'Language'}</label>
+                <select className="form-select" value={form.language} onChange={(e: ChangeEvent<HTMLSelectElement>) => setForm((p: TemplateForm) => ({ ...p, language: e.target.value as 'ar' | 'en' | 'any' }))}>
+                  <option value="ar">{lang === 'ar' ? 'عربي' : 'Arabic'}</option>
+                  <option value="en">{lang === 'ar' ? 'إنجليزي' : 'English'}</option>
+                  <option value="any">{lang === 'ar' ? 'الكل' : 'Any'}</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label className="form-label">{t.templatesPage.ratingRange}</label>
+              <div className="flex gap-2">
+                <input className="form-input" type="number" min={1} max={5} value={form.rating_min} onChange={(e: ChangeEvent<HTMLInputElement>) => setForm((p: TemplateForm) => ({ ...p, rating_min: +e.target.value }))} />
+                <input className="form-input" type="number" min={1} max={5} value={form.rating_max} onChange={(e: ChangeEvent<HTMLInputElement>) => setForm((p: TemplateForm) => ({ ...p, rating_max: +e.target.value }))} />
               </div>
             </div>
           </div>
