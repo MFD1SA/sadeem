@@ -167,10 +167,30 @@ export default function AdminIntegrations() {
     setAiTestResult(null);
     try {
       const testPrompt = `You are a review response assistant. A customer left a 5-star review saying "Great service!". Reply in Arabic in one sentence. Respond ONLY with JSON: {"reply":"..."}`;
-      const { data, error } = await adminSupabase.functions.invoke('generate-reply', {
-        body: { prompt: testPrompt, temperature: 0.5, maxOutputTokens: 100 },
+
+      // Get current admin session JWT
+      const { data: { session } } = await adminSupabase.auth.getSession();
+      if (!session?.access_token) {
+        throw new Error('جلسة غير صالحة — يرجى تسجيل الدخول مجدداً');
+      }
+
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+      // Call edge function with explicit auth headers (fixes 401)
+      const response = await fetch(`${supabaseUrl}/functions/v1/generate-reply`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+          'apikey': supabaseAnonKey,
+        },
+        body: JSON.stringify({ prompt: testPrompt, temperature: 0.5, maxOutputTokens: 100 }),
       });
-      if (error || data?.error) throw new Error(error?.message || data?.error || 'Unknown error');
+
+      const data = await response.json();
+      if (!response.ok || data?.error) throw new Error(data?.error || `HTTP ${response.status}`);
+
       const rawText: string = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
       if (!rawText) throw new Error('Empty response from Gemini');
       const parsed = JSON.parse(rawText.replace(/```json\n?|```\n?/g, '').trim());
@@ -232,7 +252,7 @@ export default function AdminIntegrations() {
           <span className="text-lg">✨</span>
           <div>
             <div className="text-sm font-semibold text-gray-900">Gemini AI</div>
-            <div className="text-[11px] text-slate-500">اختبار اتصال Gemini AI عبر Edge Function (generate-reply) — بطاقة اختبار فقط، ليست تكاملاً مكرراً</div>
+            <div className="text-[11px] text-slate-500">اختبار سريع لاتصال Gemini AI عبر Edge Function — يرسل تقييم تجريبي ويعرض الرد</div>
           </div>
         </div>
         <div className="flex items-center gap-3 flex-shrink-0">
