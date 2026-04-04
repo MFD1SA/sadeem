@@ -48,7 +48,7 @@ function withTimeout<T>(promise: Promise<T>, ms = 12000): Promise<T> {
 }
 
 export default function QrReviews() {
-  const { lang } = useLanguage();
+  const { lang, t } = useLanguage();
   const { organization } = useAuth();
 
   const [items, setItems] = useState<BranchQr[]>([]);
@@ -134,11 +134,7 @@ export default function QrReviews() {
 
     try {
       if (!setupGoogleUrl.trim()) {
-        throw new Error(
-          lang === 'ar'
-            ? 'يرجى إدخال رابط تقييم Google'
-            : 'Please enter the Google review URL'
-        );
+        throw new Error(t.qrPage.enterGoogleUrl);
       }
 
       const payload = {
@@ -165,16 +161,14 @@ export default function QrReviews() {
         );
       }
 
-      setSetupSuccess(lang === 'ar' ? 'تم الحفظ بنجاح' : 'Saved successfully');
+      setSetupSuccess(t.qrPage.savedSuccessfully);
       setShowSetup(false);
       void loadData();
     } catch (err: unknown) {
       const msg =
         (err as Error).message === 'Request timeout'
-          ? lang === 'ar'
-            ? 'انتهت مهلة الحفظ. تحقق من الجدول أو الصلاحيات ثم حاول مرة أخرى.'
-            : 'Save timed out. Check table/policies and try again.'
-          : (err as Error).message || (lang === 'ar' ? 'فشل الحفظ' : 'Save failed');
+          ? t.qrPage.saveTimeout
+          : (err as Error).message || t.qrPage.saveFailed;
 
       setSetupError(msg);
     } finally {
@@ -198,7 +192,7 @@ export default function QrReviews() {
   if (loading) {
     return (
       <LoadingState
-        message={lang === 'ar' ? 'جاري تحميل QR التقييمات...' : 'Loading Review QR...'}
+        message={t.qrPage.loadingQr}
       />
     );
   }
@@ -219,12 +213,10 @@ export default function QrReviews() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-base font-bold text-content-primary">
-            {lang === 'ar' ? 'QR التقييمات' : 'Review QR'}
+            {t.qrPage.title}
           </h2>
           <p className="text-xs text-content-tertiary mt-0.5">
-            {lang === 'ar'
-              ? 'أنشئ رموز QR لجمع التقييمات من الفروع'
-              : 'Generate QR codes to collect reviews at branches'}
+            {t.qrPage.subtitle}
           </p>
         </div>
       </div>
@@ -232,11 +224,7 @@ export default function QrReviews() {
       {items.length === 0 ? (
         <div className="card">
           <EmptyState
-            message={
-              lang === 'ar'
-                ? 'لا توجد فروع نشطة. أضف فروعاً من صفحة الفروع.'
-                : 'No active branches. Add branches first.'
-            }
+            message={t.qrPage.noBranches}
             icon={<QrCode size={44} strokeWidth={1} className="text-gray-200" />}
           />
         </div>
@@ -247,13 +235,13 @@ export default function QrReviews() {
             <div className="card">
               <div className="card-body py-3 px-4">
                 <p className="text-2xs text-content-tertiary uppercase tracking-wider mb-1">
-                  {lang === 'ar' ? 'رموز مُعدَّة' : 'QR Configured'}
+                  {t.qrPage.qrConfigured}
                 </p>
                 <p className="text-2xl font-bold text-content-primary leading-none">
                   {configuredItems.length}
                 </p>
                 <p className="text-2xs text-content-tertiary mt-1">
-                  {lang === 'ar' ? `من ${items.length} فرع` : `of ${items.length} branches`}
+                  {`${items.length} ${t.qrPage.ofBranches}`}
                 </p>
               </div>
             </div>
@@ -261,13 +249,13 @@ export default function QrReviews() {
             <div className="card">
               <div className="card-body py-3 px-4">
                 <p className="text-2xs text-content-tertiary uppercase tracking-wider mb-1">
-                  {lang === 'ar' ? 'إجمالي المسح' : 'Total Scans'}
+                  {t.qrPage.totalScans}
                 </p>
                 <p className="text-2xl font-bold text-content-primary leading-none">
                   {totalScans.toLocaleString()}
                 </p>
                 <p className="text-2xs text-content-tertiary mt-1">
-                  {lang === 'ar' ? 'عبر جميع الفروع' : 'across all branches'}
+                  {t.qrPage.acrossAllBranches}
                 </p>
               </div>
             </div>
@@ -275,13 +263,13 @@ export default function QrReviews() {
             <div className="card">
               <div className="card-body py-3 px-4">
                 <p className="text-2xs text-content-tertiary uppercase tracking-wider mb-1">
-                  {lang === 'ar' ? 'إجمالي النقرات' : 'Total Clicks'}
+                  {t.qrPage.totalClicks}
                 </p>
                 <p className="text-2xl font-bold text-content-primary leading-none">
                   {totalClicks.toLocaleString()}
                 </p>
                 <p className="text-2xs text-content-tertiary mt-1">
-                  {lang === 'ar' ? 'عبر جميع الفروع' : 'across all branches'}
+                  {t.qrPage.acrossAllBranches}
                 </p>
               </div>
             </div>
@@ -289,13 +277,13 @@ export default function QrReviews() {
             <div className="card">
               <div className="card-body py-3 px-4">
                 <p className="text-2xs text-content-tertiary uppercase tracking-wider mb-1">
-                  {lang === 'ar' ? 'فروع بدون QR' : 'Without QR'}
+                  {t.qrPage.withoutQr}
                 </p>
                 <p className="text-2xl font-bold text-amber-500 leading-none">
                   {unconfiguredItems.length}
                 </p>
                 <p className="text-2xs text-content-tertiary mt-1">
-                  {lang === 'ar' ? 'لم تُعدَّ بعد' : 'not configured yet'}
+                  {t.qrPage.notConfiguredYet}
                 </p>
               </div>
             </div>
@@ -326,16 +314,14 @@ export default function QrReviews() {
                       )}
                     </div>
                     <p className="text-xs text-content-tertiary max-w-[200px]">
-                      {lang === 'ar'
-                        ? 'لم يتم إنشاء رمز QR لهذا الفرع بعد'
-                        : 'No QR code generated for this branch yet'}
+                      {t.qrPage.noQrYet}
                     </p>
                     <button
                       className="btn btn-primary btn-sm"
                       onClick={() => openSetup(branch, null)}
                     >
                       <Plus size={13} />
-                      {lang === 'ar' ? 'إنشاء QR' : 'Generate QR'}
+                      {t.qrPage.generateQr}
                     </button>
                   </div>
                 );
@@ -365,8 +351,8 @@ export default function QrReviews() {
                         <div className="mb-3">
                           <Badge variant={config.mode === 'landing' ? 'info' : 'success'}>
                             {config.mode === 'landing'
-                              ? lang === 'ar' ? 'صفحة هبوط' : 'Landing Page'
-                              : lang === 'ar' ? 'Google مباشر' : 'Google Direct'}
+                              ? t.qrPage.landingPage
+                              : t.qrPage.googleDirect}
                           </Badge>
                         </div>
 
@@ -376,7 +362,7 @@ export default function QrReviews() {
                             <div className="flex items-center gap-1 text-content-tertiary mb-0.5">
                               <ScanLine size={12} />
                               <span className="text-2xs uppercase tracking-wide">
-                                {lang === 'ar' ? 'مسح' : 'Scans'}
+                                {t.qrPage.scanLabel}
                               </span>
                             </div>
                             <span className="text-2xl font-bold text-content-primary leading-none">
@@ -388,7 +374,7 @@ export default function QrReviews() {
                             <div className="flex items-center gap-1 text-content-tertiary mb-0.5">
                               <MousePointerClick size={12} />
                               <span className="text-2xs uppercase tracking-wide">
-                                {lang === 'ar' ? 'نقرات' : 'Clicks'}
+                                {t.qrPage.clicksLabel}
                               </span>
                             </div>
                             <span className="text-2xl font-bold text-content-primary leading-none">
@@ -406,7 +392,7 @@ export default function QrReviews() {
                       </code>
                       <button
                         className="btn-icon w-7 h-7 flex-shrink-0"
-                        title={lang === 'ar' ? 'نسخ الرابط' : 'Copy link'}
+                        title={t.qrPage.copyLink}
                         onClick={() => copyLink(landingUrl || '')}
                       >
                         <Copy size={12} />
@@ -420,7 +406,7 @@ export default function QrReviews() {
                         onClick={() => setDownloadConfig(config)}
                       >
                         <Download size={12} />
-                        {lang === 'ar' ? 'تنزيل' : 'Download'}
+                        {t.qrPage.download}
                       </button>
 
                       <button
@@ -428,7 +414,7 @@ export default function QrReviews() {
                         onClick={() => openSetup(branch, config)}
                       >
                         <Settings size={12} />
-                        {lang === 'ar' ? 'إعدادات' : 'Settings'}
+                        {t.qrPage.settings}
                       </button>
 
                       <button
@@ -436,7 +422,7 @@ export default function QrReviews() {
                         onClick={() => handleRegenerate(config, branch.internal_name)}
                       >
                         <RefreshCw size={12} />
-                        {lang === 'ar' ? 'تجديد' : 'Regenerate'}
+                        {t.qrPage.regenerate}
                       </button>
 
                       {config.mode === 'landing' && (
@@ -447,7 +433,7 @@ export default function QrReviews() {
                           className="btn btn-secondary btn-sm"
                         >
                           <Eye size={12} />
-                          {lang === 'ar' ? 'معاينة' : 'Preview'}
+                          {t.qrPage.preview}
                         </a>
                       )}
                     </div>
@@ -462,21 +448,15 @@ export default function QrReviews() {
       {/* Setup modal — unchanged */}
       {showSetup && setupBranch && (
         <Modal
-          title={
-            lang === 'ar'
-              ? `إعداد QR — ${setupBranch.internal_name}`
-              : `QR Setup — ${setupBranch.internal_name}`
-          }
+          title={`${t.qrPage.qrSetup} — ${setupBranch.internal_name}`}
           onClose={closeSetup}
           footer={
             <>
               <button className="btn btn-primary" onClick={handleSaveSetup} disabled={saving}>
-                {saving
-                  ? lang === 'ar' ? 'جاري الحفظ...' : 'Saving...'
-                  : lang === 'ar' ? 'حفظ' : 'Save'}
+                {saving ? t.qrPage.saving : t.common.save}
               </button>
               <button className="btn btn-secondary" onClick={closeSetup} disabled={saving}>
-                {lang === 'ar' ? 'إلغاء' : 'Cancel'}
+                {t.common.cancel}
               </button>
             </>
           }
@@ -495,7 +475,7 @@ export default function QrReviews() {
             )}
 
             <div>
-              <label className="form-label">{lang === 'ar' ? 'وضع QR' : 'QR Mode'}</label>
+              <label className="form-label">{t.qrPage.qrMode}</label>
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
@@ -507,12 +487,10 @@ export default function QrReviews() {
                   }`}
                 >
                   <div className="text-[13px] font-medium text-content-primary mb-0.5">
-                    {lang === 'ar' ? 'صفحة هبوط ذكية' : 'Smart Landing Page'}
+                    {t.qrPage.smartLanding}
                   </div>
                   <div className="text-2xs text-content-tertiary">
-                    {lang === 'ar'
-                      ? 'صفحة مخصصة تشجع العميل على التقييم'
-                      : 'Branded page encouraging reviews'}
+                    {t.qrPage.smartLandingDesc}
                   </div>
                 </button>
 
@@ -526,12 +504,10 @@ export default function QrReviews() {
                   }`}
                 >
                   <div className="text-[13px] font-medium text-content-primary mb-0.5">
-                    {lang === 'ar' ? 'Google مباشر' : 'Google Direct'}
+                    {t.qrPage.googleDirect}
                   </div>
                   <div className="text-2xs text-content-tertiary">
-                    {lang === 'ar'
-                      ? 'يفتح صفحة تقييم Google مباشرة'
-                      : 'Opens Google review page directly'}
+                    {t.qrPage.googleDirectDesc}
                   </div>
                 </button>
               </div>
@@ -539,7 +515,7 @@ export default function QrReviews() {
 
             <div>
               <label className="form-label">
-                {lang === 'ar' ? 'رابط تقييم Google' : 'Google Review URL'}
+                {t.qrPage.googleReviewUrl}
               </label>
               <input
                 className="form-input text-xs"
@@ -549,9 +525,7 @@ export default function QrReviews() {
                 dir="ltr"
               />
               <p className="text-2xs text-content-tertiary mt-1">
-                {lang === 'ar'
-                  ? 'رابط التقييم من Google Business Profile'
-                  : 'Review link from Google Business Profile'}
+                {t.qrPage.googleReviewUrlPlaceholder}
               </p>
             </div>
 
@@ -560,12 +534,10 @@ export default function QrReviews() {
                 <div className="flex items-center justify-between py-2">
                   <div>
                     <div className="text-[13px] font-medium text-content-primary">
-                      {lang === 'ar' ? 'حقل اسم الموظف' : 'Employee Name Field'}
+                      {t.qrPage.employeeNameField}
                     </div>
                     <div className="text-2xs text-content-tertiary">
-                      {lang === 'ar'
-                        ? 'يظهر حقل اختياري لإدخال اسم الموظف'
-                        : 'Shows optional field for employee name'}
+                      {t.qrPage.employeeNameFieldDesc}
                     </div>
                   </div>
                   <Toggle value={setupShowEmployee} onChange={setSetupShowEmployee} />
@@ -573,36 +545,22 @@ export default function QrReviews() {
 
                 <div className="rounded-lg border border-border bg-surface-secondary/40 p-3">
                   <div className="text-xs font-medium text-content-primary mb-2">
-                    {lang === 'ar' ? 'معاينة منطق الصفحة' : 'Landing Page Preview Logic'}
+                    {t.qrPage.landingPreviewLogic}
                   </div>
 
-                  {setupShowEmployee ? (
-                    <div className="text-2xs text-content-tertiary">
-                      {lang === 'ar'
-                        ? 'سيظهر للعميل حقل اختياري لإدخال اسم الموظف.'
-                        : 'An optional employee-name field will be shown to customers.'}
-                    </div>
-                  ) : (
-                    <div className="text-2xs text-content-tertiary">
-                      {lang === 'ar'
-                        ? 'لن يظهر حقل اسم الموظف للعميل.'
-                        : 'The employee-name field will be hidden from customers.'}
-                    </div>
-                  )}
+                  <div className="text-2xs text-content-tertiary">
+                    {setupShowEmployee ? t.qrPage.employeeFieldShown : t.qrPage.employeeFieldHidden}
+                  </div>
                 </div>
 
                 <div>
                   <label className="form-label">
-                    {lang === 'ar' ? 'رسالة مخصصة (اختياري)' : 'Custom Message (optional)'}
+                    {t.qrPage.customMessage}
                   </label>
                   <textarea
                     className="form-textarea text-xs"
                     rows={2}
-                    placeholder={
-                      lang === 'ar'
-                        ? 'مثال: شكراً لزيارتكم! رأيكم يهمنا.'
-                        : 'e.g. Thank you for visiting! Your feedback matters.'
-                    }
+                    placeholder={t.qrPage.customMessagePlaceholder}
                     value={setupMessage}
                     onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
                       setSetupMessage(e.target.value)
@@ -618,7 +576,7 @@ export default function QrReviews() {
       {/* Download modal — unchanged */}
       {downloadConfig && (
         <Modal
-          title={lang === 'ar' ? 'تنزيل QR' : 'Download QR'}
+          title={t.qrPage.downloadQrTitle}
           onClose={() => setDownloadConfig(null)}
         >
           <div className="flex flex-col items-center py-4">
@@ -627,9 +585,7 @@ export default function QrReviews() {
             </div>
 
             <div className="text-2xs text-content-tertiary mb-4 text-center">
-              {lang === 'ar'
-                ? 'أحجام الطباعة المقترحة: بطاقة طاولة (8×8 سم) • ملصق جداري (15×15 سم) • حامل كاونتر (10×10 سم)'
-                : 'Suggested print sizes: Table card (8×8cm) • Wall sticker (15×15cm) • Counter stand (10×10cm)'}
+              {t.qrPage.suggestedPrintSizes}
             </div>
 
             <div className="flex gap-2">
@@ -649,7 +605,7 @@ export default function QrReviews() {
                 className="btn btn-secondary btn-sm"
                 onClick={() => void downloadQrImage(downloadConfig, 'png-hd')}
               >
-                <Download size={12} /> {lang === 'ar' ? 'HD عالي الدقة' : 'HD Print'}
+                <Download size={12} /> {t.qrPage.hdPrint}
               </button>
             </div>
           </div>

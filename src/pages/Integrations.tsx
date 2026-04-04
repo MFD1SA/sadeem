@@ -165,11 +165,7 @@ export default function Integrations() {
 
       const token = session?.provider_token;
       if (!token) {
-        throw new Error(
-          lang === 'ar'
-            ? 'لا يوجد رمز وصول Google صالح. يرجى إعادة ربط الحساب.'
-            : 'No valid Google access token found. Please reconnect your account.'
-        );
+        throw new Error(t.integrationsExt.noValidGoogleToken);
       }
 
       const accounts = await retryGoogleRequest(() =>
@@ -177,11 +173,7 @@ export default function Integrations() {
       );
 
       if (accounts.length === 0) {
-        throw new Error(
-          lang === 'ar'
-            ? 'لا توجد حسابات Google Business مرتبطة بهذا الحساب'
-            : 'No Google Business accounts found'
-        );
+        throw new Error(t.integrationsExt.noGoogleAccounts);
       }
 
       const allLocations: GoogleLocation[] = [];
@@ -196,11 +188,7 @@ export default function Integrations() {
       }
 
       if (allLocations.length === 0) {
-        setLocationError(
-          lang === 'ar'
-            ? 'لا توجد مواقع Google Business مرتبطة بهذا الحساب'
-            : 'No Google Business locations found for this account'
-        );
+        setLocationError(t.integrationsExt.noGoogleLocations);
         return;
       }
 
@@ -218,11 +206,7 @@ export default function Integrations() {
         lower.includes('too many requests');
 
       if (isRateLimit) {
-        setLocationError(
-          lang === 'ar'
-            ? 'طلبات Google Business كثيرة مؤقتاً. انتظر دقيقة واحدة ثم حاول مرة أخرى.'
-            : 'Google Business requests are temporarily rate-limited. Please wait a minute and try again.'
-        );
+        setLocationError(t.integrationsExt.rateLimited);
       } else {
         const classified = classifyGbpError(err, lang);
         setLocationError(classified.message);
@@ -278,11 +262,15 @@ export default function Integrations() {
     setSelectedLocations(new Set());
 
     if (linked > 0) {
-      setLocationSuccess(
-        lang === 'ar'
-          ? `تم ربط ${linked} ${linked === 1 ? 'موقع' : 'مواقع'} بنجاح${skipped > 0 ? ` (${skipped} مرتبط مسبقاً)` : ''}`
-          : `Linked ${linked} location${linked > 1 ? 's' : ''}${skipped > 0 ? ` (${skipped} already linked)` : ''}`
-      );
+      const unit = linked === 1 ? t.integrationsExt.locationSingular : t.integrationsExt.locationPlural;
+      let msg = t.integrationsExt.linkedSuccess
+        .replace('{count}', String(linked))
+        .replace('{unit}', unit)
+        .replace('{s}', linked > 1 ? 's' : '');
+      if (skipped > 0) {
+        msg += ` (${skipped} ${t.integrationsExt.alreadyLinked})`;
+      }
+      setLocationSuccess(msg);
     }
 
     setLinkingLocations(false);
@@ -374,12 +362,10 @@ export default function Integrations() {
                   <div className="flex items-center justify-between gap-2 flex-wrap">
                     <div>
                       <p className="text-[13px] font-semibold text-content-primary">
-                        {lang === 'ar' ? 'ربط حساب Google Business' : 'Connect Google Business Account'}
+                        {t.integrationsExt.connectGoogleBusiness}
                       </p>
                       <p className="text-xs text-content-tertiary mt-0.5">
-                        {lang === 'ar'
-                          ? 'سجّل الدخول بحساب Google الخاص بنشاطك التجاري'
-                          : 'Sign in with the Google account linked to your business'}
+                        {t.integrationsExt.connectGoogleBusinessDesc}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
@@ -387,12 +373,12 @@ export default function Integrations() {
                         <>
                           <StatusDot color="green" />
                           <Badge variant="success">
-                            {lang === 'ar' ? 'متصل' : 'Connected'}
+                            {t.integrationsExt.connected}
                           </Badge>
                         </>
                       ) : (
                         <Badge variant="neutral">
-                          {lang === 'ar' ? 'غير متصل' : 'Not connected'}
+                          {t.integrationsExt.notConnected}
                         </Badge>
                       )}
                     </div>
@@ -403,12 +389,12 @@ export default function Integrations() {
                     {!step1Done ? (
                       <button className="btn btn-primary btn-sm" onClick={handleConnectGoogle}>
                         <ExternalLink size={13} />
-                        {lang === 'ar' ? 'ربط حساب Google Business' : 'Connect Google Business'}
+                        {t.integrationsExt.connectGoogle}
                       </button>
                     ) : (
                       <button className="btn btn-secondary btn-sm" onClick={handleConnectGoogle}>
                         <ExternalLink size={13} />
-                        {lang === 'ar' ? 'تغيير الحساب' : 'Change Account'}
+                        {t.integrationsExt.changeAccount}
                       </button>
                     )}
                   </div>
@@ -428,12 +414,10 @@ export default function Integrations() {
                   <div className="flex items-center justify-between gap-2 flex-wrap">
                     <div>
                       <p className="text-[13px] font-semibold text-content-primary">
-                        {lang === 'ar' ? 'ربط المواقع' : 'Link Locations'}
+                        {t.integrationsExt.linkLocations}
                       </p>
                       <p className="text-xs text-content-tertiary mt-0.5">
-                        {lang === 'ar'
-                          ? 'اختر مواقع Google Business لربطها بالفروع'
-                          : 'Select Google Business locations to link to branches'}
+                        {t.integrationsExt.linkLocationsDesc}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
@@ -441,19 +425,19 @@ export default function Integrations() {
                         <>
                           <StatusDot color="green" />
                           <Badge variant="success">
-                            {linkedCount} {lang === 'ar' ? 'مرتبط' : 'linked'}
+                            {linkedCount} {t.integrationsExt.linked}
                           </Badge>
                         </>
                       ) : step1Done ? (
                         <>
                           <StatusDot color="yellow" />
                           <Badge variant="warning">
-                            {lang === 'ar' ? 'جاهز للربط' : 'Ready to link'}
+                            {t.integrationsExt.readyToLink}
                           </Badge>
                         </>
                       ) : (
                         <Badge variant="neutral">
-                          {lang === 'ar' ? 'في انتظار الخطوة السابقة' : 'Awaiting step 1'}
+                          {t.integrationsExt.awaitingStep1}
                         </Badge>
                       )}
                     </div>
@@ -473,8 +457,8 @@ export default function Integrations() {
                           <Building2 size={13} />
                         )}
                         {loadingLocations
-                          ? lang === 'ar' ? 'جاري التحميل...' : 'Loading...'
-                          : lang === 'ar' ? 'ربط المواقع' : 'Link Locations'}
+                          ? t.common.loading
+                          : t.integrationsExt.linkLocations}
                       </button>
                     </div>
                   )}
@@ -514,17 +498,15 @@ export default function Integrations() {
                   <div className="flex items-center justify-between gap-2 flex-wrap">
                     <div>
                       <p className="text-[13px] font-semibold text-content-primary">
-                        {lang === 'ar' ? 'مزامنة التقييمات' : 'Sync Reviews'}
+                        {t.integrationsExt.syncReviews}
                       </p>
                       <p className="text-xs text-content-tertiary mt-0.5">
-                        {lang === 'ar'
-                          ? 'جلب أحدث التقييمات من Google Business وتوليد ردود مقترحة'
-                          : 'Fetch latest reviews from Google Business and generate suggested replies'}
+                        {t.integrationsExt.syncReviewsDesc}
                       </p>
                     </div>
                     {step2Done && (
                       <Badge variant="neutral">
-                        {lang === 'ar' ? 'جاهز للمزامنة' : 'Ready to sync'}
+                        {t.integrationsExt.readyToSync}
                       </Badge>
                     )}
                   </div>
@@ -543,8 +525,8 @@ export default function Integrations() {
                           <RefreshCw size={13} />
                         )}
                         {syncing
-                          ? lang === 'ar' ? 'جاري المزامنة...' : 'Syncing...'
-                          : lang === 'ar' ? 'مزامنة التقييمات' : 'Sync Reviews'}
+                          ? t.integrationsExt.syncing
+                          : t.integrationsExt.syncReviews}
                       </button>
                     </div>
                   )}
@@ -565,9 +547,9 @@ export default function Integrations() {
                           <CheckCircle size={14} className="text-emerald-600" />
                         )}
                         <span className="font-medium">
-                          {lang === 'ar'
-                            ? `تمت المزامنة: ${syncResult.synced} تقييم جديد، ${syncResult.drafts} رد مقترح`
-                            : `Synced: ${syncResult.synced} new reviews, ${syncResult.drafts} drafts`}
+                          {t.integrationsExt.syncedResult
+                            .replace('{synced}', String(syncResult.synced))
+                            .replace('{drafts}', String(syncResult.drafts))}
                         </span>
                       </div>
                       {syncResult.errors.map((e: string, i: number) => (
@@ -587,7 +569,7 @@ export default function Integrations() {
       {/* ── AI section ── */}
       <div>
         <h3 className="text-xs font-semibold text-content-secondary uppercase tracking-wider mb-4">
-          {lang === 'ar' ? 'الذكاء الاصطناعي' : 'AI'}
+          {t.integrationsExt.ai}
         </h3>
 
         <div className="card">
@@ -608,12 +590,10 @@ export default function Integrations() {
                 <div className="flex items-start justify-between gap-2 flex-wrap">
                   <div>
                     <p className="text-[13px] font-semibold text-content-primary">
-                      {lang === 'ar' ? 'محرك الردود الذكي بالذكاء الاصطناعي' : 'AI Smart Reply Engine'}
+                      {t.integrationsExt.aiSmartReplyEngine}
                     </p>
                     <p className="text-xs text-content-tertiary mt-0.5">
-                      {lang === 'ar'
-                        ? 'محرك ردود ذكي مدعوم بالذكاء الاصطناعي'
-                        : 'AI-powered smart reply engine'}
+                      {t.integrationsExt.aiSmartReplyEngineDesc}
                     </p>
                   </div>
 
@@ -622,8 +602,8 @@ export default function Integrations() {
                     <StatusDot color={geminiConfigured ? 'green' : 'gray'} />
                     <Badge variant={geminiConfigured ? 'success' : 'neutral'}>
                       {geminiConfigured
-                        ? lang === 'ar' ? 'متصل' : 'Connected'
-                        : lang === 'ar' ? 'محرك الرد الذكي غير متصل' : 'Not connected'}
+                        ? t.integrationsExt.connected
+                        : t.integrationsExt.aiNotConnected}
                     </Badge>
                   </div>
                 </div>
@@ -642,8 +622,8 @@ export default function Integrations() {
                         <Zap size={13} />
                       )}
                       {testingGemini
-                        ? lang === 'ar' ? 'جاري الاختبار...' : 'Testing...'
-                        : lang === 'ar' ? 'اختبار المحرك' : 'Test Engine'}
+                        ? t.integrationsExt.testing
+                        : t.integrationsExt.testEngine}
                     </button>
 
                     {geminiTestResult && (
@@ -660,9 +640,7 @@ export default function Integrations() {
                   </div>
                 ) : (
                   <div className="mt-3 text-xs text-content-tertiary bg-surface-secondary rounded-lg px-3 py-2.5">
-                    {lang === 'ar'
-                      ? 'محرك الذكاء الاصطناعي غير متاح حالياً. تواصل مع الدعم.'
-                      : 'AI engine is currently unavailable. Contact support.'}
+                    {t.integrationsExt.aiUnavailable}
                   </div>
                 )}
               </div>
@@ -674,11 +652,7 @@ export default function Integrations() {
       {/* Location modal — unchanged */}
       {showLocationModal && (
         <Modal
-          title={
-            lang === 'ar'
-              ? 'ربط المواقع من Google Business'
-              : 'Link Google Business Locations'
-          }
+          title={t.integrationsExt.linkGoogleLocations}
           onClose={() => {
             setShowLocationModal(false);
             setSelectedLocations(new Set());
@@ -694,14 +668,15 @@ export default function Integrations() {
                   {linkingLocations ? (
                     <>
                       <RefreshCw size={13} className="animate-spin" />{' '}
-                      {lang === 'ar' ? 'جاري الربط...' : 'Linking...'}
+                      {t.integrationsExt.linking}
                     </>
                   ) : (
                     <>
                       <Link2 size={13} />{' '}
-                      {lang === 'ar'
-                        ? `ربط ${selectedUnlinkedCount} ${selectedUnlinkedCount === 1 ? 'موقع' : 'مواقع'}`
-                        : `Link ${selectedUnlinkedCount} location${selectedUnlinkedCount > 1 ? 's' : ''}`}
+                      {t.integrationsExt.linkCount
+                        .replace('{count}', String(selectedUnlinkedCount))
+                        .replace('{unit}', selectedUnlinkedCount === 1 ? t.integrationsExt.locationSingular : t.integrationsExt.locationPlural)
+                        .replace('{s}', selectedUnlinkedCount > 1 ? 's' : '')}
                     </>
                   )}
                 </button>
@@ -720,9 +695,7 @@ export default function Integrations() {
         >
           {locations.length === 0 ? (
             <div className="py-10 text-center text-sm text-content-tertiary">
-              {lang === 'ar'
-                ? 'لا توجد مواقع Google Business مرتبطة بهذا الحساب'
-                : 'No Google Business locations found'}
+              {t.integrationsExt.noGoogleLocations}
             </div>
           ) : (
             <div className="space-y-1.5 max-h-96 overflow-y-auto">
@@ -779,7 +752,7 @@ export default function Integrations() {
 
                       {alreadyLinked && (
                         <Badge variant="success">
-                          {lang === 'ar' ? 'مرتبط' : 'Linked'}
+                          {t.integrationsExt.linked}
                         </Badge>
                       )}
                     </div>

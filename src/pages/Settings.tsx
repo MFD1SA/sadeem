@@ -121,7 +121,7 @@ export default function Settings() {
 
       if (upErr) {
         if (upErr.message?.includes('Bucket not found') || upErr.message?.includes('bucket')) {
-          throw new Error(lang === 'ar' ? 'خدمة رفع الصور غير مهيأة بعد. تواصل مع الدعم.' : 'Image upload service not configured. Contact support.');
+          throw new Error(t.settingsPage.imageUploadNotConfigured);
         }
         throw upErr;
       }
@@ -137,9 +137,9 @@ export default function Settings() {
       if (updateErr) throw updateErr;
 
       await refreshProfile();
-      setProfileMessage(lang === 'ar' ? 'تم تحديث الصورة بنجاح' : 'Avatar updated successfully');
+      setProfileMessage(t.settingsPage.avatarUpdated);
     } catch (err: unknown) {
-      setProfileMessage((err as Error).message || (lang === 'ar' ? 'فشل رفع الصورة' : 'Upload failed'));
+      setProfileMessage((err as Error).message || t.settingsPage.avatarUploadFailed);
     } finally {
       setUploadingAvatar(false);
       if (avatarInputRef.current) avatarInputRef.current.value = '';
@@ -163,7 +163,7 @@ export default function Settings() {
 
       if (upErr) {
         if (upErr.message?.includes('Bucket not found') || upErr.message?.includes('bucket')) {
-          throw new Error(lang === 'ar' ? 'خدمة رفع الصور غير مهيأة بعد. تواصل مع الدعم.' : 'Image upload service not configured. Contact support.');
+          throw new Error(t.settingsPage.imageUploadNotConfigured);
         }
         throw upErr;
       }
@@ -179,9 +179,9 @@ export default function Settings() {
       if (updateErr) throw updateErr;
 
       await refreshOrganization();
-      setOrgMessage(lang === 'ar' ? 'تم تحديث شعار النشاط بنجاح' : 'Logo updated successfully');
+      setOrgMessage(t.settingsPage.logoUpdated);
     } catch (err: unknown) {
-      setOrgMessage((err as Error).message || (lang === 'ar' ? 'فشل رفع الشعار' : 'Logo upload failed'));
+      setOrgMessage((err as Error).message || t.settingsPage.logoUploadFailed);
     } finally {
       setUploadingLogo(false);
       if (logoInputRef.current) logoInputRef.current.value = '';
@@ -201,9 +201,9 @@ export default function Settings() {
         .eq('id', organization.id);
       if (updateErr) throw updateErr;
       await refreshOrganization();
-      setOrgMessage(lang === 'ar' ? 'تم استخدام صورة Google كشعار بنجاح' : 'Google photo set as logo successfully');
+      setOrgMessage(t.settingsPage.googlePhotoSet);
     } catch (err: unknown) {
-      setOrgMessage((err as Error).message || (lang === 'ar' ? 'فشل تعيين الصورة' : 'Failed to set photo'));
+      setOrgMessage((err as Error).message || t.settingsPage.googlePhotoFailed);
     } finally {
       setSettingGoogleLogo(false);
     }
@@ -223,9 +223,9 @@ export default function Settings() {
       });
 
       await refreshOrganization();
-      setOrgMessage(lang === 'ar' ? 'تم الحفظ بنجاح' : 'Saved successfully');
+      setOrgMessage(t.settingsPage.savedSuccessfully);
     } catch (err: unknown) {
-      setOrgMessage((err as Error).message || (lang === 'ar' ? 'فشل الحفظ' : 'Save failed'));
+      setOrgMessage((err as Error).message || t.settingsPage.saveFail);
     } finally {
       setOrgSaving(false);
     }
@@ -246,9 +246,9 @@ export default function Settings() {
       if (error) throw error;
 
       await refreshProfile();
-      setProfileMessage(lang === 'ar' ? 'تم الحفظ بنجاح' : 'Saved successfully');
+      setProfileMessage(t.settingsPage.savedSuccessfully);
     } catch (err: unknown) {
-      setProfileMessage((err as Error).message || (lang === 'ar' ? 'فشل الحفظ' : 'Save failed'));
+      setProfileMessage((err as Error).message || t.settingsPage.saveFail);
     } finally {
       setProfileSaving(false);
     }
@@ -264,30 +264,30 @@ export default function Settings() {
         smart_template_mode: smartTemplateMode,
       } as Partial<typeof organization>);
       if (refreshOrganization) await refreshOrganization();
-      setPolicyMessage(lang === 'ar' ? 'تم الحفظ بنجاح' : 'Saved successfully');
+      setPolicyMessage(t.settingsPage.savedSuccessfully);
     } catch (err: unknown) {
-      setPolicyMessage((err as Error).message || (lang === 'ar' ? 'فشل الحفظ' : 'Save failed'));
+      setPolicyMessage((err as Error).message || t.settingsPage.saveFail);
     } finally {
       setPolicySaving(false);
     }
   };
 
   if (authLoading) {
-    return <LoadingState message={lang === 'ar' ? 'جاري تحميل الإعدادات...' : 'Loading settings...'} />;
+    return <LoadingState message={t.settingsPage.loadingSettings} />;
   }
 
   if (!organization) {
     return (
       <div className="rounded-3xl border border-border bg-white p-8 text-center text-content-secondary shadow-sm">
-        {lang === 'ar' ? 'لا يوجد نشاط تجاري' : 'No organization found'}
+        {t.settingsPage.noOrganization}
       </div>
     );
   }
 
   const tabs = [
-    { id: 'organization', label: lang === 'ar' ? 'النشاط التجاري' : 'Organization' },
+    { id: 'organization', label: t.settingsPage.organizationTab },
     { id: 'profile', label: t.topbar.profile },
-    { id: 'policy', label: lang === 'ar' ? 'سياسة الردود' : 'Reply Policy' },
+    { id: 'policy', label: t.settingsPage.replyPolicyTab },
     { id: 'general', label: t.settingsPage.general },
   ];
 
@@ -301,14 +301,12 @@ export default function Settings() {
             {t.settingsPage.title}
           </h1>
           <p className="page-subtitle">
-            {lang === 'ar'
-              ? 'إدارة بيانات النشاط، الملف الشخصي، وسياسات المنصة من مكان واحد'
-              : 'Manage organization details, profile, and platform policies from one place'}
+            {t.settingsPage.pageSubtitle}
           </p>
         </div>
         <div className="rounded-xl border border-border bg-surface-secondary/50 px-4 py-2.5 text-xs text-content-tertiary">
           <div className="font-medium text-content-primary">{organization.name}</div>
-          <div className="mt-0.5">{organization.industry || (lang === 'ar' ? 'غير محدد' : 'Not set')}</div>
+          <div className="mt-0.5">{organization.industry || t.settingsPage.notSet}</div>
         </div>
       </div>
 
@@ -362,12 +360,10 @@ export default function Settings() {
                       </div>
                       <div>
                         <div className="text-sm font-semibold text-content-primary">
-                          {lang === 'ar' ? 'شعار النشاط التجاري' : 'Business Logo'}
+                          {t.settingsPage.businessLogo}
                         </div>
                         <div className="mt-1 text-xs leading-6 text-content-tertiary">
-                          {lang === 'ar'
-                            ? 'يظهر في صفحة هبوط QR ولوحة التحكم. يُفضل صورة مربعة بحجم 200×200 بكسل.'
-                            : 'Shown on QR landing page and dashboard. Square image (200×200px) recommended.'}
+                          {t.settingsPage.businessLogoDesc}
                         </div>
                         <div className="flex flex-wrap items-center gap-2 mt-2">
                           <button
@@ -378,10 +374,10 @@ export default function Settings() {
                           >
                             <Upload size={13} />
                             {uploadingLogo
-                              ? (lang === 'ar' ? 'جاري الرفع...' : 'Uploading...')
+                              ? t.settingsPage.uploading
                               : organization.logo_url
-                                ? (lang === 'ar' ? 'تغيير الشعار' : 'Change Logo')
-                                : (lang === 'ar' ? 'رفع شعار' : 'Upload Logo')}
+                                ? t.settingsPage.changeLogo
+                                : t.settingsPage.uploadLogo}
                           </button>
                           {isGoogleUser && googleAvatarUrl && (
                             <button
@@ -392,8 +388,8 @@ export default function Settings() {
                             >
                               <svg width="14" height="14" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
                               {settingGoogleLogo
-                                ? (lang === 'ar' ? 'جاري التعيين...' : 'Setting...')
-                                : (lang === 'ar' ? 'استخدام صورة Google' : 'Use Google Photo')}
+                                ? t.settingsPage.settingGooglePhoto
+                                : t.settingsPage.useGooglePhoto}
                             </button>
                           )}
                         </div>
@@ -409,19 +405,17 @@ export default function Settings() {
                 </div>
                 <div>
                   <div className="text-sm font-semibold text-content-primary">
-                    {lang === 'ar' ? 'بيانات النشاط التجاري' : 'Organization Details'}
+                    {t.settingsPage.organizationDetails}
                   </div>
                   <div className="mt-1 text-xs leading-6 text-content-tertiary">
-                    {lang === 'ar'
-                      ? 'حدّث الاسم، القطاع، والمدينة الأساسية للنشاط التجاري.'
-                      : 'Update your business name, industry, and main city.'}
+                    {t.settingsPage.organizationDetailsDesc}
                   </div>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                 <div className="sm:col-span-2">
-                  <label className="form-label">{lang === 'ar' ? 'اسم النشاط' : 'Business Name'}</label>
+                  <label className="form-label">{t.settingsPage.businessName}</label>
                   <input
                     className="form-input"
                     value={orgName}
@@ -430,7 +424,7 @@ export default function Settings() {
                 </div>
 
                 <div>
-                  <label className="form-label">{lang === 'ar' ? 'القطاع' : 'Industry'}</label>
+                  <label className="form-label">{t.settingsPage.industry}</label>
                   <input
                     className="form-input"
                     value={orgIndustry}
@@ -439,7 +433,7 @@ export default function Settings() {
                 </div>
 
                 <div>
-                  <label className="form-label">{lang === 'ar' ? 'المدينة' : 'City'}</label>
+                  <label className="form-label">{t.settingsPage.city}</label>
                   <input
                     className="form-input"
                     value={orgCity}
@@ -448,7 +442,7 @@ export default function Settings() {
                 </div>
 
                 <div>
-                  <label className="form-label">{lang === 'ar' ? 'الدولة' : 'Country'}</label>
+                  <label className="form-label">{t.settingsPage.country}</label>
                   <input
                     className="form-input bg-surface-secondary"
                     value={organization.country || 'SA'}
@@ -520,7 +514,7 @@ export default function Settings() {
                       </div>
                       <div className="min-w-0">
                         <div className="text-sm font-semibold text-content-primary">
-                          {fullName || profile?.email || (lang === 'ar' ? 'الملف الشخصي' : 'Profile')}
+                          {fullName || profile?.email || t.topbar.profile}
                         </div>
                         <div className="mt-1 truncate text-xs text-content-tertiary">
                           {profile?.email || ''}
@@ -532,7 +526,7 @@ export default function Settings() {
                         </div>
                         {isGoogleUser && (
                           <div className="mt-2 inline-flex rounded-full bg-brand-50 px-2.5 py-1 text-2xs font-medium text-brand-600">
-                            {lang === 'ar' ? 'حساب Google' : 'Google account'}
+                            {t.settingsPage.googleAccount}
                           </div>
                         )}
                       </div>
@@ -543,7 +537,7 @@ export default function Settings() {
 
               <div className="grid grid-cols-1 gap-5">
                 <div>
-                  <label className="form-label">{lang === 'ar' ? 'الاسم الكامل' : 'Full Name'}</label>
+                  <label className="form-label">{t.settingsPage.fullName}</label>
                   <input
                     className="form-input"
                     value={fullName}
@@ -552,24 +546,20 @@ export default function Settings() {
                 </div>
 
                 <div>
-                  <label className="form-label">{lang === 'ar' ? 'البريد الإلكتروني' : 'Email'}</label>
+                  <label className="form-label">{t.settingsPage.email}</label>
                   <input
                     className="form-input bg-surface-secondary"
                     value={profile?.email || ''}
                     disabled
                     title={
                       isGoogleUser
-                        ? lang === 'ar'
-                          ? 'لا يمكن تغيير البريد لحسابات Google'
-                          : 'Email cannot be changed for Google accounts'
+                        ? t.settingsPage.emailCannotChangeGoogle
                         : ''
                     }
                   />
                   {isGoogleUser && (
                     <p className="mt-2 text-2xs leading-6 text-content-tertiary">
-                      {lang === 'ar'
-                        ? 'البريد مرتبط بحساب Google ولا يمكن تعديله'
-                        : 'Email is linked to Google account and cannot be changed'}
+                      {t.settingsPage.emailLinkedToGoogle}
                     </p>
                   )}
                 </div>
@@ -599,12 +589,10 @@ export default function Settings() {
                 </div>
                 <div>
                   <div className="text-sm font-semibold text-blue-800">
-                    {lang === 'ar' ? 'سياسة ردود سديم' : 'Sadeem Reply Policy'}
+                    {t.settingsPage.replyPolicy}
                   </div>
                   <div className="mt-1 text-xs leading-7 text-blue-700">
-                    {lang === 'ar'
-                      ? 'سديم ترد مرة واحدة فقط على التقييم الأول من كل عميل. إذا كتب العميل تعليقاً ثانياً، يتم إيقاف الرد الآلي وتتحول الحالة إلى "مراجعة يدوية مطلوبة". هذا يمنع الردود المتكررة ويحافظ على احترافية التواصل.'
-                      : 'Sadeem replies once to the first review from each customer. If a customer posts a follow-up, auto-reply is disabled and the status changes to "Manual Review Required". This prevents repetitive replies and maintains professional communication.'}
+                    {t.settingsPage.replyPolicyDesc}
                   </div>
                 </div>
               </div>
@@ -613,12 +601,10 @@ export default function Settings() {
                 <div className="flex items-center justify-between gap-4 border-b border-border px-4 py-4 sm:px-5">
                   <div>
                     <div className="text-sm font-medium text-content-primary">
-                      {lang === 'ar' ? 'الرد التلقائي على أول تقييم فقط' : 'Auto-reply first review only'}
+                      {t.settingsPage.autoReplyFirstReviewOnly}
                     </div>
                     <div className="mt-1 text-2xs text-content-tertiary">
-                      {lang === 'ar'
-                        ? 'مفعّل افتراضياً — قاعدة سديم الأساسية'
-                        : 'Enabled by default — core Sadeem rule'}
+                      {t.settingsPage.autoReplyFirstReviewOnlyDesc}
                     </div>
                   </div>
                   <Toggle value={autoReplyFirstOnly} onChange={setAutoReplyFirstOnly} />
@@ -627,10 +613,10 @@ export default function Settings() {
                 <div className="flex items-center justify-between gap-4 border-b border-border px-4 py-4 sm:px-5">
                   <div>
                     <div className="text-sm font-medium text-content-primary">
-                      {lang === 'ar' ? 'التقييمات المتكررة → مراجعة يدوية' : 'Follow-up reviews → Manual review'}
+                      {t.settingsPage.followUpReviews}
                     </div>
                     <div className="mt-1 text-2xs text-content-tertiary">
-                      {lang === 'ar' ? 'عند تكرار تقييم من نفس العميل' : 'When same customer posts again'}
+                      {t.settingsPage.followUpReviewsDesc}
                     </div>
                   </div>
                   <Toggle value={true} disabled />
@@ -639,12 +625,10 @@ export default function Settings() {
                 <div className="flex items-center justify-between gap-4 border-b border-border px-4 py-4 sm:px-5">
                   <div>
                     <div className="text-sm font-medium text-content-primary">
-                      {lang === 'ar'
-                        ? 'إظهار قوالب الردود في المراجعة اليدوية'
-                        : 'Show templates in manual review'}
+                      {t.settingsPage.showTemplatesManualReview}
                     </div>
                     <div className="mt-1 text-2xs text-content-tertiary">
-                      {lang === 'ar' ? 'اقتراح قوالب عند الرد يدوياً' : 'Suggest templates during manual reply'}
+                      {t.settingsPage.showTemplatesManualReviewDesc}
                     </div>
                   </div>
                   <Toggle value={true} disabled />
@@ -653,12 +637,10 @@ export default function Settings() {
                 <div className="flex items-center justify-between gap-4 px-4 py-4 sm:px-5">
                   <div>
                     <div className="text-sm font-medium text-content-primary">
-                      {lang === 'ar' ? 'وضع القالب الذكي' : 'Smart Template Mode'}
+                      {t.settingsPage.smartTemplateMode}
                     </div>
                     <div className="mt-1 text-2xs text-content-tertiary">
-                      {lang === 'ar'
-                        ? 'استخدم القوالب الجاهزة أولاً عند تطابقها بقوة مع التقييم، وارجع للذكاء الاصطناعي فقط عند عدم وجود تطابق. يوفّر رصيد الردود الذكية.'
-                        : 'Use ready templates first when they strongly match the review, fall back to AI only when no match exists. Saves AI reply quota.'}
+                      {t.settingsPage.smartTemplateModeDescLong}
                     </div>
                   </div>
                   <Toggle value={smartTemplateMode} onChange={setSmartTemplateMode} />
@@ -685,12 +667,10 @@ export default function Settings() {
                 </div>
                 <div>
                   <div className="text-sm font-semibold text-content-primary">
-                    {lang === 'ar' ? 'اللغة والمنطقة' : 'Language & Region'}
+                    {t.settingsPage.languageAndRegion}
                   </div>
                   <div className="mt-1 text-xs leading-6 text-content-tertiary">
-                    {lang === 'ar'
-                      ? 'تحكم في لغة الواجهة المستخدمة داخل لوحة التحكم.'
-                      : 'Control the interface language used inside the dashboard.'}
+                    {t.settingsPage.languageAndRegionDesc}
                   </div>
                 </div>
               </div>

@@ -72,7 +72,7 @@ const FEATURES = [
 ];
 
 export default function Login({ defaultSignup = false }: { defaultSignup?: boolean }) {
-  const { lang } = useLanguage();
+  const { t, lang } = useLanguage();
   const isAr = lang === 'ar';
 
   const [email, setEmail]               = useState('');
@@ -94,9 +94,7 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
   // Show confirmation_failed error from URL param
   useEffect(() => {
     if (_sp.get('error') === 'confirmation_failed') {
-      setError(isAr
-        ? 'انتهت صلاحية رابط التأكيد أو تم استخدامه بالفعل. أعد التسجيل أو تواصل مع الدعم.'
-        : 'The confirmation link expired or was already used. Please sign up again.');
+      setError(t.auth.confirmationExpired);
     }
   }, [isAr]);
 
@@ -124,7 +122,7 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
         <div className="text-center flex flex-col items-center">
           <div className="w-8 h-8 rounded-full border-2 border-gray-200 border-t-brand-500 animate-spin mb-4" />
           <p className="text-sm text-content-tertiary">
-            {isAr ? 'جاري تسجيل الدخول…' : 'Signing in…'}
+            {t.auth.signingIn}
           </p>
         </div>
       </div>
@@ -136,9 +134,7 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
   const logoFullUrl  = branding?.logo_full_url || '';
   const platformNameAr = branding?.platform_name_ar || 'سديم';
   const platformNameEn = branding?.platform_name_en || 'SADEEM';
-  const tagline = branding?.tagline || (isAr
-    ? 'إدارة تقييمات Google بالذكاء الاصطناعي'
-    : 'AI-Powered Google Reviews Management');
+  const tagline = branding?.tagline || t.auth.platformDesc;
 
   const isValidEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
 
@@ -162,9 +158,7 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
       if (isSignUp) {
         await authService.signUp(email, password, fullName);
         setLoading(false);
-        setSuccess(isAr
-          ? 'تم إنشاء الحساب! يرجى فتح بريدك الإلكتروني والضغط على رابط التأكيد.'
-          : 'Account created! Please check your email and click the confirmation link.');
+        setSuccess(t.auth.accountCreated);
       } else {
         await authService.login(email, password);
         // Keep loading=true — AuthProvider will detect SIGNED_IN event,
@@ -186,7 +180,7 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
   const handleForgotPassword = async (e: FormEvent) => {
     e.preventDefault();
     if (!email || !isValidEmail(email)) {
-      setError(isAr ? 'يرجى إدخال بريد إلكتروني صحيح.' : 'Please enter a valid email.');
+      setError(t.auth.enterValidEmail);
       return;
     }
     setError(''); setLoading(true);
@@ -194,9 +188,7 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
       await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/auth/callback?type=recovery`,
       });
-      setSuccess(isAr
-        ? `تم إرسال رابط إعادة تعيين كلمة المرور إلى ${email}. تحقق من صندوق الوارد.`
-        : `Password reset link sent to ${email}. Check your inbox.`);
+      setSuccess(t.auth.resetLinkSent.replace('{email}', email));
     } catch (err: unknown) {
       setError(translateError((err as Error).message || '', isAr));
     } finally {
@@ -210,7 +202,7 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
     setPwStrength(0); setEmailTouched(false);
   };
 
-  const pwLabels    = isAr ? ['', 'ضعيفة', 'متوسطة', 'قوية'] : ['', 'Weak', 'Medium', 'Strong'];
+  const pwLabels    = ['', t.auth.weak, t.auth.medium, t.auth.strong];
   const pwColors    = ['', 'bg-red-500', 'bg-amber-500', 'bg-emerald-500'];
   const pwTextColors = ['', 'text-red-600', 'text-amber-600', 'text-emerald-600'];
 
@@ -236,7 +228,7 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
       {/* Body */}
       <div className="relative z-10">
         <h1 className="text-3xl font-bold text-white leading-snug mb-3">
-          {isAr ? 'إدارة تقييماتك بالذكاء الاصطناعي' : 'AI-Powered Review Management'}
+          {t.auth.aiReviewManagement}
         </h1>
         <p className="text-base mb-8 leading-relaxed" style={{ color: 'rgba(255,255,255,0.75)' }}>{tagline}</p>
         <div className="space-y-3">
@@ -252,7 +244,7 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
       </div>
 
       <div className="relative z-10 text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
-        {isAr ? '© 2026 سديم — جميع الحقوق محفوظة' : '© 2026 SADEEM — All rights reserved'}
+        {t.auth.copyright}
       </div>
     </div>
   );
@@ -285,17 +277,15 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
               className="flex items-center gap-1.5 text-xs text-brand-600 hover:text-brand-700 mb-6 transition-colors"
             >
               <ArrowRight size={13} className={isAr ? '' : 'rotate-180'} />
-              {isAr ? 'العودة لتسجيل الدخول' : 'Back to sign in'}
+              {t.auth.backToSignIn}
             </button>
 
             <div className="mb-6">
               <h2 className="text-xl font-bold text-content-primary">
-                {isAr ? 'استعادة كلمة المرور' : 'Reset your password'}
+                {t.auth.resetYourPassword}
               </h2>
               <p className="text-sm text-content-tertiary mt-1">
-                {isAr
-                  ? 'أدخل بريدك الإلكتروني وسنرسل لك رابط إعادة التعيين'
-                  : 'Enter your email and we\'ll send you a reset link'}
+                {t.auth.resetYourPasswordDesc}
               </p>
             </div>
 
@@ -313,7 +303,7 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
               <form onSubmit={handleForgotPassword} className="space-y-3">
                 <div>
                   <label className="block text-xs font-medium text-content-secondary mb-1.5">
-                    {isAr ? 'البريد الإلكتروني' : 'Email'}
+                    {t.auth.email}
                   </label>
                   <input
                     className="form-input"
@@ -332,8 +322,8 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
                   className="btn btn-primary w-full justify-center py-2.5"
                 >
                   {loading
-                    ? (isAr ? 'جاري الإرسال…' : 'Sending…')
-                    : (isAr ? 'إرسال رابط الاستعادة' : 'Send reset link')}
+                    ? t.auth.sending
+                    : t.auth.sendResetLink}
                 </button>
               </form>
             )}
@@ -343,7 +333,7 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
                 onClick={resetToLogin}
                 className="btn btn-primary w-full justify-center py-2.5 mt-2"
               >
-                {isAr ? 'العودة لتسجيل الدخول' : 'Back to sign in'}
+                {t.auth.backToSignIn}
               </button>
             )}
           </div>
@@ -364,10 +354,10 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
           {/* Heading */}
           <div className="mb-6">
             <h2 className="text-xl font-bold text-content-primary">
-              {isSignUp ? (isAr ? 'إنشاء حساب جديد' : 'Create your account') : (isAr ? 'أهلاً بعودتك' : 'Welcome back')}
+              {isSignUp ? t.auth.createNewAccount : t.auth.welcomeBack}
             </h2>
             <p className="text-sm text-content-tertiary mt-1">
-              {isSignUp ? (isAr ? 'أنشئ حسابك لتبدأ الرحلة' : 'Sign up to get started') : (isAr ? 'سجّل دخولك للمتابعة' : 'Sign in to continue')}
+              {isSignUp ? t.auth.signUpToGetStarted : t.auth.signInToContinue}
             </p>
           </div>
 
@@ -393,13 +383,13 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
               <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
               <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
             </svg>
-            {isAr ? 'المتابعة عبر Google' : 'Continue with Google'}
+            {t.auth.continueWithGoogle}
           </button>
 
           {/* Divider */}
           <div className="flex items-center gap-3 mb-4">
             <div className="flex-1 border-t border-border" />
-            <span className="text-xs text-content-tertiary">{isAr ? 'أو' : 'or'}</span>
+            <span className="text-xs text-content-tertiary">{t.auth.or}</span>
             <div className="flex-1 border-t border-border" />
           </div>
 
@@ -408,7 +398,7 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
             {isSignUp && (
               <div>
                 <label className="block text-xs font-medium text-content-secondary mb-1.5">
-                  {isAr ? 'الاسم الكامل' : 'Full Name'}
+                  {t.auth.fullName}
                 </label>
                 <input
                   className="form-input"
@@ -416,7 +406,7 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
                   value={fullName}
                   autoComplete="name"
                   onChange={(e: ChangeEvent<HTMLInputElement>) => setFullName(e.target.value)}
-                  placeholder={isAr ? 'أدخل اسمك الكامل' : 'Enter your full name'}
+                  placeholder={t.auth.enterFullName}
                   required
                 />
               </div>
@@ -424,7 +414,7 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
 
             <div>
               <label className="block text-xs font-medium text-content-secondary mb-1.5">
-                {isAr ? 'البريد الإلكتروني' : 'Email'}
+                {t.auth.email}
               </label>
               <input
                 className={`form-input ${emailTouched && email && !isValidEmail(email) ? 'border-red-400 focus:ring-red-300' : ''}`}
@@ -439,7 +429,7 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
               />
               {emailTouched && email && !isValidEmail(email) && (
                 <p className="text-[11px] text-red-500 mt-1">
-                  {isAr ? 'صيغة البريد الإلكتروني غير صحيحة' : 'Invalid email format'}
+                  {t.auth.invalidEmailFormat}
                 </p>
               )}
             </div>
@@ -447,7 +437,7 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <label className="block text-xs font-medium text-content-secondary">
-                  {isAr ? 'كلمة المرور' : 'Password'}
+                  {t.auth.password}
                 </label>
                 {/* Forgot password link — only on login form */}
                 {!isSignUp && (
@@ -456,7 +446,7 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
                     onClick={() => { setIsForgotPw(true); setError(''); setSuccess(''); }}
                     className="text-[11px] text-brand-600 hover:text-brand-700 hover:underline transition-colors"
                   >
-                    {isAr ? 'نسيت كلمة المرور؟' : 'Forgot password?'}
+                    {t.auth.forgotPasswordQuestion}
                   </button>
                 )}
               </div>
@@ -483,13 +473,13 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
                     ))}
                   </div>
                   <p className={`text-[11px] font-medium ${pwTextColors[pwStrength]}`}>
-                    {isAr ? `قوة كلمة المرور: ${pwLabels[pwStrength]}` : `Password strength: ${pwLabels[pwStrength]}`}
+                    {`${t.auth.passwordStrength}: ${pwLabels[pwStrength]}`}
                   </p>
                 </div>
               )}
               {isSignUp && (
                 <p className="text-[11px] text-content-tertiary mt-1">
-                  {isAr ? 'يُنصح باستخدام 8+ أحرف مع أرقام ورموز' : 'Recommended: 8+ chars with numbers & symbols'}
+                  {t.auth.passwordRecommendation}
                 </p>
               )}
             </div>
@@ -500,31 +490,29 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
               className="btn btn-primary w-full justify-center py-2.5 mt-1"
             >
               {loading
-                ? (isAr ? 'جاري المعالجة…' : 'Processing…')
+                ? t.auth.processing
                 : isSignUp
-                  ? (isAr ? 'إنشاء الحساب' : 'Create Account')
-                  : (isAr ? 'تسجيل الدخول' : 'Sign In')}
+                  ? t.auth.createAccount
+                  : t.auth.signIn}
             </button>
           </form>
 
           {/* Toggle login/signup */}
           <div className="text-center mt-5">
             <span className="text-xs text-content-tertiary">
-              {isSignUp ? (isAr ? 'لديك حساب بالفعل؟' : 'Already have an account?') : (isAr ? 'ليس لديك حساب؟' : "Don't have an account?")}
+              {isSignUp ? t.auth.hasAccount : t.auth.noAccount}
             </span>
             {' '}
             <button
               className="text-xs font-medium text-brand-600 hover:text-brand-700 hover:underline transition-colors"
               onClick={() => { setIsSignUp(v => !v); setError(''); setSuccess(''); setPwStrength(0); setEmailTouched(false); setPassword(''); }}
             >
-              {isSignUp ? (isAr ? 'سجّل دخولك' : 'Sign in') : (isAr ? 'أنشئ حساباً' : 'Sign up')}
+              {isSignUp ? t.auth.signInInstead : t.auth.signUpInstead}
             </button>
           </div>
 
           <p className="text-center text-[11px] text-content-tertiary mt-6 leading-relaxed">
-            {isAr
-              ? 'زر Google يستخدم حساب Google المسجّل في المتصفح. لحساب جديد بإيميل مختلف استخدم النموذج أعلاه.'
-              : "The Google button uses your browser's signed-in Google account. To register with a different email, use the form above."}
+            {t.auth.googleButtonNote}
           </p>
         </div>
       </div>

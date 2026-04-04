@@ -21,7 +21,7 @@ interface ReviewInsights {
 }
 
 export default function Insights() {
-  const { lang } = useLanguage();
+  const { lang, t } = useLanguage();
   const { organization } = useAuth();
   const [seo, setSeo] = useState<SeoScore | null>(null);
   const [competitors, setCompetitors] = useState<CompetitorReport | null>(null);
@@ -90,7 +90,7 @@ export default function Insights() {
         total: reviews.length,
       });
     } catch (err: unknown) {
-      setLoadError((err as Error).message || (lang === 'ar' ? 'فشل تحميل البيانات' : 'Failed to load data'));
+      setLoadError((err as Error).message || t.insightsPage.loadFailed);
     } finally {
       setLoading(false);
     }
@@ -107,10 +107,10 @@ export default function Insights() {
           <div className="w-14 h-14 rounded-2xl bg-red-50 flex items-center justify-center mx-auto mb-4">
             <AlertTriangle size={24} className="text-red-400" />
           </div>
-          <p className="text-sm font-medium text-content-primary mb-1">{lang === 'ar' ? 'حدث خطأ' : 'Something went wrong'}</p>
+          <p className="text-sm font-medium text-content-primary mb-1">{t.insightsPage.errorTitle}</p>
           <p className="text-xs text-red-600 mb-4">{loadError}</p>
           <button onClick={loadData} className="btn btn-secondary btn-sm">
-            {lang === 'ar' ? 'إعادة المحاولة' : 'Retry'}
+            {t.common.retry}
           </button>
         </div>
       </div>
@@ -124,22 +124,22 @@ export default function Insights() {
         <div>
           <h1 className="page-title flex items-center gap-2">
             <TrendingUp size={20} className="text-brand-500" />
-            {lang === 'ar' ? 'التحليل الذكي' : 'Smart Insights'}
+            {t.insightsPage.title}
           </h1>
-          <p className="page-subtitle">{lang === 'ar' ? 'تحليل SEO والمنافسين واستخراج مقتطفات التقييمات بالذكاء الاصطناعي' : 'SEO analysis, competitor insights, and AI-powered review extraction'}</p>
+          <p className="page-subtitle">{t.insightsPage.subtitle}</p>
         </div>
 
         {/* Tab switcher */}
         <div className="card card-body !py-2 !px-2">
           <div className="flex gap-1 flex-wrap">
             <button onClick={() => setTab('seo')} className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium transition-all focus:outline-2 focus:outline-brand-500 ${tab === 'seo' ? 'bg-brand-600 text-white shadow-sm' : 'text-content-secondary hover:text-content-primary hover:bg-surface-secondary'}`}>
-              <Target size={13} /> {lang === 'ar' ? 'تحسين SEO' : 'SEO Score'}
+              <Target size={13} /> {t.insightsPage.seoTab}
             </button>
             <button onClick={() => setTab('reviews')} className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium transition-all focus:outline-2 focus:outline-brand-500 ${tab === 'reviews' ? 'bg-brand-600 text-white shadow-sm' : 'text-content-secondary hover:text-content-primary hover:bg-surface-secondary'}`}>
-              <MessageSquare size={13} /> {lang === 'ar' ? 'مقتطفات التقييمات' : 'Review Insights'}
+              <MessageSquare size={13} /> {t.insightsPage.reviewInsightsTab}
             </button>
             <button onClick={() => setTab('competitors')} className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium transition-all focus:outline-2 focus:outline-brand-500 ${tab === 'competitors' ? 'bg-brand-600 text-white shadow-sm' : 'text-content-secondary hover:text-content-primary hover:bg-surface-secondary'}`}>
-              <TrendingUp size={13} /> {lang === 'ar' ? 'تحليل المنافسين' : 'Competitors'}
+              <TrendingUp size={13} /> {t.insightsPage.competitorsTab}
             </button>
           </div>
         </div>
@@ -164,14 +164,14 @@ export default function Insights() {
                 </div>
                 <div>
                   <div className="text-[15px] font-bold text-content-primary mb-1">
-                    {lang === 'ar' ? 'نقاط تحسين Google Maps' : 'Google Maps SEO Score'}
+                    {t.insightsPage.googleMapsSeoScore}
                   </div>
                   <div className="text-xs text-content-tertiary">
                     {seo.total >= 70
-                      ? (lang === 'ar' ? 'أداء جيد — استمر في التحسين' : 'Good performance — keep improving')
+                      ? t.insightsPage.goodPerformance
                       : seo.total >= 40
-                        ? (lang === 'ar' ? 'يحتاج تحسين — اتبع التوصيات أدناه' : 'Needs improvement — follow suggestions below')
-                        : (lang === 'ar' ? 'أداء ضعيف — يتطلب إجراءات فورية' : 'Poor — immediate action required')}
+                        ? t.insightsPage.needsImprovement
+                        : t.insightsPage.poorPerformance}
                   </div>
                 </div>
               </div>
@@ -180,7 +180,7 @@ export default function Insights() {
             {/* Breakdown */}
             <div className="card">
               <div className="card-header">
-                <h3>{lang === 'ar' ? 'تفاصيل النقاط' : 'Score Breakdown'}</h3>
+                <h3>{t.insightsPage.scoreBreakdown}</h3>
               </div>
               <div className="card-body space-y-3">
                 {seo.breakdown.map((item: SeoItem) => (
@@ -204,7 +204,7 @@ export default function Insights() {
             {seo.suggestions.length > 0 && (
               <div className="card">
                 <div className="card-header">
-                  <h3>{lang === 'ar' ? 'توصيات التحسين' : 'Improvement Suggestions'}</h3>
+                  <h3>{t.insightsPage.improvementSuggestions}</h3>
                 </div>
                 <div className="divide-y divide-border/60">
                   {seo.suggestions.map((s: SeoSuggestion, i: number) => (
@@ -219,7 +219,7 @@ export default function Insights() {
                       <div className="flex-1">
                         <div className="text-[13px] text-content-primary">{lang === 'ar' ? s.textAr : s.textEn}</div>
                         <Badge variant={s.priority === 'high' ? 'danger' : s.priority === 'medium' ? 'warning' : 'info'} className="mt-1">
-                          {s.priority === 'high' ? (lang === 'ar' ? 'مهم' : 'High') : s.priority === 'medium' ? (lang === 'ar' ? 'متوسط' : 'Medium') : (lang === 'ar' ? 'اقتراح' : 'Low')}
+                          {s.priority === 'high' ? t.insightsPage.important : s.priority === 'medium' ? t.insightsPage.mediumPriority : t.insightsPage.suggestion}
                         </Badge>
                       </div>
                     </div>
@@ -235,7 +235,7 @@ export default function Insights() {
           <div className="space-y-4">
             {!reviewInsights || reviewInsights.total === 0 ? (
               <EmptyState
-                message={lang === 'ar' ? 'لا توجد تقييمات كافية لاستخراج المقتطفات' : 'Not enough reviews to extract insights'}
+                message={t.insightsPage.notEnoughReviews}
                 icon={<MessageSquare size={44} strokeWidth={1} className="text-gray-200" />}
               />
             ) : (
@@ -243,21 +243,21 @@ export default function Insights() {
                 {/* Sentiment Distribution */}
                 <div className="card">
                   <div className="card-header">
-                    <h3>{lang === 'ar' ? 'توزيع المشاعر' : 'Sentiment Distribution'}</h3>
-                    <span className="text-xs text-content-tertiary">{reviewInsights.total} {lang === 'ar' ? 'تقييم' : 'reviews'}</span>
+                    <h3>{t.insightsPage.sentimentDistribution}</h3>
+                    <span className="text-xs text-content-tertiary">{reviewInsights.total} {t.insightsPage.review}</span>
                   </div>
                   <div className="card-body space-y-3">
                     {([
-                      { key: 'positive', labelAr: 'إيجابي', labelEn: 'Positive', color: 'bg-emerald-500' },
-                      { key: 'neutral',  labelAr: 'محايد',   labelEn: 'Neutral',  color: 'bg-amber-400'  },
-                      { key: 'negative', labelAr: 'سلبي',    labelEn: 'Negative', color: 'bg-red-400'    },
-                    ] as const).map(({ key, labelAr, labelEn, color }) => {
+                      { key: 'positive' as const, color: 'bg-emerald-500' },
+                      { key: 'neutral' as const,  color: 'bg-amber-400'  },
+                      { key: 'negative' as const, color: 'bg-red-400'    },
+                    ]).map(({ key, color }) => {
                       const count = reviewInsights.sentimentDist[key];
                       const pct = reviewInsights.total > 0 ? Math.round((count / reviewInsights.total) * 100) : 0;
                       return (
                         <div key={key}>
                           <div className="flex justify-between text-xs mb-1">
-                            <span className="text-content-primary font-medium">{lang === 'ar' ? labelAr : labelEn}</span>
+                            <span className="text-content-primary font-medium">{t.sentiment[key]}</span>
                             <span className="text-content-tertiary">{count} ({pct}%)</span>
                           </div>
                           <div className="w-full h-2 bg-gray-100 rounded-full">
@@ -272,19 +272,19 @@ export default function Insights() {
                 {/* Category Distribution */}
                 <div className="card">
                   <div className="card-header">
-                    <h3>{lang === 'ar' ? 'تصنيف التقييمات' : 'Review Categories'}</h3>
+                    <h3>{t.insightsPage.reviewCategories}</h3>
                   </div>
                   <div className="card-body grid grid-cols-2 sm:grid-cols-3 gap-3">
                     {([
-                      { key: 'positive',   labelAr: 'إيجابي',   labelEn: 'Positive',    variant: 'success'  },
-                      { key: 'complaint',  labelAr: 'شكوى',     labelEn: 'Complaint',   variant: 'danger'   },
-                      { key: 'suggestion', labelAr: 'اقتراح',   labelEn: 'Suggestion',  variant: 'info'     },
-                      { key: 'neutral',    labelAr: 'محايد',    labelEn: 'Neutral',     variant: 'neutral'  },
-                      { key: 'sarcasm',    labelAr: 'سخرية',    labelEn: 'Sarcasm',     variant: 'warning'  },
-                    ] as const).map(({ key, labelAr, labelEn, variant }) => (
+                      { key: 'positive' as const,   catKey: 'catPositive' as const,   variant: 'success' as const  },
+                      { key: 'complaint' as const,  catKey: 'catComplaint' as const,  variant: 'danger' as const   },
+                      { key: 'suggestion' as const, catKey: 'catSuggestion' as const, variant: 'info' as const     },
+                      { key: 'neutral' as const,    catKey: 'catNeutral' as const,    variant: 'neutral' as const  },
+                      { key: 'sarcasm' as const,    catKey: 'catSarcasm' as const,    variant: 'warning' as const  },
+                    ]).map(({ key, catKey, variant }) => (
                       <div key={key} className="card card-body text-center py-3">
                         <div className="text-xl font-bold text-content-primary">{reviewInsights.categoryDist[key]}</div>
-                        <Badge variant={variant} className="mt-1 text-[10px]">{lang === 'ar' ? labelAr : labelEn}</Badge>
+                        <Badge variant={variant} className="mt-1 text-[10px]">{t.insightsPage[catKey]}</Badge>
                       </div>
                     ))}
                   </div>
@@ -296,7 +296,7 @@ export default function Insights() {
                     <div className="card-header">
                       <h3 className="flex items-center gap-2">
                         <ThumbsUp size={14} className="text-emerald-500" />
-                        {lang === 'ar' ? 'أبرز كلمات التقييمات الإيجابية' : 'Top Positive Keywords'}
+                        {t.insightsPage.topPositiveKeywords}
                       </h3>
                     </div>
                     <div className="card-body flex flex-wrap gap-2">
@@ -316,7 +316,7 @@ export default function Insights() {
                     <div className="card-header">
                       <h3 className="flex items-center gap-2">
                         <ThumbsDown size={14} className="text-red-500" />
-                        {lang === 'ar' ? 'أبرز كلمات الشكاوى' : 'Top Complaint Keywords'}
+                        {t.insightsPage.topComplaintKeywords}
                       </h3>
                     </div>
                     <div className="card-body flex flex-wrap gap-2">
@@ -338,7 +338,7 @@ export default function Insights() {
         {tab === 'competitors' && (
           <div className="card">
             <div className="card-header">
-              <h3>{lang === 'ar' ? 'تحليل المنافسين' : 'Competitor Analysis'}</h3>
+              <h3>{t.insightsPage.competitorAnalysis}</h3>
             </div>
             {competitors && competitors.competitors.length > 0 ? (
               <div className="card-body space-y-4">
@@ -356,9 +356,9 @@ export default function Insights() {
                     <div>
                       <div className="text-[13px] text-content-primary">{lang === 'ar' ? insight.textAr : insight.textEn}</div>
                       <Badge variant={insight.type === 'strength' ? 'success' : insight.type === 'weakness' ? 'danger' : 'info'} className="mt-1">
-                        {insight.type === 'strength' ? (lang === 'ar' ? 'نقطة قوة' : 'Strength')
-                          : insight.type === 'weakness' ? (lang === 'ar' ? 'نقطة ضعف' : 'Weakness')
-                          : (lang === 'ar' ? 'فرصة' : 'Opportunity')}
+                        {insight.type === 'strength' ? t.insightsPage.strength
+                          : insight.type === 'weakness' ? t.insightsPage.weakness
+                          : t.insightsPage.opportunity}
                       </Badge>
                     </div>
                   </div>
@@ -366,9 +366,7 @@ export default function Insights() {
               </div>
             ) : (
               <EmptyState
-                message={lang === 'ar'
-                  ? 'سيتم تفعيل تحليل المنافسين بعد ربط Google Places API'
-                  : 'Competitor analysis will activate after connecting Google Places API'}
+                message={t.insightsPage.competitorActivation}
                 icon={<TrendingUp size={44} strokeWidth={1} className="text-gray-200" />}
               />
             )}

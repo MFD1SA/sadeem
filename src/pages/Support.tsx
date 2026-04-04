@@ -40,7 +40,7 @@ const PRIORITY_CONFIG = {
 };
 
 export default function Support() {
-  const { lang } = useLanguage();
+  const { lang, t } = useLanguage();
   const { organization, user } = useAuth();
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
@@ -71,7 +71,7 @@ export default function Support() {
         .order('created_at', { ascending: false });
       setTickets((data || []) as Ticket[]);
     } catch {
-      setError(lang === 'ar' ? 'فشل في تحميل التذاكر' : 'Failed to load tickets');
+      setError(t.supportExt.loadFailed);
     } finally { setLoading(false); }
   }, [organization, lang]);
 
@@ -122,7 +122,7 @@ export default function Support() {
       setReplies((data || []) as TicketReply[]);
     } catch {
       setReplies([]);
-      setError(lang === 'ar' ? 'فشل في تحميل الردود' : 'Failed to load replies');
+      setError(t.supportExt.loadRepliesFailed);
       setTimeout(() => setError(''), 4000);
     } finally {
       setRepliesLoading(false);
@@ -143,7 +143,7 @@ export default function Support() {
 
   const handleSubmit = async () => {
     if (!form.subject.trim() || !form.body.trim()) {
-      setError(lang === 'ar' ? 'يرجى ملء جميع الحقول' : 'Please fill all fields');
+      setError(t.supportExt.fillAllFields);
       return;
     }
     if (!organization || !user) return;
@@ -160,13 +160,13 @@ export default function Support() {
         status: 'open',
       });
       if (err) throw err;
-      setSuccess(lang === 'ar' ? 'تم إرسال التذكرة بنجاح. سنرد عليك خلال 24 ساعة.' : 'Ticket submitted. We\'ll respond within 24 hours.');
+      setSuccess(t.supportExt.ticketSubmitted);
       setForm({ subject: '', body: '', priority: 'medium' });
       setShowForm(false);
       await loadTickets();
       setTimeout(() => setSuccess(''), 5000);
     } catch {
-      setError(lang === 'ar' ? 'فشل إرسال التذكرة. يرجى المحاولة لاحقاً.' : 'Failed to submit ticket. Please try again.');
+      setError(t.supportExt.submitFailed);
     } finally { setSubmitting(false); }
   };
 
@@ -191,7 +191,7 @@ export default function Support() {
         .single();
       if (updated) setSelectedTicket(updated);
     } catch {
-      setError(lang === 'ar' ? 'فشل في إرسال الرد' : 'Failed to send reply');
+      setError(t.supportExt.sendReplyFailed);
       setTimeout(() => setError(''), 4000);
     } finally {
       setReplySending(false);
@@ -218,8 +218,8 @@ export default function Support() {
               <p className="text-[10px] text-content-tertiary mt-0.5">#{selectedTicket.id.slice(0, 8)}</p>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
-              <Badge variant={status.color}>{lang === 'ar' ? status.label : status.labelEn}</Badge>
-              <Badge variant={priority.color}>{lang === 'ar' ? priority.label : priority.labelEn}</Badge>
+              <Badge variant={status.color}>{t.status[selectedTicket.status]}</Badge>
+              <Badge variant={priority.color}>{t.priority[selectedTicket.priority as keyof typeof t.priority]}</Badge>
             </div>
           </div>
         </div>
@@ -233,7 +233,7 @@ export default function Support() {
         {/* Conversation thread */}
         <div className="card">
           <div className="card-header">
-            <h3>{lang === 'ar' ? 'المحادثة' : 'Conversation'}</h3>
+            <h3>{t.supportExt.conversation}</h3>
           </div>
           <div className="divide-y divide-border/40">
             {/* Original ticket message */}
@@ -244,7 +244,7 @@ export default function Support() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-baseline gap-2 mb-1 flex-wrap">
-                    <span className="text-sm font-medium text-content-primary">{selectedTicket.submitted_by_name || (lang === 'ar' ? 'أنت' : 'You')}</span>
+                    <span className="text-sm font-medium text-content-primary">{selectedTicket.submitted_by_name || t.supportExt.you}</span>
                     <span className="text-[10px] text-content-tertiary">{new Date(selectedTicket.created_at).toLocaleString(lang === 'ar' ? 'ar-SA' : 'en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
                   </div>
                   {selectedTicket.description && (
@@ -275,7 +275,7 @@ export default function Support() {
                       <span className="text-sm font-medium text-content-primary">{reply.sender_name}</span>
                       <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${
                         reply.sender_type === 'support' ? 'bg-emerald-50 text-emerald-700' : 'bg-brand-50 text-brand-700'
-                      }`}>{reply.sender_type === 'support' ? (lang === 'ar' ? 'دعم فني' : 'Support') : (lang === 'ar' ? 'أنت' : 'You')}</span>
+                      }`}>{reply.sender_type === 'support' ? t.supportExt.supportTeam : t.supportExt.you}</span>
                       <span className="text-[10px] text-content-tertiary">{new Date(reply.created_at).toLocaleString(lang === 'ar' ? 'ar-SA' : 'en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
                     </div>
                     <p className="text-sm text-content-secondary leading-relaxed whitespace-pre-wrap">{reply.body}</p>
@@ -293,20 +293,20 @@ export default function Support() {
             <textarea
               className="form-textarea w-full"
               rows={3}
-              placeholder={lang === 'ar' ? 'اكتب ردك هنا...' : 'Type your reply...'}
+              placeholder={t.supportExt.typeReply}
               value={replyBody}
               onChange={(e) => setReplyBody(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter' && e.ctrlKey) handleSendReply(); }}
             />
             <div className="flex items-center justify-between mt-3">
-              <span className="text-[10px] text-content-tertiary">Ctrl+Enter {lang === 'ar' ? 'للإرسال' : 'to send'}</span>
+              <span className="text-[10px] text-content-tertiary">Ctrl+Enter {t.supportExt.toSend}</span>
               <button
                 onClick={handleSendReply}
                 disabled={!replyBody.trim() || replySending}
                 className="btn btn-primary min-w-[100px]"
               >
                 {replySending ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
-                {lang === 'ar' ? 'إرسال' : 'Send'}
+                {t.supportPage.send}
               </button>
             </div>
           </div>
@@ -326,13 +326,13 @@ export default function Support() {
         <div>
           <h1 className="page-title flex items-center gap-2">
             <HelpCircle size={20} className="text-brand-500" />
-            {lang === 'ar' ? 'الدعم الفني' : 'Support'}
+            {t.supportPage.title}
           </h1>
-          <p className="page-subtitle">{lang === 'ar' ? 'نرد خلال 24 ساعة • support@sadeem.sa' : 'We respond within 24h • support@sadeem.sa'}</p>
+          <p className="page-subtitle">{t.supportExt.supportSubtitle}</p>
         </div>
         <button onClick={() => setShowForm(v => !v)} className="btn btn-primary">
           {showForm ? <X size={14} /> : <Plus size={14} />}
-          {showForm ? (lang === 'ar' ? 'إلغاء' : 'Cancel') : (lang === 'ar' ? 'تذكرة جديدة' : 'New Ticket')}
+          {showForm ? t.common.cancel : t.supportPage.newTicket}
         </button>
       </div>
 
@@ -344,7 +344,7 @@ export default function Support() {
           </div>
           <div>
             <div className="text-lg font-bold text-content-primary leading-none">{tickets.length}</div>
-            <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">{lang === 'ar' ? 'إجمالي التذاكر' : 'Total Tickets'}</div>
+            <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">{t.supportExt.totalTickets}</div>
           </div>
         </div>
         <div className="stat-card flex items-center gap-3">
@@ -353,7 +353,7 @@ export default function Support() {
           </div>
           <div>
             <div className={`text-lg font-bold leading-none ${openTickets > 0 ? 'text-amber-600' : 'text-content-primary'}`}>{openTickets}</div>
-            <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">{lang === 'ar' ? 'قيد المعالجة' : 'Open'}</div>
+            <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">{t.supportExt.processing}</div>
           </div>
         </div>
         <div className="stat-card flex items-center gap-3">
@@ -362,7 +362,7 @@ export default function Support() {
           </div>
           <div>
             <div className="text-lg font-bold text-emerald-600 leading-none">{resolvedTickets}</div>
-            <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">{lang === 'ar' ? 'محلولة' : 'Resolved'}</div>
+            <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">{t.supportExt.resolved}</div>
           </div>
         </div>
         <div className="stat-card flex items-center gap-3">
@@ -371,7 +371,7 @@ export default function Support() {
           </div>
           <div>
             <div className={`text-lg font-bold leading-none ${ticketsWithNewReply.size > 0 ? 'text-blue-600' : 'text-content-primary'}`}>{ticketsWithNewReply.size}</div>
-            <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">{lang === 'ar' ? 'ردود جديدة' : 'New Replies'}</div>
+            <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">{t.supportExt.newReplies}</div>
           </div>
         </div>
       </div>
@@ -393,35 +393,35 @@ export default function Support() {
       {/* New ticket form */}
       {showForm && (
         <div className="card card-body space-y-4">
-          <h3 className="text-sm font-semibold text-content-primary">{lang === 'ar' ? 'تذكرة دعم جديدة' : 'New Support Ticket'}</h3>
+          <h3 className="text-sm font-semibold text-content-primary">{t.supportExt.newSupportTicket}</h3>
           {error && (
             <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">
               <AlertCircle size={15} className="mt-0.5 flex-shrink-0" /> {error}
             </div>
           )}
           <div>
-            <label className="form-label">{lang === 'ar' ? 'عنوان المشكلة *' : 'Subject *'}</label>
-            <input className="form-input" value={form.subject} onChange={e => setForm(p => ({ ...p, subject: e.target.value }))} placeholder={lang === 'ar' ? 'وصف مختصر للمشكلة' : 'Brief description of your issue'} />
+            <label className="form-label">{t.supportExt.subjectLabel}</label>
+            <input className="form-input" value={form.subject} onChange={e => setForm(p => ({ ...p, subject: e.target.value }))} placeholder={t.supportExt.subjectPlaceholder} />
           </div>
           <div>
-            <label className="form-label">{lang === 'ar' ? 'الأولوية' : 'Priority'}</label>
+            <label className="form-label">{t.supportPage.priority}</label>
             <div className="flex gap-2 flex-wrap">
               {(['low','medium','high','urgent'] as Ticket['priority'][]).map(p => (
                 <button key={p} onClick={() => setForm(prev => ({ ...prev, priority: p }))} className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${form.priority === p ? 'bg-brand-600 text-white border-brand-600' : 'bg-white text-content-secondary border-border hover:border-brand-300'}`}>
-                  {lang === 'ar' ? PRIORITY_CONFIG[p].label : PRIORITY_CONFIG[p].labelEn}
+                  {t.priority[p as keyof typeof t.priority]}
                 </button>
               ))}
             </div>
           </div>
           <div>
-            <label className="form-label">{lang === 'ar' ? 'تفاصيل المشكلة *' : 'Details *'}</label>
-            <textarea className="form-textarea" rows={5} value={form.body} onChange={e => setForm(p => ({ ...p, body: e.target.value }))} placeholder={lang === 'ar' ? 'اشرح مشكلتك بالتفصيل...' : 'Describe your issue in detail...'} />
+            <label className="form-label">{t.supportExt.detailsLabel}</label>
+            <textarea className="form-textarea" rows={5} value={form.body} onChange={e => setForm(p => ({ ...p, body: e.target.value }))} placeholder={t.supportExt.detailsPlaceholder} />
           </div>
           <div className="flex justify-end gap-2">
-            <button onClick={() => setShowForm(false)} className="btn btn-secondary">{lang === 'ar' ? 'إلغاء' : 'Cancel'}</button>
+            <button onClick={() => setShowForm(false)} className="btn btn-secondary">{t.common.cancel}</button>
             <button onClick={handleSubmit} disabled={submitting} className="btn btn-primary min-w-[110px]">
               {submitting ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
-              {submitting ? (lang === 'ar' ? 'جاري الإرسال...' : 'Sending...') : (lang === 'ar' ? 'إرسال التذكرة' : 'Submit Ticket')}
+              {submitting ? t.supportExt.sending : t.supportExt.submitTicket}
             </button>
           </div>
         </div>
@@ -430,12 +430,12 @@ export default function Support() {
       {/* Tickets list */}
       <div className="card">
         <div className="card-header">
-          <h3>{lang === 'ar' ? `تذاكر الدعم (${tickets.length})` : `Support Tickets (${tickets.length})`}</h3>
+          <h3>{`${t.supportExt.supportTickets} (${tickets.length})`}</h3>
         </div>
         {tickets.length === 0 ? (
           <div className="py-12 text-center text-sm text-content-tertiary">
             <HelpCircle size={36} strokeWidth={1} className="mx-auto mb-3 text-gray-200" />
-            {lang === 'ar' ? 'لا توجد تذاكر دعم حتى الآن' : 'No support tickets yet'}
+            {t.supportExt.noTicketsYet}
           </div>
         ) : (
           <div className="divide-y divide-border/60">
@@ -462,10 +462,10 @@ export default function Support() {
                     </div>
                     <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
                       {ticketsWithNewReply.has(ticket.id) && (
-                        <Badge variant="success">{lang === 'ar' ? 'رد جديد' : 'New Reply'}</Badge>
+                        <Badge variant="success">{t.supportExt.newReply}</Badge>
                       )}
-                      <Badge variant={status.color}>{lang === 'ar' ? status.label : status.labelEn}</Badge>
-                      <Badge variant={priority.color}>{lang === 'ar' ? priority.label : priority.labelEn}</Badge>
+                      <Badge variant={status.color}>{t.status[ticket.status]}</Badge>
+                      <Badge variant={priority.color}>{t.priority[ticket.priority as keyof typeof t.priority]}</Badge>
                     </div>
                   </div>
                 </div>
