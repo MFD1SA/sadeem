@@ -30,6 +30,15 @@ export default function Notifications() {
 
   useEffect(() => { loadNotifications(); }, [loadNotifications]);
 
+  const handleMarkRead = useCallback(async (id: string) => {
+    try {
+      await notificationService.markRead(id);
+      await loadNotifications();
+    } catch (err) {
+      console.warn('[Sadeem] Mark read failed:', err);
+    }
+  }, [loadNotifications]);
+
   const handleMarkAllRead = async () => {
     if (!organization) return;
     try {
@@ -114,7 +123,7 @@ export default function Notifications() {
               <div
                 key={n.id}
                 className={`px-5 py-3.5 transition-all duration-150 cursor-pointer hover:bg-surface-secondary/40 ${n.is_read ? '' : 'bg-brand-50/30 border-s-[3px] border-brand-400'}`}
-                onClick={() => !n.is_read && notificationService.markRead(n.id).then(loadNotifications)}
+                onClick={() => !n.is_read && handleMarkRead(n.id)}
               >
                 <div className="flex items-start gap-3">
                   <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 ${

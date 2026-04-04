@@ -8,10 +8,12 @@ export interface TeamMemberRow {
 
 export const teamService = {
   async inviteMember(organizationId: string, email: string, role: 'member' | 'admin' | 'owner'): Promise<void> {
+    const normalizedEmail = email.trim().toLowerCase();
+    // Try case-insensitive match using ilike for robustness
     const { data: found, error: findErr } = await supabase
       .from('users')
       .select('id')
-      .eq('email', email.trim().toLowerCase())
+      .ilike('email', normalizedEmail)
       .maybeSingle();
     if (findErr) throw findErr;
     if (!found) throw new Error('لا يوجد حساب بهذا البريد الإلكتروني. يجب على المستخدم التسجيل أولاً.');

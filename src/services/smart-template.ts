@@ -88,8 +88,9 @@ export async function findStrongTemplateMatch(
         reason: `Custom template "${picked.name}" matched (rating ${rating}, category ${picked.category})`,
       };
     }
-  } catch {
-    // Custom template lookup failed — fall through to builtins
+  } catch (err) {
+    // Log the error but fall through to builtins so review still gets a reply
+    console.warn('[Sadeem] Custom template lookup failed:', err instanceof Error ? err.message : err);
   }
 
   // ── 2. Try built-in templates ──

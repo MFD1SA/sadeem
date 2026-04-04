@@ -61,9 +61,13 @@ export const plansService = {
       .from('plan_limits')
       .select('*')
       .eq('plan_id', planId)
-      .single();
-    if (error) return null;
-    return data;
+      .maybeSingle();
+    if (error) {
+      // Real DB/network error — throw so callers can handle
+      console.warn('[Sadeem] Plan limits fetch error:', error.message);
+      throw error;
+    }
+    return data || null;
   },
 
   async getFeatures(planId: string): Promise<Record<string, string>> {

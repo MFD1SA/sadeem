@@ -22,9 +22,11 @@ const DEFAULT_BRANDING: BrandingConfig = {
 };
 
 let _cache: BrandingConfig | null = null;
+let _cacheTime = 0;
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
 export async function getBranding(): Promise<BrandingConfig> {
-  if (_cache) return _cache;
+  if (_cache && Date.now() - _cacheTime < CACHE_TTL_MS) return _cache;
   try {
     const { data } = await supabase
       .from('system_settings')
@@ -33,8 +35,15 @@ export async function getBranding(): Promise<BrandingConfig> {
       .maybeSingle();
     if (data?.value) {
       _cache = { ...DEFAULT_BRANDING, ...(data.value as Partial<BrandingConfig>) };
+      _cacheTime = Date.now();
       return _cache;
     }
   } catch { /* use defaults */ }
   return DEFAULT_BRANDING;
+}
+
+/** Force cache invalidation (call after branding update) */
+export function invalidateBrandingCache(): void {
+  _cache = null;
+  _cacheTime = 0;
 }

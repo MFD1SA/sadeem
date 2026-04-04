@@ -4,9 +4,10 @@ import QRCode from 'qrcode';
 interface QrPreviewProps {
   url: string;
   size?: number;
+  lang?: 'ar' | 'en';
 }
 
-export function QrPreview({ url, size = 128 }: QrPreviewProps) {
+export function QrPreview({ url, size = 128, lang = 'ar' }: QrPreviewProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [hasError, setHasError] = useState(false);
 
@@ -51,7 +52,7 @@ export function QrPreview({ url, size = 128 }: QrPreviewProps) {
     >
       {hasError ? (
         <div className="text-[10px] text-red-500 text-center leading-4">
-          فشل إنشاء QR
+          {lang === 'ar' ? 'فشل إنشاء QR' : 'QR generation failed'}
         </div>
       ) : (
         <canvas

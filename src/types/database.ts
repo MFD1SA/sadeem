@@ -6,7 +6,9 @@ export interface DbUser {
   email: string;
   avatar_url: string | null;
   role: string;
+  status?: string;
   created_at: string;
+  updated_at?: string;
 }
 
 export interface DbOrganization {

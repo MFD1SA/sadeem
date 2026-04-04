@@ -77,26 +77,39 @@ interface AuditEntry {
 const buffer: AuditEntry[] = [];
 let flushTimer: ReturnType<typeof setTimeout> | null = null;
 
+let _failedRetries = 0;
+const MAX_RETRIES = 2;
+
 async function flush() {
   if (buffer.length === 0) return;
   const batch = buffer.splice(0, buffer.length);
 
+  const rows = batch.map(entry => ({
+    event: entry.event,
+    organization_id: entry.organization_id,
+    entity_id: entry.entity_id || null,
+    entity_type: entry.entity_type || null,
+    details: entry.details ? entry.details : null,
+    user_id: entry.user_id || null,
+    actor_type: entry.actor_type || 'system',
+    created_at: new Date().toISOString(),
+  }));
+
   try {
-    await supabase.from('audit_logs').insert(
-      batch.map(entry => ({
-        event: entry.event,
-        organization_id: entry.organization_id,
-        entity_id: entry.entity_id || null,
-        entity_type: entry.entity_type || null,
-        details: entry.details ? entry.details : null,
-        user_id: entry.user_id || null,
-        actor_type: entry.actor_type || 'system',
-        created_at: new Date().toISOString(),
-      }))
-    );
-  } catch {
-    // Silently fail — audit logs should never break the main flow
-    console.warn('[Sadeem] Audit log write failed (table may not exist yet)');
+    const { error } = await supabase.from('audit_logs').insert(rows);
+    if (error) throw error;
+    _failedRetries = 0; // Reset on success
+  } catch (err) {
+    console.warn('[Sadeem] Audit log write failed:', err instanceof Error ? err.message : err);
+    // Put entries back for retry (up to MAX_RETRIES)
+    if (_failedRetries < MAX_RETRIES) {
+      _failedRetries++;
+      buffer.unshift(...batch);
+    } else {
+      // Drop after max retries to prevent memory leak
+      console.error(`[Sadeem] Audit: dropped ${batch.length} entries after ${MAX_RETRIES} retries`);
+      _failedRetries = 0;
+    }
   }
 }
 

@@ -48,10 +48,11 @@ export const organizationService = {
     const slug =
       input.name
         .toLowerCase()
-        .replace(/[^\w\s-]/g, '')
+        .replace(/[^\w\s\u0600-\u06FF-]/g, '')
         .replace(/\s+/g, '-')
         .replace(/-+/g, '-')
-        .trim() +
+        .trim()
+        .slice(0, 40) +
       '-' +
       Date.now().toString(36);
 

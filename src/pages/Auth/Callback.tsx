@@ -89,7 +89,7 @@ export default function AuthCallback() {
     <div className="min-h-screen flex items-center justify-center bg-surface-secondary">
       <div className="text-center flex flex-col items-center">
         <div className="w-8 h-8 rounded-full border-2 border-gray-200 border-t-brand-500 animate-spin mb-4" />
-        <p className="text-sm text-content-tertiary">جاري تسجيل الدخول…</p>
+        <p className="text-sm text-content-tertiary">{document.documentElement.lang === 'en' ? 'Signing in…' : 'جاري تسجيل الدخول…'}</p>
       </div>
     </div>
   );
