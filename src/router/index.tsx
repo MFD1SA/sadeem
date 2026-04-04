@@ -11,6 +11,24 @@ import { RequireAuth, RequireOrganization, RedirectIfAuthenticated } from './gua
 import { LoadingState } from '@/components/ui/LoadingState';
 import { useAuth } from '@/hooks/useAuth';
 
+// ── Lazy import with auto-retry on chunk load failure (post-deploy) ─────────
+function lazyWithRetry(importFn: () => Promise<{ default: React.ComponentType }>) {
+  return lazy(() =>
+    importFn().catch(() => {
+      // Chunk file changed after deploy — force one reload
+      const key = 'sadeem_chunk_retry';
+      const lastRetry = sessionStorage.getItem(key);
+      const now = String(Date.now());
+      if (!lastRetry || Number(now) - Number(lastRetry) > 10_000) {
+        sessionStorage.setItem(key, now);
+        window.location.reload();
+      }
+      // If retry already happened within 10s, show error instead of infinite loop
+      return { default: () => null } as { default: React.ComponentType };
+    })
+  );
+}
+
 // ── Eagerly loaded — critical path + all subscriber pages ───────────────────
 import Login         from '@/pages/Auth/Login';
 import AuthCallback  from '@/pages/Auth/Callback';
@@ -44,21 +62,21 @@ import TermsPage      from '@/pages/legal/TermsPage';
 import { AdminLayout } from '@/admin/layouts/AdminLayout';
 import AdminLogin from '@/admin/pages/AdminLogin';
 
-const AdminDashboard      = lazy(() => import('@/admin/pages/AdminDashboard'));
-const AdminUsers          = lazy(() => import('@/admin/pages/AdminUsers'));
-const AdminRoles          = lazy(() => import('@/admin/pages/AdminRoles'));
-const AdminSettings       = lazy(() => import('@/admin/pages/AdminSettings'));
-const AdminProfile        = lazy(() => import('@/admin/pages/AdminProfile'));
-const AdminSecurity       = lazy(() => import('@/admin/pages/AdminSecurity'));
-const AdminSubscribers    = lazy(() => import('@/admin/pages/AdminSubscribers'));
-const AdminBilling        = lazy(() => import('@/admin/pages/AdminBilling'));
-const AdminAIUsage        = lazy(() => import('@/admin/pages/AdminAIUsage'));
-const AdminPaymentGateway = lazy(() => import('@/admin/pages/AdminPaymentGateway'));
-const AdminAuditLogs      = lazy(() => import('@/admin/pages/AdminAuditLogs'));
-const AdminTickets        = lazy(() => import('@/admin/pages/AdminTickets'));
-const AdminIntegrations   = lazy(() => import('@/admin/pages/AdminIntegrations'));
-const AdminPlans          = lazy(() => import('@/admin/pages/AdminPlans'));
-const AdminTemplates      = lazy(() => import('@/admin/pages/AdminTemplates'));
+const AdminDashboard      = lazyWithRetry(() => import('@/admin/pages/AdminDashboard'));
+const AdminUsers          = lazyWithRetry(() => import('@/admin/pages/AdminUsers'));
+const AdminRoles          = lazyWithRetry(() => import('@/admin/pages/AdminRoles'));
+const AdminSettings       = lazyWithRetry(() => import('@/admin/pages/AdminSettings'));
+const AdminProfile        = lazyWithRetry(() => import('@/admin/pages/AdminProfile'));
+const AdminSecurity       = lazyWithRetry(() => import('@/admin/pages/AdminSecurity'));
+const AdminSubscribers    = lazyWithRetry(() => import('@/admin/pages/AdminSubscribers'));
+const AdminBilling        = lazyWithRetry(() => import('@/admin/pages/AdminBilling'));
+const AdminAIUsage        = lazyWithRetry(() => import('@/admin/pages/AdminAIUsage'));
+const AdminPaymentGateway = lazyWithRetry(() => import('@/admin/pages/AdminPaymentGateway'));
+const AdminAuditLogs      = lazyWithRetry(() => import('@/admin/pages/AdminAuditLogs'));
+const AdminTickets        = lazyWithRetry(() => import('@/admin/pages/AdminTickets'));
+const AdminIntegrations   = lazyWithRetry(() => import('@/admin/pages/AdminIntegrations'));
+const AdminPlans          = lazyWithRetry(() => import('@/admin/pages/AdminPlans'));
+const AdminTemplates      = lazyWithRetry(() => import('@/admin/pages/AdminTemplates'));
 
 function PageLoader() {
   return (
