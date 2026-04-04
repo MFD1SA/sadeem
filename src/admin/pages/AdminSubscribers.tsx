@@ -11,8 +11,8 @@ import { PERMISSIONS } from '../utils/constants';
 import { PermissionGate } from '../guards';
 import {
   Building2, Search, ChevronLeft, ChevronRight, Users, GitBranch,
-  MessageSquare, Zap, FileText, MoreVertical,
-  Pause, Play, ArrowUpCircle, X, Calendar, RefreshCw,
+  MessageSquare, Zap, FileText, MoreVertical, Edit3,
+  Pause, Play, ArrowUpCircle, X, Calendar, RefreshCw, Check,
 } from 'lucide-react';
 import { AdminSelect } from '../components/AdminSelect';
 
@@ -70,6 +70,11 @@ export default function AdminSubscribers() {
   const [planTarget, setPlanTarget] = useState<SubscriberListItem | null>(null);
   const [newPlan, setNewPlan] = useState('');
   const [changingPlan, setChangingPlan] = useState(false);
+
+  // Edit org info modal
+  const [editOrgTarget, setEditOrgTarget] = useState<SubscriberDetail | null>(null);
+  const [editOrgForm, setEditOrgForm] = useState({ name: '', industry: '', city: '', country: '' });
+  const [savingOrg, setSavingOrg] = useState(false);
 
   const showMsg = (text: string, type: 'success' | 'error') => {
     setMsg({ text, type });
@@ -169,6 +174,31 @@ export default function AdminSubscribers() {
     } catch (err) { showMsg(err instanceof Error ? err.message : 'فشل', 'error'); }
   };
 
+  const openEditOrg = (d: SubscriberDetail) => {
+    setEditOrgTarget(d);
+    setEditOrgForm({
+      name: d.organization.name || '',
+      industry: d.organization.industry || '',
+      city: d.organization.city || '',
+      country: d.organization.country || '',
+    });
+  };
+
+  const handleSaveOrgInfo = async () => {
+    if (!editOrgTarget) return;
+    setSavingOrg(true);
+    try {
+      await adminSubscribersService.updateOrgInfo(editOrgTarget.organization.id, editOrgForm);
+      showMsg('تم تحديث بيانات المشترك بنجاح', 'success');
+      setEditOrgTarget(null);
+      // Reload detail
+      const d = await adminSubscribersService.getDetail(editOrgTarget.organization.id);
+      setDetail(d);
+      loadList();
+    } catch (err) { showMsg(err instanceof Error ? err.message : 'فشل', 'error'); }
+    finally { setSavingOrg(false); }
+  };
+
   // ─── Detail View ───
   if (detail) {
     const sub = detail.subscription;
@@ -182,10 +212,16 @@ export default function AdminSubscribers() {
             className="p-2 rounded-lg text-slate-400 hover:text-gray-900 hover:bg-gray-100 transition-colors">
             <ChevronLeft size={18} />
           </button>
-          <div>
+          <div className="flex-1">
             <h1 className="text-xl font-bold text-gray-900 mb-1">{detail.organization.name}</h1>
             <p className="text-sm text-slate-400">{detail.organization.slug} — {detail.organization.industry || 'غير محدد'}</p>
           </div>
+          {hasPermission(PERMISSIONS.SUBSCRIBERS_UPDATE) && (
+            <button onClick={() => openEditOrg(detail)}
+              className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-cyan-600 hover:bg-cyan-500/10 border border-cyan-200 transition-colors">
+              <Edit3 size={14} /> تعديل البيانات
+            </button>
+          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
@@ -321,6 +357,50 @@ export default function AdminSubscribers() {
             </div>
           </div>
         </div>
+
+        {/* Edit Org Info Modal */}
+        {editOrgTarget && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+            <div className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4">
+              <div className="flex items-center justify-between p-5 border-b">
+                <h3 className="text-lg font-bold text-gray-900">تعديل بيانات المشترك</h3>
+                <button onClick={() => setEditOrgTarget(null)} className="p-1 rounded-lg hover:bg-gray-100"><X size={18} /></button>
+              </div>
+              <div className="p-5 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">اسم المشترك</label>
+                  <input type="text" className="admin-form-input w-full" value={editOrgForm.name}
+                    onChange={(e) => setEditOrgForm(f => ({ ...f, name: e.target.value }))} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">القطاع</label>
+                  <input type="text" className="admin-form-input w-full" placeholder="مطاعم، صحة، تجزئة..."
+                    value={editOrgForm.industry}
+                    onChange={(e) => setEditOrgForm(f => ({ ...f, industry: e.target.value }))} />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">المدينة</label>
+                    <input type="text" className="admin-form-input w-full" value={editOrgForm.city}
+                      onChange={(e) => setEditOrgForm(f => ({ ...f, city: e.target.value }))} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">البلد</label>
+                    <input type="text" className="admin-form-input w-full" value={editOrgForm.country}
+                      onChange={(e) => setEditOrgForm(f => ({ ...f, country: e.target.value }))} />
+                  </div>
+                </div>
+              </div>
+              <div className="p-5 border-t flex items-center gap-3">
+                <button onClick={handleSaveOrgInfo} disabled={savingOrg}
+                  className="admin-btn-primary flex items-center gap-2">
+                  <Check size={14} /> {savingOrg ? 'جارٍ الحفظ...' : 'حفظ التعديلات'}
+                </button>
+                <button onClick={() => setEditOrgTarget(null)} className="admin-btn-secondary">إلغاء</button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }

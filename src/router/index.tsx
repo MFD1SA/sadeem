@@ -57,6 +57,7 @@ const AdminAuditLogs      = lazy(() => import('@/admin/pages/AdminAuditLogs'));
 const AdminTickets        = lazy(() => import('@/admin/pages/AdminTickets'));
 const AdminIntegrations   = lazy(() => import('@/admin/pages/AdminIntegrations'));
 const AdminPlans          = lazy(() => import('@/admin/pages/AdminPlans'));
+const AdminTemplates      = lazy(() => import('@/admin/pages/AdminTemplates'));
 
 function PageLoader() {
   return (
@@ -132,6 +133,7 @@ export function AppRouter() {
         <Route path="tickets"         element={<Suspense fallback={<PageLoader />}><AdminTickets /></Suspense>} />
         <Route path="integrations"    element={<Suspense fallback={<PageLoader />}><AdminIntegrations /></Suspense>} />
         <Route path="plans"           element={<Suspense fallback={<PageLoader />}><AdminPlans /></Suspense>} />
+        <Route path="templates"      element={<Suspense fallback={<PageLoader />}><AdminTemplates /></Suspense>} />
         <Route path="settings"        element={<Suspense fallback={<PageLoader />}><AdminSettings /></Suspense>} />
         <Route path="audit-logs"      element={<Suspense fallback={<PageLoader />}><AdminAuditLogs /></Suspense>} />
         <Route path="profile"         element={<Suspense fallback={<PageLoader />}><AdminProfile /></Suspense>} />

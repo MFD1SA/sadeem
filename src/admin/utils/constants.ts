@@ -18,6 +18,7 @@ export const ADMIN_ROUTES = {
   SETTINGS: '/admin/settings',
   PROFILE: '/admin/profile',
   SECURITY: '/admin/security',
+  TEMPLATES: '/admin/templates',
   AUDIT_LOGS: '/admin/audit-logs',
 } as const;
 

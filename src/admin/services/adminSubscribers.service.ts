@@ -175,6 +175,25 @@ class AdminSubscribersService {
     }
   }
 
+  async updateOrgInfo(orgId: string, updates: {
+    name?: string;
+    industry?: string;
+    city?: string;
+    country?: string;
+  }): Promise<void> {
+    const { error } = await adminSupabase.rpc('admin_update_org_info', {
+      p_org_id: orgId,
+      p_name: updates.name ?? null,
+      p_industry: updates.industry ?? null,
+      p_city: updates.city ?? null,
+      p_country: updates.country ?? null,
+    });
+    if (error) {
+      if (error.message.includes('Permission denied')) throw new Error('ليس لديك صلاحية تعديل بيانات المشترك');
+      throw new Error('فشل في تحديث بيانات المشترك: ' + error.message);
+    }
+  }
+
   async resetAIUsage(orgId: string): Promise<void> {
     const { error } = await adminSupabase
       .from('subscriptions')
