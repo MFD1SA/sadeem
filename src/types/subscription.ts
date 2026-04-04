@@ -111,7 +111,7 @@ export const PLANS: Record<string, PlanInfo> = {
   },
   galaxy: {
     id: 'galaxy',
-    nameAr: 'جالاكسي',
+    nameAr: 'جالكسي',
     nameEn: 'Galaxy',
     descAr: 'للشركات المتقدمة متعددة الفروع',
     descEn: 'For advanced multi-branch companies',

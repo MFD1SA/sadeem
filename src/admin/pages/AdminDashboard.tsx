@@ -135,8 +135,8 @@ export default function AdminDashboard() {
                   const total = Object.values(stats.plan_distribution).reduce((a, b) => a + b, 0);
                   const pct = total > 0 ? Math.round((count / total) * 100) : 0;
                   const labels: Record<string, string> = {
-                    orbit: 'مدار', nova: 'نوفا', galaxy: 'جالاكسي', infinity: 'إنفينيتي',
-                    starter: 'المبتدئ', growth: 'النمو', pro: 'الاحترافي', enterprise: 'المؤسسات',
+                    orbit: 'مدار', nova: 'نوفا', galaxy: 'جالكسي', infinity: 'إنفينيتي',
+                    starter: 'مدار', growth: 'نوفا', pro: 'جالكسي', enterprise: 'إنفينيتي',
                   };
                   const pc = planColors[plan] || { bar: '#6b7280', bg: 'rgba(107,114,128,0.08)', text: '#6b7280' };
                   return (

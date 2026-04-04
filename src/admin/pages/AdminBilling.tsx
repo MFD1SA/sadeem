@@ -15,8 +15,8 @@ import {
 } from 'lucide-react';
 
 const PLAN_LABELS: Record<string, string> = {
-  orbit: 'مدار', nova: 'نوفا', galaxy: 'جالاكسي', infinity: 'إنفينيتي',
-  starter: 'المبتدئ', growth: 'النمو', pro: 'الاحترافي', enterprise: 'المؤسسات',
+  orbit: 'مدار', nova: 'نوفا', galaxy: 'جالكسي', infinity: 'إنفينيتي',
+  starter: 'مدار', growth: 'نوفا', pro: 'جالكسي', enterprise: 'إنفينيتي',
 };
 
 const INV_STATUS: Record<string, { ar: string; color: string }> = {
@@ -292,7 +292,7 @@ export default function AdminBilling() {
                 onChange={(e) => setCreateForm(p => ({ ...p, plan: e.target.value }))}>
                 <option value="orbit">مدار</option>
                 <option value="nova">نوفا</option>
-                <option value="galaxy">جالاكسي</option>
+                <option value="galaxy">جالكسي</option>
                 <option value="infinity">إنفينيتي</option>
               </select>
             </div>

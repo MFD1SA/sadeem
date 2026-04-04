@@ -19,14 +19,20 @@ import { AdminSelect } from '../components/AdminSelect';
 const PLAN_LABELS: Record<string, { ar: string; color: string; textClass: string }> = {
   orbit:      { ar: 'مدار',      color: 'blue',    textClass: 'text-blue-600' },
   nova:       { ar: 'نوفا',      color: 'violet',  textClass: 'text-violet-600' },
-  galaxy:     { ar: 'جالاكسي',  color: 'amber',   textClass: 'text-amber-600' },
+  galaxy:     { ar: 'جالكسي',  color: 'amber',   textClass: 'text-amber-600' },
   infinity:   { ar: 'إنفينيتي', color: 'emerald', textClass: 'text-emerald-600' },
-  // Legacy plan IDs (backward compat display)
-  starter:    { ar: 'المبتدئ',    color: 'blue',    textClass: 'text-blue-600' },
-  growth:     { ar: 'النمو',      color: 'violet',  textClass: 'text-violet-600' },
-  pro:        { ar: 'الاحترافي',  color: 'amber',   textClass: 'text-amber-600' },
-  enterprise: { ar: 'المؤسسات',  color: 'emerald', textClass: 'text-emerald-600' },
+  // Legacy plan IDs → mapped to new display names
+  starter:    { ar: 'مدار',      color: 'blue',    textClass: 'text-blue-600' },
+  growth:     { ar: 'نوفا',      color: 'violet',  textClass: 'text-violet-600' },
+  pro:        { ar: 'جالكسي',  color: 'amber',   textClass: 'text-amber-600' },
+  enterprise: { ar: 'إنفينيتي', color: 'emerald', textClass: 'text-emerald-600' },
 };
+
+// Map legacy plan IDs to new plan IDs
+const LEGACY_PLAN_MAP: Record<string, string> = {
+  starter: 'orbit', growth: 'nova', pro: 'galaxy', enterprise: 'infinity',
+};
+const normalizePlan = (plan: string) => LEGACY_PLAN_MAP[plan] || plan;
 
 const SUB_STATUS: Record<string, { ar: string; color: string }> = {
   active: { ar: 'نشط', color: 'emerald' },
@@ -435,7 +441,7 @@ export default function AdminSubscribers() {
             <option value="">كل الخطط</option>
             <option value="orbit">مدار</option>
             <option value="nova">نوفا</option>
-            <option value="galaxy">جالاكسي</option>
+            <option value="galaxy">جالكسي</option>
             <option value="infinity">إنفينيتي</option>
           </AdminSelect>
           <AdminSelect wrapperClassName="w-auto min-w-[140px]" value={filterStatus}
@@ -517,7 +523,7 @@ export default function AdminSubscribers() {
                             </button>
                             {activeMenu?.id === item.id && createPortal(
                               <div ref={menuRef} style={{ position: 'fixed', top: activeMenu.top, left: activeMenu.left, zIndex: 9999 }} className="w-48 bg-white border border-gray-200 rounded-xl shadow-lg py-1.5">
-                                <button onClick={() => { setActiveMenu(null); setPlanTarget(item); setNewPlan(item.subscription?.plan || 'orbit'); }}
+                                <button onClick={() => { setActiveMenu(null); setPlanTarget(item); setNewPlan(normalizePlan(item.subscription?.plan || 'orbit')); }}
                                   className="w-full flex items-center gap-2 px-3 py-2 text-xs text-cyan-600 hover:bg-cyan-500/10 transition-colors">
                                   <ArrowUpCircle size={14} /> تغيير الخطة
                                 </button>
@@ -594,13 +600,13 @@ export default function AdminSubscribers() {
               <AdminSelect value={newPlan} onChange={(e) => setNewPlan(e.target.value)}>
                 <option value="orbit">مدار</option>
                 <option value="nova">نوفا</option>
-                <option value="galaxy">جالاكسي</option>
+                <option value="galaxy">جالكسي</option>
                 <option value="infinity">إنفينيتي</option>
               </AdminSelect>
             </div>
             <div className="flex items-center justify-end gap-3 px-5 py-4 border-t border-gray-200">
               <button onClick={() => setPlanTarget(null)} className="admin-btn-secondary text-sm">إلغاء</button>
-              <button onClick={handleChangePlan} disabled={changingPlan || newPlan === planTarget.subscription?.plan}
+              <button onClick={handleChangePlan} disabled={changingPlan || newPlan === normalizePlan(planTarget.subscription?.plan || '')}
                 className="admin-btn-primary text-sm">
                 {changingPlan ? 'جاري التغيير...' : 'تغيير الخطة'}
               </button>
