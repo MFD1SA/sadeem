@@ -1,5 +1,5 @@
 -- ============================================================================
--- SADEEM Admin — Phase 6: AI Usage & Cost Control
+-- SENDA Admin — Phase 6: AI Usage & Cost Control
 -- Run AFTER admin-phase5-billing.sql
 --
 -- Creates:

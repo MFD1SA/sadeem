@@ -1,5 +1,5 @@
 // ============================================================================
-// SADEEM Admin — Sidebar (Upgraded)
+// SENDA Admin — Sidebar (Upgraded)
 // Branding loaded from DB. Single logout. Tickets + Integrations added.
 // ============================================================================
 
@@ -73,7 +73,7 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
             )}
             <div className="min-w-0">
               <div className="text-[13.5px] font-bold text-white tracking-wide leading-none">
-                {branding?.platform_name_en || 'SADEEM'}
+                {branding?.platform_name_en || 'SENDA'}
               </div>
               <div className="text-[10px] font-medium mt-0.5" style={{ color: 'rgba(6,182,212,0.7)' }}>
                 لوحة الإدارة
@@ -82,6 +82,7 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
           </div>
           <button
             onClick={onClose}
+            aria-label="Close sidebar"
             className="lg:hidden p-1.5 rounded-lg transition-colors"
             style={{ color: '#64748b' }}
             onMouseOver={e => (e.currentTarget.style.color = '#e2e8f0')}
@@ -163,6 +164,7 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
             </NavLink>
             <button
               onClick={() => { logout(); onClose(); }}
+              aria-label="Log out"
               className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs transition-colors"
               style={{ color: '#EF4444' }}
               onMouseOver={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(239,68,68,0.08)'; }}

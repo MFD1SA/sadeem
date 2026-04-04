@@ -17,7 +17,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('[Sadeem] Uncaught error:', error, errorInfo);
+    console.error('[Senda] Uncaught error:', error, errorInfo);
 
     // Auto-reload on chunk load failure (happens after deploy when old chunks are gone)
     const msg = error?.message || '';

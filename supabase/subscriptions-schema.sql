@@ -1,5 +1,5 @@
 -- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
--- Sadeem Subscription System — Schema
+-- Senda Subscription System — Schema
 -- Run in Supabase SQL Editor
 -- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 

@@ -51,11 +51,7 @@ export default function ResponsesInbox() {
       const usageCheck = await usageService.checkAndIncrementTemplateReply(organization.id);
 
       if (!usageCheck.allowed) {
-        setError(
-          lang === 'ar'
-            ? 'لقد وصلت إلى الحد المسموح من الردود الجاهزة.'
-            : 'Template reply limit reached. Upgrade to continue.'
-        );
+        setError(t.responsesInbox.templateLimitReached);
         return;
       }
 
@@ -141,9 +137,9 @@ export default function ResponsesInbox() {
         <div>
           <h1 className="page-title flex items-center gap-2">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-brand-500"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-            {lang === 'ar' ? 'صندوق الردود' : 'Responses Inbox'}
+            {t.responsesInbox.title}
           </h1>
-          <p className="page-subtitle">{lang === 'ar' ? 'مراجعة واعتماد ردود التقييمات قبل إرسالها' : 'Review and approve reply drafts before sending'}</p>
+          <p className="page-subtitle">{t.responsesInbox.subtitle}</p>
         </div>
       </div>
 
@@ -155,7 +151,7 @@ export default function ResponsesInbox() {
           </div>
           <div>
             <div className="text-lg font-bold text-content-primary leading-none">{drafts.length}</div>
-            <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">{lang === 'ar' ? 'إجمالي الردود' : 'Total Drafts'}</div>
+            <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">{t.responsesInbox.totalDrafts}</div>
           </div>
         </div>
         <div className="stat-card flex items-center gap-3">
@@ -164,7 +160,7 @@ export default function ResponsesInbox() {
           </div>
           <div>
             <div className={`text-lg font-bold leading-none ${pendingCount > 0 ? 'text-amber-600' : 'text-content-primary'}`}>{pendingCount}</div>
-            <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">{lang === 'ar' ? 'بانتظار الموافقة' : 'Pending'}</div>
+            <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">{t.responsesInbox.pending}</div>
           </div>
         </div>
         <div className="stat-card flex items-center gap-3">
@@ -173,7 +169,7 @@ export default function ResponsesInbox() {
           </div>
           <div>
             <div className="text-lg font-bold text-emerald-600 leading-none">{sentCount}</div>
-            <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">{lang === 'ar' ? 'تم الإرسال' : 'Sent'}</div>
+            <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">{t.responsesInbox.sent}</div>
           </div>
         </div>
         <div className="stat-card flex items-center gap-3">
@@ -182,7 +178,7 @@ export default function ResponsesInbox() {
           </div>
           <div>
             <div className="text-lg font-bold text-red-600 leading-none">{drafts.filter((d: DbReplyDraft) => d.status === 'rejected').length}</div>
-            <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">{lang === 'ar' ? 'مرفوضة' : 'Rejected'}</div>
+            <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">{t.responsesInbox.rejected}</div>
           </div>
         </div>
       </div>

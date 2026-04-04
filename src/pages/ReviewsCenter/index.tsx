@@ -28,11 +28,9 @@ const defaultFilters: ReviewFilters = {
 };
 
 export default function ReviewsCenter() {
-  const { t, lang } = useLanguage();
+  const { t } = useLanguage();
   const { organization, isLoading: authLoading } = useAuth();
   const location = useLocation();
-  const isAr = lang === 'ar';
-
   const [reviews, setReviews] = useState<DbReview[]>([]);
   const [branches, setBranches] = useState<DbBranch[]>([]);
   const [loading, setLoading] = useState(true);
@@ -101,16 +99,16 @@ export default function ReviewsCenter() {
         <div>
           <h1 className="page-title flex items-center gap-2">
             <MessageSquareText size={20} className="text-brand-500" />
-            {isAr ? 'مركز التقييمات' : 'Reviews Center'}
+            {t.reviewsCenter.title}
           </h1>
-          <p className="page-subtitle">{isAr ? 'إدارة وتتبع جميع تقييمات Google الخاصة بنشاطك' : 'Manage and track all your Google reviews'}</p>
+          <p className="page-subtitle">{t.reviewsCenter.subtitle}</p>
         </div>
         <button
           onClick={() => setShowMobileFilters(!showMobileFilters)}
           className="btn btn-secondary btn-sm lg:hidden"
         >
           <SlidersHorizontal size={14} />
-          {isAr ? 'الفلاتر' : 'Filters'}
+          {t.reviewsCenter.filters}
         </button>
       </div>
 
@@ -122,7 +120,7 @@ export default function ReviewsCenter() {
           </div>
           <div>
             <div className="text-lg font-bold text-content-primary leading-none">{totalReviews}</div>
-            <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">{isAr ? 'إجمالي التقييمات' : 'Total Reviews'}</div>
+            <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">{t.reviewsCenter.totalReviews}</div>
           </div>
         </div>
         <div className="stat-card flex items-center gap-3">
@@ -131,7 +129,7 @@ export default function ReviewsCenter() {
           </div>
           <div>
             <div className="text-lg font-bold text-content-primary leading-none">{avgRating}</div>
-            <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">{isAr ? 'المتوسط' : 'Average'}</div>
+            <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">{t.reviewsCenter.average}</div>
           </div>
         </div>
         <div className="stat-card flex items-center gap-3">
@@ -140,7 +138,7 @@ export default function ReviewsCenter() {
           </div>
           <div>
             <div className={`text-lg font-bold leading-none ${unreplied > 5 ? 'text-red-600' : 'text-amber-600'}`}>{unreplied}</div>
-            <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">{isAr ? 'بانتظار الرد' : 'Awaiting Reply'}</div>
+            <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">{t.reviewsCenter.awaitingReply}</div>
           </div>
         </div>
         <div className="stat-card flex items-center gap-3">
@@ -149,7 +147,7 @@ export default function ReviewsCenter() {
           </div>
           <div>
             <div className="text-lg font-bold text-emerald-600 leading-none">{positive}</div>
-            <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">{isAr ? 'إيجابية' : 'Positive'}</div>
+            <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">{t.sentiment.positive}</div>
           </div>
         </div>
       </div>
@@ -161,11 +159,12 @@ export default function ReviewsCenter() {
           type="text"
           value={filters.search}
           onChange={(e) => setFilters(f => ({ ...f, search: e.target.value }))}
-          placeholder={isAr ? 'ابحث في التقييمات بالاسم أو النص...' : 'Search reviews by name or text...'}
+          placeholder={t.reviewsCenter.searchPlaceholder}
+          aria-label={t.reviewsCenter.searchPlaceholder}
           className="w-full border-none bg-transparent text-sm text-content-primary outline-none placeholder:text-content-tertiary"
         />
         {filters.search && (
-          <button onClick={() => setFilters(f => ({ ...f, search: '' }))} className="text-content-tertiary hover:text-content-primary">
+          <button onClick={() => setFilters(f => ({ ...f, search: '' }))} className="text-content-tertiary hover:text-content-primary" aria-label={t.reviewsCenter.clearFilters}>
             <span className="text-xs">✕</span>
           </button>
         )}
@@ -178,7 +177,7 @@ export default function ReviewsCenter() {
           <div className={`w-52 min-w-[208px] border-e border-border overflow-y-auto flex-col bg-surface-secondary/30 ${showMobileFilters ? 'flex' : 'hidden lg:flex'}`}>
             <div className="px-4 py-3 border-b border-border">
               <span className="text-[11px] font-semibold text-content-tertiary uppercase tracking-wider">
-                {isAr ? 'الفلاتر' : 'Filters'}
+                {t.reviewsCenter.filters}
               </span>
             </div>
             <FiltersPanel filters={filters} onChange={setFilters} branches={branches} />
@@ -189,7 +188,7 @@ export default function ReviewsCenter() {
             <div className="px-4 py-3 border-b border-border bg-white sticky top-0 z-10">
               <div className="flex items-center justify-between">
                 <span className="text-[13px] font-semibold text-content-primary">
-                  {isAr ? 'التقييمات' : 'Reviews'}
+                  {t.reviewsCenter.reviews}
                 </span>
                 <span className="badge badge-info">{filtered.length}</span>
               </div>

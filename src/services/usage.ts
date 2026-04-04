@@ -49,7 +49,7 @@ export const usageService = {
       .single();
 
     if (subErr || !data) {
-      if (subErr && subErr.code !== 'PGRST116') console.warn('[Sadeem] getTrialStatus failed:', subErr.message);
+      if (subErr && subErr.code !== 'PGRST116') console.warn('[Senda] getTrialStatus failed:', subErr.message);
       return { isTrial: false, isExpired: false, hoursRemaining: 0, aiUsed: 0, aiMax: 0, templateUsed: 0, templateMax: 0 };
     }
     const sub = data as DbSubscription;

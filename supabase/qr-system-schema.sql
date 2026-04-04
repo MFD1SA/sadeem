@@ -1,5 +1,5 @@
 -- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
--- Sadeem QR Review System — Schema
+-- Senda QR Review System — Schema
 -- Run in Supabase SQL Editor
 -- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 

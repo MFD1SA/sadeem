@@ -26,8 +26,8 @@ describe('getBranding', () => {
     mockMaybeSingle.mockResolvedValue({ data: null, error: null });
 
     const result = await getBranding();
-    expect(result.platform_name_ar).toBe('سديم');
-    expect(result.platform_name_en).toBe('SADEEM');
+    expect(result.platform_name_ar).toBe('سيندا');
+    expect(result.platform_name_en).toBe('SENDA');
   });
 
   it('returns custom branding from DB', async () => {
@@ -39,7 +39,7 @@ describe('getBranding', () => {
     const result = await getBranding();
     expect(result.platform_name_en).toBe('CustomBrand');
     expect(result.tagline).toBe('My Tagline');
-    expect(result.platform_name_ar).toBe('سديم'); // default for missing field
+    expect(result.platform_name_ar).toBe('سيندا'); // default for missing field
   });
 
   it('caches results and returns cached on second call', async () => {
@@ -80,7 +80,7 @@ describe('getBranding', () => {
     mockMaybeSingle.mockRejectedValue(new Error('DB connection failed'));
 
     const result = await getBranding();
-    expect(result.platform_name_ar).toBe('سديم');
-    expect(result.platform_name_en).toBe('SADEEM');
+    expect(result.platform_name_ar).toBe('سيندا');
+    expect(result.platform_name_en).toBe('SENDA');
   });
 });

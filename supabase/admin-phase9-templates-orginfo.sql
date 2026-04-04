@@ -1,5 +1,5 @@
 -- ============================================================================
--- SADEEM Admin — Phase 9: Template Management + Org Info Update
+-- SENDA Admin — Phase 9: Template Management + Org Info Update
 -- Adds RPCs for:
 -- 1. admin_update_org_info       – edit subscriber org name/industry/city
 -- 2. admin_list_all_templates    – list all templates across all orgs

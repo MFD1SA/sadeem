@@ -17,7 +17,7 @@ interface Props {
 }
 
 export function ReviewDetail({ review, branchName, onUpdate }: Props) {
-  const { t, lang } = useLanguage();
+  const { t } = useLanguage();
   const { user } = useAuth();
   const [drafts, setDrafts] = useState<DbReplyDraft[]>([]);
   const [editingReply, setEditingReply] = useState(false);
@@ -56,7 +56,7 @@ export function ReviewDetail({ review, branchName, onUpdate }: Props) {
       // Check quota before sending
       const usageCheck = await usageService.checkAndIncrementTemplateReply(review.organization_id);
       if (!usageCheck.allowed) {
-        setActionError(lang === 'ar' ? 'تم الوصول للحد المسموح من الردود. يرجى ترقية الخطة.' : (usageCheck.reason || 'Reply limit reached'));
+        setActionError(usageCheck.reason || t.reviewsCenter.replyLimitReached);
         return;
       }
       const finalText = replyText || suggestedReply;
@@ -82,7 +82,7 @@ export function ReviewDetail({ review, branchName, onUpdate }: Props) {
       await reviewSyncService.sendReplyToGoogle(latestDraft.id, user.id);
       onUpdate();
     } catch (err) {
-      setActionError(err instanceof Error ? err.message : lang === 'ar' ? 'فشل في إرسال الرد' : 'Failed to send reply');
+      setActionError(err instanceof Error ? err.message : t.reviewsCenter.failedToSendReply);
     } finally { setActionLoading(false); }
   };
 
@@ -94,7 +94,7 @@ export function ReviewDetail({ review, branchName, onUpdate }: Props) {
       await replyDraftsService.defer(latestDraft.id, user?.id);
       onUpdate();
     } catch (err) {
-      setActionError(err instanceof Error ? err.message : lang === 'ar' ? 'فشل' : 'Failed');
+      setActionError(err instanceof Error ? err.message : t.reviewsCenter.failed);
     } finally { setActionLoading(false); }
   };
 
@@ -106,7 +106,7 @@ export function ReviewDetail({ review, branchName, onUpdate }: Props) {
       await replyDraftsService.reject(latestDraft.id, user?.id);
       onUpdate();
     } catch (err) {
-      setActionError(err instanceof Error ? err.message : lang === 'ar' ? 'فشل' : 'Failed');
+      setActionError(err instanceof Error ? err.message : t.reviewsCenter.failed);
     } finally { setActionLoading(false); }
   };
 
@@ -118,7 +118,7 @@ export function ReviewDetail({ review, branchName, onUpdate }: Props) {
       // Check quota before sending
       const usageCheck = await usageService.checkAndIncrementTemplateReply(review.organization_id);
       if (!usageCheck.allowed) {
-        setActionError(lang === 'ar' ? 'تم الوصول للحد المسموح من الردود. يرجى ترقية الخطة.' : (usageCheck.reason || 'Reply limit reached'));
+        setActionError(usageCheck.reason || t.reviewsCenter.replyLimitReached);
         return;
       }
       const draft = await replyDraftsService.create({
@@ -140,7 +140,7 @@ export function ReviewDetail({ review, branchName, onUpdate }: Props) {
       setManualReply('');
       onUpdate();
     } catch (err) {
-      setActionError(err instanceof Error ? err.message : lang === 'ar' ? 'فشل في إرسال الرد' : 'Failed to send reply');
+      setActionError(err instanceof Error ? err.message : t.reviewsCenter.failedToSendReply);
     } finally { setActionLoading(false); }
   };
 
@@ -167,11 +167,11 @@ export function ReviewDetail({ review, branchName, onUpdate }: Props) {
           <Badge variant="neutral">{branchName}</Badge>
           {review.sentiment && (
             <Badge variant={getSentimentColor(review.sentiment) as 'success' | 'warning' | 'danger'}>
-              {t.sentiment[review.sentiment]}
+              {(t.sentiment as Record<string, string>)[review.sentiment] || review.sentiment}
             </Badge>
           )}
           <Badge variant={getStatusColor(review.status) as 'success' | 'warning' | 'danger' | 'info' | 'neutral'}>
-            {t.status[review.status] || review.status}
+            {(t.status as Record<string, string>)[review.status] || review.status}
           </Badge>
         </div>
       </div>
@@ -187,12 +187,10 @@ export function ReviewDetail({ review, branchName, onUpdate }: Props) {
           <AlertTriangle size={16} className="text-amber-600 flex-shrink-0 mt-0.5" />
           <div>
             <div className="text-xs font-semibold text-amber-800 mb-0.5">
-              {lang === 'ar' ? 'تقييم متكرر — مراجعة يدوية مطلوبة' : 'Follow-up review — Manual review required'}
+              {t.reviewsCenter.followUpTitle}
             </div>
             <div className="text-2xs text-amber-700">
-              {lang === 'ar'
-                ? 'هذا العميل كتب تقييماً سابقاً وتم الرد عليه. سياسة سديم: لا يتم الرد التلقائي على التقييمات المتكررة.'
-                : 'This reviewer has a previous replied review. Sadeem policy: no auto-reply on follow-up reviews.'}
+              {t.reviewsCenter.followUpText}
             </div>
           </div>
         </div>
@@ -211,7 +209,7 @@ export function ReviewDetail({ review, branchName, onUpdate }: Props) {
         <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
           <div className="text-xs font-semibold text-emerald-700 mb-2 flex items-center gap-1.5">
             <Send size={13} />
-            {t.status[review.status]}
+            {(t.status as Record<string, string>)[review.status] || review.status}
           </div>
           <p className="text-sm text-emerald-800">{latestDraft?.final_reply || latestDraft?.edited_reply || latestDraft?.ai_reply || ''}</p>
           {latestDraft?.sent_at && (
@@ -222,18 +220,19 @@ export function ReviewDetail({ review, branchName, onUpdate }: Props) {
         /* Manual reply for follow-up reviews */
         <div>
           <div className="text-xs font-semibold text-content-secondary mb-2">
-            {lang === 'ar' ? 'رد يدوي' : 'Manual Reply'}
+            {t.reviewsCenter.manualReply}
           </div>
           <textarea
             className="form-textarea text-sm mb-3"
             rows={4}
             value={manualReply}
             onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setManualReply(e.target.value)}
-            placeholder={lang === 'ar' ? 'اكتب ردك يدوياً هنا...' : 'Write your manual reply here...'}
+            placeholder={t.reviewsCenter.manualReplyPlaceholder}
+            aria-label={t.reviewsCenter.manualReply}
           />
           <button className="btn btn-primary btn-sm" onClick={handleManualSend} disabled={actionLoading || !manualReply.trim()}>
             <Send size={13} />
-            {actionLoading ? t.common.loading : (lang === 'ar' ? 'إرسال الرد' : 'Send Reply')}
+            {actionLoading ? t.common.loading : t.reviewsCenter.sendReply}
           </button>
         </div>
       ) : suggestedReply ? (
@@ -246,6 +245,7 @@ export function ReviewDetail({ review, branchName, onUpdate }: Props) {
               rows={4}
               value={replyText || suggestedReply}
               onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setReplyText(e.target.value)}
+              aria-label={t.reviewsCenter.editReply}
             />
           ) : (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-3">
@@ -272,18 +272,19 @@ export function ReviewDetail({ review, branchName, onUpdate }: Props) {
         /* No draft yet — show manual reply */
         <div>
           <div className="text-xs font-semibold text-content-secondary mb-2">
-            {lang === 'ar' ? 'اكتب رداً' : 'Write a reply'}
+            {t.reviewsCenter.writeReply}
           </div>
           <textarea
             className="form-textarea text-sm mb-3"
             rows={3}
             value={manualReply}
             onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setManualReply(e.target.value)}
-            placeholder={lang === 'ar' ? 'اكتب ردك هنا...' : 'Write your reply here...'}
+            placeholder={t.reviewsCenter.writeReplyPlaceholder}
+            aria-label={t.reviewsCenter.writeReply}
           />
           <button className="btn btn-primary btn-sm" onClick={handleManualSend} disabled={actionLoading || !manualReply.trim()}>
             <Send size={13} />
-            {actionLoading ? t.common.loading : (lang === 'ar' ? 'إرسال' : 'Send')}
+            {actionLoading ? t.common.loading : t.reviewsCenter.send}
           </button>
         </div>
       )}

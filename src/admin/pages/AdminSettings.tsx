@@ -1,5 +1,5 @@
 // ============================================================================
-// SADEEM Admin — Settings (Real DB Persistence)
+// SENDA Admin — Settings (Real DB Persistence)
 // Reads/writes via admin_get_setting / admin_set_setting RPCs.
 // Branding logos uploaded to Supabase Storage and URLs saved in settings.
 // ============================================================================
@@ -75,7 +75,7 @@ export default function AdminSettings() {
 // ─── Branding with logo upload + DB persistence ───
 function BrandingSection({ showMsg }: { showMsg: (t: string, ty: 'success' | 'error') => void }) {
   const [branding, setBranding] = useState<BrandingSettings>({
-    platform_name_ar: 'سديم', platform_name_en: 'SADEEM',
+    platform_name_ar: 'سيندا', platform_name_en: 'SENDA',
     tagline: 'إدارة التقييمات بالذكاء الاصطناعي',
     logo_icon_url: '', logo_full_url: '', favicon_url: '',
   });
@@ -247,21 +247,21 @@ function SeoSection({ showMsg }: { showMsg: (t: string, ty: 'success' | 'error')
           <div>
             <label className="block text-xs text-gray-500 mb-1.5 font-medium">عنوان الصفحة (Meta Title)</label>
             <input value={seo.meta_title} onChange={e => setSeo(p => ({ ...p, meta_title: e.target.value }))}
-              placeholder="سديم — نظام إدارة التقييمات بالذكاء الاصطناعي"
+              placeholder="سيندا — نظام إدارة التقييمات بالذكاء الاصطناعي"
               className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-indigo-500/50" />
             <p className="text-[10px] text-slate-600 mt-1">{seo.meta_title.length}/60 حرف — الموصى به: 50-60</p>
           </div>
           <div>
             <label className="block text-xs text-gray-500 mb-1.5 font-medium">وصف الصفحة (Meta Description)</label>
             <textarea value={seo.meta_description} onChange={e => setSeo(p => ({ ...p, meta_description: e.target.value }))}
-              rows={3} placeholder="منصة سديم لإدارة تقييمات Google تلقائياً بالذكاء الاصطناعي — ردود فورية، تحليلات متقدمة، وإدارة جميع الفروع من مكان واحد."
+              rows={3} placeholder="منصة سيندا لإدارة تقييمات Google تلقائياً بالذكاء الاصطناعي — ردود فورية، تحليلات متقدمة، وإدارة جميع الفروع من مكان واحد."
               className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-indigo-500/50 resize-none" />
             <p className="text-[10px] text-slate-600 mt-1">{seo.meta_description.length}/160 حرف — الموصى به: 120-160</p>
           </div>
           <div>
             <label className="block text-xs text-gray-500 mb-1.5 font-medium">الكلمات المفتاحية (Keywords)</label>
             <input value={seo.keywords} onChange={e => setSeo(p => ({ ...p, keywords: e.target.value }))}
-              placeholder="إدارة تقييمات Google، ردود تلقائية، ذكاء اصطناعي، سديم"
+              placeholder="إدارة تقييمات Google، ردود تلقائية، ذكاء اصطناعي، سيندا"
               className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-indigo-500/50" />
             <p className="text-[10px] text-slate-600 mt-1">افصل بين الكلمات بفاصلة</p>
           </div>

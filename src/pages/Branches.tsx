@@ -301,7 +301,7 @@ export default function Branches() {
                       <StatusDot
                         color={b.status === 'active' ? 'green' : b.status === 'pending' ? 'yellow' : 'gray'}
                       />
-                      <span className="text-xs text-content-secondary">{t.status[b.status]}</span>
+                      <span className="text-xs text-content-secondary">{(t.status as Record<string, string>)[b.status] || b.status}</span>
                     </div>
                   </div>
 
@@ -340,6 +340,7 @@ export default function Branches() {
                     <button
                       className="btn-icon"
                       title={t.common.edit}
+                      aria-label={`${t.common.edit} ${b.internal_name}`}
                       onClick={() => openEdit(b)}
                     >
                       <Edit3 size={14} />
@@ -347,6 +348,7 @@ export default function Branches() {
                     <button
                       className="btn-icon"
                       title={t.common.delete}
+                      aria-label={`${t.common.delete} ${b.internal_name}`}
                       onClick={() => handleDelete(b.id)}
                     >
                       <Trash2 size={14} className="text-red-500" />
@@ -380,8 +382,9 @@ export default function Branches() {
         >
           <div className="space-y-4">
             <div>
-              <label className="form-label">{t.branchesPage.internalName} *</label>
+              <label htmlFor="branch-internal-name" className="form-label">{t.branchesPage.internalName} *</label>
               <input
+                id="branch-internal-name"
                 className="form-input"
                 value={formData.internal_name}
                 onChange={(e: ChangeEvent<HTMLInputElement>) =>
@@ -391,8 +394,9 @@ export default function Branches() {
             </div>
 
             <div>
-              <label className="form-label">{t.branchesPage.googleName}</label>
+              <label htmlFor="branch-google-name" className="form-label">{t.branchesPage.googleName}</label>
               <input
+                id="branch-google-name"
                 className="form-input"
                 value={formData.google_name}
                 onChange={(e: ChangeEvent<HTMLInputElement>) =>
@@ -403,8 +407,9 @@ export default function Branches() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="form-label">{t.branchesPage.city}</label>
+                <label htmlFor="branch-city" className="form-label">{t.branchesPage.city}</label>
                 <input
+                  id="branch-city"
                   className="form-input"
                   value={formData.city}
                   onChange={(e: ChangeEvent<HTMLInputElement>) =>
@@ -414,10 +419,12 @@ export default function Branches() {
               </div>
 
               <div>
-                <label className="form-label">{t.branchesPage.status}</label>
+                <label htmlFor="branch-status" className="form-label">{t.branchesPage.status}</label>
                 <select
+                  id="branch-status"
                   className="form-select"
                   value={formData.status}
+                  aria-label={t.branchesPage.status}
                   onChange={(e: ChangeEvent<HTMLSelectElement>) =>
                     setFormData((prev) => ({ ...prev, status: e.target.value }))
                   }
@@ -430,8 +437,9 @@ export default function Branches() {
             </div>
 
             <div>
-              <label className="form-label">{t.branchesPage.address}</label>
+              <label htmlFor="branch-address" className="form-label">{t.branchesPage.address}</label>
               <input
+                id="branch-address"
                 className="form-input"
                 value={formData.address}
                 onChange={(e: ChangeEvent<HTMLInputElement>) =>

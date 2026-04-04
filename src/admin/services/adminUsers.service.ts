@@ -1,5 +1,5 @@
 // ============================================================================
-// SADEEM Admin — Admin Users Service (Phase 2)
+// SENDA Admin — Admin Users Service (Phase 2)
 //
 // READ: Protected by RLS (is_active_admin).
 // WRITE: ALL writes go through SECURITY DEFINER RPCs that:

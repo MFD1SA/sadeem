@@ -5,9 +5,6 @@ import { en } from './en';
 export type Language = 'ar' | 'en';
 export type Direction = 'rtl' | 'ltr';
 
-// Use a loose type so ar and en are both assignable
-type Translations = Record<string, unknown>;
-
 interface LanguageContextType {
   lang: Language;
   dir: Direction;
@@ -16,7 +13,7 @@ interface LanguageContextType {
   toggleLanguage: () => void;
 }
 
-const translations: Record<Language, Translations> = { ar, en };
+const translations: Record<Language, typeof ar> = { ar, en: en as unknown as typeof ar };
 
 const LanguageContext = createContext<LanguageContextType | null>(null);
 
@@ -38,7 +35,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Language>(getInitialLang);
 
   const dir: Direction = lang === 'ar' ? 'rtl' : 'ltr';
-  const t = translations[lang as Language];
+  const t = translations[lang];
 
   useEffect(() => {
     document.documentElement.lang = lang;

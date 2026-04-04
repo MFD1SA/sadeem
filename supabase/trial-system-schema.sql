@@ -1,5 +1,5 @@
 -- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
--- Sadeem Trial System — Schema Update
+-- Senda Trial System — Schema Update
 -- Run in Supabase SQL Editor AFTER subscriptions-schema.sql
 -- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 

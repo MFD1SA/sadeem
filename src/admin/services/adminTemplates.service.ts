@@ -1,5 +1,5 @@
 // ============================================================================
-// SADEEM Admin — Templates Service (Phase 9)
+// SENDA Admin — Templates Service (Phase 9)
 // All ops via SECURITY DEFINER RPCs with permission checks.
 // ============================================================================
 

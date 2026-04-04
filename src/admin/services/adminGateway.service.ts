@@ -1,5 +1,5 @@
 // ============================================================================
-// SADEEM Admin — Gateway Monitoring Service (Phase 7)
+// SENDA Admin — Gateway Monitoring Service (Phase 7)
 // ============================================================================
 
 import { adminSupabase } from './adminSupabase';

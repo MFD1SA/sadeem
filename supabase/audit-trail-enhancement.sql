@@ -1,5 +1,5 @@
 -- ============================================================================
--- SADEEM Audit Trail Enhancement
+-- SENDA Audit Trail Enhancement
 -- Upgrades audit_logs for full actor tracking, proper event types,
 -- and structured details (jsonb).
 -- Safe to run multiple times (idempotent).

@@ -114,7 +114,7 @@ export const qrService = {
       employee_name: employeeName || null,
       user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : null,
     });
-    if (insertErr) console.warn('[Sadeem] trackEvent insert failed:', insertErr.message);
+    if (insertErr) console.warn('[Senda] trackEvent insert failed:', insertErr.message);
     // Also increment counters on qr_configs
     try {
       if (eventType === 'scan') {

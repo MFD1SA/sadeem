@@ -1,5 +1,5 @@
 // ============================================================================
-// SADEEM — App Router
+// SENDA — App Router
 // Subscriber pages are eagerly loaded for instant sidebar navigation
 // (no per-page JS download delay). Admin pages stay lazy — they are
 // rarely visited and not part of the subscriber hot path.

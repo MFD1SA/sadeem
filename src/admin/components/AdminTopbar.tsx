@@ -1,5 +1,5 @@
 // ============================================================================
-// SADEEM Admin — Topbar (Final)
+// SENDA Admin — Topbar (Final)
 // Branding from DB. Avatar shown. No logout (sidebar only).
 // ============================================================================
 
@@ -68,6 +68,7 @@ export function AdminTopbar({ onMenuToggle }: AdminTopbarProps) {
       <div className="flex items-center gap-3 min-w-0 flex-1">
         <button
           onClick={onMenuToggle}
+          aria-label="Toggle sidebar menu"
           className="lg:hidden p-2 rounded-xl transition-colors flex-shrink-0"
           style={{ color: '#6b7280' }}
           onMouseOver={e => { (e.currentTarget as HTMLElement).style.color = '#111827'; (e.currentTarget as HTMLElement).style.background = '#f3f4f6'; }}
@@ -82,7 +83,7 @@ export function AdminTopbar({ onMenuToggle }: AdminTopbarProps) {
               {pageTitle}
             </h2>
             <span className="text-[11px] mt-0.5" style={{ color: '#9ca3af' }}>
-              {branding?.platform_name_ar || 'سديم'} · لوحة الإدارة
+              {branding?.platform_name_ar || 'سيندا'} · لوحة الإدارة
             </span>
           </div>
         )}
@@ -95,6 +96,7 @@ export function AdminTopbar({ onMenuToggle }: AdminTopbarProps) {
         <button
           onClick={() => navigate(ADMIN_ROUTES.TICKETS)}
           title="تذاكر الدعم"
+          aria-label="Support tickets"
           className="relative w-9 h-9 flex items-center justify-center rounded-xl transition-all duration-150"
           style={{ color: '#6b7280' }}
           onMouseOver={e => {
@@ -126,6 +128,8 @@ export function AdminTopbar({ onMenuToggle }: AdminTopbarProps) {
         <div className="relative" ref={menuRef}>
           <button
             onClick={() => setShowMenu(!showMenu)}
+            aria-label="User menu"
+            aria-expanded={showMenu}
             className="flex items-center gap-2.5 px-2 py-1.5 rounded-xl transition-all duration-150"
             style={{ color: '#374151' }}
             onMouseOver={e => (e.currentTarget as HTMLElement).style.background = '#f3f4f6'}
@@ -192,12 +196,14 @@ export function AdminTopbar({ onMenuToggle }: AdminTopbarProps) {
               <div className="py-1.5">
                 <button
                   onClick={() => { navigate(ADMIN_ROUTES.PROFILE); setShowMenu(false); }}
+                  aria-label="Profile"
                   className="admin-dropdown-item"
                 >
                   <UserCircle size={15} /> الملف الشخصي
                 </button>
                 <button
                   onClick={() => { navigate(ADMIN_ROUTES.SECURITY); setShowMenu(false); }}
+                  aria-label="Security"
                   className="admin-dropdown-item"
                 >
                   <Lock size={15} /> الأمان

@@ -1,4 +1,4 @@
-# سديم — Sadeem
+# سيندا — Senda
 
 AI-powered Google Reviews management platform for Saudi businesses.
 

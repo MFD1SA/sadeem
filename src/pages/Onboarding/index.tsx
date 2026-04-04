@@ -1,5 +1,5 @@
 // ============================================================================
-// SADEEM — Onboarding (5-Step)
+// SENDA — Onboarding (5-Step)
 // ============================================================================
 
 import { useState, useEffect } from 'react';
@@ -138,7 +138,7 @@ export default function Onboarding() {
         <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
           <Layers size={18} className="text-white" />
         </div>
-        <span className="text-xl font-bold text-white">سديم</span>
+        <span className="text-xl font-bold text-white">سيندا</span>
       </div>
 
       {/* Progress */}
@@ -284,7 +284,7 @@ export default function Onboarding() {
           <div className="space-y-5">
             <div>
               <h2 className="text-xl font-bold text-white mb-1">اللغة والأسلوب</h2>
-              <p className="text-sm text-slate-400">كيف تريد أن يرد سديم على تقييماتك؟</p>
+              <p className="text-sm text-slate-400">كيف تريد أن يرد سيندا على تقييماتك؟</p>
             </div>
             <div>
               <label className="block text-sm text-slate-300 mb-2">لغة الردود</label>

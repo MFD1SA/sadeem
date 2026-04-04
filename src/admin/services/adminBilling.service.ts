@@ -1,5 +1,5 @@
 // ============================================================================
-// SADEEM Admin — Billing & Finance Service (Phase 5)
+// SENDA Admin — Billing & Finance Service (Phase 5)
 // All operations via SECURITY DEFINER RPCs.
 // ============================================================================
 

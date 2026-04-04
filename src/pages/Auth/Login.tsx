@@ -1,5 +1,5 @@
 // ============================================================================
-// SADEEM — Professional Login / Sign-Up / Forgot-Password Page
+// SENDA — Professional Login / Sign-Up / Forgot-Password Page
 // Split-panel design: branding panel (left/top) + form panel (right/bottom).
 // Logo is configurable from Admin → Settings → Branding.
 // ============================================================================
@@ -88,8 +88,11 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
   const [emailTouched, setEmailTouched] = useState(false);
   const emailDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Load admin branding
-  useEffect(() => { getBranding().then(setBranding).catch(() => {}); }, []);
+  // Load admin branding + set page title
+  useEffect(() => {
+    document.title = isAr ? 'سيندا — تسجيل الدخول' : 'SENDA — Sign In';
+    getBranding().then(setBranding).catch(() => {});
+  }, [isAr]);
 
   // Show confirmation_failed error from URL param
   useEffect(() => {
@@ -132,8 +135,8 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
   // ── Shared values ──────────────────────────────────────────────────────────
   const logoIconUrl  = branding?.logo_icon_url || '';
   const logoFullUrl  = branding?.logo_full_url || '';
-  const platformNameAr = branding?.platform_name_ar || 'سديم';
-  const platformNameEn = branding?.platform_name_en || 'SADEEM';
+  const platformNameAr = branding?.platform_name_ar || 'سيندا';
+  const platformNameEn = branding?.platform_name_en || 'SENDA';
   const tagline = branding?.tagline || t.auth.platformDesc;
 
   const isValidEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
@@ -218,8 +221,8 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
       {/* Logo */}
       <div className="relative z-10 flex items-center gap-3">
         <img
-          src="/sadeem-logo.png"
-          alt="SADEEM"
+          src="/senda-logo.png"
+          alt="SENDA"
           style={{ height: 36, width: 'auto', filter: 'brightness(0) invert(1)', opacity: 0.92 }}
           onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
         />

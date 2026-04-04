@@ -24,7 +24,7 @@ const clientOptions = {
 
 try {
   if (!supabaseUrl || !supabaseAnonKey) {
-    console.warn('[Sadeem] Supabase environment variables not configured. Auth features will not work.');
+    console.warn('[Senda] Supabase environment variables not configured. Auth features will not work.');
   }
 
   supabase = createClient(
@@ -33,7 +33,7 @@ try {
     clientOptions
   );
 } catch (err) {
-  console.error('[Sadeem] Failed to initialize Supabase client:', err);
+  console.error('[Senda] Failed to initialize Supabase client:', err);
 
   supabase = createClient(
     'https://placeholder.supabase.co',

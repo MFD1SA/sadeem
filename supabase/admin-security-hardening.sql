@@ -1,5 +1,5 @@
 -- ============================================================================
--- SADEEM Admin — Security Hardening (Final Patch)
+-- SENDA Admin — Security Hardening (Final Patch)
 -- Run AFTER admin-foundation.sql and admin-seed.sql
 --
 -- This migration:

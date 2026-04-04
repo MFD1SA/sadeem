@@ -19,6 +19,10 @@ let _cache: { stats: DashboardStats; criticalReviews: DbReview[]; branches: DbBr
 export default function Dashboard() {
   const { t, lang } = useLanguage();
   const { organization, profile, isLoading: authLoading } = useAuth();
+
+  useEffect(() => {
+    document.title = lang === 'ar' ? 'سيندا — لوحة التحكم' : 'SENDA — Dashboard';
+  }, [lang]);
   const { subscription, trial } = usePlan();
 
   const [stats, setStats] = useState<DashboardStats | null>(_cache?.stats ?? null);
@@ -57,8 +61,7 @@ export default function Dashboard() {
   if (error) return <ErrorState message={error} onRetry={loadData} />;
   if (!stats) return null;
 
-  const isAr = lang === 'ar';
-  const greeting = t.dashboardExt?.greeting || (isAr ? 'مرحباً' : 'Welcome back');
+  const greeting = t.dashboardExt.greeting;
   const name = profile?.full_name?.split(' ')[0] || '';
   const branchMap: Record<string, string> = {};
   branches.forEach(b => { branchMap[b.id] = b.internal_name; });
@@ -105,7 +108,7 @@ export default function Dashboard() {
         <div>
           <h1 className="page-title">{greeting}{name ? `, ${name}` : ''}</h1>
           <p className="page-subtitle">
-            {isAr ? 'إليك ملخص نشاط منصتك اليوم' : "Here's your platform overview for today"}
+            {t.dashboardExt.platformOverview}
           </p>
         </div>
         {subscription && (
@@ -118,7 +121,7 @@ export default function Dashboard() {
             {subscription.plan?.toUpperCase()}
             {trial.isTrial && (
               <span className="font-normal opacity-70">
-                · {isAr ? `${trial.hoursRemaining}س` : `${trial.hoursRemaining}h`}
+                · {trial.hoursRemaining}{t.dashboardExt.trialHoursSuffix}
               </span>
             )}
           </div>
@@ -154,7 +157,7 @@ export default function Dashboard() {
             <div className="min-w-0 flex-1">
               <div className="text-[13px] font-semibold text-content-primary truncate">{label}</div>
               {count !== null && (
-                <div className="text-[11px] text-content-tertiary font-medium">{count} {isAr ? 'عناصر' : 'items'}</div>
+                <div className="text-[11px] text-content-tertiary font-medium">{count} {t.dashboardExt.items}</div>
               )}
             </div>
             <ArrowUpRight size={14} className="text-content-tertiary opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
@@ -169,7 +172,7 @@ export default function Dashboard() {
           <div className="card-header">
             <div className="flex items-center gap-2">
               <Clock size={14} className="text-content-tertiary" />
-              <h3>{isAr ? 'التقييمات الحديثة' : 'Recent Reviews'}</h3>
+              <h3>{t.dashboardExt.recentReviews}</h3>
             </div>
             {criticalReviews.length > 0 && (
               <span className="badge badge-danger">{criticalReviews.length}</span>
@@ -180,8 +183,8 @@ export default function Dashboard() {
               <div className="empty-state-icon bg-emerald-50">
                 <Star size={22} className="text-emerald-500" />
               </div>
-              <div className="empty-state-title">{isAr ? 'ممتاز! لا توجد تقييمات تحتاج انتباهاً' : 'All clear! No critical reviews'}</div>
-              <div className="empty-state-text">{isAr ? 'جميع التقييمات في حالة جيدة' : 'All reviews are in good shape'}</div>
+              <div className="empty-state-title">{t.dashboardExt.allClearTitle}</div>
+              <div className="empty-state-text">{t.dashboardExt.allClearText}</div>
             </div>
           ) : (
             <div className="divide-y divide-border/60">
@@ -210,7 +213,7 @@ export default function Dashboard() {
           {criticalReviews.length > 5 && (
             <div className="px-5 py-3 border-t border-border">
               <Link to="/dashboard/reviews" className="text-xs text-brand-600 hover:text-brand-700 font-semibold flex items-center gap-1 transition-colors">
-                {isAr ? `عرض جميع التقييمات (${criticalReviews.length})` : `View all reviews (${criticalReviews.length})`}
+                {`${t.dashboardExt.viewAllReviews} (${criticalReviews.length})`}
                 <ArrowUpRight size={12} />
               </Link>
             </div>
@@ -222,7 +225,7 @@ export default function Dashboard() {
           {/* AI usage card */}
           <div className="card card-body">
             <div className="flex items-center justify-between mb-4">
-              <div className="text-[13px] font-semibold text-content-primary">{isAr ? 'استخدام الذكاء الاصطناعي' : 'AI Usage'}</div>
+              <div className="text-[13px] font-semibold text-content-primary">{t.dashboardExt.aiUsage}</div>
               <div className="w-8 h-8 rounded-lg bg-brand-50 flex items-center justify-center">
                 <Zap size={14} className="text-brand-500" />
               </div>
@@ -230,8 +233,8 @@ export default function Dashboard() {
             <div className="text-3xl font-bold text-content-primary">{trial.aiUsed.toLocaleString('en-US')}</div>
             <div className="text-[11px] text-content-tertiary mt-1 font-medium">
               {trial.aiMax >= 999999
-                ? (isAr ? 'ردود غير محدودة' : 'Unlimited replies')
-                : (isAr ? `من ${trial.aiMax.toLocaleString('en-US')} رد متاح` : `of ${trial.aiMax.toLocaleString('en-US')} replies available`)}
+                ? t.dashboardExt.unlimitedReplies
+                : `${t.dashboardExt.of} ${trial.aiMax.toLocaleString('en-US')} ${t.dashboardExt.repliesAvailable}`}
             </div>
             {trial.aiMax > 0 && trial.aiMax < 999999 && (
               <div className="mt-3 h-1.5 rounded-full bg-gray-100 overflow-hidden">
@@ -249,7 +252,7 @@ export default function Dashboard() {
           {/* Branches list card */}
           <div className="card card-body">
             <div className="flex items-center justify-between mb-4">
-              <div className="text-[13px] font-semibold text-content-primary">{isAr ? 'الفروع' : 'Branches'}</div>
+              <div className="text-[13px] font-semibold text-content-primary">{t.dashboardExt.totalBranches}</div>
               <span className="badge badge-neutral">{branches.length}</span>
             </div>
             <div className="space-y-2.5">
@@ -265,12 +268,12 @@ export default function Dashboard() {
                 </div>
               ))}
               {branches.length === 0 && (
-                <p className="text-xs text-content-tertiary">{isAr ? 'لا توجد فروع بعد' : 'No branches yet'}</p>
+                <p className="text-xs text-content-tertiary">{t.dashboardExt.noBranches}</p>
               )}
             </div>
             {branches.length > 4 && (
               <Link to="/dashboard/branches" className="text-xs text-brand-600 hover:text-brand-700 font-semibold flex items-center gap-1 mt-3 transition-colors">
-                {isAr ? 'عرض الكل' : 'View all'}
+                {t.dashboardExt.viewAll}
                 <ArrowUpRight size={11} />
               </Link>
             )}

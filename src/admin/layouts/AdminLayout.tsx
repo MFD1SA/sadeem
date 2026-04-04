@@ -1,5 +1,5 @@
 // ============================================================================
-// SADEEM Admin — Layout
+// SENDA Admin — Layout
 // Wraps AdminAuthProvider so it only affects admin routes.
 // Does NOT touch main.tsx or subscriber's AuthProvider.
 // ============================================================================

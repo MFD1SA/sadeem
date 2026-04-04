@@ -1,5 +1,5 @@
 -- ============================================================================
--- SADEEM Admin — Phase 8: Settings Persistence + Tickets
+-- SENDA Admin — Phase 8: Settings Persistence + Tickets
 -- Run AFTER admin-phase7-payment-gateway.sql
 -- ============================================================================
 

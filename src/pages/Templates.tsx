@@ -351,10 +351,10 @@ export default function Templates() {
                   {/* Actions — only for custom templates */}
                   {!tpl.isBuiltIn && tpl.original && (
                     <div className="flex items-center justify-end gap-1 pt-1">
-                      <button className="btn-icon" onClick={() => openEdit(tpl.original!)} title={t.common.edit}>
+                      <button className="btn-icon" onClick={() => openEdit(tpl.original!)} title={t.common.edit} aria-label={`${t.common.edit} ${tpl.name}`}>
                         <Edit3 size={14} />
                       </button>
-                      <button className="btn-icon" onClick={() => handleDelete(tpl.id)} title={t.common.delete}>
+                      <button className="btn-icon" onClick={() => handleDelete(tpl.id)} title={t.common.delete} aria-label={`${t.common.delete} ${tpl.name}`}>
                         <Trash2 size={14} className="text-red-500" />
                       </button>
                     </div>
@@ -381,17 +381,17 @@ export default function Templates() {
         >
           <div className="space-y-4">
             <div>
-              <label className="form-label">{t.templatesPage.name} *</label>
-              <input className="form-input" value={form.name} onChange={(e: ChangeEvent<HTMLInputElement>) => setForm((p: TemplateForm) => ({ ...p, name: e.target.value }))} />
+              <label htmlFor="template-name" className="form-label">{t.templatesPage.name} *</label>
+              <input id="template-name" className="form-input" value={form.name} onChange={(e: ChangeEvent<HTMLInputElement>) => setForm((p: TemplateForm) => ({ ...p, name: e.target.value }))} />
             </div>
             <div>
-              <label className="form-label">{t.templatesPage.body} *</label>
-              <textarea className="form-textarea" rows={4} value={form.body} onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setForm((p: TemplateForm) => ({ ...p, body: e.target.value }))} />
+              <label htmlFor="template-body" className="form-label">{t.templatesPage.body} *</label>
+              <textarea id="template-body" className="form-textarea" rows={4} value={form.body} onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setForm((p: TemplateForm) => ({ ...p, body: e.target.value }))} />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="form-label">{t.templatesPage.category}</label>
-                <select className="form-select" value={form.category} onChange={(e: ChangeEvent<HTMLSelectElement>) => setForm((p: TemplateForm) => ({ ...p, category: e.target.value }))}>
+                <label htmlFor="template-category" className="form-label">{t.templatesPage.category}</label>
+                <select id="template-category" className="form-select" aria-label={t.templatesPage.category} value={form.category} onChange={(e: ChangeEvent<HTMLSelectElement>) => setForm((p: TemplateForm) => ({ ...p, category: e.target.value }))}>
                   <option value="positive">{t.templatesPage.positive}</option>
                   <option value="negative">{t.templatesPage.negative}</option>
                   <option value="neutral">{t.templatesPage.neutral}</option>
@@ -399,8 +399,8 @@ export default function Templates() {
                 </select>
               </div>
               <div>
-                <label className="form-label">{lang === 'ar' ? 'اللغة' : 'Language'}</label>
-                <select className="form-select" value={form.language} onChange={(e: ChangeEvent<HTMLSelectElement>) => setForm((p: TemplateForm) => ({ ...p, language: e.target.value as 'ar' | 'en' | 'any' }))}>
+                <label htmlFor="template-language" className="form-label">{lang === 'ar' ? 'اللغة' : 'Language'}</label>
+                <select id="template-language" className="form-select" aria-label={lang === 'ar' ? 'اللغة' : 'Language'} value={form.language} onChange={(e: ChangeEvent<HTMLSelectElement>) => setForm((p: TemplateForm) => ({ ...p, language: e.target.value as 'ar' | 'en' | 'any' }))}>
                   <option value="ar">{lang === 'ar' ? 'عربي' : 'Arabic'}</option>
                   <option value="en">{lang === 'ar' ? 'إنجليزي' : 'English'}</option>
                   <option value="any">{lang === 'ar' ? 'الكل' : 'Any'}</option>
@@ -408,10 +408,10 @@ export default function Templates() {
               </div>
             </div>
             <div>
-              <label className="form-label">{t.templatesPage.ratingRange}</label>
+              <label className="form-label" id="template-rating-range-label">{t.templatesPage.ratingRange}</label>
               <div className="flex gap-2">
-                <input className="form-input" type="number" min={1} max={5} value={form.rating_min} onChange={(e: ChangeEvent<HTMLInputElement>) => setForm((p: TemplateForm) => ({ ...p, rating_min: +e.target.value }))} />
-                <input className="form-input" type="number" min={1} max={5} value={form.rating_max} onChange={(e: ChangeEvent<HTMLInputElement>) => setForm((p: TemplateForm) => ({ ...p, rating_max: +e.target.value }))} />
+                <input className="form-input" type="number" min={1} max={5} value={form.rating_min} aria-label={lang === 'ar' ? 'الحد الأدنى للتقييم' : 'Minimum rating'} onChange={(e: ChangeEvent<HTMLInputElement>) => setForm((p: TemplateForm) => ({ ...p, rating_min: +e.target.value }))} />
+                <input className="form-input" type="number" min={1} max={5} value={form.rating_max} aria-label={lang === 'ar' ? 'الحد الأقصى للتقييم' : 'Maximum rating'} onChange={(e: ChangeEvent<HTMLInputElement>) => setForm((p: TemplateForm) => ({ ...p, rating_max: +e.target.value }))} />
               </div>
             </div>
           </div>

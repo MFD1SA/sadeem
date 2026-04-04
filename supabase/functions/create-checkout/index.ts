@@ -1,5 +1,5 @@
 // ============================================================================
-// SADEEM — Create Checkout Session Edge Function
+// SENDA — Create Checkout Session Edge Function
 //
 // Called by subscriber frontend with JWT.
 // Creates a payment checkout session with the configured gateway.
@@ -93,7 +93,7 @@ Deno.serve(async (req) => {
     if (provider === 'stripe') {
       return await createStripeCheckout({
         organizationId: organization_id,
-        orgName: org?.name || 'Sadeem Customer',
+        orgName: org?.name || 'Senda Customer',
         plan,
         priceAmount: price * 100, // SAR to halalas
         successUrl,
@@ -104,7 +104,7 @@ Deno.serve(async (req) => {
     if (provider === 'moyasar') {
       return await createMoyasarCheckout({
         organizationId: organization_id,
-        orgName: org?.name || 'Sadeem Customer',
+        orgName: org?.name || 'Senda Customer',
         plan,
         priceAmount: price * 100, // SAR to halalas for Moyasar
         successUrl,
@@ -142,7 +142,7 @@ async function createStripeCheckout(params: {
       'mode': 'subscription',
       'currency': 'sar',
       'line_items[0][price_data][currency]': 'sar',
-      'line_items[0][price_data][product_data][name]': `Sadeem ${params.plan} Plan`,
+      'line_items[0][price_data][product_data][name]': `Senda ${params.plan} Plan`,
       'line_items[0][price_data][unit_amount]': String(params.priceAmount),
       'line_items[0][price_data][recurring][interval]': 'month',
       'line_items[0][quantity]': '1',
@@ -190,7 +190,7 @@ async function createMoyasarCheckout(params: {
     body: JSON.stringify({
       amount: params.priceAmount,
       currency: 'SAR',
-      description: `Sadeem ${params.plan} Plan - ${params.orgName}`,
+      description: `Senda ${params.plan} Plan - ${params.orgName}`,
       callback_url: params.successUrl,
       metadata: {
         organization_id: params.organizationId,

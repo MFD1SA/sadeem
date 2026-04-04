@@ -1,5 +1,5 @@
 -- ============================================================================
--- SADEEM Admin — Phase 3: Role & Permission Management RPCs
+-- SENDA Admin — Phase 3: Role & Permission Management RPCs
 -- Run AFTER admin-phase2.5-auth-hardening.sql
 --
 -- RPCs:

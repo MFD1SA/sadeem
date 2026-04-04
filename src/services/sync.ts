@@ -233,7 +233,7 @@ export const reviewSyncService = {
       .eq('id', draft.review_id)
       .single();
 
-    if (revErr && revErr.code !== 'PGRST116') console.warn('[Sadeem] sendReplyToGoogle review lookup failed:', revErr.message);
+    if (revErr && revErr.code !== 'PGRST116') console.warn('[Senda] sendReplyToGoogle review lookup failed:', revErr.message);
     const review = reviewData as ReviewRow | null;
 
     // Post to Google FIRST — if it fails, DB stays unchanged so user can retry
@@ -309,7 +309,7 @@ export const reviewSyncService = {
         .eq('id', draft.review_id)
         .single();
 
-      if (revErr && revErr.code !== 'PGRST116') console.warn('[Sadeem] autoSend review lookup failed:', revErr.message);
+      if (revErr && revErr.code !== 'PGRST116') console.warn('[Senda] autoSend review lookup failed:', revErr.message);
       const review = reviewData as ReviewRow | null;
       if (!review) continue;
       if (review.is_followup) continue;

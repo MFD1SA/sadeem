@@ -1,5 +1,5 @@
 // ============================================================================
-// SADEEM Admin — Auth Service (Final Hardened)
+// SENDA Admin — Auth Service (Final Hardened)
 //
 // SECURITY MODEL:
 // 1. signInWithPassword() FIRST → Supabase Auth verifies bcrypt server-side

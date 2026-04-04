@@ -1,5 +1,5 @@
 -- ============================================================================
--- SADEEM Admin — Seed Data
+-- SENDA Admin — Seed Data
 -- Run AFTER admin-foundation.sql
 -- Seeds: roles, permissions, role_permissions, first super_admin
 -- ============================================================================

@@ -1,5 +1,5 @@
 // ============================================================================
-// SADEEM Admin — AdminSelect
+// SENDA Admin — AdminSelect
 // Custom white-first select: hides native arrow, injects chevron icon.
 // Drop-in replacement for all native <select> elements in admin pages.
 // ============================================================================

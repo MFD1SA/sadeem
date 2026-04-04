@@ -1,4 +1,4 @@
--- Sadeem Notifications — Run in Supabase SQL Editor
+-- Senda Notifications — Run in Supabase SQL Editor
 
 create table if not exists public.notifications (
   id uuid primary key default uuid_generate_v4(),

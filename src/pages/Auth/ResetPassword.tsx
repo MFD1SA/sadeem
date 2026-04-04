@@ -1,5 +1,5 @@
 // ============================================================================
-// SADEEM — Reset Password Page
+// SENDA — Reset Password Page
 // Reached after clicking the password-reset email link.
 // Supabase verifyOtp (type=recovery) in AuthCallback creates the session,
 // then redirects here. The user enters a new password and it is applied.
@@ -21,7 +21,7 @@ function calcPasswordStrength(pw: string): number {
 }
 
 export default function ResetPassword() {
-  const { lang } = useLanguage();
+  const { t, lang } = useLanguage();
   const isAr = lang === 'ar';
 
   const [password, setPassword]   = useState('');
@@ -31,7 +31,7 @@ export default function ResetPassword() {
   const [loading, setLoading]     = useState(false);
   const [pwStrength, setPwStrength] = useState(0);
 
-  const pwLabels    = isAr ? ['', 'ضعيفة', 'متوسطة', 'قوية'] : ['', 'Weak', 'Medium', 'Strong'];
+  const pwLabels    = ['', t.auth.weak, t.auth.medium, t.auth.strong];
   const pwColors    = ['', 'bg-red-500', 'bg-amber-500', 'bg-emerald-500'];
   const pwTextColors = ['', 'text-red-600', 'text-amber-600', 'text-emerald-600'];
 
@@ -40,11 +40,11 @@ export default function ResetPassword() {
     setError('');
 
     if (password.length < 6) {
-      setError(isAr ? 'كلمة المرور يجب أن تكون 6 أحرف على الأقل.' : 'Password must be at least 6 characters.');
+      setError(t.auth.passwordMinLength);
       return;
     }
     if (password !== confirm) {
-      setError(isAr ? 'كلمتا المرور غير متطابقتين.' : 'Passwords do not match.');
+      setError(t.settingsPage.passwordMismatch);
       return;
     }
 
@@ -56,7 +56,7 @@ export default function ResetPassword() {
       // Redirect to dashboard after short delay
       setTimeout(() => { window.location.href = '/dashboard'; }, 2000);
     } catch (err: unknown) {
-      setError((err as Error).message || (isAr ? 'حدث خطأ. يرجى المحاولة مجدداً.' : 'An error occurred. Please try again.'));
+      setError((err as Error).message || t.auth.errorGeneric);
     } finally {
       setLoading(false);
     }
@@ -72,10 +72,10 @@ export default function ResetPassword() {
             <span className="text-white text-2xl font-bold">س</span>
           </div>
           <h1 className="text-xl font-bold text-content-primary">
-            {isAr ? 'تعيين كلمة مرور جديدة' : 'Set a new password'}
+            {t.auth.setNewPassword}
           </h1>
           <p className="text-xs text-content-tertiary mt-1 text-center">
-            {isAr ? 'أدخل كلمة المرور الجديدة لحسابك' : 'Enter a new password for your account'}
+            {t.auth.setNewPasswordDesc}
           </p>
         </div>
 
@@ -84,10 +84,10 @@ export default function ResetPassword() {
           <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm rounded-xl p-4 text-center">
             <CheckCircle2 size={32} className="mx-auto mb-2" />
             <p className="font-semibold">
-              {isAr ? 'تم تغيير كلمة المرور بنجاح! ✅' : 'Password changed successfully! ✅'}
+              {t.auth.passwordChangedSuccess} ✅
             </p>
             <p className="text-xs mt-1 text-emerald-600">
-              {isAr ? 'جاري توجيهك إلى لوحة التحكم…' : 'Redirecting to dashboard…'}
+              {t.auth.redirectingToDashboard}
             </p>
           </div>
         ) : (
@@ -100,7 +100,7 @@ export default function ResetPassword() {
               {/* New password */}
               <div>
                 <label className="block text-xs font-medium text-content-secondary mb-1.5">
-                  {isAr ? 'كلمة المرور الجديدة' : 'New password'}
+                  {t.auth.newPasswordLabel}
                 </label>
                 <input
                   className="form-input"
@@ -127,7 +127,7 @@ export default function ResetPassword() {
                       ))}
                     </div>
                     <p className={`text-[11px] font-medium ${pwTextColors[pwStrength]}`}>
-                      {isAr ? `قوة كلمة المرور: ${pwLabels[pwStrength]}` : `Strength: ${pwLabels[pwStrength]}`}
+                      {`${t.auth.strengthLabel}: ${pwLabels[pwStrength]}`}
                     </p>
                   </div>
                 )}
@@ -136,7 +136,7 @@ export default function ResetPassword() {
               {/* Confirm password */}
               <div>
                 <label className="block text-xs font-medium text-content-secondary mb-1.5">
-                  {isAr ? 'تأكيد كلمة المرور' : 'Confirm password'}
+                  {t.auth.confirmPasswordLabel}
                 </label>
                 <input
                   className={`form-input ${confirm && password !== confirm ? 'border-red-400' : ''}`}
@@ -150,7 +150,7 @@ export default function ResetPassword() {
                 />
                 {confirm && password !== confirm && (
                   <p className="text-[11px] text-red-500 mt-1">
-                    {isAr ? 'كلمتا المرور غير متطابقتين' : 'Passwords do not match'}
+                    {t.settingsPage.passwordMismatch}
                   </p>
                 )}
               </div>
@@ -160,9 +160,7 @@ export default function ResetPassword() {
                 disabled={loading || (!!confirm && password !== confirm)}
                 className="btn btn-primary w-full justify-center py-2.5"
               >
-                {loading
-                  ? (isAr ? 'جاري الحفظ…' : 'Saving…')
-                  : (isAr ? 'حفظ كلمة المرور الجديدة' : 'Save new password')}
+                {loading ? t.auth.savingPassword : t.auth.saveNewPassword}
               </button>
             </form>
           </div>

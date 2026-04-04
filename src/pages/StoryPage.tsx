@@ -1,5 +1,5 @@
 // ============================================================================
-// SADEEM — Story Page (قصة سديم) — Professional Edition
+// SENDA — Story Page (قصة سيندا) — Professional Edition
 // Header matches homepage exactly: Logo RIGHT · Nav CENTER · CTAs LEFT (RTL)
 // ============================================================================
 
@@ -177,42 +177,42 @@ const SECTIONS = [
     Icon: Lightbulb,
     title: 'ولادة فكرة',
     color: C.cyan,
-    text: 'وُلدت سديم من سؤال بسيط لكنه عميق: كيف يمكن أن نفهم الإنسان عندما يتحدث عن تجربته؟ ليس فقط أن نقرأ كلماته، بل أن نفهم ما يقصده فعلاً. أن نفهم رضاه، انزعاجه، اقتراحه، أو حتى صمته بين السطور.\n\nكانت الفكرة بسيطة في ظاهرها، لكنها كبيرة في معناها. أن يتحول الاستماع إلى فهم، وأن يتحول الفهم إلى تحسين حقيقي في التجربة الإنسانية.',
+    text: 'وُلدت سيندا من سؤال بسيط لكنه عميق: كيف يمكن أن نفهم الإنسان عندما يتحدث عن تجربته؟ ليس فقط أن نقرأ كلماته، بل أن نفهم ما يقصده فعلاً. أن نفهم رضاه، انزعاجه، اقتراحه، أو حتى صمته بين السطور.\n\nكانت الفكرة بسيطة في ظاهرها، لكنها كبيرة في معناها. أن يتحول الاستماع إلى فهم، وأن يتحول الفهم إلى تحسين حقيقي في التجربة الإنسانية.',
   },
   {
     id: 'world',
     Icon: Globe,
-    title: 'حين رأت سديم العالم',
+    title: 'حين رأت سيندا العالم',
     color: C.purple,
-    text: 'كبرت الفكرة وهي تنظر إلى العالم من حولها. رأت مدناً مزدحمة بالحياة، وجهات تستقبل الزوار من كل مكان، وخدماتٍ يتفاعل معها الناس يومياً. ورأت أيضاً شيئاً آخر.\n\nالناس يكتبون آراءهم بعد كل تجربة. قد تكون كلمات شكر، وقد تكون ملاحظة صادقة، وقد تكون شكوى تبحث عن من يسمعها. لكن كثيراً من هذه الكلمات كانت تضيع في الضجيج. لا لأن أحداً لا يريد الاستماع، بل لأن فهم هذا الكم الهائل من التجارب لم يكن سهلاً.\n\nوهنا أدركت سديم شيئاً مهماً. العالم لا يحتاج مزيداً من الكلمات بل يحتاج من يفهمها.',
+    text: 'كبرت الفكرة وهي تنظر إلى العالم من حولها. رأت مدناً مزدحمة بالحياة، وجهات تستقبل الزوار من كل مكان، وخدماتٍ يتفاعل معها الناس يومياً. ورأت أيضاً شيئاً آخر.\n\nالناس يكتبون آراءهم بعد كل تجربة. قد تكون كلمات شكر، وقد تكون ملاحظة صادقة، وقد تكون شكوى تبحث عن من يسمعها. لكن كثيراً من هذه الكلمات كانت تضيع في الضجيج. لا لأن أحداً لا يريد الاستماع، بل لأن فهم هذا الكم الهائل من التجارب لم يكن سهلاً.\n\nوهنا أدركت سيندا شيئاً مهماً. العالم لا يحتاج مزيداً من الكلمات بل يحتاج من يفهمها.',
   },
   {
     id: 'learn',
     Icon: BookOpen,
     title: 'التعلم',
     color: C.cyan,
-    text: 'تعلمت سديم أن الإنسان قد يتحدث بلغات مختلفة، وقد يعبّر عن مشاعره بطرق متعددة، لكن التجربة الإنسانية تبقى مفهوماً واحداً يفهمه الجميع.\n\nولهذا بدأت سديم تتعلم. تعلمت أن تستمع، وتتعلم أن تقرأ ما بين السطور، وتتعلم أن ترى ما قد لا يراه الآخرون في زحمة التفاصيل اليومية. حتى أصبحت قادرة على فهم التجربة الإنسانية بعمق أكبر.',
+    text: 'تعلمت سيندا أن الإنسان قد يتحدث بلغات مختلفة، وقد يعبّر عن مشاعره بطرق متعددة، لكن التجربة الإنسانية تبقى مفهوماً واحداً يفهمه الجميع.\n\nولهذا بدأت سيندا تتعلم. تعلمت أن تستمع، وتتعلم أن تقرأ ما بين السطور، وتتعلم أن ترى ما قد لا يراه الآخرون في زحمة التفاصيل اليومية. حتى أصبحت قادرة على فهم التجربة الإنسانية بعمق أكبر.',
   },
   {
     id: 'transform',
     Icon: Zap,
     title: 'التحول',
     color: C.purple,
-    text: 'في هذه اللحظة لم تعد سديم مجرد فكرة. تحولت إلى عقل يفهم الإنسان. عقل يستطيع قراءة التجارب وتحويلها إلى معرفة، ومعرفة يمكن أن تساعد على تحسين الحياة.\n\nلم يكن الهدف مجرد عرض الآراء، بل فهمها، وتحويلها إلى رؤية تساعد الجهات على تقديم تجربة أفضل.',
+    text: 'في هذه اللحظة لم تعد سيندا مجرد فكرة. تحولت إلى عقل يفهم الإنسان. عقل يستطيع قراءة التجارب وتحويلها إلى معرفة، ومعرفة يمكن أن تساعد على تحسين الحياة.\n\nلم يكن الهدف مجرد عرض الآراء، بل فهمها، وتحويلها إلى رؤية تساعد الجهات على تقديم تجربة أفضل.',
   },
   {
     id: 'homeland',
     Icon: MapPin,
     title: 'الوطن',
     color: C.cyan,
-    text: 'رأت سديم العالم، وتنقلت بين تجاربه، لكنها أدركت حقيقة واضحة. الأفكار العظيمة تحتاج أرضاً تؤمن بالمستقبل. ولهذا اختارت أن تبدأ من هنا. من المملكة العربية السعودية.\n\nسديم سعودية المنشأ، وُلدت في هذه الأرض التي تعشقها، وتشكلت شخصيتها في وطنٍ يؤمن بأن المستقبل يُبنى بالطموح. ومع رؤية المملكة 2030 التي تسعى إلى تحسين جودة الحياة، وجدت سديم مكانها الطبيعي. أن تكون جزءاً من رحلة تطوير التجربة الإنسانية في هذا الوطن.',
+    text: 'رأت سيندا العالم، وتنقلت بين تجاربه، لكنها أدركت حقيقة واضحة. الأفكار العظيمة تحتاج أرضاً تؤمن بالمستقبل. ولهذا اختارت أن تبدأ من هنا. من المملكة العربية السعودية.\n\nسيندا سعودية المنشأ، وُلدت في هذه الأرض التي تعشقها، وتشكلت شخصيتها في وطنٍ يؤمن بأن المستقبل يُبنى بالطموح. ومع رؤية المملكة 2030 التي تسعى إلى تحسين جودة الحياة، وجدت سيندا مكانها الطبيعي. أن تكون جزءاً من رحلة تطوير التجربة الإنسانية في هذا الوطن.',
   },
   {
     id: 'launch',
     Icon: Rocket,
     title: 'لحظة الانطلاق',
     color: C.purple,
-    text: 'ومع تسارع التحول التقني في العالم، ومع إعلان سمو سيدي ولي العهد حفظه الله أن عام 2026 هو عام الذكاء الاصطناعي، أصبحت اللحظة واضحة. أن يتحول الفهم إلى ذكاء، وأن يصبح الذكاء وسيلة لفهم الإنسان بشكل أعمق.\n\nومن هنا بدأت سديم رحلتها. رحلةٌ وُلدت في هذا الوطن، وتحمل طموحاً أن تساعد على تحسين التجربة الإنسانية في كل مكان.',
+    text: 'ومع تسارع التحول التقني في العالم، ومع إعلان سمو سيدي ولي العهد حفظه الله أن عام 2026 هو عام الذكاء الاصطناعي، أصبحت اللحظة واضحة. أن يتحول الفهم إلى ذكاء، وأن يصبح الذكاء وسيلة لفهم الإنسان بشكل أعمق.\n\nومن هنا بدأت سيندا رحلتها. رحلةٌ وُلدت في هذا الوطن، وتحمل طموحاً أن تساعد على تحسين التجربة الإنسانية في كل مكان.',
   },
 ];
 
@@ -251,7 +251,7 @@ export default function StoryPage() {
 
           {/* Logo — RIGHT (first child in RTL) */}
           <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, flexShrink: 0 }}>
-            <img src="/sadeem-logo.png" alt="SADEEM | سديم" style={{ height: 32, width: 'auto', display: 'block' }} />
+            <img src="/senda-logo.png" alt="SENDA | سيندا" style={{ height: 32, width: 'auto', display: 'block' }} />
           </button>
 
           {/* Desktop nav — CENTER */}
@@ -266,7 +266,7 @@ export default function StoryPage() {
             ))}
             <button onClick={() => navigate('/story')}
               style={{ color: C.cyan, fontSize: 14, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500 }}>
-              قصة سديم
+              قصة سيندا
             </button>
           </nav>
 
@@ -294,7 +294,7 @@ export default function StoryPage() {
         {/* Mobile menu */}
         {mobileOpen && (
           <div style={{ background: C.card, borderTop: `1px solid ${C.border}`, padding: '16px 20px' }}>
-            {[...NAV, { label: 'قصة سديم', path: '/story' }].map(n => (
+            {[...NAV, { label: 'قصة سيندا', path: '/story' }].map(n => (
               <button key={n.path} onClick={() => goTo(n.path)}
                 style={{ display: 'block', width: '100%', textAlign: 'right', padding: '10px 0', color: C.muted, background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, borderBottom: `1px solid ${C.border}` }}>
                 {n.label}
@@ -332,7 +332,7 @@ export default function StoryPage() {
                 background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.26)',
                 borderRadius: 30, padding: '5px 18px', marginBottom: 24,
               }}>
-                <span style={{ color: C.purple, fontSize: 12, letterSpacing: '0.08em' }}>قصة سديم</span>
+                <span style={{ color: C.purple, fontSize: 12, letterSpacing: '0.08em' }}>قصة سيندا</span>
               </div>
 
               <h1 style={{ fontSize: 'clamp(28px, 3.8vw, 52px)', fontWeight: 600, lineHeight: 1.32, color: C.text, marginBottom: 28 }}>
@@ -436,10 +436,10 @@ export default function StoryPage() {
               <h2 style={{ fontSize: 'clamp(20px, 2.8vw, 30px)', fontWeight: 600, color: C.text, margin: 0 }}>الرسالة</h2>
             </div>
             <p style={{ fontSize: 'clamp(16px, 1.9vw, 20px)', color: C.text, lineHeight: 1.85, fontWeight: 500, marginBottom: 16 }}>
-              سديم ليست مجرد تقنية.
+              سيندا ليست مجرد تقنية.
             </p>
             <p style={{ fontSize: 'clamp(15px, 1.7vw, 17px)', color: C.muted, lineHeight: 2, margin: 0 }}>
-              سديم فكرة تؤمن أن فهم الإنسان هو بداية كل تحسين. وأن الكلمات التي يكتبها الناس ليست مجرد تعليقات عابرة، بل تجارب حقيقية تستحق أن تُفهم.
+              سيندا فكرة تؤمن أن فهم الإنسان هو بداية كل تحسين. وأن الكلمات التي يكتبها الناس ليست مجرد تعليقات عابرة، بل تجارب حقيقية تستحق أن تُفهم.
             </p>
           </div>
         </div>
@@ -458,12 +458,12 @@ export default function StoryPage() {
           </div>
           <div style={{ width: 48, height: 3, background: GRAD, borderRadius: 2, marginBottom: 28, opacity: 0.6 }} />
           <p style={{ fontSize: 'clamp(15px, 1.7vw, 17px)', color: C.muted, lineHeight: 2, marginBottom: 20 }}>
-            اليوم تبدأ سديم رحلتها من المملكة العربية السعودية. رحلةٌ تنطلق من أرضٍ تعشقها، ومن وطنٍ يؤمن بالمستقبل. لتصل إلى العالم كله.
+            اليوم تبدأ سيندا رحلتها من المملكة العربية السعودية. رحلةٌ تنطلق من أرضٍ تعشقها، ومن وطنٍ يؤمن بالمستقبل. لتصل إلى العالم كله.
           </p>
           <p style={{ fontSize: 'clamp(15px, 1.7vw, 17px)', color: C.muted, lineHeight: 2, marginBottom: 40 }}>
             لأن الإنسان في كل مكان يبحث عن الشيء نفسه: أن يُسمع صوته، وأن تُفهم تجربته.{' '}
             <span style={{ background: GRAD, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', fontWeight: 600 }}>
-              وسديم وُجدت لتكون هذا الفهم.
+              وسيندا وُجدت لتكون هذا الفهم.
             </span>
           </p>
 
@@ -494,7 +494,7 @@ export default function StoryPage() {
             {/* Brand column */}
             <div style={{ minWidth: 220 }}>
               <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginBottom: 16 }}>
-                <img src="/sadeem-logo.png" alt="SADEEM" style={{ height: 28, width: 'auto', opacity: 0.9 }} />
+                <img src="/senda-logo.png" alt="SENDA" style={{ height: 28, width: 'auto', opacity: 0.9 }} />
               </button>
               <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.7, maxWidth: 220, margin: '0 0 20px' }}>
                 منصة متكاملة لإدارة تقييمات جوجل وتحسين السمعة الرقمية للأعمال العربية
@@ -510,8 +510,8 @@ export default function StoryPage() {
             {/* Product links */}
             <div>
               <h4 style={{ fontSize: 13, fontWeight: 600, color: C.text, marginBottom: 16 }}>المنتج</h4>
-              {['المميزات', 'الخطط والأسعار', 'كيف يعمل', 'قصة سديم'].map(item => (
-                <button key={item} onClick={() => item === 'قصة سديم' ? navigate('/story') : navigate('/')}
+              {['المميزات', 'الخطط والأسعار', 'كيف يعمل', 'قصة سيندا'].map(item => (
+                <button key={item} onClick={() => item === 'قصة سيندا' ? navigate('/story') : navigate('/')}
                   style={{ display: 'block', background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: C.muted, padding: '5px 0', textAlign: 'right' }}
                   onMouseOver={e => (e.currentTarget.style.color = C.text)}
                   onMouseOut={e => (e.currentTarget.style.color = C.muted)}>
@@ -557,7 +557,7 @@ export default function StoryPage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
             style={{ padding: '16px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
             <p style={{ fontSize: 12, color: C.muted, margin: 0, opacity: 0.55 }}>
-              جميع الحقوق محفوظة لسديم 2026
+              جميع الحقوق محفوظة لسيندا 2026
             </p>
             <div style={{ display: 'flex', gap: 20 }}>
               {[{ label: 'سياسة الخصوصية', path: '/privacy' }, { label: 'شروط الاستخدام', path: '/terms' }, { label: 'الرئيسية', path: '/' }].map(l => (

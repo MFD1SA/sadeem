@@ -1,5 +1,5 @@
 // ============================================================================
-// SADEEM Admin — Security Page (with 2FA enrollment)
+// SENDA Admin — Security Page (with 2FA enrollment)
 // Uses Supabase Auth MFA: auth.mfa.enroll / verify / unenroll
 // ============================================================================
 
@@ -70,7 +70,7 @@ export default function AdminSecurity() {
   const startEnroll = async () => {
     setMfaLoading(true); setMfaError('');
     try {
-      const { data, error } = await adminSupabase.auth.mfa.enroll({ factorType: 'totp', friendlyName: 'SADEEM Admin TOTP' });
+      const { data, error } = await adminSupabase.auth.mfa.enroll({ factorType: 'totp', friendlyName: 'SENDA Admin TOTP' });
       if (error) throw error;
       if (data?.totp?.qr_code && data?.totp?.secret && data?.id) {
         setQrUri(data.totp.qr_code);

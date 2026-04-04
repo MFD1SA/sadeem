@@ -1,5 +1,5 @@
 // ============================================================================
-// SADEEM Admin — Roles & Permissions Service (Phase 3)
+// SENDA Admin — Roles & Permissions Service (Phase 3)
 //
 // READ: via RLS (is_active_admin) + RPC for detail views
 // WRITE: via SECURITY DEFINER RPCs with permission checks inside DB

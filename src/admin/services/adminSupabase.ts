@@ -1,5 +1,5 @@
 // ============================================================================
-// SADEEM Admin — Supabase Client
+// SENDA Admin — Supabase Client
 // Separate from subscriber client (src/lib/supabase.ts) to avoid session conflicts.
 // Uses a different storageKey so admin and subscriber sessions never overlap.
 // ============================================================================

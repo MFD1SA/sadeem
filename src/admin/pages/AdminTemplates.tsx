@@ -1,5 +1,5 @@
 // ============================================================================
-// SADEEM Admin — Templates Management Page (Phase 9 + Global Templates)
+// SENDA Admin — Templates Management Page (Phase 9 + Global Templates)
 // Tab 1: Subscriber templates (view, edit, delete)
 // Tab 2: Global plan templates (full CRUD)
 // ============================================================================

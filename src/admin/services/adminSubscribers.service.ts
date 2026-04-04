@@ -1,5 +1,5 @@
 // ============================================================================
-// SADEEM Admin — Subscribers Service (Phase 4)
+// SENDA Admin — Subscribers Service (Phase 4)
 // All reads via SECURITY DEFINER RPCs (bypass subscriber RLS).
 // All writes via RPCs with permission checks in DB.
 // ============================================================================

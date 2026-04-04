@@ -100,14 +100,14 @@ async function flush() {
     if (error) throw error;
     _failedRetries = 0; // Reset on success
   } catch (err) {
-    console.warn('[Sadeem] Audit log write failed:', err instanceof Error ? err.message : err);
+    console.warn('[Senda] Audit log write failed:', err instanceof Error ? err.message : err);
     // Put entries back for retry (up to MAX_RETRIES)
     if (_failedRetries < MAX_RETRIES) {
       _failedRetries++;
       buffer.unshift(...batch);
     } else {
       // Drop after max retries to prevent memory leak
-      console.error(`[Sadeem] Audit: dropped ${batch.length} entries after ${MAX_RETRIES} retries`);
+      console.error(`[Senda] Audit: dropped ${batch.length} entries after ${MAX_RETRIES} retries`);
       _failedRetries = 0;
     }
   }

@@ -1,5 +1,5 @@
 // ============================================================================
-// SADEEM — Billing & Subscription Page
+// SENDA — Billing & Subscription Page
 // Plan cards: vertical layout, all features always visible, English numbers.
 // ============================================================================
 import { useState, useEffect } from 'react';
@@ -139,12 +139,12 @@ export default function Billing() {
                 <span className="text-brand-600">{currentPlan}</span>
                 {trial.isTrial && (
                   <span className="mr-2 text-xs text-amber-600 font-normal">
-                    ({t.billingExt?.trial || (isAr ? 'تجريبية' : 'Trial')} — {trial.hoursRemaining} {t.billingExt?.hoursLeft || (isAr ? 'ساعة متبقية' : 'h left')})
+                    ({t.billingExt.trial} — {trial.hoursRemaining} {t.billingExt.hoursLeft})
                   </span>
                 )}
               </div>
               <div className="text-xs text-content-tertiary mt-0.5">
-                {(t.billingExt?.aiUsage || (isAr ? 'استخدام AI' : 'AI usage')) + `: ${trial.aiUsed.toLocaleString('en-US')} ${t.billingExt.aiReplies}`}
+                {t.billingExt.aiUsage + `: ${trial.aiUsed.toLocaleString('en-US')} ${t.billingExt.aiReplies}`}
               </div>
             </div>
           </div>
@@ -165,7 +165,7 @@ export default function Billing() {
             className={`relative w-10 h-5 rounded-full transition-colors focus:outline-2 focus:outline-brand-500 focus:outline-offset-2 ${yearly ? 'bg-brand-600' : 'bg-gray-200'}`}
             role="switch"
             aria-checked={yearly}
-            aria-label={t.billingExt?.toggleBilling || (isAr ? 'تبديل الفوترة السنوية' : 'Toggle yearly billing')}
+            aria-label={t.billingExt.toggleBilling}
           >
             <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${yearly ? 'ltr:translate-x-5 rtl:-translate-x-5' : 'ltr:translate-x-0.5 rtl:-translate-x-0.5'}`} />
           </button>
@@ -195,7 +195,7 @@ export default function Billing() {
               {/* Popular badge */}
               {colors.popular && !isCurrent && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-violet-600 rounded-full text-[10px] text-white font-medium whitespace-nowrap flex items-center gap-1">
-                  <Star size={9} /> {t.billingExt?.mostPopular || (isAr ? 'الأكثر شعبية' : 'Most Popular')}
+                  <Star size={9} /> {t.billingExt.mostPopular}
                 </div>
               )}
               {isCurrent && (
@@ -219,37 +219,37 @@ export default function Billing() {
                 {/* Price */}
                 <div className="flex items-end gap-1">
                   <span className="text-2xl font-extrabold text-content-primary leading-none">
-                    {isCustom ? (t.billingExt?.custom || (isAr ? 'مخصص' : 'Custom')) : price.toLocaleString('en-US')}
+                    {isCustom ? t.billingExt.custom : price.toLocaleString('en-US')}
                   </span>
                   {!isCustom && (
                     <span className="text-xs text-content-tertiary mb-0.5">
-                      {t.common.sar}/{yearly ? (t.billingExt?.perYear || (isAr ? 'سنة' : 'yr')) : (t.billingExt.perMonth || (isAr ? 'شهر' : 'mo'))}
+                      {t.common.sar}/{yearly ? t.billingExt.perYear : t.billingExt.perMonth}
                     </span>
                   )}
                 </div>
                 {!isCustom && (
                   <div className="text-[10px] text-content-tertiary">
-                    {t.billingExt?.beforeVat || (isAr ? 'غير شامل الضريبة' : 'Before VAT')}
+                    {t.billingExt.beforeVat}
                   </div>
                 )}
                 {yearly && !isCustom && (
                   <div className="text-[11px] text-emerald-600 mt-0.5">
-                    {(t.billingExt?.saves || (isAr ? 'يوفر' : 'Saves')) + ` ${(plan.price_monthly * 12 - plan.price_yearly).toLocaleString('en-US')} ${t.common.sar}/${t.billingExt?.perYear || (isAr ? 'سنة' : 'yr')}`}
+                    {t.billingExt.saves + ` ${(plan.price_monthly * 12 - plan.price_yearly).toLocaleString('en-US')} ${t.common.sar}/${t.billingExt.perYear}`}
                   </div>
                 )}
                 {/* VAT breakdown */}
                 {vatEnabled && !isCustom && price > 0 && (
                   <div className="mt-2 pt-2 border-t border-gray-100 space-y-0.5">
                     <div className="flex justify-between text-[11px] text-content-tertiary">
-                      <span>{t.billingExt?.subtotal || (isAr ? 'المبلغ قبل الضريبة' : 'Subtotal')}</span>
+                      <span>{t.billingExt.subtotal}</span>
                       <span dir="ltr">{price.toLocaleString('en-US')} {t.common.sar}</span>
                     </div>
                     <div className="flex justify-between text-[11px] text-content-tertiary">
-                      <span>{(t.billingExt?.vat || 'VAT') + ` (${vatRate}%)`}</span>
+                      <span>{t.billingExt.vat + ` (${vatRate}%)`}</span>
                       <span dir="ltr">{(price * vatRate / 100).toFixed(2)} {t.common.sar}</span>
                     </div>
                     <div className="flex justify-between text-[11px] font-semibold text-content-primary pt-0.5 border-t border-gray-100">
-                      <span>{t.billingExt?.totalInclVat || (isAr ? 'الإجمالي شامل الضريبة' : 'Total incl. VAT')}</span>
+                      <span>{t.billingExt.totalInclVat}</span>
                       <span dir="ltr">{(price * (1 + vatRate / 100)).toFixed(2)} {t.common.sar}</span>
                     </div>
                   </div>
@@ -298,6 +298,11 @@ export default function Billing() {
                 <div className="mt-auto pt-1">
                   <button
                     disabled={isCurrent}
+                    aria-label={isCurrent
+                      ? `${t.billingExt.currentPlan}: ${t.billingPage.plans?.[plan.id as keyof typeof t.billingPage.plans] || (isAr ? plan.name_ar : plan.name_en)}`
+                      : isCustom
+                        ? t.billingExt.contactSales
+                        : `${t.billingExt.upgrade} ${t.billingPage.plans?.[plan.id as keyof typeof t.billingPage.plans] || (isAr ? plan.name_ar : plan.name_en)}`}
                     className={`w-full py-2.5 rounded-xl text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 ${
                       isCurrent
                         ? 'bg-gray-100 text-gray-400 cursor-default'

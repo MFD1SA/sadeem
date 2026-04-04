@@ -1,5 +1,5 @@
 // ============================================================================
-// SADEEM Admin — Login Page (Enterprise Upgrade)
+// SENDA Admin — Login Page (Enterprise Upgrade)
 // ============================================================================
 
 import { useState, type FormEvent, useEffect } from 'react';
@@ -22,7 +22,7 @@ function AdminLoginForm() {
   const [branding, setBranding] = useState<BrandingSettings | null>(null);
 
   useEffect(() => {
-    document.title = 'سديم — مركز الإدارة والتحكم';
+    document.title = 'سيندا — مركز الإدارة والتحكم';
     adminSettingsService.getBranding().then(setBranding).catch(() => {});
   }, []);
 
@@ -74,7 +74,7 @@ function AdminLoginForm() {
             )}
           </div>
           <h1 className="text-[22px] font-bold text-white mb-2 tracking-tight">
-            {branding?.platform_name_ar || 'سديم'} <span className="text-cyan-400 font-light">|</span> <span className="text-slate-300 font-medium text-lg">لوحة الإدارة</span>
+            {branding?.platform_name_ar || 'سيندا'} <span className="text-cyan-400 font-light">|</span> <span className="text-slate-300 font-medium text-lg">لوحة الإدارة</span>
           </h1>
           <p className="text-[13px] text-slate-500 leading-relaxed max-w-[280px] mx-auto">
             {branding?.tagline || 'مركز التحكم المركزي لإدارة المنصة والمشتركين والعمليات'}
@@ -157,7 +157,7 @@ function AdminLoginForm() {
             الوصول مقيّد للمشرفين المعتمدين فقط
           </p>
           <p className="text-[10px] text-slate-700 mt-1">
-            سديم — منصة إدارة التقييمات بالذكاء الاصطناعي
+            سيندا — منصة إدارة التقييمات بالذكاء الاصطناعي
           </p>
         </div>
       </div>

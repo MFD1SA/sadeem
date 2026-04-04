@@ -22,7 +22,7 @@ export const notificationService = {
 
     if (error) {
       // Table may not exist yet — graceful fallback
-      console.warn('[Sadeem] Notifications table not available:', error.message);
+      console.warn('[Senda] Notifications table not available:', error.message);
       return [];
     }
     return (data || []) as DbNotification[];
@@ -45,7 +45,7 @@ export const notificationService = {
     });
     if (error) {
       // Silently fail if table doesn't exist
-      console.warn('[Sadeem] Notification insert failed:', error.message);
+      console.warn('[Senda] Notification insert failed:', error.message);
     }
   },
 
@@ -54,7 +54,7 @@ export const notificationService = {
       .update({ is_read: true } as Record<string, unknown>)
       .eq('id', notificationId);
     if (error) {
-      console.warn('[Sadeem] markRead failed:', error.message);
+      console.warn('[Senda] markRead failed:', error.message);
       throw error;
     }
   },
@@ -65,7 +65,7 @@ export const notificationService = {
       .eq('organization_id', organizationId)
       .eq('is_read', false);
     if (error) {
-      console.warn('[Sadeem] markAllRead failed:', error.message);
+      console.warn('[Senda] markAllRead failed:', error.message);
       throw error;
     }
   },

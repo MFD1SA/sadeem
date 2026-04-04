@@ -1,5 +1,5 @@
 // ============================================================================
-// SADEEM Admin — Subscribers Page (Phase 4)
+// SENDA Admin — Subscribers Page (Phase 4)
 // All data via RPCs. Permission checks in DB.
 // ============================================================================
 

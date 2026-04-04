@@ -1,5 +1,5 @@
 // ============================================================================
-// SADEEM Admin — AI Usage Page (Phase 6)
+// SENDA Admin — AI Usage Page (Phase 6)
 // ============================================================================
 
 import { useEffect, useState, useCallback } from 'react';

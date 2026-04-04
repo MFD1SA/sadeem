@@ -1,5 +1,5 @@
 -- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
--- Sadeem RLS Policy Fix
+-- Senda RLS Policy Fix
 -- Run this in Supabase SQL Editor
 -- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 

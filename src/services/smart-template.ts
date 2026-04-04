@@ -90,7 +90,7 @@ export async function findStrongTemplateMatch(
     }
   } catch (err) {
     // Log the error but fall through to builtins so review still gets a reply
-    console.warn('[Sadeem] Custom template lookup failed:', err instanceof Error ? err.message : err);
+    console.warn('[Senda] Custom template lookup failed:', err instanceof Error ? err.message : err);
   }
 
   // ── 2. Try built-in templates ──

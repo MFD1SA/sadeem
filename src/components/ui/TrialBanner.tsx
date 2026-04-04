@@ -4,10 +4,9 @@ import { usePlan } from '@/hooks/usePlan';
 import { Clock, Zap, ArrowUpRight, AlertTriangle } from 'lucide-react';
 
 export function TrialBanner() {
-  const { lang } = useLanguage();
+  const { t } = useLanguage();
   const { trial, isLoading } = usePlan();
   const navigate = useNavigate();
-  const isAr = lang === 'ar';
 
   if (isLoading) return null;
 
@@ -25,12 +24,10 @@ export function TrialBanner() {
             </div>
             <div>
               <div className="text-[13px] font-bold text-content-primary mb-0.5">
-                {isAr ? 'انتهت الفترة التجريبية لسديم' : 'Your Sadeem trial has expired'}
+                {t.trial.expiredTitle}
               </div>
               <p className="text-xs text-content-secondary leading-relaxed">
-                {isAr
-                  ? 'قم بالترقية للاستمرار في الرد على تقييمات Google باستخدام الذكاء الاصطناعي.'
-                  : 'Upgrade to continue responding to Google reviews with AI.'}
+                {t.trial.expiredDesc}
               </p>
             </div>
           </div>
@@ -39,7 +36,7 @@ export function TrialBanner() {
             className="btn btn-primary btn-sm flex-shrink-0"
           >
             <ArrowUpRight size={13} />
-            {isAr ? 'ترقية الاشتراك' : 'Upgrade'}
+            {t.trial.upgradeSubscription}
           </button>
         </div>
       </div>
@@ -63,15 +60,13 @@ export function TrialBanner() {
             </div>
             <div>
               <div className="text-[13px] font-semibold text-content-primary">
-                {isAr
-                  ? `الفترة التجريبية — متبقي ${trial.hoursRemaining} ${trial.hoursRemaining === 1 ? 'ساعة' : 'ساعات'}`
-                  : `Trial — ${trial.hoursRemaining}h remaining`}
+                {`${t.trial.trialCountdownPrefix} — ${trial.hoursRemaining} ${t.trial.hourSuffix}`}
               </div>
               <div className="flex items-center gap-4 mt-1.5">
                 <div className="flex items-center gap-2">
                   <Zap size={11} className="text-brand-400" />
                   <span className="text-[11px] text-content-tertiary font-medium">
-                    {isAr ? `AI: ${trial.aiUsed}/${trial.aiMax}` : `AI: ${trial.aiUsed}/${trial.aiMax}`}
+                    {`${t.trial.aiLabel}: ${trial.aiUsed}/${trial.aiMax}`}
                   </span>
                   <div className="w-16 h-1 rounded-full bg-gray-100 overflow-hidden">
                     <div className="h-full rounded-full bg-brand-400 transition-all" style={{ width: `${aiPercent}%` }} />
@@ -79,7 +74,7 @@ export function TrialBanner() {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-[11px] text-content-tertiary font-medium">
-                    {isAr ? `القوالب: ${trial.templateUsed}/${trial.templateMax}` : `Templates: ${trial.templateUsed}/${trial.templateMax}`}
+                    {`${t.trial.templatesLabel}: ${trial.templateUsed}/${trial.templateMax}`}
                   </span>
                   <div className="w-16 h-1 rounded-full bg-gray-100 overflow-hidden">
                     <div className="h-full rounded-full bg-violet-400 transition-all" style={{ width: `${templatePercent}%` }} />
@@ -92,7 +87,7 @@ export function TrialBanner() {
             onClick={() => navigate('/dashboard/billing')}
             className="btn btn-secondary btn-sm flex-shrink-0"
           >
-            {isAr ? 'عرض الخطط' : 'View Plans'}
+            {t.trial.viewPlans}
           </button>
         </div>
       </div>

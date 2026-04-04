@@ -1,5 +1,5 @@
 // ============================================================================
-// SADEEM Admin — Route Guards
+// SENDA Admin — Route Guards
 // Independent from subscriber guards (src/router/guards.tsx).
 // ============================================================================
 
@@ -47,6 +47,7 @@ function AdminUnauthorized() {
           </Link>
           <button
             onClick={() => logout()}
+            aria-label="Log out"
             className="px-5 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
           >
             تسجيل الخروج

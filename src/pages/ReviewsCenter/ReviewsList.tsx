@@ -12,8 +12,7 @@ interface ReviewsListProps {
 }
 
 export function ReviewsList({ reviews, branchMap, selectedId, onSelect }: ReviewsListProps) {
-  const { t, lang } = useLanguage();
-  const isAr = lang === 'ar';
+  const { t } = useLanguage();
 
   if (reviews.length === 0) {
     return (
@@ -21,8 +20,8 @@ export function ReviewsList({ reviews, branchMap, selectedId, onSelect }: Review
         <div className="empty-state-icon">
           <MessageSquare size={20} className="text-content-tertiary" />
         </div>
-        <div className="empty-state-title">{isAr ? 'لا توجد تقييمات' : 'No reviews found'}</div>
-        <div className="empty-state-text">{isAr ? 'جرب تغيير الفلاتر' : 'Try changing your filters'}</div>
+        <div className="empty-state-title">{t.reviewsCenter.noReviews}</div>
+        <div className="empty-state-text">{t.reviewsCenter.tryChangingFilters}</div>
       </div>
     );
   }
@@ -62,18 +61,18 @@ export function ReviewsList({ reviews, branchMap, selectedId, onSelect }: Review
             <div className="flex items-center gap-1.5 mb-1.5 ms-9">
               <span className="text-amber-400 text-xs leading-none">{renderStars(review.rating)}</span>
               <Badge variant={getStatusColor(review.status) as 'success' | 'warning' | 'danger' | 'info' | 'neutral'}>
-                {t.status[review.status] || review.status}
+                {(t.status as Record<string, string>)[review.status] || review.status}
               </Badge>
               {review.sentiment && (
                 <Badge variant={getSentimentColor(review.sentiment) as 'success' | 'warning' | 'danger'}>
-                  {t.sentiment[review.sentiment]}
+                  {(t.sentiment as Record<string, string>)[review.sentiment] || review.sentiment}
                 </Badge>
               )}
             </div>
 
             {/* Preview text */}
             <p className="text-xs text-content-secondary line-clamp-2 leading-relaxed ms-9">
-              {review.review_text || (isAr ? 'بدون نص' : 'No text')}
+              {review.review_text || t.reviewsCenter.noText}
             </p>
 
             {/* Branch tag */}

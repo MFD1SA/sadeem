@@ -1,5 +1,5 @@
 -- ============================================================================
--- SADEEM Admin — Phase 7: Payment Gateway Foundation
+-- SENDA Admin — Phase 7: Payment Gateway Foundation
 -- Run AFTER admin-phase6-ai-usage.sql
 --
 -- Creates:

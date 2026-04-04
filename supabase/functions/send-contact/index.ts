@@ -1,5 +1,5 @@
 // ============================================================================
-// SADEEM — send-contact Edge Function
+// SENDA — send-contact Edge Function
 // 1. Always saves submission to contact_submissions table (guaranteed storage)
 // 2. Optionally sends email via Resend if RESEND_API_KEY + CONTACT_EMAIL are set
 //    FROM is onboarding@resend.dev (works without domain verification)
@@ -11,7 +11,7 @@ import { corsHeaders } from '../_shared/cors.ts';
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY') ?? '';
 const CONTACT_EMAIL  = Deno.env.get('CONTACT_EMAIL')  ?? '';
 // Use Resend's shared domain — works on free tier without domain verification
-const FROM_EMAIL = 'SADEEM Contact <onboarding@resend.dev>';
+const FROM_EMAIL = 'SENDA Contact <onboarding@resend.dev>';
 
 Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
@@ -73,7 +73,7 @@ Deno.serve(async (req: Request) => {
 
     // ── Step 2: Send email via Resend (best-effort, won't fail the request) ─
     if (RESEND_API_KEY && CONTACT_EMAIL) {
-      const subject = `رسالة جديدة من سديم — ${name.trim()}${company?.trim() ? ` (${company.trim()})` : ''}`;
+      const subject = `رسالة جديدة من سيندا — ${name.trim()}${company?.trim() ? ` (${company.trim()})` : ''}`;
       const htmlBody = buildEmailHtml({ name: name.trim(), email: email.trim(), phone: phone?.trim(), company: company?.trim(), message: message.trim() });
 
       try {
@@ -137,7 +137,7 @@ function buildEmailHtml(p: { name: string; email: string; phone?: string; compan
   <div class="card">
     <div class="header">
       <h1>رسالة جديدة من نموذج التواصل</h1>
-      <p>سديم — منصة إدارة تقييمات جوجل</p>
+      <p>سيندا — منصة إدارة تقييمات جوجل</p>
     </div>
     <div class="body">
       <div class="field"><div class="label">الاسم</div><div class="value">${esc(p.name)}</div></div>
@@ -149,7 +149,7 @@ function buildEmailHtml(p: { name: string; email: string; phone?: string; compan
         <div class="message-text">${esc(p.message)}</div>
       </div>
     </div>
-    <div class="footer">تم الإرسال عبر نموذج التواصل في sadeem.app • للرد: ${esc(p.email)}</div>
+    <div class="footer">تم الإرسال عبر نموذج التواصل في senda.app • للرد: ${esc(p.email)}</div>
   </div>
 </body>
 </html>`;

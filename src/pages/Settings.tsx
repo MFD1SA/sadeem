@@ -57,7 +57,7 @@ export default function Settings() {
       setIsGoogleUser(provider === 'google');
       const avatarUrl = data?.session?.user?.user_metadata?.avatar_url
         || data?.session?.user?.user_metadata?.picture;
-      if (avatarUrl) setGoogleAvatarUrl(avatarUrl);
+      if (avatarUrl && typeof avatarUrl === 'string') setGoogleAvatarUrl(avatarUrl);
     });
   }, []);
 
@@ -341,6 +341,7 @@ export default function Settings() {
                       type="button"
                       onClick={() => logoInputRef.current?.click()}
                       disabled={uploadingLogo}
+                      aria-label={t.settingsPage.uploadLogo}
                       className="absolute inset-0 flex items-center justify-center rounded-2xl bg-black/45 opacity-0 transition-opacity group-hover:opacity-100"
                     >
                       <Camera size={20} className="text-white" />
@@ -415,8 +416,9 @@ export default function Settings() {
 
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                 <div className="sm:col-span-2">
-                  <label className="form-label">{t.settingsPage.businessName}</label>
+                  <label htmlFor="org-business-name" className="form-label">{t.settingsPage.businessName}</label>
                   <input
+                    id="org-business-name"
                     className="form-input"
                     value={orgName}
                     onChange={(e: ChangeEvent<HTMLInputElement>) => setOrgName(e.target.value)}
@@ -424,8 +426,9 @@ export default function Settings() {
                 </div>
 
                 <div>
-                  <label className="form-label">{t.settingsPage.industry}</label>
+                  <label htmlFor="org-industry" className="form-label">{t.settingsPage.industry}</label>
                   <input
+                    id="org-industry"
                     className="form-input"
                     value={orgIndustry}
                     onChange={(e: ChangeEvent<HTMLInputElement>) => setOrgIndustry(e.target.value)}
@@ -433,8 +436,9 @@ export default function Settings() {
                 </div>
 
                 <div>
-                  <label className="form-label">{t.settingsPage.city}</label>
+                  <label htmlFor="org-city" className="form-label">{t.settingsPage.city}</label>
                   <input
+                    id="org-city"
                     className="form-input"
                     value={orgCity}
                     onChange={(e: ChangeEvent<HTMLInputElement>) => setOrgCity(e.target.value)}
@@ -442,8 +446,9 @@ export default function Settings() {
                 </div>
 
                 <div>
-                  <label className="form-label">{t.settingsPage.country}</label>
+                  <label htmlFor="org-country" className="form-label">{t.settingsPage.country}</label>
                   <input
+                    id="org-country"
                     className="form-input bg-surface-secondary"
                     value={organization.country || 'SA'}
                     disabled
@@ -451,8 +456,9 @@ export default function Settings() {
                 </div>
 
                 <div>
-                  <label className="form-label">Slug</label>
+                  <label htmlFor="org-slug" className="form-label">Slug</label>
                   <input
+                    id="org-slug"
                     className="form-input bg-surface-secondary"
                     value={organization.slug || ''}
                     disabled
@@ -493,6 +499,7 @@ export default function Settings() {
                       type="button"
                       onClick={() => avatarInputRef.current?.click()}
                       disabled={uploadingAvatar}
+                      aria-label={lang === 'ar' ? 'تغيير صورة الملف الشخصي' : 'Change profile picture'}
                       className="absolute inset-0 flex items-center justify-center rounded-full bg-black/45 opacity-0 transition-opacity group-hover:opacity-100"
                     >
                       <Camera size={20} className="text-white" />
@@ -537,8 +544,9 @@ export default function Settings() {
 
               <div className="grid grid-cols-1 gap-5">
                 <div>
-                  <label className="form-label">{t.settingsPage.fullName}</label>
+                  <label htmlFor="profile-full-name" className="form-label">{t.settingsPage.fullName}</label>
                   <input
+                    id="profile-full-name"
                     className="form-input"
                     value={fullName}
                     onChange={(e: ChangeEvent<HTMLInputElement>) => setFullName(e.target.value)}
@@ -546,8 +554,9 @@ export default function Settings() {
                 </div>
 
                 <div>
-                  <label className="form-label">{t.settingsPage.email}</label>
+                  <label htmlFor="profile-email" className="form-label">{t.settingsPage.email}</label>
                   <input
+                    id="profile-email"
                     className="form-input bg-surface-secondary"
                     value={profile?.email || ''}
                     disabled
@@ -676,9 +685,11 @@ export default function Settings() {
               </div>
 
               <div className="max-w-sm">
-                <label className="form-label">{t.settingsPage.language}</label>
+                <label htmlFor="settings-language" className="form-label">{t.settingsPage.language}</label>
                 <select
+                  id="settings-language"
                   className="form-select"
+                  aria-label={t.settingsPage.language}
                   value={lang}
                   onChange={(e: ChangeEvent<HTMLSelectElement>) => setLanguage(e.target.value as 'ar' | 'en')}
                 >

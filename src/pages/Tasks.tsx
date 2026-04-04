@@ -1,5 +1,5 @@
 // ============================================================================
-// SADEEM — Tasks Page
+// SENDA — Tasks Page
 // DB-backed task management with smart suggestions from dashboard stats.
 // ============================================================================
 
@@ -124,7 +124,7 @@ export default function Tasks() {
   };
 
   const handleCreate = async () => {
-    if (!form.title.trim()) { setFormError(t.tasksExt?.titleRequired || (lang === 'ar' ? 'العنوان مطلوب' : 'Title is required')); return; }
+    if (!form.title.trim()) { setFormError(t.tasksExt.titleRequired); return; }
     if (!organization) return;
     setSaving(true);
     setFormError('');
@@ -158,7 +158,7 @@ export default function Tasks() {
       });
       await loadAll();
     } catch (err) {
-      console.warn('[Sadeem] Failed to add suggestion:', err);
+      console.warn('[Senda] Failed to add suggestion:', err);
     }
   };
 
@@ -199,7 +199,7 @@ export default function Tasks() {
           <div className="card-header">
             <div className="flex items-center gap-2">
               <Sparkles size={15} className="text-amber-500" />
-              <h3>{t.tasksExt?.smartSuggestions || (lang === 'ar' ? 'اقتراحات ذكية' : 'Smart Suggestions')}</h3>
+              <h3>{t.tasksExt.smartSuggestions}</h3>
             </div>
           </div>
           <div className="divide-y divide-border/60">
@@ -256,7 +256,7 @@ export default function Tasks() {
       {done.length > 0 && (
         <div className="card">
           <div className="card-header">
-            <h3>{t.tasksExt?.completed || (lang === 'ar' ? 'المكتملة' : 'Completed')}</h3>
+            <h3>{t.tasksExt.completed}</h3>
             <Badge variant="success">{done.length}</Badge>
           </div>
           <div className="divide-y divide-border/60">
@@ -288,8 +288,9 @@ export default function Tasks() {
               <div className="text-xs rounded-md p-3 bg-red-50 text-red-700 border border-red-200">{formError}</div>
             )}
             <div>
-              <label className="form-label">{t.tasksPage.taskTitle} *</label>
+              <label htmlFor="task-title" className="form-label">{t.tasksPage.taskTitle} *</label>
               <input
+                id="task-title"
                 className="form-input"
                 value={form.title}
                 onChange={(e: ChangeEvent<HTMLInputElement>) => setForm(p => ({ ...p, title: e.target.value }))}
@@ -298,8 +299,9 @@ export default function Tasks() {
               />
             </div>
             <div>
-              <label className="form-label">{t.tasksPage.description}</label>
+              <label htmlFor="task-description" className="form-label">{t.tasksPage.description}</label>
               <textarea
+                id="task-description"
                 className="form-textarea"
                 rows={3}
                 value={form.description}
@@ -307,9 +309,11 @@ export default function Tasks() {
               />
             </div>
             <div>
-              <label className="form-label">{t.tasksPage.priority}</label>
+              <label htmlFor="task-priority" className="form-label">{t.tasksPage.priority}</label>
               <select
+                id="task-priority"
                 className="form-select"
+                aria-label={t.tasksPage.priority}
                 value={form.priority}
                 onChange={(e: ChangeEvent<HTMLSelectElement>) => setForm(p => ({ ...p, priority: e.target.value as DbTask['priority'] }))}
               >
@@ -339,6 +343,7 @@ function TaskRow({ task, lang, onToggle, onDelete }: {
         onClick={() => onToggle(task)}
         className="mt-0.5 flex-shrink-0 transition-colors hover:text-brand-600"
         title={isDone ? t.common.pending : t.tasksExt.markDone}
+        aria-label={`${isDone ? t.common.pending : t.tasksExt.markDone}: ${task.title}`}
       >
         {isDone
           ? <CheckCircle size={18} className="text-emerald-500" />
@@ -356,7 +361,7 @@ function TaskRow({ task, lang, onToggle, onDelete }: {
 
       <div className="flex items-center gap-2 flex-shrink-0">
         {task.source === 'smart' && (
-          <span title={t.tasksExt?.smartSuggestions || (lang === 'ar' ? 'مقترح ذكي' : 'Smart suggestion')}>
+          <span title={t.tasksExt.smartSuggestions}>
             <Sparkles size={12} className="text-amber-400" />
           </span>
         )}
@@ -367,6 +372,7 @@ function TaskRow({ task, lang, onToggle, onDelete }: {
           className="btn-icon text-red-400 hover:text-red-600"
           onClick={() => onDelete(task.id)}
           title={t.common.delete}
+          aria-label={`${t.common.delete}: ${task.title}`}
         >
           <Trash2 size={13} />
         </button>

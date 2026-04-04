@@ -1,5 +1,5 @@
 // ============================================================================
-// SADEEM Admin — Admin Users Page (Phase 3)
+// SENDA Admin — Admin Users Page (Phase 3)
 // All writes go through RPCs. Permission checks happen in DB.
 // ============================================================================
 

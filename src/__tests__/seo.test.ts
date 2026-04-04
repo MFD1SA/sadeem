@@ -3,22 +3,18 @@ import { seoService } from '@/services/seo';
 
 describe('seoService.calculateScore', () => {
   const fullInput = {
-    hasName: true,
-    hasAddress: true,
-    hasPhone: true,
-    hasHours: true,
-    hasDescription: true,
-    descriptionLength: 100,
+    businessName: 'مطعم الرياض',
     description: 'مطعم في الرياض يقدم أفضل الأطباق العربية',
-    hasWebsite: true,
+    industry: 'مطعم',
+    city: 'الرياض',
     photoCount: 30,
     reviewCount: 100,
     avgRating: 4.8,
     responseRate: 90,
-    hasLogo: true,
-    hasCoverPhoto: true,
-    industry: 'مطعم',
-    city: 'الرياض',
+    hasWebsite: true,
+    hasPhone: true,
+    hasHours: true,
+    hasAddress: true,
   };
 
   it('returns a total score between 0 and 100', () => {
@@ -34,22 +30,18 @@ describe('seoService.calculateScore', () => {
 
   it('returns low score for empty profile', () => {
     const result = seoService.calculateScore({
-      hasName: false,
-      hasAddress: false,
-      hasPhone: false,
-      hasHours: false,
-      hasDescription: false,
-      descriptionLength: 0,
+      businessName: '',
       description: '',
-      hasWebsite: false,
+      industry: '',
+      city: '',
       photoCount: 0,
       reviewCount: 0,
       avgRating: 0,
       responseRate: 0,
-      hasLogo: false,
-      hasCoverPhoto: false,
-      industry: '',
-      city: '',
+      hasWebsite: false,
+      hasPhone: false,
+      hasHours: false,
+      hasAddress: false,
     });
     expect(result.total).toBeLessThan(20);
   });

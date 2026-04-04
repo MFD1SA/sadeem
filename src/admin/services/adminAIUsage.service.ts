@@ -1,5 +1,5 @@
 // ============================================================================
-// SADEEM Admin — AI Usage Service (Phase 6)
+// SENDA Admin — AI Usage Service (Phase 6)
 // ============================================================================
 
 import { adminSupabase } from './adminSupabase';

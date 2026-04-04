@@ -194,10 +194,10 @@ export default function Team() {
 
                   {/* Role + Status */}
                   <div className="flex items-center justify-between">
-                    <Badge variant="info">{t.roles[m.role]}</Badge>
+                    <Badge variant="info">{(t.roles as Record<string, string>)[m.role] || m.role}</Badge>
                     <div className="flex items-center gap-1.5">
                       <StatusDot color={m.status === 'active' ? 'green' : 'gray'} />
-                      <span className="text-xs text-content-secondary">{t.status[m.status]}</span>
+                      <span className="text-xs text-content-secondary">{(t.status as Record<string, string>)[m.status] || m.status}</span>
                     </div>
                   </div>
 
@@ -223,8 +223,9 @@ export default function Team() {
             </div>
             <form onSubmit={handleInvite} className="p-5 space-y-4">
               <div>
-                <label className="block text-xs font-medium text-content-secondary mb-1.5">{t.teamExt.inviteEmail}</label>
+                <label htmlFor="invite-email" className="block text-xs font-medium text-content-secondary mb-1.5">{t.teamExt.inviteEmail}</label>
                 <input
+                  id="invite-email"
                   type="email"
                   value={inviteEmail}
                   onChange={e => setInviteEmail(e.target.value)}
@@ -235,8 +236,8 @@ export default function Team() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-content-secondary mb-1.5">{t.teamExt.inviteRole}</label>
-                <select value={inviteRole} onChange={e => setInviteRole(e.target.value as 'member' | 'admin')} className="input w-full">
+                <label htmlFor="invite-role" className="block text-xs font-medium text-content-secondary mb-1.5">{t.teamExt.inviteRole}</label>
+                <select id="invite-role" value={inviteRole} onChange={e => setInviteRole(e.target.value as 'member' | 'admin')} className="input w-full" aria-label={t.teamExt.inviteRole}>
                   <option value="member">{t.teamExt.member}</option>
                   <option value="admin">{t.teamExt.admin}</option>
                 </select>

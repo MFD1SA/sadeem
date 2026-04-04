@@ -1,5 +1,5 @@
 // ============================================================================
-// SADEEM Admin — Auth Context
+// SENDA Admin — Auth Context
 // Independent from subscriber AuthProvider (src/hooks/useAuth.tsx).
 // This provider wraps only admin routes via AdminLayout, NOT the whole app.
 // ============================================================================

@@ -1,5 +1,5 @@
 // ============================================================================
-// SADEEM Admin — Profile Page (with Avatar Upload)
+// SENDA Admin — Profile Page (with Avatar Upload)
 // ============================================================================
 
 import { useState, useRef } from 'react';

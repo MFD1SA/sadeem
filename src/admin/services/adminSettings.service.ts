@@ -1,5 +1,5 @@
 // ============================================================================
-// SADEEM Admin — Settings Service (DB Persistence)
+// SENDA Admin — Settings Service (DB Persistence)
 // ============================================================================
 
 import { adminSupabase } from './adminSupabase';
@@ -14,8 +14,8 @@ export interface BrandingSettings {
 }
 
 const DEFAULT_BRANDING: BrandingSettings = {
-  platform_name_ar: 'سديم',
-  platform_name_en: 'SADEEM',
+  platform_name_ar: 'سيندا',
+  platform_name_en: 'SENDA',
   tagline: 'إدارة التقييمات بالذكاء الاصطناعي',
   logo_icon_url: '',
   logo_full_url: '',

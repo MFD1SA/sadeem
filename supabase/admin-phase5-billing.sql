@@ -1,5 +1,5 @@
 -- ============================================================================
--- SADEEM Admin — Phase 5: Billing & Finance Layer
+-- SENDA Admin — Phase 5: Billing & Finance Layer
 -- Run AFTER admin-phase4-operations.sql
 --
 -- Creates:

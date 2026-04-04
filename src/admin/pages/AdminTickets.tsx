@@ -1,5 +1,5 @@
 // ============================================================================
-// SADEEM Admin — Support Tickets (with Reply Threading)
+// SENDA Admin — Support Tickets (with Reply Threading)
 // List + detail panel + reply thread + status actions.
 // ============================================================================
 

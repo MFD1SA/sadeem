@@ -41,7 +41,7 @@ export function CriticalReviews({ reviews, branches }: { reviews: DbReview[]; br
               <div className="flex items-center gap-1.5 mb-1.5 ps-5">
                 <Badge variant="neutral">{branchMap[review.branch_id] || '—'}</Badge>
                 <Badge variant={getStatusColor(review.status) as 'danger' | 'info' | 'warning'}>
-                  {t.status[review.status] || review.status}
+                  {(t.status as Record<string, string>)[review.status] || review.status}
                 </Badge>
               </div>
               <p className="text-xs text-content-tertiary line-clamp-2 ps-5">{review.review_text}</p>

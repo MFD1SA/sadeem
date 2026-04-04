@@ -1,5 +1,5 @@
 // ============================================================================
-// SADEEM — Public Marketing Homepage
+// SENDA — Public Marketing Homepage
 // Colors: bg=#0F1117 · card=#151922 · border=#242A36
 //         text=#F3F4F6 · muted=#A7AFBD · brand=#C9D8E6
 // Typography: Semibold headings, Medium labels, Regular body — no excessive bold
@@ -42,7 +42,7 @@ const NAV: { label: string; id?: string; href?: string }[] = [
   { label: 'كيف تعمل',       id: 'how-it-works' },
   { label: 'الأسعار',         id: 'pricing'      },
   { label: 'الأسئلة الشائعة', id: 'faq'         },
-  { label: 'قصة سديم',        href: '/story'     },
+  { label: 'قصة سيندا',        href: '/story'     },
   { label: 'اتصل بنا',        id: 'contact'      },
 ];
 
@@ -61,7 +61,7 @@ const QR_GRID = [
 // ─── Translations ─────────────────────────────────────────────────────────────
 const T = {
   ar: {
-    nav: ['الرئيسية', 'المميزات', 'كيف تعمل', 'الأسعار', 'الأسئلة الشائعة', 'قصة سديم', 'اتصل بنا'],
+    nav: ['الرئيسية', 'المميزات', 'كيف تعمل', 'الأسعار', 'الأسئلة الشائعة', 'قصة سيندا', 'اتصل بنا'],
     heroBadge: 'منصة إدارة تقييمات جوجل رقم 1 عربيًا',
     heroH1a: 'كل تقييم جوجل',
     heroH1b: 'فرصة حقيقية',
@@ -69,9 +69,9 @@ const T = {
     heroDesc: 'ردود ذكية بالـ AI، جمع تقييمات بـ QR، وتحليلات السمعة لجميع فروعك — كل شيء في مكان واحد',
     heroCtaStart: 'ابدأ الآن',
     heroCtaLogin: 'دخول المشتركين',
-    heroCtaWatch: 'شاهد كيف تعمل سديم',
+    heroCtaWatch: 'شاهد كيف تعمل سيندا',
     heroStats: [{ val: '+500', lbl: 'عمل نشط' }, { val: '98%', lbl: 'رضا العملاء' }, { val: '4.8★', lbl: 'تقييمنا' }, { val: '24/7', lbl: 'دعم مستمر' }],
-    dashTitle: 'لوحة تحكم سديم',
+    dashTitle: 'لوحة تحكم سيندا',
     dashStats: [{ label: 'التقييمات', value: '2,847' }, { label: 'المتوسط', value: '4.8 ★' }, { label: 'نسبة الرد', value: '94%' }, { label: 'هذا الشهر', value: '+124' }],
     reviewDone: 'تم الرد',
     reviewAi: 'AI يرد…',
@@ -83,9 +83,9 @@ const T = {
     googleTime: 'منذ دقيقة',
     googleText: '"أحسنتم! السرعة والجودة في مكان واحد"',
     benefitLabels: ['ردود بالذكاء الاصطناعي', 'جمع تقييمات بـ QR', 'تحليلات متقدمة', 'إدارة الفروع', 'تعاون الفريق', 'تكاملات سلسة'],
-    featuresLabel: 'لماذا سديم؟',
+    featuresLabel: 'لماذا سيندا؟',
     featuresH2: 'كل ما تحتاجه لإدارة سمعتك الرقمية',
-    featuresDesc: 'سديم يجمع في منصة واحدة جميع الأدوات التي تحتاجها لتحسين تقييماتك وبناء ثقة عملائك',
+    featuresDesc: 'سيندا يجمع في منصة واحدة جميع الأدوات التي تحتاجها لتحسين تقييماتك وبناء ثقة عملائك',
     featureCards: [
       { title: 'ردود بالذكاء الاصطناعي', desc: 'ردود مخصصة لكل تقييم تعكس هوية علامتك في ثوانٍ معدودة' },
       { title: 'سرعة رد غير مسبوقة',    desc: 'رد قبل المنافسين وأثبت لعملائك اهتمامك الحقيقي بآرائهم' },
@@ -98,11 +98,11 @@ const T = {
     ],
     sec1Label: 'الذكاء الاصطناعي',
     sec1H2: 'الذكاء الاصطناعي يرد بدلًا عنك — بأسلوبك أنت',
-    sec1Desc: 'لا مزيد من قضاء ساعات في صياغة ردود على التقييمات. سديم يحلل كل تقييم ويولّد ردًا يناسب نبرة علامتك التجارية — سواء كان التقييم إيجابيًا أو سلبيًا. فقط راجع وانشر.',
+    sec1Desc: 'لا مزيد من قضاء ساعات في صياغة ردود على التقييمات. سيندا يحلل كل تقييم ويولّد ردًا يناسب نبرة علامتك التجارية — سواء كان التقييم إيجابيًا أو سلبيًا. فقط راجع وانشر.',
     sec1Items: ['تحليل المشاعر وفهم سياق التقييم تلقائيًا', 'ردود باللغة العربية والإنجليزية', 'تعديل النبرة بما يناسب نوع عملك', 'مراجعة وتعديل الرد قبل نشره'],
     sec1ReviewText: 'خدمة ممتازة ومحترفة. سأعود بكل تأكيد!',
     sec1ReviewName: 'محمد أحمد',
-    sec1AiLabel: 'سديم يولد ردًا مناسبًا...',
+    sec1AiLabel: 'سيندا يولد ردًا مناسبًا...',
     sec1AiReply: 'شكرًا جزيلًا يا محمد على هذا التقييم الجميل! يسعدنا أنك أحببت تجربتك معنا، ننتظر زيارتك القادمة بكل سرور 😊',
     sec1PostReply: 'نشر الرد',
     sec1Edit: 'تعديل',
@@ -114,7 +114,7 @@ const T = {
     sec2Branches: [{ name: 'فرع الرياض', count: 47 }, { name: 'فرع جدة', count: 32 }, { name: 'فرع الدمام', count: 28 }],
     sec3Label: 'التحليلات',
     sec3H2: 'تحليلات تخبرك بما لا تراه بالعين المجردة',
-    sec3Desc: 'من أي فرع يأتي أكثر التقييمات؟ ما الكلمات التي تتكرر في التقييمات السلبية؟ متى يتراجع معدل الرد؟ سديم يجيب تلقائيًا حتى تعرف أين تركز جهودك.',
+    sec3Desc: 'من أي فرع يأتي أكثر التقييمات؟ ما الكلمات التي تتكرر في التقييمات السلبية؟ متى يتراجع معدل الرد؟ سيندا يجيب تلقائيًا حتى تعرف أين تركز جهودك.',
     sec3Items: ['مقارنة الأداء بين جميع الفروع', 'تحليل المشاعر والكلمات المتكررة', 'تقارير أسبوعية وشهرية تلقائية', 'تنبيهات فورية للتقييمات السلبية'],
     sec3ChartTitle: 'التقييمات هذا الشهر',
     sec3Branches: [{ label: 'فرع الرياض', pct: 78 }, { label: 'فرع جدة', pct: 65 }, { label: 'فرع الدمام', pct: 52 }],
@@ -125,20 +125,20 @@ const T = {
     sec4Items: ['أدوار وصلاحيات مرنة لكل عضو', 'مراقبة أداء الفريق في الوقت الفعلي', 'تعيين تقييمات محددة لأفراد', 'إشعارات فورية للمهام الجديدة'],
     sec4Team: [{ name: 'أحمد', role: 'مدير عام' }, { name: 'سارة', role: 'مديرة فرع الرياض' }, { name: 'خالد', role: 'مشرف فرع جدة' }, { name: 'نورة', role: 'موظفة دعم العملاء' }],
     sec4RepliesLabel: 'ردًا',
-    baH2: 'قبل وبعد سديم',
+    baH2: 'قبل وبعد سيندا',
     baDesc: 'الفرق واضح — والنتائج حقيقية',
-    baBeforeTitle: 'قبل سديم',
-    baAfterTitle: 'بعد سديم',
+    baBeforeTitle: 'قبل سيندا',
+    baAfterTitle: 'بعد سيندا',
     baBefore: ['ردود متأخرة أو مفقودة على التقييمات', 'جمع التقييمات يعتمد على الحظ والمزاج', 'لا رؤية حقيقية للأداء عبر الفروع', 'الفريق يعمل دون تنسيق واضح', 'ساعات ضائعة في صياغة ردود يدوية', 'التقييمات السلبية تمر دون تدخل'],
     baAfter: ['رد في دقائق بمساعدة الذكاء الاصطناعي', 'QR Code يجمع التقييمات بشكل منتظم', 'تقارير شاملة لكل فرع في مكان واحد', 'فريق منظم بصلاحيات وأدوار واضحة', 'وقت أقل — نتائج وسمعة أفضل بكثير', 'تنبيهات فورية للتقييمات تحتاج اهتمامًا'],
     philLabel: 'من نحن',
     philH2: 'ما الذي يجعلنا مختلفين؟',
-    philDesc: 'سديم ليس مجرد أداة — هو شريك تقني مبني للسوق العربي بكل تفاصيله واحتياجاته',
+    philDesc: 'سيندا ليس مجرد أداة — هو شريك تقني مبني للسوق العربي بكل تفاصيله واحتياجاته',
     philCards: [
       { emoji: '🎯', title: 'سهولة الاستخدام', desc: 'منتج بسيط بما يكفي أن تستخدمه بدون تدريب أو خبرة تقنية مسبقة' },
       { emoji: '🌍', title: 'عربي في جوهره',   desc: 'مبني للسوق العربي من البداية، وليس مجرد ترجمة لمنتج غربي' },
       { emoji: '🤝', title: 'شراكة حقيقية',   desc: 'نستمع لعملائنا باستمرار ونبني ما يحتاجونه فعلًا، لا ما نظن أنهم يريدونه' },
-      { emoji: '🚀', title: 'نمو مستمر',       desc: 'نحدّث سديم باستمرار بناءً على ملاحظاتك ومتطلبات السوق المتغيرة' },
+      { emoji: '🚀', title: 'نمو مستمر',       desc: 'نحدّث سيندا باستمرار بناءً على ملاحظاتك ومتطلبات السوق المتغيرة' },
     ],
     pricingLabel: 'الخطط والأسعار',
     pricingH2: 'ابدأ بالخطة المناسبة لعملك',
@@ -171,12 +171,12 @@ const T = {
     faqLabel: 'الأسئلة الشائعة',
     faqH2: 'لديك أسئلة؟ لدينا إجابات',
     faqs: [
-      { q: 'ما هو سديم وكيف يساعد عملي؟', a: 'سديم منصة متكاملة لإدارة تقييمات جوجل. تساعدك على الرد على التقييمات بالذكاء الاصطناعي، وجمع تقييمات جديدة عبر QR Code، ومراقبة أداء سمعتك عبر جميع فروعك في لوحة تحكم واحدة.' },
+      { q: 'ما هو سيندا وكيف يساعد عملي؟', a: 'سيندا منصة متكاملة لإدارة تقييمات جوجل. تساعدك على الرد على التقييمات بالذكاء الاصطناعي، وجمع تقييمات جديدة عبر QR Code، ومراقبة أداء سمعتك عبر جميع فروعك في لوحة تحكم واحدة.' },
       { q: 'كيف يعمل الرد التلقائي بالذكاء الاصطناعي؟', a: 'عند وصول تقييم جديد، يقرأ نظام الذكاء الاصطناعي التقييم ويولّد ردًا يتطابق مع نبرة علامتك التجارية. يمكنك مراجعة الرد وتعديله قبل النشر، أو ضبط الرد التلقائي الفوري.' },
-      { q: 'هل يمكنني إدارة أكثر من فرع؟', a: 'بالطبع! سديم مصمم أصلًا لإدارة متعددة الفروع. تستطيع ربط جميع مواقعك ورؤية التقارير والتقييمات لكل فرع بشكل منفصل أو مجمّع.' },
-      { q: 'هل هناك تجربة مجانية؟', a: 'نعم! جميع الخطط تتضمن فترة تجريبية مجانية لا تحتاج فيها إلى بطاقة ائتمان. سجّل الآن وجرّب سديم بكل راحة.' },
+      { q: 'هل يمكنني إدارة أكثر من فرع؟', a: 'بالطبع! سيندا مصمم أصلًا لإدارة متعددة الفروع. تستطيع ربط جميع مواقعك ورؤية التقارير والتقييمات لكل فرع بشكل منفصل أو مجمّع.' },
+      { q: 'هل هناك تجربة مجانية؟', a: 'نعم! جميع الخطط تتضمن فترة تجريبية مجانية لا تحتاج فيها إلى بطاقة ائتمان. سجّل الآن وجرّب سيندا بكل راحة.' },
       { q: 'ما الفرق بين خطط Orbit وNova وGalaxy؟', a: 'Orbit مثالية للمشاريع الصغيرة بفرع واحد. Nova مناسبة للأعمال المتنامية بعدة فروع وفريق عمل. Galaxy مصممة للمؤسسات الكبيرة بفروع غير محدودة وتكاملات API ومدير حساب مخصص.' },
-      { q: 'كيف يعمل نظام QR Code بالتفصيل؟', a: 'تنشئ رمز QR خاصًا بكل فرع أو موظف عبر سديم، تطبعه أو تعرضه للعملاء. عند المسح، يصل العميل مباشرة لصفحة التقييم على جوجل مع تتبع تلقائي لمصدر التقييم والموظف المُخدِّم.' },
+      { q: 'كيف يعمل نظام QR Code بالتفصيل؟', a: 'تنشئ رمز QR خاصًا بكل فرع أو موظف عبر سيندا، تطبعه أو تعرضه للعملاء. عند المسح، يصل العميل مباشرة لصفحة التقييم على جوجل مع تتبع تلقائي لمصدر التقييم والموظف المُخدِّم.' },
       { q: 'هل بياناتي ومعلومات عملائي آمنة؟', a: 'بالتأكيد. نستخدم معايير تشفير عالمية لحماية جميع البيانات مع نسخ احتياطية تلقائية يومية. لا نبيع أو نشارك أي بيانات مع أطراف خارجية بأي شكل.' },
       { q: 'كيف أتواصل مع فريق الدعم؟', a: 'نقدم دعمًا متخصصًا عبر البريد الإلكتروني وبوابة الدعم داخل لوحة التحكم. عملاء خطة Galaxy يحصلون على مدير حساب مخصص مع استجابة مضمونة خلال ساعة عمل.' },
     ],
@@ -196,9 +196,9 @@ const T = {
       { heading: 'المنتج',   items: ['المميزات', 'الخطط والأسعار', 'كيف يعمل', 'التحديثات الجديدة', 'دراسات حالة'] },
       { heading: 'الدعم',    items: ['مركز المساعدة', 'تواصل معنا', 'بوابة الدعم الفني', 'التوثيق التقني', 'حالة الخدمة'] },
     ],
-    footerLegal: { heading: 'قانوني', links: [{ label: 'سياسة الخصوصية', path: '/privacy' }, { label: 'شروط الاستخدام', path: '/terms' }, { label: 'قصة سديم', path: '/story' }, { label: 'إشعار قانوني', path: '/terms' }, { label: 'خريطة الموقع', path: '/' }] },
-    footerBottomLinks: [{ label: 'سياسة الخصوصية', path: '/privacy' }, { label: 'شروط الاستخدام', path: '/terms' }, { label: 'قصة سديم', path: '/story' }, { label: 'إشعار قانوني', path: '/terms' }, { label: 'الرئيسية', path: '/' }],
-    copyright: '© 2026 سديم. جميع الحقوق محفوظة.',
+    footerLegal: { heading: 'قانوني', links: [{ label: 'سياسة الخصوصية', path: '/privacy' }, { label: 'شروط الاستخدام', path: '/terms' }, { label: 'قصة سيندا', path: '/story' }, { label: 'إشعار قانوني', path: '/terms' }, { label: 'خريطة الموقع', path: '/' }] },
+    footerBottomLinks: [{ label: 'سياسة الخصوصية', path: '/privacy' }, { label: 'شروط الاستخدام', path: '/terms' }, { label: 'قصة سيندا', path: '/story' }, { label: 'إشعار قانوني', path: '/terms' }, { label: 'الرئيسية', path: '/' }],
+    copyright: '© 2026 سيندا. جميع الحقوق محفوظة.',
     loginBtn: 'دخول المشتركين',
     registerBtn: 'تسجيل جديد',
   },
@@ -211,9 +211,9 @@ const T = {
     heroDesc: 'Smart AI replies, QR review collection, and reputation analytics for all your branches — everything in one place',
     heroCtaStart: 'Get Started',
     heroCtaLogin: 'Subscriber Login',
-    heroCtaWatch: 'See How SADEEM Works',
+    heroCtaWatch: 'See How SENDA Works',
     heroStats: [{ val: '500+', lbl: 'Active Businesses' }, { val: '98%', lbl: 'Customer Satisfaction' }, { val: '4.8★', lbl: 'Our Rating' }, { val: '24/7', lbl: 'Ongoing Support' }],
-    dashTitle: 'SADEEM Dashboard',
+    dashTitle: 'SENDA Dashboard',
     dashStats: [{ label: 'Reviews', value: '2,847' }, { label: 'Average', value: '4.8 ★' }, { label: 'Reply Rate', value: '94%' }, { label: 'This Month', value: '+124' }],
     reviewDone: 'Replied',
     reviewAi: 'AI Replying…',
@@ -225,9 +225,9 @@ const T = {
     googleTime: '1 min ago',
     googleText: '"Excellent! Speed and quality in one place"',
     benefitLabels: ['AI-Powered Replies', 'QR Review Collection', 'Advanced Analytics', 'Branch Management', 'Team Collaboration', 'Seamless Integrations'],
-    featuresLabel: 'WHY SADEEM?',
+    featuresLabel: 'WHY SENDA?',
     featuresH2: 'Everything You Need to Manage Your Digital Reputation',
-    featuresDesc: 'SADEEM brings together in one platform all the tools you need to improve your reviews and build customer trust',
+    featuresDesc: 'SENDA brings together in one platform all the tools you need to improve your reviews and build customer trust',
     featureCards: [
       { title: 'AI-Powered Replies',          desc: 'Personalized replies for every review that reflect your brand identity in seconds' },
       { title: 'Unmatched Reply Speed',        desc: 'Reply before competitors and show customers you truly care about their feedback' },
@@ -240,11 +240,11 @@ const T = {
     ],
     sec1Label: 'ARTIFICIAL INTELLIGENCE',
     sec1H2: 'AI Replies for You — In Your Voice',
-    sec1Desc: 'No more spending hours crafting review responses. SADEEM analyzes each review and generates a reply that matches your brand tone — whether the review is positive or negative. Just review and publish.',
+    sec1Desc: 'No more spending hours crafting review responses. SENDA analyzes each review and generates a reply that matches your brand tone — whether the review is positive or negative. Just review and publish.',
     sec1Items: ['Automatic sentiment analysis and context understanding', 'Replies in both Arabic and English', 'Tone adjustment to match your business type', 'Review and edit the reply before publishing'],
     sec1ReviewText: 'Excellent and professional service. I will definitely return!',
     sec1ReviewName: 'Mohammed Ahmed',
-    sec1AiLabel: 'SADEEM is generating a reply...',
+    sec1AiLabel: 'SENDA is generating a reply...',
     sec1AiReply: 'Thank you so much, Mohammed, for this wonderful review! We are delighted you enjoyed your experience with us. We look forward to your next visit! 😊',
     sec1PostReply: 'Post Reply',
     sec1Edit: 'Edit',
@@ -256,7 +256,7 @@ const T = {
     sec2Branches: [{ name: 'Riyadh Branch', count: 47 }, { name: 'Jeddah Branch', count: 32 }, { name: 'Dammam Branch', count: 28 }],
     sec3Label: 'ANALYTICS',
     sec3H2: 'Analytics That Reveal What You Cannot See',
-    sec3Desc: 'Which branch gets the most reviews? What words repeat in negative reviews? When does reply rate drop? SADEEM answers automatically so you know where to focus.',
+    sec3Desc: 'Which branch gets the most reviews? What words repeat in negative reviews? When does reply rate drop? SENDA answers automatically so you know where to focus.',
     sec3Items: ['Performance comparison across all branches', 'Sentiment analysis and recurring keywords', 'Automatic weekly and monthly reports', 'Instant alerts for negative reviews'],
     sec3ChartTitle: 'Reviews This Month',
     sec3Branches: [{ label: 'Riyadh Branch', pct: 78 }, { label: 'Jeddah Branch', pct: 65 }, { label: 'Dammam Branch', pct: 52 }],
@@ -267,20 +267,20 @@ const T = {
     sec4Items: ['Flexible roles and permissions for each member', 'Monitor team performance in real time', 'Assign specific reviews to individuals', 'Instant notifications for new tasks'],
     sec4Team: [{ name: 'Ahmed', role: 'General Manager' }, { name: 'Sara', role: 'Riyadh Branch Manager' }, { name: 'Khalid', role: 'Jeddah Branch Supervisor' }, { name: 'Noura', role: 'Customer Support Staff' }],
     sec4RepliesLabel: 'replies',
-    baH2: 'Before & After SADEEM',
+    baH2: 'Before & After SENDA',
     baDesc: 'The difference is clear — the results are real',
-    baBeforeTitle: 'Before SADEEM',
-    baAfterTitle: 'After SADEEM',
+    baBeforeTitle: 'Before SENDA',
+    baAfterTitle: 'After SENDA',
     baBefore: ['Delayed or missed responses to reviews', 'Collecting reviews relies on luck and mood', 'No real visibility across branches', 'Team works without clear coordination', 'Hours wasted writing manual replies', 'Negative reviews pass without action'],
     baAfter: ['Reply in minutes with AI assistance', 'QR Code collects reviews consistently', 'Comprehensive reports for each branch', 'Organized team with clear roles and permissions', 'Less time — far better results and reputation', 'Instant alerts for reviews needing attention'],
     philLabel: 'WHO WE ARE',
     philH2: 'What Makes Us Different?',
-    philDesc: 'SADEEM is more than a tool — it\'s a technology partner built for the Arab market with all its details and needs',
+    philDesc: 'SENDA is more than a tool — it\'s a technology partner built for the Arab market with all its details and needs',
     philCards: [
       { emoji: '🎯', title: 'Ease of Use',       desc: 'Simple enough to use without training or prior technical knowledge' },
       { emoji: '🌍', title: 'Arabic at Heart',    desc: 'Built for the Arab market from the ground up, not just a translation of a Western product' },
       { emoji: '🤝', title: 'True Partnership',   desc: 'We listen to our customers and build what they actually need, not what we think they want' },
-      { emoji: '🚀', title: 'Continuous Growth',  desc: 'We continuously update SADEEM based on your feedback and evolving market requirements' },
+      { emoji: '🚀', title: 'Continuous Growth',  desc: 'We continuously update SENDA based on your feedback and evolving market requirements' },
     ],
     pricingLabel: 'PLANS & PRICING',
     pricingH2: 'Start with the Plan That Fits Your Business',
@@ -313,12 +313,12 @@ const T = {
     faqLabel: 'FAQ',
     faqH2: 'Have Questions? We Have Answers',
     faqs: [
-      { q: 'What is SADEEM and how does it help my business?', a: 'SADEEM is a comprehensive platform for managing Google reviews. It helps you respond to reviews with AI, collect new reviews via QR Code, and monitor your reputation performance across all your branches in one dashboard.' },
+      { q: 'What is SENDA and how does it help my business?', a: 'SENDA is a comprehensive platform for managing Google reviews. It helps you respond to reviews with AI, collect new reviews via QR Code, and monitor your reputation performance across all your branches in one dashboard.' },
       { q: 'How does the AI auto-reply work?', a: 'When a new review arrives, the AI reads it and generates a reply that matches your brand tone. You can review and edit it before publishing, or set it to auto-reply instantly.' },
-      { q: 'Can I manage more than one branch?', a: 'Absolutely! SADEEM is designed for multi-branch management. You can connect all your locations and view reports and reviews for each branch separately or combined.' },
-      { q: 'Is there a free trial?', a: 'Yes! All plans include a free trial with no credit card required. Sign up now and try SADEEM with complete peace of mind.' },
+      { q: 'Can I manage more than one branch?', a: 'Absolutely! SENDA is designed for multi-branch management. You can connect all your locations and view reports and reviews for each branch separately or combined.' },
+      { q: 'Is there a free trial?', a: 'Yes! All plans include a free trial with no credit card required. Sign up now and try SENDA with complete peace of mind.' },
       { q: 'What is the difference between Orbit, Nova, and Galaxy plans?', a: 'Orbit is ideal for small businesses with one branch. Nova is suited for growing businesses with multiple branches and a team. Galaxy is designed for large enterprises with unlimited branches, API integrations, and a dedicated account manager.' },
-      { q: 'How does the QR Code system work in detail?', a: 'You create a unique QR code for each branch or employee via SADEEM, then print or display it for customers. When scanned, the customer goes directly to your Google review page with automatic tracking of the review source and serving staff.' },
+      { q: 'How does the QR Code system work in detail?', a: 'You create a unique QR code for each branch or employee via SENDA, then print or display it for customers. When scanned, the customer goes directly to your Google review page with automatic tracking of the review source and serving staff.' },
       { q: 'Is my data and customer information secure?', a: 'Absolutely. We use global encryption standards to protect all data with automatic daily backups. We never sell or share any data with third parties in any form.' },
       { q: 'How do I contact the support team?', a: 'We provide specialized support via email and the support portal inside the dashboard. Galaxy plan customers get a dedicated account manager with a guaranteed response within one business hour.' },
     ],
@@ -338,9 +338,9 @@ const T = {
       { heading: 'Product', items: ['Features', 'Plans & Pricing', 'How It Works', "What's New", 'Case Studies'] },
       { heading: 'Support', items: ['Help Center', 'Contact Us', 'Technical Support', 'Documentation', 'Service Status'] },
     ],
-    footerLegal: { heading: 'Legal', links: [{ label: 'Privacy Policy', path: '/privacy' }, { label: 'Terms of Use', path: '/terms' }, { label: 'SADEEM Story', path: '/story' }, { label: 'Legal Notice', path: '/terms' }, { label: 'Sitemap', path: '/' }] },
-    footerBottomLinks: [{ label: 'Privacy Policy', path: '/privacy' }, { label: 'Terms of Use', path: '/terms' }, { label: 'SADEEM Story', path: '/story' }, { label: 'Legal Notice', path: '/terms' }, { label: 'Home', path: '/' }],
-    copyright: '© 2026 SADEEM. All rights reserved.',
+    footerLegal: { heading: 'Legal', links: [{ label: 'Privacy Policy', path: '/privacy' }, { label: 'Terms of Use', path: '/terms' }, { label: 'SENDA Story', path: '/story' }, { label: 'Legal Notice', path: '/terms' }, { label: 'Sitemap', path: '/' }] },
+    footerBottomLinks: [{ label: 'Privacy Policy', path: '/privacy' }, { label: 'Terms of Use', path: '/terms' }, { label: 'SENDA Story', path: '/story' }, { label: 'Legal Notice', path: '/terms' }, { label: 'Home', path: '/' }],
+    copyright: '© 2026 SENDA. All rights reserved.',
     loginBtn: 'Subscriber Login',
     registerBtn: 'Register',
   },
@@ -376,6 +376,13 @@ export default function HomePage() {
   const [lang, setLang] = useState<'ar' | 'en'>('ar');
 
   const toggleLang = () => setLang(l => l === 'ar' ? 'en' : 'ar');
+
+  // Page title
+  useEffect(() => {
+    document.title = lang === 'ar'
+      ? 'سيندا — منصة إدارة تقييمات جوجل بالذكاء الاصطناعي'
+      : 'SENDA — AI-Powered Google Reviews Management';
+  }, [lang]);
 
   // Navbar background on scroll
   useEffect(() => {
@@ -432,7 +439,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
           {/* Logo — PNG image */}
           <button onClick={() => scrollTo('hero')} className="flex items-center gap-2 flex-shrink-0" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
-            <img src="/sadeem-logo.png" alt="SADEEM" style={{ height: 32, width: 'auto' }} />
+            <img src="/senda-logo.png" alt="SENDA" style={{ height: 32, width: 'auto' }} />
           </button>
 
           {/* Desktop nav */}
@@ -562,7 +569,7 @@ export default function HomePage() {
                     {['#EF4444','#F59E0B','#10B981'].map((c,i) => <div key={i} style={{ width: 10, height: 10, borderRadius: '50%', background: c, opacity: 0.7 }} />)}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                    <img src="/sadeem-logo.png" alt="SADEEM" style={{ height: 18, width: 'auto', opacity: 0.85 }} />
+                    <img src="/senda-logo.png" alt="SENDA" style={{ height: 18, width: 'auto', opacity: 0.85 }} />
                     <span style={{ fontSize: 11, color: C.muted }}>Review Assistant</span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
@@ -610,7 +617,7 @@ export default function HomePage() {
                     <div style={{ width: 18, height: 18, borderRadius: 4, background: 'rgba(139,92,246,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <span style={{ fontSize: 9, fontWeight: 700, color: C.purple }}>02</span>
                     </div>
-                    <span style={{ fontSize: 10, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{lang === 'ar' ? 'سديم تحلل وتفهم' : 'SADEEM Analyzes'}</span>
+                    <span style={{ fontSize: 10, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{lang === 'ar' ? 'سيندا تحلل وتفهم' : 'SENDA Analyzes'}</span>
                     <div style={{ marginRight: 'auto', display: 'flex', alignItems: 'center', gap: 4 }}>
                       <div style={{ width: 56, height: 3, background: C.border, borderRadius: 2, overflow: 'hidden' }}>
                         <div style={{ height: '100%', width: '100%', background: GRAD }} />
@@ -1256,7 +1263,7 @@ export default function HomePage() {
             {/* Col 1: About + social */}
             <div>
               <div className="flex items-center gap-2" style={{ marginBottom: 16 }}>
-                <img src="/sadeem-logo.png" alt="SADEEM" style={{ height: 30, width: 'auto', borderRadius: 5 }} />
+                <img src="/senda-logo.png" alt="SENDA" style={{ height: 30, width: 'auto', borderRadius: 5 }} />
               </div>
               <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.7, marginBottom: 20, fontWeight: 400 }}>
                 {T[lang].footerTagline}

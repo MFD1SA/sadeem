@@ -22,7 +22,7 @@ export const tasksService = {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.warn('[Sadeem] Tasks load failed:', error.message);
+      console.warn('[Senda] Tasks load failed:', error.message);
       return [];
     }
     return (data || []) as DbTask[];

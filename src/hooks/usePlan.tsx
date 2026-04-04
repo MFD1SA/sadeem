@@ -84,7 +84,7 @@ export function PlanProvider({ children }: { children: ReactNode }) {
     if (authLoading) return;
     if (!orgId) { setIsLoading(false); return; }
 
-    const safetyTimer = setTimeout(() => { setIsLoading(false); }, 5000);
+    const safetyTimer = setTimeout(() => { setIsLoading(false); }, 3000);
 
     try {
       // Use pre-loaded subscription from AuthProvider if available (saves a round-trip)
@@ -100,7 +100,7 @@ export function PlanProvider({ children }: { children: ReactNode }) {
       setTrial(computeTrial(sub));
       setBranchCount(branches.filter((b: { status: string }) => b.status === 'active').length);
     } catch (err) {
-      console.warn('[Sadeem] Plan load failed:', err);
+      console.warn('[Senda] Plan load failed:', err);
       setSubscription(null);
       setTrial(noSubscriptionTrial);
       setBranchCount(0);

@@ -1,5 +1,5 @@
 // ============================================================================
-// SADEEM Admin — Plans Management
+// SENDA Admin — Plans Management
 // Full CRUD for pricing plans, limits, and features
 // ============================================================================
 

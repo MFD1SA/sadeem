@@ -1,5 +1,5 @@
 // ============================================================================
-// SADEEM Admin — Audit Logs Service (Hardened)
+// SENDA Admin — Audit Logs Service (Hardened)
 // READ: Protected by RLS admin_audit_select — only active admins.
 // WRITE: Via RPC admin_write_audit_log() — SECURITY DEFINER.
 // ============================================================================

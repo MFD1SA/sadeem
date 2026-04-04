@@ -17,8 +17,7 @@ interface FiltersPanelProps {
 }
 
 export function FiltersPanel({ filters, onChange, branches }: FiltersPanelProps) {
-  const { t, lang } = useLanguage();
-  const isAr = lang === 'ar';
+  const { t } = useLanguage();
   const update = (key: keyof ReviewFilters, value: unknown) => onChange({ ...filters, [key]: value });
 
   return (
@@ -38,7 +37,7 @@ export function FiltersPanel({ filters, onChange, branches }: FiltersPanelProps)
       </div>
 
       <div>
-        <label htmlFor="filter-branch" className="sr-only">{isAr ? 'الفرع' : 'Branch'}</label>
+        <label htmlFor="filter-branch" className="sr-only">{t.reviewsCenter.branch}</label>
         <select id="filter-branch" className="form-select" onChange={(e: ChangeEvent<HTMLSelectElement>) => update('branchId', e.target.value)}>
           <option value="">{t.reviewsCenter.allBranches}</option>
           {branches.filter((b: DbBranch) => b.status === 'active').map((b: DbBranch) => (
@@ -48,7 +47,7 @@ export function FiltersPanel({ filters, onChange, branches }: FiltersPanelProps)
       </div>
 
       <div>
-        <label htmlFor="filter-rating" className="sr-only">{isAr ? 'التقييم' : 'Rating'}</label>
+        <label htmlFor="filter-rating" className="sr-only">{t.reviewsCenter.rating}</label>
         <select id="filter-rating" className="form-select" onChange={(e: ChangeEvent<HTMLSelectElement>) => update('rating', e.target.value ? Number(e.target.value) : null)}>
           <option value="">{t.reviewsCenter.allRatings}</option>
           {[5, 4, 3, 2, 1].map((r: number) => (
@@ -58,7 +57,7 @@ export function FiltersPanel({ filters, onChange, branches }: FiltersPanelProps)
       </div>
 
       <div>
-        <label htmlFor="filter-sentiment" className="sr-only">{isAr ? 'المشاعر' : 'Sentiment'}</label>
+        <label htmlFor="filter-sentiment" className="sr-only">{t.reviewsCenter.sentimentLabel}</label>
         <select id="filter-sentiment" className="form-select" onChange={(e: ChangeEvent<HTMLSelectElement>) => update('sentiment', e.target.value || null)}>
           <option value="">{t.reviewsCenter.allSentiments}</option>
           <option value="positive">{t.sentiment.positive}</option>
@@ -68,7 +67,7 @@ export function FiltersPanel({ filters, onChange, branches }: FiltersPanelProps)
       </div>
 
       <div>
-        <label htmlFor="filter-status" className="sr-only">{isAr ? 'الحالة' : 'Status'}</label>
+        <label htmlFor="filter-status" className="sr-only">{t.reviewsCenter.statusLabel}</label>
         <select id="filter-status" className="form-select" onChange={(e: ChangeEvent<HTMLSelectElement>) => update('status', e.target.value || null)}>
           <option value="">{t.reviewsCenter.allStatuses}</option>
           <option value="new">{t.status.new}</option>
@@ -76,7 +75,7 @@ export function FiltersPanel({ filters, onChange, branches }: FiltersPanelProps)
           <option value="pending_reply">{t.status.pending_reply}</option>
           <option value="auto_replied">{t.status.auto_replied}</option>
           <option value="flagged">{t.status.flagged}</option>
-          <option value="manual_review_required">{t.status.manual_review_required || (isAr ? 'مراجعة يدوية' : 'Manual Review')}</option>
+          <option value="manual_review_required">{t.status.manual_review_required}</option>
         </select>
       </div>
 

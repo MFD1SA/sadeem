@@ -1,5 +1,5 @@
 -- ============================================================================
--- SADEEM: Allow admin users to read subscriber audit_logs
+-- SENDA: Allow admin users to read subscriber audit_logs
 -- Applied: 2026-04-03
 -- Purpose: AdminAuditLogs page needs to read from audit_logs (subscriber ops)
 --          in addition to admin_audit_logs (admin ops)

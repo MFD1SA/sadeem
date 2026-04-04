@@ -1,4 +1,4 @@
-// SADEEM — سياسة الخصوصية
+// SENDA — سياسة الخصوصية
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Star } from 'lucide-react';
 
@@ -17,7 +17,7 @@ function LegalLayout({ title, subtitle, children }: { title: string; subtitle: s
           </button>
           <div className="flex items-center gap-2">
             <div style={{ width: 28, height: 28, borderRadius: 7, background: GRAD, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Star size={13} style={{ color: 'white' }} /></div>
-            <span style={{ fontSize: 16, fontWeight: 600, color: C.text }}>SADEEM | سديم</span>
+            <span style={{ fontSize: 16, fontWeight: 600, color: C.text }}>SENDA | سيندا</span>
           </div>
           <div style={{ width: 80 }} />
         </div>
@@ -31,7 +31,7 @@ function LegalLayout({ title, subtitle, children }: { title: string; subtitle: s
         <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>{children}</div>
       </div>
       <div style={{ background: '#0A0D14', borderTop: `1px solid ${C.border}`, padding: '20px 0', textAlign: 'center' }}>
-        <p style={{ fontSize: 12, color: C.muted, margin: 0 }}>© 2026 سديم. جميع الحقوق محفوظة.</p>
+        <p style={{ fontSize: 12, color: C.muted, margin: 0 }}>© 2026 سيندا. جميع الحقوق محفوظة.</p>
       </div>
     </div>
   );
@@ -50,7 +50,7 @@ export default function PrivacyPage() {
   return (
     <LegalLayout title="سياسة الخصوصية" subtitle="آخر تحديث: مارس 2026">
       <Section title="المقدمة">
-        <p style={{ margin: 0 }}>تلتزم سديم بحماية خصوصيتك وبياناتك الشخصية. توضح هذه السياسة كيفية جمع المعلومات واستخدامها وحمايتها عند استخدامك لمنصتنا.</p>
+        <p style={{ margin: 0 }}>تلتزم سيندا بحماية خصوصيتك وبياناتك الشخصية. توضح هذه السياسة كيفية جمع المعلومات واستخدامها وحمايتها عند استخدامك لمنصتنا.</p>
       </Section>
 
       <Section title="المعلومات التي نجمعها">

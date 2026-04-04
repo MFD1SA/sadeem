@@ -1,5 +1,5 @@
 -- ============================================================================
--- SADEEM Admin — Phase 2.5: Auth User Creation Hardening
+-- SENDA Admin — Phase 2.5: Auth User Creation Hardening
 -- Run AFTER admin-phase2-user-management.sql
 --
 -- What this does:

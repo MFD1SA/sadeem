@@ -1,5 +1,5 @@
 -- ============================================================================
--- SADEEM Admin — Phase 4: Subscriber & Subscription Management RPCs
+-- SENDA Admin — Phase 4: Subscriber & Subscription Management RPCs
 -- Run AFTER admin-phase3-role-management.sql
 --
 -- These RPCs let admins read subscriber data (organizations, subscriptions,

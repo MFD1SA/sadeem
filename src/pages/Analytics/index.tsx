@@ -70,9 +70,9 @@ export default function Analytics() {
       <div>
         <h1 className="page-title flex items-center gap-2">
           <BarChart3 size={20} className="text-brand-500" />
-          {isAr ? 'التحليلات' : 'Analytics'}
+          {t.analyticsPage.title}
         </h1>
-        <p className="page-subtitle">{isAr ? 'نظرة شاملة على أداء تقييماتك ومعدلات الرد' : 'Overview of your review performance and response rates'}</p>
+        <p className="page-subtitle">{t.analyticsPage.subtitle}</p>
       </div>
 
       {/* KPI row */}
@@ -131,7 +131,7 @@ export default function Analytics() {
                   <div key={i} className="flex-1 flex flex-col items-center gap-1 group relative">
                     {point.count > 0 && (
                       <div className="absolute -top-6 opacity-0 group-hover:opacity-100 transition-all duration-200 bg-gray-800 text-white text-[10px] font-semibold px-2 py-1 rounded-md shadow-lg whitespace-nowrap">
-                        {point.count} {isAr ? 'تقييم' : 'reviews'}
+                        {point.count} {t.analyticsPage.reviewCount}
                         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-2 h-2 bg-gray-800 rotate-45" />
                       </div>
                     )}

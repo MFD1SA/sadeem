@@ -1,5 +1,5 @@
 // ============================================================================
-// SADEEM Admin — Payment Gateway Page (Phase 7)
+// SENDA Admin — Payment Gateway Page (Phase 7)
 // ============================================================================
 
 import { useEffect, useState, useCallback } from 'react';

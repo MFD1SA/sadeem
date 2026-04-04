@@ -1,5 +1,5 @@
 // ============================================================================
-// SADEEM Admin — Edge Function: admin-create-user
+// SENDA Admin — Edge Function: admin-create-user
 //
 // This runs on Supabase Edge Functions (Deno runtime).
 // It uses the SERVICE_ROLE key (server-side only, never exposed to client).

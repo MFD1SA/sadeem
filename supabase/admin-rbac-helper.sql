@@ -1,5 +1,5 @@
 -- ============================================================================
--- SADEEM — RBAC Helper: check_is_admin
+-- SENDA — RBAC Helper: check_is_admin
 -- Lightweight RPC for subscriber guards to check if user is admin.
 -- Returns true if auth.uid() has an active admin_users row.
 -- This prevents admins from accidentally using subscriber dashboard.

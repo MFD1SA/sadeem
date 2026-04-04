@@ -304,7 +304,7 @@ export default function Integrations() {
         reviewerName: 'محمد',
         rating: 5,
         branchName: 'الفرع الرئيسي',
-        organizationName: organization?.name || 'سديم',
+        organizationName: organization?.name || 'سيندا',
         language: 'ar',
       });
       setGeminiTestResult(`✓ ${result.sentiment} | ${result.reply}`);

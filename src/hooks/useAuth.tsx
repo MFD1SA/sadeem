@@ -81,10 +81,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!insErr && created) return created as DbUser;
       }
 
-      console.warn('[Sadeem] Profile load error:', error.message);
+      console.warn('[Senda] Profile load error:', error.message);
       return null;
     } catch (err) {
-      console.warn('[Sadeem] Profile load failed:', err);
+      console.warn('[Senda] Profile load failed:', err);
       return null;
     }
   }, []);
@@ -93,7 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       return await organizationService.getUserOrganization(userId);
     } catch (err) {
-      console.warn('[Sadeem] Organization load failed:', err);
+      console.warn('[Senda] Organization load failed:', err);
       return null;
     }
   }, []);
@@ -150,7 +150,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           hasOrganization: !!orgData?.org,
         });
       } catch (err) {
-        console.error('[Sadeem] Auth hydrate failed:', err);
+        console.error('[Senda] Auth hydrate failed:', err);
         setState({
           session,
           user: { id: session.user.id, email: session.user.email },
@@ -206,7 +206,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
 
-    // Fallback: if INITIAL_SESSION doesn't fire within 300ms, call getSession()
+    // Fallback: if INITIAL_SESSION doesn't fire within 150ms, call getSession()
     const fallback = setTimeout(() => {
       if (!initialSessionHandled.current && mounted) {
         supabase.auth.getSession().then(({ data: { session } }) => {
@@ -215,7 +215,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         });
       }
-    }, 300);
+    }, 150);
 
     // PKCE race fallback for OAuth callback
     const hasPkceCode = typeof window !== 'undefined' && window.location.search.includes('code=');
@@ -228,13 +228,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
     }, 1000) : null;
 
-    // Safety timeout: force isLoading=false after 4 seconds
+    // Safety timeout: force isLoading=false after 2 seconds
     const safetyTimer = setTimeout(() => {
       if (mounted && !initialSessionHandled.current) {
         initialSessionHandled.current = true;
         setState((prev) => ({ ...prev, isLoading: false }));
       }
-    }, 4000);
+    }, 2000);
 
     return () => {
       mounted = false;
@@ -266,7 +266,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await supabase.auth.signOut();
     } catch (err) {
-      console.error('[Sadeem] Sign out failed:', err);
+      console.error('[Senda] Sign out failed:', err);
       setState({
         session: null,
         user: null,

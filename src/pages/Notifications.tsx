@@ -9,7 +9,7 @@ import { Bell, Star, AlertTriangle, CheckCircle } from 'lucide-react';
 import { formatTimeAgo } from '@/utils/helpers';
 
 export default function Notifications() {
-  const { lang } = useLanguage();
+  const { t, lang } = useLanguage();
   const { organization } = useAuth();
   const [items, setItems] = useState<DbNotification[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,7 +35,7 @@ export default function Notifications() {
       await notificationService.markRead(id);
       await loadNotifications();
     } catch (err) {
-      console.warn('[Sadeem] Mark read failed:', err);
+      console.warn('[Senda] Mark read failed:', err);
     }
   }, [loadNotifications]);
 
@@ -45,7 +45,7 @@ export default function Notifications() {
       await notificationService.markAllRead(organization.id);
       await loadNotifications();
     } catch (err) {
-      console.warn('[Sadeem] Mark all read failed:', err);
+      console.warn('[Senda] Mark all read failed:', err);
     }
   };
 
@@ -61,14 +61,14 @@ export default function Notifications() {
         <div>
           <h1 className="page-title flex items-center gap-2">
             <Bell size={20} className="text-brand-500" />
-            {lang === 'ar' ? 'الإشعارات' : 'Notifications'}
+            {t.notificationsPage.title}
           </h1>
-          <p className="page-subtitle">{lang === 'ar' ? 'تابع آخر التحديثات والتنبيهات المتعلقة بتقييماتك' : 'Stay updated with the latest alerts about your reviews'}</p>
+          <p className="page-subtitle">{t.notificationsPage.subtitle}</p>
         </div>
         {unreadCount > 0 && (
           <button className="btn btn-secondary btn-sm" onClick={handleMarkAllRead}>
             <CheckCircle size={13} />
-            {lang === 'ar' ? 'تحديد الكل كمقروء' : 'Mark all read'}
+            {t.notificationsPage.markAllReadShort}
           </button>
         )}
       </div>
@@ -81,7 +81,7 @@ export default function Notifications() {
           </div>
           <div>
             <div className="text-lg font-bold text-content-primary leading-none">{items.length}</div>
-            <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">{lang === 'ar' ? 'إجمالي الإشعارات' : 'Total'}</div>
+            <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">{t.notificationsPage.total}</div>
           </div>
         </div>
         <div className="stat-card flex items-center gap-3">
@@ -90,7 +90,7 @@ export default function Notifications() {
           </div>
           <div>
             <div className={`text-lg font-bold leading-none ${unreadCount > 0 ? 'text-red-600' : 'text-content-primary'}`}>{unreadCount}</div>
-            <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">{lang === 'ar' ? 'غير مقروءة' : 'Unread'}</div>
+            <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">{t.notificationsPage.unread}</div>
           </div>
         </div>
         <div className="stat-card flex items-center gap-3 col-span-2 sm:col-span-1">
@@ -99,7 +99,7 @@ export default function Notifications() {
           </div>
           <div>
             <div className="text-lg font-bold text-emerald-600 leading-none">{items.length - unreadCount}</div>
-            <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">{lang === 'ar' ? 'مقروءة' : 'Read'}</div>
+            <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">{t.notificationsPage.read}</div>
           </div>
         </div>
       </div>
@@ -108,13 +108,13 @@ export default function Notifications() {
       <div className="card">
         <div className="card-header">
           <div className="flex items-center gap-2">
-            <h3>{lang === 'ar' ? 'جميع الإشعارات' : 'All Notifications'}</h3>
+            <h3>{t.notificationsPage.allNotifications}</h3>
             {unreadCount > 0 && <Badge variant="danger">{unreadCount}</Badge>}
           </div>
         </div>
         {items.length === 0 ? (
           <EmptyState
-            message={lang === 'ar' ? 'لا توجد إشعارات حالياً' : 'No notifications yet'}
+            message={t.notificationsPage.noNotifications}
             icon={<Bell size={44} strokeWidth={1} className="text-gray-200" />}
           />
         ) : (
@@ -124,6 +124,10 @@ export default function Notifications() {
                 key={n.id}
                 className={`px-5 py-3.5 transition-all duration-150 cursor-pointer hover:bg-surface-secondary/40 ${n.is_read ? '' : 'bg-brand-50/30 border-s-[3px] border-brand-400'}`}
                 onClick={() => !n.is_read && handleMarkRead(n.id)}
+                role={n.is_read ? undefined : 'button'}
+                tabIndex={n.is_read ? undefined : 0}
+                aria-label={n.is_read ? undefined : `${t.notificationsPage.markAllReadShort}: ${n.title}`}
+                onKeyDown={n.is_read ? undefined : (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleMarkRead(n.id); } }}
               >
                 <div className="flex items-start gap-3">
                   <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 ${
@@ -144,7 +148,7 @@ export default function Notifications() {
                     </div>
                     <p className="text-xs text-content-tertiary mt-1 leading-relaxed">{n.body}</p>
                   </div>
-                  {!n.is_read && <div className="w-2.5 h-2.5 rounded-full bg-brand-500 flex-shrink-0 mt-2 animate-pulse" role="img" aria-label={lang === 'ar' ? 'غير مقروء' : 'Unread'} />}
+                  {!n.is_read && <div className="w-2.5 h-2.5 rounded-full bg-brand-500 flex-shrink-0 mt-2 animate-pulse" role="img" aria-label={t.notificationsPage.unread} />}
                 </div>
               </div>
             ))}

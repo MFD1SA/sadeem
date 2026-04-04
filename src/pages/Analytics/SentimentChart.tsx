@@ -39,7 +39,7 @@ export function SentimentChart({ breakdown }: Props) {
               <div key={seg.key} className="text-center p-3 rounded-xl" style={{ background: `${seg.color}08`, border: `1px solid ${seg.color}15` }}>
                 <div className="text-xl font-bold" style={{ color: seg.color }}>{percent}%</div>
                 <div className="text-[11px] text-content-tertiary font-medium mt-0.5">{seg.label}</div>
-                <div className="text-[10px] text-content-tertiary">{seg.value} {t.common?.reviews || 'reviews'}</div>
+                <div className="text-[10px] text-content-tertiary">{seg.value} {(t.common as Record<string, string>).reviews || t.nav.reviews}</div>
               </div>
             );
           })}

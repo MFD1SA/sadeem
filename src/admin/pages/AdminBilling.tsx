@@ -1,5 +1,5 @@
 // ============================================================================
-// SADEEM Admin — Billing & Finance Page (Phase 5)
+// SENDA Admin — Billing & Finance Page (Phase 5)
 // ============================================================================
 
 import { useEffect, useState, useCallback, useRef } from 'react';

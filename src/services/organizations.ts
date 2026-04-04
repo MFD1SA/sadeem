@@ -15,7 +15,7 @@ export const organizationService = {
       .maybeSingle();
 
     if (memErr) {
-      console.warn('[Sadeem] Membership lookup failed:', memErr.message);
+      console.warn('[Senda] Membership lookup failed:', memErr.message);
       return null;
     }
 
@@ -25,7 +25,7 @@ export const organizationService = {
     const org = mem.organizations;
 
     if (!org) {
-      console.warn('[Sadeem] Organization not found for membership');
+      console.warn('[Senda] Organization not found for membership');
       return null;
     }
 
@@ -56,7 +56,7 @@ export const organizationService = {
       '-' +
       Date.now().toString(36);
 
-    console.log('[Sadeem][createOrg] Step 1: inserting organization…', { userId, slug });
+    console.log('[Senda][createOrg] Step 1: inserting organization…', { userId, slug });
 
     const { data: org, error: orgErr } = await supabase
       .from('organizations')
@@ -72,7 +72,7 @@ export const organizationService = {
       .select()
       .single();
 
-    console.log('[Sadeem][createOrg] Step 1 result:', { org: !!org, orgErr });
+    console.log('[Senda][createOrg] Step 1 result:', { org: !!org, orgErr });
 
     if (orgErr || !org) {
       throw orgErr || new Error('Failed to create organization');
@@ -80,7 +80,7 @@ export const organizationService = {
 
     const created = org as DbOrganization;
 
-    console.log('[Sadeem][createOrg] Step 2: inserting membership…', { orgId: created.id });
+    console.log('[Senda][createOrg] Step 2: inserting membership…', { orgId: created.id });
 
     const { data: mem, error: memErr } = await supabase
       .from('memberships')
@@ -93,7 +93,7 @@ export const organizationService = {
       .select()
       .single();
 
-    console.log('[Sadeem][createOrg] Step 2 result:', { mem: !!mem, memErr });
+    console.log('[Senda][createOrg] Step 2 result:', { mem: !!mem, memErr });
 
     if (memErr) throw memErr;
     if (!mem) throw new Error('Membership was not created — possible RLS policy issue');

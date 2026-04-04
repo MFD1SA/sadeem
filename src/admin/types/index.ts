@@ -1,5 +1,5 @@
 // ============================================================================
-// SADEEM Admin — Type Definitions
+// SENDA Admin — Type Definitions
 // Completely independent from subscriber types
 // ============================================================================
 

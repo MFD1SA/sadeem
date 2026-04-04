@@ -1,5 +1,5 @@
 // ============================================================================
-// SADEEM — Subscriber Route Guards (with RBAC)
+// SENDA — Subscriber Route Guards (with RBAC)
 //
 // These guards protect subscriber routes (/dashboard/*, /onboarding, /login).
 // Admin routes (/admin/*) are protected separately by AdminAuthProvider.

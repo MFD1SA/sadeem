@@ -180,7 +180,7 @@ export default function ReviewLanding() {
 
         {/* Footer */}
         <div className="text-center mt-10">
-          <span className="text-[10px] text-gray-300">Powered by سديم</span>
+          <span className="text-[10px] text-gray-300">Powered by سيندا</span>
         </div>
       </div>
     </div>

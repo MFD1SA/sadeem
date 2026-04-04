@@ -1,5 +1,5 @@
 // ============================================================================
-// SADEEM Admin — Global Plan Templates Service
+// SENDA Admin — Global Plan Templates Service
 // CRUD via SECURITY DEFINER RPCs with permission checks.
 // ============================================================================
 

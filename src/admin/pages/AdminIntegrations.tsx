@@ -1,5 +1,5 @@
 // ============================================================================
-// SADEEM Admin — Integrations Management
+// SENDA Admin — Integrations Management
 // Full CRUD: add, edit, enable/disable integrations via adminSupabase
 // ============================================================================
 

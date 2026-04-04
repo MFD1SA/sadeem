@@ -1,5 +1,5 @@
 // ============================================================================
-// SADEEM Admin — Dashboard (Phase 4)
+// SENDA Admin — Dashboard (Phase 4)
 // Real stats from admin_get_dashboard_stats RPC.
 // ============================================================================
 
@@ -22,6 +22,7 @@ export default function AdminDashboard() {
   const [error, setError] = useState('');
 
   useEffect(() => {
+    document.title = 'سيندا — لوحة الإدارة';
     loadStats();
   }, []);
 

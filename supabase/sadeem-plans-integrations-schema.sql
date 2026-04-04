@@ -1,5 +1,5 @@
 -- ============================================================
--- SADEEM — Plans + Integrations Dynamic Schema
+-- SENDA — Plans + Integrations Dynamic Schema
 -- Run once in Supabase SQL Editor
 -- ============================================================
 
@@ -222,4 +222,4 @@ $$;
 CREATE INDEX IF NOT EXISTS idx_plan_features_plan_id ON public.plan_features(plan_id);
 CREATE INDEX IF NOT EXISTS idx_plan_limits_plan_id ON public.plan_limits(plan_id);
 
-SELECT 'SADEEM plans + integrations schema applied successfully' AS status;
+SELECT 'SENDA plans + integrations schema applied successfully' AS status;

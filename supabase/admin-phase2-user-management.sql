@@ -1,5 +1,5 @@
 -- ============================================================================
--- SADEEM Admin — Phase 2: User Management RPCs
+-- SENDA Admin — Phase 2: User Management RPCs
 -- Run AFTER admin-security-hardening.sql
 --
 -- Creates SECURITY DEFINER RPCs for all admin_users write operations.

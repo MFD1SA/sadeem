@@ -257,7 +257,7 @@ export default function Insights() {
                       return (
                         <div key={key}>
                           <div className="flex justify-between text-xs mb-1">
-                            <span className="text-content-primary font-medium">{t.sentiment[key]}</span>
+                            <span className="text-content-primary font-medium">{(t.sentiment as Record<string, string>)[key] || key}</span>
                             <span className="text-content-tertiary">{count} ({pct}%)</span>
                           </div>
                           <div className="w-full h-2 bg-gray-100 rounded-full">

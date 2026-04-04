@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Sidebar } from '@/components/sidebar/Sidebar';
 import { Topbar } from '@/components/topbar/Topbar';
 import { PlanProvider } from '@/hooks/usePlan';

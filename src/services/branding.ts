@@ -1,5 +1,5 @@
 // ============================================================================
-// SADEEM — Public Branding Service
+// SENDA — Public Branding Service
 // Reads branding settings from system_settings (public read RLS on 'branding').
 // Used by Login page and any public-facing surface.
 // ============================================================================
@@ -14,8 +14,8 @@ export interface BrandingConfig {
 }
 
 const DEFAULT_BRANDING: BrandingConfig = {
-  platform_name_ar: 'سديم',
-  platform_name_en: 'SADEEM',
+  platform_name_ar: 'سيندا',
+  platform_name_en: 'SENDA',
   tagline: 'إدارة تقييمات Google بالذكاء الاصطناعي',
   logo_icon_url: '',
   logo_full_url: '',

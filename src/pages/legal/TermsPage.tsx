@@ -1,4 +1,4 @@
-// SADEEM — شروط الاستخدام
+// SENDA — شروط الاستخدام
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Star } from 'lucide-react';
 
@@ -17,7 +17,7 @@ function LegalLayout({ title, subtitle, children }: { title: string; subtitle: s
           </button>
           <div className="flex items-center gap-2">
             <div style={{ width: 28, height: 28, borderRadius: 7, background: GRAD, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Star size={13} style={{ color: 'white' }} /></div>
-            <span style={{ fontSize: 16, fontWeight: 600, color: C.text }}>SADEEM | سديم</span>
+            <span style={{ fontSize: 16, fontWeight: 600, color: C.text }}>SENDA | سيندا</span>
           </div>
           <div style={{ width: 80 }} />
         </div>
@@ -31,7 +31,7 @@ function LegalLayout({ title, subtitle, children }: { title: string; subtitle: s
         <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>{children}</div>
       </div>
       <div style={{ background: '#0A0D14', borderTop: `1px solid ${C.border}`, padding: '20px 0', textAlign: 'center' }}>
-        <p style={{ fontSize: 12, color: C.muted, margin: 0 }}>© 2026 سديم. جميع الحقوق محفوظة.</p>
+        <p style={{ fontSize: 12, color: C.muted, margin: 0 }}>© 2026 سيندا. جميع الحقوق محفوظة.</p>
       </div>
     </div>
   );
@@ -48,13 +48,13 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 export default function TermsPage() {
   return (
-    <LegalLayout title="شروط الاستخدام" subtitle="آخر تحديث: مارس 2026 — تسري على جميع مستخدمي منصة سديم">
+    <LegalLayout title="شروط الاستخدام" subtitle="آخر تحديث: مارس 2026 — تسري على جميع مستخدمي منصة سيندا">
       <Section title="قبول الشروط">
-        <p style={{ margin: 0 }}>باستخدامك لمنصة سديم، فإنك توافق على الالتزام بهذه الشروط. إذا كنت لا توافق على أي من هذه الشروط، يرجى التوقف عن استخدام المنصة.</p>
+        <p style={{ margin: 0 }}>باستخدامك لمنصة سيندا، فإنك توافق على الالتزام بهذه الشروط. إذا كنت لا توافق على أي من هذه الشروط، يرجى التوقف عن استخدام المنصة.</p>
       </Section>
 
       <Section title="وصف الخدمة">
-        <p style={{ margin: 0 }}>سديم منصة SaaS متخصصة في إدارة تقييمات جوجل، وتشمل الخدمات: الرد التلقائي بالذكاء الاصطناعي، إنشاء رموز QR لجمع التقييمات، تقارير الأداء، وإدارة الفريق والفروع.</p>
+        <p style={{ margin: 0 }}>سيندا منصة SaaS متخصصة في إدارة تقييمات جوجل، وتشمل الخدمات: الرد التلقائي بالذكاء الاصطناعي، إنشاء رموز QR لجمع التقييمات، تقارير الأداء، وإدارة الفريق والفروع.</p>
       </Section>
 
       <Section title="التزامات المستخدم">
@@ -72,11 +72,11 @@ export default function TermsPage() {
       </Section>
 
       <Section title="الملكية الفكرية">
-        <p style={{ margin: 0 }}>جميع حقوق الملكية الفكرية لمنصة سديم — بما يشمل الكود والتصاميم والمحتوى — محفوظة لصالح سديم. يُمنح المستخدم رخصة استخدام محدودة وغير قابلة للتحويل.</p>
+        <p style={{ margin: 0 }}>جميع حقوق الملكية الفكرية لمنصة سيندا — بما يشمل الكود والتصاميم والمحتوى — محفوظة لسيندا. يُمنح المستخدم رخصة استخدام محدودة وغير قابلة للتحويل.</p>
       </Section>
 
       <Section title="حدود المسؤولية">
-        <p style={{ margin: 0 }}>لا تتحمل سديم مسؤولية أي أضرار غير مباشرة تنجم عن استخدام أو عدم إمكانية استخدام الخدمة. نسعى للحفاظ على مستوى خدمة بنسبة 99.9% لعملاء خطة Galaxy وInfinity.</p>
+        <p style={{ margin: 0 }}>لا تتحمل سيندا مسؤولية أي أضرار غير مباشرة تنجم عن استخدام أو عدم إمكانية استخدام الخدمة. نسعى للحفاظ على مستوى خدمة بنسبة 99.9% لعملاء خطة Galaxy وInfinity.</p>
       </Section>
 
       <Section title="تعديل الشروط">

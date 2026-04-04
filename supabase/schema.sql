@@ -1,5 +1,5 @@
 -- ============================================
--- سديم (Sadeem) — Database Schema
+-- سيندا (Senda) — Database Schema
 -- Supabase PostgreSQL Migration
 -- ============================================
 

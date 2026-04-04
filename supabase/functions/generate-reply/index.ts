@@ -1,5 +1,5 @@
 // ============================================================================
-// SADEEM — Edge Function: generate-reply
+// SENDA — Edge Function: generate-reply
 //
 // Proxies Gemini API calls using the server-side GEMINI_API_KEY secret.
 // The API key is never exposed to the client bundle.

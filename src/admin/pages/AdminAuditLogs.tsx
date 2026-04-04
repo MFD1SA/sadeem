@@ -1,5 +1,5 @@
 // ============================================================================
-// SADEEM Admin — Audit Logs Page
+// SENDA Admin — Audit Logs Page
 // Tab 1: admin_audit_logs (admin operations) via RLS is_active_admin()
 // Tab 2: audit_logs (subscriber operations) via RLS is_active_admin()
 // ============================================================================
@@ -89,6 +89,8 @@ export default function AdminAuditLogs() {
       <div className="flex gap-1 mb-4 bg-gray-100 rounded-lg p-1 w-fit">
         <button
           onClick={() => setActiveTab('subscriber')}
+          aria-label="Subscriber operations tab"
+          aria-pressed={activeTab === 'subscriber'}
           className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
             activeTab === 'subscriber'
               ? 'bg-white text-gray-900 shadow-sm'
@@ -100,6 +102,8 @@ export default function AdminAuditLogs() {
         </button>
         <button
           onClick={() => setActiveTab('admin')}
+          aria-label="Admin operations tab"
+          aria-pressed={activeTab === 'admin'}
           className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
             activeTab === 'admin'
               ? 'bg-white text-gray-900 shadow-sm'

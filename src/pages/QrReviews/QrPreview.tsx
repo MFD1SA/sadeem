@@ -31,7 +31,7 @@ export function QrPreview({ url, size = 128, lang = 'ar' }: QrPreviewProps) {
         });
       } catch (error) {
         if (!cancelled) {
-          console.error('[Sadeem] QR render failed:', error);
+          console.error('[Senda] QR render failed:', error);
           setHasError(true);
         }
       }

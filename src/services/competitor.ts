@@ -39,7 +39,7 @@ export const competitorService = {
     //   ?location={lat},{lng}&radius=5000&type={industry}&key={API_KEY}
     
     // Store search intent for future backend implementation
-    console.info('[Sadeem] Competitor search:', params.industry, params.city);
+    console.info('[Senda] Competitor search:', params.industry, params.city);
     return [];
   },
 

@@ -57,7 +57,7 @@ export function ResponseCard({ draft, onApprove, onReject, onDefer }: ResponseCa
           </div>
           <span className="text-[13px] font-semibold text-content-primary">{sourceLabels[draft.source] || draft.source}</span>
           <Badge variant={getStatusColor(draft.status) as 'success' | 'warning' | 'danger' | 'info' | 'neutral'}>
-            {t.status[draft.status] || draft.status}
+            {(t.status as Record<string, string>)[draft.status] || draft.status}
           </Badge>
         </div>
         <span className="text-[10px] text-content-tertiary">{formatTimeAgo(draft.created_at)}</span>
@@ -70,6 +70,7 @@ export function ResponseCard({ draft, onApprove, onReject, onDefer }: ResponseCa
           rows={3}
           value={editText}
           onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setEditText(e.target.value)}
+          aria-label={t.responsesInbox.edit}
           autoFocus
         />
       ) : (
@@ -87,7 +88,7 @@ export function ResponseCard({ draft, onApprove, onReject, onDefer }: ResponseCa
       {draft.final_reply && draft.status === 'sent' && draft.sent_at && (
         <div className="text-[11px] text-emerald-600 font-medium mb-3 flex items-center gap-1">
           <Check size={12} />
-          {isAr ? 'تم الإرسال' : 'Sent'}: {formatTimeAgo(draft.sent_at)}
+          {t.responsesInbox.sent}: {formatTimeAgo(draft.sent_at)}
         </div>
       )}
 
@@ -98,12 +99,12 @@ export function ResponseCard({ draft, onApprove, onReject, onDefer }: ResponseCa
             <Check size={13} /> {t.reviewsCenter.approve}
           </button>
           <button className="btn btn-secondary btn-sm" onClick={() => { setEditing(!editing); setEditText(replyText); }}>
-            <Edit3 size={13} /> {isAr ? 'تعديل' : 'Edit'}
+            <Edit3 size={13} /> {t.responsesInbox.edit}
           </button>
           <button className="btn btn-secondary btn-sm" onClick={handleDefer} disabled={actionLoading}>
-            <Clock size={13} /> {isAr ? 'تأجيل' : 'Defer'}
+            <Clock size={13} /> {t.responsesInbox.defer}
           </button>
-          <button className="btn btn-danger btn-sm" onClick={handleReject} disabled={actionLoading} title={isAr ? 'رفض' : 'Reject'}>
+          <button className="btn btn-danger btn-sm" onClick={handleReject} disabled={actionLoading} title={t.responsesInbox.reject} aria-label={t.responsesInbox.reject}>
             <X size={13} />
           </button>
         </div>

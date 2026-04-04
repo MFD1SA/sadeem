@@ -393,6 +393,7 @@ export default function QrReviews() {
                       <button
                         className="btn-icon w-7 h-7 flex-shrink-0"
                         title={t.qrPage.copyLink}
+                        aria-label={t.qrPage.copyLink}
                         onClick={() => copyLink(landingUrl || '')}
                       >
                         <Copy size={12} />
@@ -475,11 +476,13 @@ export default function QrReviews() {
             )}
 
             <div>
-              <label className="form-label">{t.qrPage.qrMode}</label>
-              <div className="grid grid-cols-2 gap-2">
+              <label className="form-label" id="qr-mode-label">{t.qrPage.qrMode}</label>
+              <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-labelledby="qr-mode-label">
                 <button
                   type="button"
                   onClick={() => setSetupMode('landing')}
+                  role="radio"
+                  aria-checked={setupMode === 'landing'}
                   className={`p-3 rounded-lg border text-start transition-colors ${
                     setupMode === 'landing'
                       ? 'border-brand-500 bg-brand-50 ring-1 ring-brand-200'
@@ -497,6 +500,8 @@ export default function QrReviews() {
                 <button
                   type="button"
                   onClick={() => setSetupMode('direct')}
+                  role="radio"
+                  aria-checked={setupMode === 'direct'}
                   className={`p-3 rounded-lg border text-start transition-colors ${
                     setupMode === 'direct'
                       ? 'border-brand-500 bg-brand-50 ring-1 ring-brand-200'
@@ -514,10 +519,11 @@ export default function QrReviews() {
             </div>
 
             <div>
-              <label className="form-label">
+              <label htmlFor="qr-google-url" className="form-label">
                 {t.qrPage.googleReviewUrl}
               </label>
               <input
+                id="qr-google-url"
                 className="form-input text-xs"
                 placeholder="https://search.google.com/local/writereview?placeid=..."
                 value={setupGoogleUrl}
@@ -554,10 +560,11 @@ export default function QrReviews() {
                 </div>
 
                 <div>
-                  <label className="form-label">
+                  <label htmlFor="qr-custom-message" className="form-label">
                     {t.qrPage.customMessage}
                   </label>
                   <textarea
+                    id="qr-custom-message"
                     className="form-textarea text-xs"
                     rows={2}
                     placeholder={t.qrPage.customMessagePlaceholder}

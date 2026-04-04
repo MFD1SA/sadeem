@@ -1,5 +1,5 @@
 // ============================================================================
-// SADEEM Admin — Roles & Permissions Page (Phase 3)
+// SENDA Admin — Roles & Permissions Page (Phase 3)
 // View roles, view/edit permissions per role — all via RPCs.
 // ============================================================================
 

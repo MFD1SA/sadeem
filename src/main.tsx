@@ -27,5 +27,5 @@ if (rootEl) {
     </ErrorBoundary>
   );
 } else {
-  console.error('[Sadeem] Root element not found');
+  console.error('[Senda] Root element not found');
 }

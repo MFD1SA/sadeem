@@ -1,5 +1,5 @@
 -- ============================================================================
--- SADEEM Admin Foundation — Migration
+-- SENDA Admin Foundation — Migration
 -- Creates: admin_roles, admin_permissions, admin_role_permissions,
 --          admin_users, admin_audit_logs, admin_sessions
 -- Run in Supabase SQL Editor

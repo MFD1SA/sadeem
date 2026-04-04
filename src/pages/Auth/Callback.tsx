@@ -1,5 +1,5 @@
 // ============================================================================
-// SADEEM — Auth Callback
+// SENDA — Auth Callback
 // Handles two flows:
 //   1. Google OAuth PKCE  — URL has ?code=  (Supabase exchanges automatically)
 //   2. Email confirmation — URL has ?token_hash=&type=email (must call verifyOtp)

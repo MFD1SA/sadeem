@@ -13,6 +13,10 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: false,
+    minify: 'esbuild',
+    target: 'es2020',
+    cssMinify: 'esbuild',
+    reportCompressedSize: false,
     rollupOptions: {
       output: {
         manualChunks: {

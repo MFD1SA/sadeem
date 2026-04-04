@@ -64,7 +64,7 @@ export const plansService = {
       .maybeSingle();
     if (error) {
       // Real DB/network error — throw so callers can handle
-      console.warn('[Sadeem] Plan limits fetch error:', error.message);
+      console.warn('[Senda] Plan limits fetch error:', error.message);
       throw error;
     }
     return data || null;

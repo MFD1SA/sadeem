@@ -1,5 +1,5 @@
 // ============================================================================
-// SADEEM — Payment Webhook Edge Function
+// SENDA — Payment Webhook Edge Function
 //
 // Receives webhook events from Stripe or Moyasar.
 // Validates signature server-side, then calls SECURITY DEFINER RPCs

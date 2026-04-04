@@ -17,11 +17,11 @@ export const trialEmailService = {
   getEmailContent(payload: TrialEmailPayload) {
     return {
       to: payload.to,
-      subject: 'انتهت تجربتك المجانية في سديم',
+      subject: 'انتهت تجربتك المجانية في سيندا',
       html: `
         <div dir="rtl" style="font-family: 'IBM Plex Sans Arabic', Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 32px; background: #ffffff; border-radius: 12px;">
           <div style="text-align: center; margin-bottom: 24px;">
-            <h1 style="font-size: 24px; font-weight: 700; color: #1a1d2e; margin: 0;">سديم</h1>
+            <h1 style="font-size: 24px; font-weight: 700; color: #1a1d2e; margin: 0;">سيندا</h1>
           </div>
           
           <h2 style="font-size: 18px; font-weight: 600; color: #1a1d2e; margin-bottom: 12px;">
@@ -29,11 +29,11 @@ export const trialEmailService = {
           </h2>
           
           <p style="font-size: 14px; color: #5f6580; line-height: 1.8; margin-bottom: 20px;">
-            انتهت فترتك التجريبية المجانية في سديم لنشاطك <strong>${payload.organizationName}</strong>.
+            انتهت فترتك التجريبية المجانية في سيندا لنشاطك <strong>${payload.organizationName}</strong>.
           </p>
           
           <p style="font-size: 14px; color: #5f6580; line-height: 1.8; margin-bottom: 8px;">
-            سديم يساعد نشاطك على:
+            سيندا يساعد نشاطك على:
           </p>
           
           <ul style="font-size: 14px; color: #5f6580; line-height: 2; padding-right: 20px; margin-bottom: 20px;">
@@ -56,7 +56,7 @@ export const trialEmailService = {
           <hr style="border: none; border-top: 1px solid #e5e7ed; margin: 24px 0;" />
           
           <p style="font-size: 11px; color: #8b90a8; text-align: center;">
-            سديم — إدارة التقييمات بالذكاء الاصطناعي
+            سيندا — إدارة التقييمات بالذكاء الاصطناعي
           </p>
         </div>
       `,
@@ -76,7 +76,7 @@ export const trialEmailService = {
         .eq('id', organizationId)
         .single();
 
-      if (orgErr || !orgData) { if (orgErr) console.warn('[Sadeem] trial-email org lookup failed:', orgErr.message); return; }
+      if (orgErr || !orgData) { if (orgErr) console.warn('[Senda] trial-email org lookup failed:', orgErr.message); return; }
 
       const { data: userData, error: userErr } = await supabase
         .from('users')
@@ -84,7 +84,7 @@ export const trialEmailService = {
         .eq('id', (orgData as { owner_user_id: string }).owner_user_id)
         .single();
 
-      if (userErr || !userData) { if (userErr) console.warn('[Sadeem] trial-email user lookup failed:', userErr.message); return; }
+      if (userErr || !userData) { if (userErr) console.warn('[Senda] trial-email user lookup failed:', userErr.message); return; }
       const user = userData as { email: string; full_name: string };
       const org = orgData as { name: string };
 
@@ -99,14 +99,14 @@ export const trialEmailService = {
         await supabase.functions.invoke('send-email', {
           body: emailContent,
         });
-        console.info('[Sadeem] Trial expiration email sent to', user.email);
+        console.info('[Senda] Trial expiration email sent to', user.email);
       } catch {
         // Edge Function not deployed — log the email for manual sending
-        console.warn('[Sadeem] Edge Function unavailable. Trial expiration email prepared for:', user.email);
-        console.info('[Sadeem] Email subject:', emailContent.subject);
+        console.warn('[Senda] Edge Function unavailable. Trial expiration email prepared for:', user.email);
+        console.info('[Senda] Email subject:', emailContent.subject);
       }
     } catch (err) {
-      console.error('[Sadeem] Failed to prepare trial expiration email:', err);
+      console.error('[Senda] Failed to prepare trial expiration email:', err);
     }
   },
 };

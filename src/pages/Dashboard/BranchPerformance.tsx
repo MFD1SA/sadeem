@@ -27,7 +27,7 @@ export function BranchPerformance({ branches }: { branches: DbBranch[] }) {
               <td className="px-4 py-3 text-center">
                 <div className="flex items-center gap-1.5 justify-center">
                   <StatusDot color={b.status === 'active' ? 'green' : b.status === 'pending' ? 'yellow' : 'gray'} />
-                  <span className="text-xs">{t.status[b.status]}</span>
+                  <span className="text-xs">{(t.status as Record<string, string>)[b.status] || b.status}</span>
                 </div>
               </td>
             </tr>

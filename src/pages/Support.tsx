@@ -210,7 +210,7 @@ export default function Support() {
         {/* Back + header */}
         <div className="card card-body">
           <div className="flex items-center gap-3">
-            <button onClick={() => { setSelectedTicket(null); setReplies([]); setReplyBody(''); }} className="p-2 rounded-lg text-content-tertiary hover:text-content-primary hover:bg-surface-secondary transition-colors">
+            <button onClick={() => { setSelectedTicket(null); setReplies([]); setReplyBody(''); }} className="p-2 rounded-lg text-content-tertiary hover:text-content-primary hover:bg-surface-secondary transition-colors" aria-label={lang === 'ar' ? 'العودة للقائمة' : 'Back to list'}>
               <ChevronRight size={18} />
             </button>
             <div className="flex-1 min-w-0">
@@ -218,7 +218,7 @@ export default function Support() {
               <p className="text-[10px] text-content-tertiary mt-0.5">#{selectedTicket.id.slice(0, 8)}</p>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
-              <Badge variant={status.color}>{t.status[selectedTicket.status]}</Badge>
+              <Badge variant={status.color}>{(t.status as Record<string, string>)[selectedTicket.status] || selectedTicket.status}</Badge>
               <Badge variant={priority.color}>{t.priority[selectedTicket.priority as keyof typeof t.priority]}</Badge>
             </div>
           </div>
@@ -294,6 +294,7 @@ export default function Support() {
               className="form-textarea w-full"
               rows={3}
               placeholder={t.supportExt.typeReply}
+              aria-label={t.supportExt.typeReply}
               value={replyBody}
               onChange={(e) => setReplyBody(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter' && e.ctrlKey) handleSendReply(); }}
@@ -400,22 +401,22 @@ export default function Support() {
             </div>
           )}
           <div>
-            <label className="form-label">{t.supportExt.subjectLabel}</label>
-            <input className="form-input" value={form.subject} onChange={e => setForm(p => ({ ...p, subject: e.target.value }))} placeholder={t.supportExt.subjectPlaceholder} />
+            <label htmlFor="ticket-subject" className="form-label">{t.supportExt.subjectLabel}</label>
+            <input id="ticket-subject" className="form-input" value={form.subject} onChange={e => setForm(p => ({ ...p, subject: e.target.value }))} placeholder={t.supportExt.subjectPlaceholder} />
           </div>
           <div>
-            <label className="form-label">{t.supportPage.priority}</label>
-            <div className="flex gap-2 flex-wrap">
+            <label className="form-label" id="ticket-priority-label">{t.supportPage.priority}</label>
+            <div className="flex gap-2 flex-wrap" role="radiogroup" aria-labelledby="ticket-priority-label">
               {(['low','medium','high','urgent'] as Ticket['priority'][]).map(p => (
-                <button key={p} onClick={() => setForm(prev => ({ ...prev, priority: p }))} className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${form.priority === p ? 'bg-brand-600 text-white border-brand-600' : 'bg-white text-content-secondary border-border hover:border-brand-300'}`}>
+                <button key={p} onClick={() => setForm(prev => ({ ...prev, priority: p }))} role="radio" aria-checked={form.priority === p} className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${form.priority === p ? 'bg-brand-600 text-white border-brand-600' : 'bg-white text-content-secondary border-border hover:border-brand-300'}`}>
                   {t.priority[p as keyof typeof t.priority]}
                 </button>
               ))}
             </div>
           </div>
           <div>
-            <label className="form-label">{t.supportExt.detailsLabel}</label>
-            <textarea className="form-textarea" rows={5} value={form.body} onChange={e => setForm(p => ({ ...p, body: e.target.value }))} placeholder={t.supportExt.detailsPlaceholder} />
+            <label htmlFor="ticket-details" className="form-label">{t.supportExt.detailsLabel}</label>
+            <textarea id="ticket-details" className="form-textarea" rows={5} value={form.body} onChange={e => setForm(p => ({ ...p, body: e.target.value }))} placeholder={t.supportExt.detailsPlaceholder} />
           </div>
           <div className="flex justify-end gap-2">
             <button onClick={() => setShowForm(false)} className="btn btn-secondary">{t.common.cancel}</button>
@@ -448,6 +449,10 @@ export default function Support() {
                   key={ticket.id}
                   className="px-5 py-4 hover:bg-surface-secondary/40 transition-colors cursor-pointer"
                   onClick={() => setSelectedTicket(ticket)}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`${ticket.subject} — ${(t.status as Record<string, string>)[ticket.status] || ticket.status}`}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedTicket(ticket); } }}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-start gap-3 flex-1 min-w-0">
@@ -464,7 +469,7 @@ export default function Support() {
                       {ticketsWithNewReply.has(ticket.id) && (
                         <Badge variant="success">{t.supportExt.newReply}</Badge>
                       )}
-                      <Badge variant={status.color}>{t.status[ticket.status]}</Badge>
+                      <Badge variant={status.color}>{(t.status as Record<string, string>)[ticket.status] || ticket.status}</Badge>
                       <Badge variant={priority.color}>{t.priority[ticket.priority as keyof typeof t.priority]}</Badge>
                     </div>
                   </div>

@@ -1,5 +1,5 @@
 -- ============================================================================
--- SADEEM — Ticket Reply Threading & Auto-Close
+-- SENDA — Ticket Reply Threading & Auto-Close
 --
 -- 1. ticket_replies table for conversation threading
 -- 2. RLS policies for subscriber + admin access

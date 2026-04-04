@@ -1,4 +1,4 @@
--- Sadeem Audit Log — Run in Supabase SQL Editor
+-- Senda Audit Log — Run in Supabase SQL Editor
 
 create table if not exists public.audit_logs (
   id uuid primary key default uuid_generate_v4(),
