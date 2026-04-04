@@ -113,6 +113,7 @@ class AdminUsersService {
     }
 
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
     if (!supabaseUrl) throw new Error('Missing SUPABASE_URL');
 
     const response = await fetch(`${supabaseUrl}/functions/v1/admin-create-user`, {
@@ -120,6 +121,7 @@ class AdminUsersService {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${session.access_token}`,
+        'apikey': supabaseAnonKey,
       },
       body: JSON.stringify({
         email: payload.email,

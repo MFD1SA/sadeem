@@ -232,7 +232,7 @@ export default function AdminIntegrations() {
           <span className="text-lg">✨</span>
           <div>
             <div className="text-sm font-semibold text-gray-900">Gemini AI</div>
-            <div className="text-[11px] text-slate-500">اختبار اتصال خدمة الذكاء الاصطناعي عبر Edge Function</div>
+            <div className="text-[11px] text-slate-500">اختبار اتصال Gemini AI عبر Edge Function (generate-reply) — بطاقة اختبار فقط، ليست تكاملاً مكرراً</div>
           </div>
         </div>
         <div className="flex items-center gap-3 flex-shrink-0">

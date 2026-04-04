@@ -12,7 +12,7 @@ import { PermissionGate } from '../guards';
 import {
   Building2, Search, ChevronLeft, ChevronRight, Users, GitBranch,
   MessageSquare, Zap, FileText, MoreVertical, Edit3,
-  Pause, Play, ArrowUpCircle, X, Calendar, RefreshCw, Check,
+  Pause, Play, ArrowUpCircle, X, Calendar, RefreshCw, Check, Trash2,
 } from 'lucide-react';
 import { AdminSelect } from '../components/AdminSelect';
 
@@ -178,6 +178,25 @@ export default function AdminSubscribers() {
       showMsg('تم إعادة تعيين استهلاك AI', 'success');
       loadList();
     } catch (err) { showMsg(err instanceof Error ? err.message : 'فشل', 'error'); }
+  };
+
+  // Delete subscriber
+  const [deleteTarget, setDeleteTarget] = useState<SubscriberListItem | null>(null);
+  const [deletingSubscriber, setDeletingSubscriber] = useState(false);
+
+  const handleDeleteSubscriber = async () => {
+    if (!deleteTarget) return;
+    setDeletingSubscriber(true);
+    try {
+      await adminSubscribersService.deleteSubscriber(deleteTarget.id);
+      showMsg(`تم حذف المشترك "${deleteTarget.name}" بنجاح`, 'success');
+      setDeleteTarget(null);
+      loadList();
+    } catch (err) {
+      showMsg(err instanceof Error ? err.message : 'فشل في حذف المشترك', 'error');
+    } finally {
+      setDeletingSubscriber(false);
+    }
   };
 
   const openEditOrg = (d: SubscriberDetail) => {
@@ -552,6 +571,13 @@ export default function AdminSubscribers() {
                                     <Play size={14} /> إعادة تفعيل
                                   </button>
                                 )}
+                                <div className="border-t border-gray-100 my-1" />
+                                <PermissionGate permission={PERMISSIONS.SUBSCRIBERS_UPDATE}>
+                                  <button onClick={() => { setActiveMenu(null); setDeleteTarget(item); }}
+                                    className="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-600 hover:bg-red-500/10 transition-colors">
+                                    <Trash2 size={14} /> حذف المشترك
+                                  </button>
+                                </PermissionGate>
                               </div>,
                               document.body
                             )}
@@ -582,6 +608,30 @@ export default function AdminSubscribers() {
               className="admin-btn-secondary text-xs px-3 py-1.5 disabled:opacity-40">
               التالي <ChevronLeft size={14} />
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Subscriber Confirm Modal */}
+      {deleteTarget && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60] flex items-center justify-center p-4"
+          onClick={(e) => { if (e.target === e.currentTarget) setDeleteTarget(null); }}>
+          <div className="bg-white border border-gray-200 rounded-2xl w-full max-w-sm shadow-lg" dir="rtl">
+            <div className="p-6 text-center">
+              <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-4">
+                <Trash2 size={20} className="text-red-500" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">حذف المشترك</h3>
+              <p className="text-sm text-gray-500 mb-1">هل أنت متأكد من حذف "{deleteTarget.name}"؟</p>
+              <p className="text-xs text-red-500 mt-2">سيتم إلغاء الاشتراكات النشطة وإخفاء المشترك من النظام.</p>
+            </div>
+            <div className="p-4 border-t flex items-center gap-3 justify-center">
+              <button onClick={handleDeleteSubscriber} disabled={deletingSubscriber}
+                className="px-4 py-2 rounded-xl text-sm font-medium text-white bg-red-500 hover:bg-red-600 transition-colors disabled:opacity-50">
+                {deletingSubscriber ? 'جارٍ الحذف...' : 'حذف المشترك'}
+              </button>
+              <button onClick={() => setDeleteTarget(null)} className="admin-btn-secondary">إلغاء</button>
+            </div>
           </div>
         </div>
       )}

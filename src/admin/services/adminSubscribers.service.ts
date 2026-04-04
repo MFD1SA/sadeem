@@ -194,6 +194,16 @@ class AdminSubscribersService {
     }
   }
 
+  async deleteSubscriber(orgId: string): Promise<void> {
+    const { error } = await adminSupabase.rpc('admin_delete_subscriber', {
+      p_org_id: orgId,
+    });
+    if (error) {
+      if (error.message.includes('Permission denied')) throw new Error('ليس لديك صلاحية حذف المشتركين');
+      throw new Error('فشل في حذف المشترك: ' + error.message);
+    }
+  }
+
   async resetAIUsage(orgId: string): Promise<void> {
     const { error } = await adminSupabase
       .from('subscriptions')
