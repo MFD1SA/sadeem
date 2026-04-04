@@ -132,13 +132,13 @@ export default function Insights() {
         {/* Tab switcher */}
         <div className="card card-body !py-2 !px-2">
           <div className="flex gap-1 flex-wrap">
-            <button onClick={() => setTab('seo')} className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium transition-all ${tab === 'seo' ? 'bg-brand-600 text-white shadow-sm' : 'text-content-secondary hover:text-content-primary hover:bg-surface-secondary'}`}>
+            <button onClick={() => setTab('seo')} className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium transition-all focus:outline-2 focus:outline-brand-500 ${tab === 'seo' ? 'bg-brand-600 text-white shadow-sm' : 'text-content-secondary hover:text-content-primary hover:bg-surface-secondary'}`}>
               <Target size={13} /> {lang === 'ar' ? 'تحسين SEO' : 'SEO Score'}
             </button>
-            <button onClick={() => setTab('reviews')} className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium transition-all ${tab === 'reviews' ? 'bg-brand-600 text-white shadow-sm' : 'text-content-secondary hover:text-content-primary hover:bg-surface-secondary'}`}>
+            <button onClick={() => setTab('reviews')} className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium transition-all focus:outline-2 focus:outline-brand-500 ${tab === 'reviews' ? 'bg-brand-600 text-white shadow-sm' : 'text-content-secondary hover:text-content-primary hover:bg-surface-secondary'}`}>
               <MessageSquare size={13} /> {lang === 'ar' ? 'مقتطفات التقييمات' : 'Review Insights'}
             </button>
-            <button onClick={() => setTab('competitors')} className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium transition-all ${tab === 'competitors' ? 'bg-brand-600 text-white shadow-sm' : 'text-content-secondary hover:text-content-primary hover:bg-surface-secondary'}`}>
+            <button onClick={() => setTab('competitors')} className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium transition-all focus:outline-2 focus:outline-brand-500 ${tab === 'competitors' ? 'bg-brand-600 text-white shadow-sm' : 'text-content-secondary hover:text-content-primary hover:bg-surface-secondary'}`}>
               <TrendingUp size={13} /> {lang === 'ar' ? 'تحليل المنافسين' : 'Competitors'}
             </button>
           </div>

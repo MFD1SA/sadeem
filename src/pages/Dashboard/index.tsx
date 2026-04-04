@@ -261,7 +261,7 @@ export default function Dashboard() {
                     </div>
                     <span className="text-[13px] text-content-secondary truncate">{b.internal_name}</span>
                   </div>
-                  <span className={`w-2 h-2 rounded-full flex-shrink-0 ${b.status === 'active' ? 'bg-emerald-400' : 'bg-gray-300'}`} />
+                  <span className={`w-2 h-2 rounded-full flex-shrink-0 ${b.status === 'active' ? 'bg-emerald-400' : 'bg-gray-300'}`} role="img" aria-label={b.status === 'active' ? 'Active' : 'Inactive'} />
                 </div>
               ))}
               {branches.length === 0 && (

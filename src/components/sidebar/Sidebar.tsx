@@ -100,8 +100,9 @@ export function Sidebar({ mobileSidebarOpen, onCloseMobile }: SidebarProps) {
             </div>
           </div>
           <button
-            className="lg:hidden text-sidebar-text hover:text-white transition-colors"
+            className="lg:hidden text-sidebar-text hover:text-white transition-colors focus:outline-2 focus:outline-white/50 rounded-lg"
             onClick={onCloseMobile}
+            aria-label="Close menu"
           >
             <X size={18} />
           </button>

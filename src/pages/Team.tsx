@@ -217,11 +217,11 @@ export default function Team() {
 
       {/* Invite Modal */}
       {showInvite && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={(e) => { if (e.target === e.currentTarget) setShowInvite(false); }}>
-          <div className="bg-surface-primary rounded-2xl shadow-2xl w-full max-w-md border border-border">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" role="presentation" onClick={(e) => { if (e.target === e.currentTarget) setShowInvite(false); }}>
+          <div className="bg-surface-primary rounded-2xl shadow-2xl w-full max-w-md border border-border" role="dialog" aria-modal="true" aria-labelledby="invite-modal-title">
             <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-              <h3 className="font-semibold text-content-primary text-sm">{lang === 'ar' ? 'دعوة عضو جديد' : 'Invite New Member'}</h3>
-              <button onClick={() => setShowInvite(false)} className="text-content-tertiary hover:text-content-primary transition-colors"><X size={16} /></button>
+              <h3 id="invite-modal-title" className="font-semibold text-content-primary text-sm">{lang === 'ar' ? 'دعوة عضو جديد' : 'Invite New Member'}</h3>
+              <button onClick={() => setShowInvite(false)} className="text-content-tertiary hover:text-content-primary transition-colors focus:outline-2 focus:outline-brand-500 rounded-lg" aria-label="Close"><X size={16} /></button>
             </div>
             <form onSubmit={handleInvite} className="p-5 space-y-4">
               <div>

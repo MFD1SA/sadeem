@@ -608,7 +608,7 @@ export default function Integrations() {
                 <div className="flex items-start justify-between gap-2 flex-wrap">
                   <div>
                     <p className="text-[13px] font-semibold text-content-primary">
-                      AI Smart Reply Engine
+                      {lang === 'ar' ? 'محرك الردود الذكي بالذكاء الاصطناعي' : 'AI Smart Reply Engine'}
                     </p>
                     <p className="text-xs text-content-tertiary mt-0.5">
                       {lang === 'ar'

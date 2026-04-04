@@ -166,7 +166,10 @@ export default function Billing() {
           </span>
           <button
             onClick={() => setYearly(v => !v)}
-            className={`relative w-10 h-5 rounded-full transition-colors ${yearly ? 'bg-brand-600' : 'bg-gray-200'}`}
+            className={`relative w-10 h-5 rounded-full transition-colors focus:outline-2 focus:outline-brand-500 focus:outline-offset-2 ${yearly ? 'bg-brand-600' : 'bg-gray-200'}`}
+            role="switch"
+            aria-checked={yearly}
+            aria-label={isAr ? 'تبديل الفوترة السنوية' : 'Toggle yearly billing'}
           >
             <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${yearly ? 'ltr:translate-x-5 rtl:-translate-x-5' : 'ltr:translate-x-0.5 rtl:-translate-x-0.5'}`} />
           </button>

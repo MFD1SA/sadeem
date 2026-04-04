@@ -144,7 +144,7 @@ export default function Notifications() {
                     </div>
                     <p className="text-xs text-content-tertiary mt-1 leading-relaxed">{n.body}</p>
                   </div>
-                  {!n.is_read && <div className="w-2.5 h-2.5 rounded-full bg-brand-500 flex-shrink-0 mt-2 animate-pulse" />}
+                  {!n.is_read && <div className="w-2.5 h-2.5 rounded-full bg-brand-500 flex-shrink-0 mt-2 animate-pulse" role="img" aria-label={lang === 'ar' ? 'غير مقروء' : 'Unread'} />}
                 </div>
               </div>
             ))}
