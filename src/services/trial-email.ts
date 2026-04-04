@@ -70,21 +70,21 @@ export const trialEmailService = {
   async sendTrialExpirationEmail(organizationId: string): Promise<void> {
     try {
       // Get org + owner info
-      const { data: orgData } = await supabase
+      const { data: orgData, error: orgErr } = await supabase
         .from('organizations')
         .select('name, owner_user_id')
         .eq('id', organizationId)
         .single();
 
-      if (!orgData) return;
+      if (orgErr || !orgData) { if (orgErr) console.warn('[Sadeem] trial-email org lookup failed:', orgErr.message); return; }
 
-      const { data: userData } = await supabase
+      const { data: userData, error: userErr } = await supabase
         .from('users')
         .select('email, full_name')
         .eq('id', (orgData as { owner_user_id: string }).owner_user_id)
         .single();
 
-      if (!userData) return;
+      if (userErr || !userData) { if (userErr) console.warn('[Sadeem] trial-email user lookup failed:', userErr.message); return; }
       const user = userData as { email: string; full_name: string };
       const org = orgData as { name: string };
 

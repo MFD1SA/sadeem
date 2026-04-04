@@ -27,7 +27,7 @@ export const dashboardService = {
     const responseRate = totalReviews > 0 ? Math.round((repliedCount / totalReviews) * 100) : 0;
 
     const today = new Date().toISOString().split('T')[0];
-    const newReviewsToday = allReviews.filter(r => r.published_at.startsWith(today)).length;
+    const newReviewsToday = allReviews.filter(r => r.published_at?.startsWith(today)).length;
 
     const { count: totalBranches } = await supabase
       .from('branches')

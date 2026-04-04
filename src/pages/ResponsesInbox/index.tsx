@@ -71,8 +71,9 @@ export default function ResponsesInbox() {
   };
 
   const handleReject = async (draftId: string) => {
+    if (!user) return;
     try {
-      await replyDraftsService.reject(draftId, user?.id);
+      await replyDraftsService.reject(draftId, user.id);
       await loadDrafts();
     } catch (err: unknown) {
       setError((err as Error).message || 'Failed to reject draft');
@@ -80,8 +81,9 @@ export default function ResponsesInbox() {
   };
 
   const handleDefer = async (draftId: string) => {
+    if (!user) return;
     try {
-      await replyDraftsService.defer(draftId, user?.id);
+      await replyDraftsService.defer(draftId, user.id);
       await loadDrafts();
     } catch (err: unknown) {
       setError((err as Error).message || 'Failed to defer draft');

@@ -40,7 +40,7 @@ export const usageService = {
     templateUsed: number;
     templateMax: number;
   }> {
-    const { data } = await supabase
+    const { data, error: subErr } = await supabase
       .from('subscriptions')
       .select('*')
       .eq('organization_id', organizationId)
@@ -48,7 +48,10 @@ export const usageService = {
       .limit(1)
       .single();
 
-    if (!data) return { isTrial: false, isExpired: false, hoursRemaining: 0, aiUsed: 0, aiMax: 0, templateUsed: 0, templateMax: 0 };
+    if (subErr || !data) {
+      if (subErr && subErr.code !== 'PGRST116') console.warn('[Sadeem] getTrialStatus failed:', subErr.message);
+      return { isTrial: false, isExpired: false, hoursRemaining: 0, aiUsed: 0, aiMax: 0, templateUsed: 0, templateMax: 0 };
+    }
     const sub = data as DbSubscription;
 
     const isTrial = sub.status === 'trial';

@@ -132,7 +132,7 @@ export const reviewSyncService = {
         if (smartMode && reviewRating >= 2) {
           try {
             const match = await findStrongTemplateMatch(
-              organizationId, reviewRating, review.review_text, reviewLang, org.industry,
+              organizationId, reviewRating, review.review_text, reviewLang, org.industry ?? null,
             );
             if (match.matched && match.template) {
               // Check template reply quota (NOT AI quota)
@@ -227,12 +227,13 @@ export const reviewSyncService = {
 
     const orgId = draft.organization_id || '';
 
-    const { data: reviewData } = await supabase
+    const { data: reviewData, error: revErr } = await supabase
       .from('reviews')
       .select('id, google_review_id')
       .eq('id', draft.review_id)
       .single();
 
+    if (revErr && revErr.code !== 'PGRST116') console.warn('[Sadeem] sendReplyToGoogle review lookup failed:', revErr.message);
     const review = reviewData as ReviewRow | null;
 
     // Post to Google FIRST — if it fails, DB stays unchanged so user can retry
@@ -302,12 +303,13 @@ export const reviewSyncService = {
     let autoSent = 0;
 
     for (const draft of oldDrafts) {
-      const { data: reviewData } = await supabase
+      const { data: reviewData, error: revErr } = await supabase
         .from('reviews')
         .select('id, is_followup, status, google_review_id')
         .eq('id', draft.review_id)
         .single();
 
+      if (revErr && revErr.code !== 'PGRST116') console.warn('[Sadeem] autoSend review lookup failed:', revErr.message);
       const review = reviewData as ReviewRow | null;
       if (!review) continue;
       if (review.is_followup) continue;

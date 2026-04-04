@@ -108,27 +108,28 @@ export const qrService = {
   // ─── Analytics ───
 
   async trackEvent(qrConfigId: string, eventType: 'scan' | 'click' | 'employee_submit', employeeName?: string): Promise<void> {
-    await supabase.from('qr_scans').insert({
+    const { error: insertErr } = await supabase.from('qr_scans').insert({
       qr_config_id: qrConfigId,
       event_type: eventType,
       employee_name: employeeName || null,
       user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : null,
     });
+    if (insertErr) console.warn('[Sadeem] trackEvent insert failed:', insertErr.message);
     // Also increment counters on qr_configs
     try {
       if (eventType === 'scan') {
         const { error: rpcErr } = await supabase.rpc('increment_qr_scan_count', { config_id: qrConfigId });
         if (rpcErr) {
-          const { data } = await supabase.from('qr_configs').select('scan_count').eq('id', qrConfigId).single();
-          if (data) {
+          const { data, error: selErr } = await supabase.from('qr_configs').select('scan_count').eq('id', qrConfigId).single();
+          if (!selErr && data) {
             await supabase.from('qr_configs').update({ scan_count: ((data as { scan_count: number }).scan_count || 0) + 1 } as Record<string, unknown>).eq('id', qrConfigId);
           }
         }
       } else if (eventType === 'click') {
         const { error: rpcErr } = await supabase.rpc('increment_qr_click_count', { config_id: qrConfigId });
         if (rpcErr) {
-          const { data } = await supabase.from('qr_configs').select('click_count').eq('id', qrConfigId).single();
-          if (data) {
+          const { data, error: selErr } = await supabase.from('qr_configs').select('click_count').eq('id', qrConfigId).single();
+          if (!selErr && data) {
             await supabase.from('qr_configs').update({ click_count: ((data as { click_count: number }).click_count || 0) + 1 } as Record<string, unknown>).eq('id', qrConfigId);
           }
         }
