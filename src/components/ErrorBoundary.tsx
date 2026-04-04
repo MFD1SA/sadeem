@@ -49,7 +49,15 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
               نعتذر عن هذا الخطأ. يرجى تحديث الصفحة أو المحاولة لاحقاً.
             </p>
             <p style={{ fontSize: '12px', color: '#8b90a8', marginBottom: '20px', direction: 'ltr' as const, background: '#f8f9fb', padding: '8px 12px', borderRadius: '6px', wordBreak: 'break-all' as const }}>
-              {this.state.error?.message || 'Unknown error'}
+              {(() => {
+                const msg = this.state.error?.message || 'Unknown error';
+                // Sanitize: hide potentially sensitive info (SQL, tokens, keys, URLs with params)
+                if (/select |insert |update |delete |join |pgrst|token|key=|secret/i.test(msg)) {
+                  return 'ERR_INTERNAL';
+                }
+                // Truncate long messages
+                return msg.length > 120 ? msg.slice(0, 120) + '…' : msg;
+              })()}
             </p>
             <button
               onClick={() => window.location.reload()}
@@ -72,6 +80,6 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       );
     }
 
-    return (this as any).props.children;
+    return this.props.children;
   }
 }

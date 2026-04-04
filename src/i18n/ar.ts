@@ -271,7 +271,10 @@ export const ar = {
     date: 'التاريخ',
     status: 'الحالة',
     upgrade: 'ترقية الباقة',
-    plans: { starter: 'أساسي', growth: 'نمو', enterprise: 'مؤسسات' },
+    plans: {
+      orbit: 'مدار', nova: 'نوفا', galaxy: 'جالكسي', infinity: 'إنفينيتي',
+      starter: 'أساسي', growth: 'نمو', pro: 'احترافي', enterprise: 'مؤسسات',
+    },
   },
 
   // Support

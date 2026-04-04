@@ -31,11 +31,13 @@ export const templatesService = {
       .select('plan')
       .eq('organization_id', template.organization_id)
       .eq('status', 'active')
-      .single();
+      .maybeSingle();
 
     const planId = (subData as { plan: string } | null)?.plan as PlanId | undefined;
-    const planInfo = await import('@/types/subscription').then(m => m.PLANS[planId || 'orbit']);
-    const maxTemplates = planInfo?.templateCount ?? 10;
+    const planInfo = getPlanLimits(planId || 'orbit');
+    // templateCount is on PlanInfo, so use PLANS directly (already imported getPlanLimits)
+    const { PLANS } = await import('@/types/subscription').catch(() => ({ PLANS: {} as Record<string, { templateCount?: number }> }));
+    const maxTemplates = PLANS[planId || 'orbit']?.templateCount ?? 10;
 
     // Count existing templates for this org
     const { count, error: countErr } = await supabase

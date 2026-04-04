@@ -50,16 +50,24 @@ export const notificationService = {
   },
 
   async markRead(notificationId: string): Promise<void> {
-    await supabase.from('notifications')
+    const { error } = await supabase.from('notifications')
       .update({ is_read: true } as Record<string, unknown>)
       .eq('id', notificationId);
+    if (error) {
+      console.warn('[Sadeem] markRead failed:', error.message);
+      throw error;
+    }
   },
 
   async markAllRead(organizationId: string): Promise<void> {
-    await supabase.from('notifications')
+    const { error } = await supabase.from('notifications')
       .update({ is_read: true } as Record<string, unknown>)
       .eq('organization_id', organizationId)
       .eq('is_read', false);
+    if (error) {
+      console.warn('[Sadeem] markAllRead failed:', error.message);
+      throw error;
+    }
   },
 
   // ─── Trigger helpers ───

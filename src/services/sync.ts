@@ -57,13 +57,18 @@ export const reviewSyncService = {
       return { reviewsSynced, draftsGenerated, errors };
     }
 
-    const { data: orgData } = await supabase
+    const { data: orgData, error: orgErr } = await supabase
       .from('organizations')
       .select('name, created_at, industry, smart_template_mode')
       .eq('id', organizationId)
       .single();
 
-    const org = orgData as (OrgRow & { industry?: string | null; smart_template_mode?: boolean }) | null;
+    if (orgErr || !orgData) {
+      errors.push('Organization not found');
+      return { reviewsSynced, draftsGenerated, errors };
+    }
+
+    const org = orgData as OrgRow & { created_at?: string; industry?: string | null; smart_template_mode?: boolean };
 
     // Fetch org plan for emoji support level
     const { data: subData } = await supabase
@@ -71,17 +76,13 @@ export const reviewSyncService = {
       .select('plan')
       .eq('organization_id', organizationId)
       .eq('status', 'active')
-      .single();
+      .maybeSingle();
     const orgPlan = (subData as { plan: string } | null)?.plan as PlanId | undefined;
     const planLimits = getPlanLimits(orgPlan || 'orbit');
     const emojiSupport = planLimits.emojiSupport;
-    if (!org) {
-      errors.push('Organization not found');
-      return { reviewsSynced, draftsGenerated, errors };
-    }
 
     // Fetch org creation date to identify old reviews
-    const orgCreatedAt = (orgData as { created_at?: string })?.created_at || new Date().toISOString();
+    const orgCreatedAt = org.created_at || new Date().toISOString();
 
     const { data: newReviewsData } = await supabase
       .from('reviews')
@@ -122,7 +123,8 @@ export const reviewSyncService = {
     const smartMode = !!org.smart_template_mode;
 
     if (aiService.isConfigured()) {
-      for (const review of newReviews) {
+      for (let ri = 0; ri < newReviews.length; ri++) {
+        const review = newReviews[ri];
         const reviewLang = detectReviewLanguage(review.review_text);
         const reviewRating = review.rating || 0;
 
@@ -182,7 +184,7 @@ export const reviewSyncService = {
         }
 
         // Rate limiting: 2 second delay between AI calls to avoid quota issues
-        if (newReviews.indexOf(review) < newReviews.length - 1) {
+        if (ri < newReviews.length - 1) {
           await new Promise(resolve => setTimeout(resolve, 2000));
         }
       }

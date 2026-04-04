@@ -9,6 +9,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { SubscriberLayout } from '@/layouts/SubscriberLayout';
 import { RequireAuth, RequireOrganization, RedirectIfAuthenticated } from './guards';
 import { LoadingState } from '@/components/ui/LoadingState';
+import { useAuth } from '@/hooks/useAuth';
 
 // ── Eagerly loaded — critical path + all subscriber pages ───────────────────
 import Login         from '@/pages/Auth/Login';
@@ -65,6 +66,15 @@ function PageLoader() {
       <LoadingState />
     </div>
   );
+}
+
+/**
+ * Smart 404 handler: authenticated users → /dashboard, guests → /login.
+ */
+function CatchAllRedirect() {
+  const { isAuthenticated, isLoading } = useAuth();
+  if (isLoading) return <PageLoader />;
+  return <Navigate to={isAuthenticated ? '/dashboard' : '/login'} replace />;
 }
 
 export function AppRouter() {
@@ -140,7 +150,7 @@ export function AppRouter() {
         <Route path="security"        element={<Suspense fallback={<PageLoader />}><AdminSecurity /></Suspense>} />
       </Route>
 
-      <Route path="*" element={<Navigate to="/login" replace />} />
+      <Route path="*" element={<CatchAllRedirect />} />
     </Routes>
   );
 }

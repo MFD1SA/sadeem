@@ -252,7 +252,10 @@ export const en = {
     date: 'Date',
     status: 'Status',
     upgrade: 'Upgrade Plan',
-    plans: { starter: 'Starter', growth: 'Growth', enterprise: 'Enterprise' },
+    plans: {
+      orbit: 'Orbit', nova: 'Nova', galaxy: 'Galaxy', infinity: 'Infinity',
+      starter: 'Starter', growth: 'Growth', pro: 'Pro', enterprise: 'Enterprise',
+    },
   },
 
   supportPage: {

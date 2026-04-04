@@ -8,8 +8,16 @@ import { subscriptionService } from '@/services/subscription';
 import type { DbUser, DbOrganization, DbMembership } from '@/types/database';
 import type { DbSubscription } from '@/types/subscription';
 
+// Minimal session shape — avoids importing Supabase Session type while
+// still providing compile-time safety for the properties we actually use.
+interface MinimalSession {
+  user: { id: string; email?: string; user_metadata?: Record<string, unknown>; app_metadata?: Record<string, unknown> };
+  expires_at?: number;
+  access_token?: string;
+}
+
 interface AuthState {
-  session: unknown;
+  session: MinimalSession | null;
   user: { id: string; email?: string } | null;
   profile: DbUser | null;
   organization: DbOrganization | null;
@@ -47,7 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Track in-flight hydration to prevent concurrent calls.
   const hydrating = useRef(false);
 
-  const loadProfile = useCallback(async (userId: string, session: any): Promise<DbUser | null> => {
+  const loadProfile = useCallback(async (userId: string, session: MinimalSession | null): Promise<DbUser | null> => {
     try {
       const { data, error } = await supabase
         .from('users')
@@ -91,7 +99,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const hydrateAuth = useCallback(
-    async (session: any | null) => {
+    async (session: MinimalSession | null) => {
       // Prevent concurrent hydrations
       if (hydrating.current) return;
       hydrating.current = true;
@@ -164,8 +172,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
-    const { data: listener } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: listener } = supabase.auth.onAuthStateChange(async (event, rawSession) => {
       if (!mounted) return;
+      // Cast Supabase Session to our minimal shape
+      const session = rawSession as MinimalSession | null;
 
       if (event === 'INITIAL_SESSION') {
         initialSessionHandled.current = true;
@@ -201,7 +211,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!initialSessionHandled.current && mounted) {
         supabase.auth.getSession().then(({ data: { session } }) => {
           if (mounted && !initialSessionHandled.current) {
-            hydrateAuth(session);
+            hydrateAuth(session as MinimalSession | null);
           }
         });
       }
@@ -213,7 +223,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!mounted) return;
       supabase.auth.getSession().then(({ data: { session } }) => {
         if (mounted && session?.user && !hydrating.current) {
-          hydrateAuth(session);
+          hydrateAuth(session as MinimalSession | null);
         }
       });
     }, 1000) : null;
@@ -231,7 +241,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       clearTimeout(fallback);
       clearTimeout(safetyTimer);
       if (pkceTimer) clearTimeout(pkceTimer);
-      listener?.subscription?.unsubscribe();
+      listener?.subscription.unsubscribe();
     };
   }, [hydrateAuth]);
 

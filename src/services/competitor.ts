@@ -81,7 +81,9 @@ export const competitorService = {
     }
 
     // Top competitor
-    const topComp = competitors.reduce((best, c) => c.rating > best.rating ? c : best, competitors[0]);
+    const topComp = competitors.length > 0
+      ? competitors.reduce((best, c) => c.rating > best.rating ? c : best, competitors[0])
+      : null;
     if (topComp && topComp.rating > myRating) {
       insights.push({
         type: 'weakness',

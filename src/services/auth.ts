@@ -1,5 +1,9 @@
 import { supabase } from '@/lib/supabase';
 
+function getOrigin(): string {
+  return typeof window !== 'undefined' ? window.location.origin : 'https://gandx.net';
+}
+
 export const authService = {
   async signUp(email: string, password: string, fullName: string) {
     const { data, error } = await supabase.auth.signUp({
@@ -9,7 +13,7 @@ export const authService = {
         data: { full_name: fullName },
         // Direct confirmation link to /auth/callback so the token_hash is
         // processed there and the user lands directly on the dashboard.
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        emailRedirectTo: `${getOrigin()}/auth/callback`,
       },
     });
     if (error) throw error;
@@ -32,7 +36,7 @@ export const authService = {
         // Redirect to /login — this URL is confirmed allowed in Supabase.
         // Supabase PKCE exchanges the code automatically on load.
         // RedirectIfAuthenticated shows a spinner (not the form) during exchange.
-        redirectTo: `${window.location.origin}/login`,
+        redirectTo: `${getOrigin()}/login`,
         // Basic profile scopes only — no consent/permissions screen.
         // Google Business API access is requested separately in Integrations.
         scopes: 'openid email profile',
@@ -69,7 +73,7 @@ export const authService = {
     return user;
   },
 
-  onAuthStateChange(callback: (event: string, session: unknown) => void) {
+  onAuthStateChange(callback: (event: string, session: Record<string, unknown> | null) => void) {
     return supabase.auth.onAuthStateChange(callback);
   },
 };
