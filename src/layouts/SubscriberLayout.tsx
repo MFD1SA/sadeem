@@ -21,9 +21,17 @@ export function SubscriberLayout() {
         />
 
         <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+          {/* Skip to main content link for keyboard/screen reader users */}
+          <a
+            href="#main-content"
+            className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-brand-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-md focus:top-2 focus:left-2"
+          >
+            تخطي إلى المحتوى الرئيسي
+          </a>
+
           <Topbar onMenuClick={openMobileSidebar} />
 
-          <main className="flex-1 overflow-y-auto" style={{ scrollbarWidth: 'thin', scrollbarColor: '#d1d5db transparent' }}>
+          <main id="main-content" className="flex-1 overflow-y-auto" role="main" style={{ scrollbarWidth: 'thin', scrollbarColor: '#d1d5db transparent' }}>
             <div className="mx-auto w-full max-w-[1400px] px-4 py-4 sm:px-6 sm:py-5 lg:px-8 lg:py-6">
               <div className="mb-4 sm:mb-5">
                 <TrialBanner />

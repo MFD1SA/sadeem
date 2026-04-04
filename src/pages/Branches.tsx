@@ -14,7 +14,7 @@ import type { DbBranch } from '@/types/database';
 let _cache: DbBranch[] | null = null;
 
 export default function Branches() {
-  const { t, lang } = useLanguage();
+  const { t } = useLanguage();
   const { organization, isLoading: authLoading } = useAuth();
   const {
     canAdd: canAddBranch,
@@ -126,11 +126,7 @@ export default function Branches() {
 
   const handleDelete = async (branchId: string) => {
     if (
-      !confirm(
-        lang === 'ar'
-          ? 'هل أنت متأكد من حذف هذا الفرع؟'
-          : 'Are you sure you want to delete this branch?'
-      )
+      !confirm(t.branchesExt.confirmDelete)
     ) {
       return;
     }
@@ -169,23 +165,19 @@ export default function Branches() {
             </div>
             <div>
               <div className="text-[13px] font-semibold text-content-primary">
-                {lang === 'ar'
-                  ? `وصلت إلى الحد الأقصى (${maxBranches === -1 ? '∞' : maxBranches} ${maxBranches === 1 ? 'فرع' : 'فروع'})`
-                  : `Branch limit reached (${maxBranches === -1 ? '∞' : maxBranches} max)`}
+                {`${t.branchesExt.limitReachedTitle} (${maxBranches === -1 ? '∞' : maxBranches} max)`}
               </div>
               <div className="text-xs text-content-tertiary">
-                {lang === 'ar'
-                  ? 'قم بترقية خطتك لإضافة المزيد من الفروع'
-                  : 'Upgrade your plan to add more branches'}
+                {t.branchesExt.upgradePlanMessage}
               </div>
             </div>
           </div>
           <div className="flex gap-2">
             <button className="btn btn-primary btn-sm" onClick={showUpgrade}>
-              {lang === 'ar' ? 'ترقية' : 'Upgrade'}
+              {t.branchesExt.upgrade}
             </button>
             <button className="btn btn-secondary btn-sm" onClick={() => setLimitWarning(false)}>
-              {lang === 'ar' ? 'إغلاق' : 'Dismiss'}
+              {t.branchesExt.dismiss}
             </button>
           </div>
         </div>
@@ -195,9 +187,9 @@ export default function Branches() {
       <div>
         <h1 className="page-title flex items-center gap-2">
           <MapPin size={20} className="text-brand-500" />
-          {lang === 'ar' ? 'إدارة الفروع' : 'Branch Management'}
+          {t.branchesExt.branchManagement}
         </h1>
-        <p className="page-subtitle">{lang === 'ar' ? 'إدارة فروع نشاطك التجاري وربطها بـ Google Business' : 'Manage your business branches and Google Business links'}</p>
+        <p className="page-subtitle">{t.branchesExt.manageBranchesSubtitle}</p>
       </div>
 
       {/* Stats Summary */}
@@ -209,7 +201,7 @@ export default function Branches() {
           <div>
             <div className="text-lg font-bold text-content-primary leading-none">{branches.length}</div>
             <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">
-              {lang === 'ar' ? 'إجمالي الفروع' : 'Total Branches'}
+              {t.branchesExt.totalBranches}
             </div>
           </div>
         </div>
@@ -220,7 +212,7 @@ export default function Branches() {
           <div>
             <div className="text-lg font-bold text-emerald-600 leading-none">{activeCount}</div>
             <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">
-              {lang === 'ar' ? 'الفروع النشطة' : 'Active'}
+              {t.branchesExt.activeBranches}
             </div>
           </div>
         </div>
@@ -231,7 +223,7 @@ export default function Branches() {
           <div>
             <div className="text-lg font-bold text-green-600 leading-none">{linkedCount}</div>
             <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">
-              {lang === 'ar' ? 'مرتبطة بجوجل' : 'Google Linked'}
+              {t.branchesExt.googleLinked}
             </div>
           </div>
         </div>
@@ -242,7 +234,7 @@ export default function Branches() {
           <div>
             <div className="text-lg font-bold text-content-primary leading-none">{unlinkedCount}</div>
             <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">
-              {lang === 'ar' ? 'غير مرتبطة' : 'Not Linked'}
+              {t.branchesExt.notLinked}
             </div>
           </div>
         </div>
@@ -272,7 +264,7 @@ export default function Branches() {
 
         {branches.length === 0 ? (
           <EmptyState
-            message={lang === 'ar' ? 'لا توجد فروع بعد. أضف أول فرع.' : 'No branches yet. Add your first branch.'}
+            message={t.branchesExt.noBranchesYet}
             action={
               <button className="btn btn-primary btn-sm" onClick={openCreate}>
                 <Plus size={14} /> {t.branchesPage.addBranch}
@@ -323,14 +315,14 @@ export default function Branches() {
                         <Link2 size={13} className="text-green-500 flex-shrink-0" />
                         <span className="text-xs text-content-secondary truncate">{b.google_name}</span>
                         <Badge variant="success">
-                          {lang === 'ar' ? 'مرتبط' : 'Linked'}
+                          {t.branchesExt.connected}
                         </Badge>
                       </>
                     ) : (
                       <>
                         <Unlink size={13} className="text-content-tertiary flex-shrink-0" />
                         <span className="text-xs text-content-tertiary italic">
-                          {lang === 'ar' ? 'غير مرتبط بجوجل' : 'Not linked to Google'}
+                          {t.branchesExt.notLinkedToGoogle}
                         </span>
                       </>
                     )}
@@ -369,7 +361,7 @@ export default function Branches() {
 
       {showModal && (
         <Modal
-          title={editBranch ? (lang === 'ar' ? 'تعديل الفرع' : 'Edit Branch') : t.branchesPage.addBranch}
+          title={editBranch ? t.branchesExt.editBranch : t.branchesPage.addBranch}
           onClose={() => setShowModal(false)}
           footer={
             <>

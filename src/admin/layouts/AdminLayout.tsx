@@ -21,8 +21,14 @@ function AdminLayoutInner() {
       <div className="admin-shell" dir="rtl">
         <AdminSidebar isOpen={sidebarOpen} onClose={closeSidebar} />
         <div className="admin-main">
+          <a
+            href="#admin-main-content"
+            className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-indigo-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-md focus:top-2 focus:left-2"
+          >
+            تخطي إلى المحتوى
+          </a>
           <AdminTopbar onMenuToggle={toggleSidebar} />
-          <main className="admin-content">
+          <main id="admin-main-content" className="admin-content" role="main">
             <div className="admin-content-inner">
               <Outlet />
             </div>

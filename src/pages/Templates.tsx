@@ -212,7 +212,7 @@ export default function Templates() {
       <div>
         <h1 className="page-title flex items-center gap-2">
           <BarChart2 size={20} className="text-brand-500" />
-          {lang === 'ar' ? 'قوالب الردود' : 'Reply Templates'}
+          {t.templatesPage.title}
         </h1>
         <p className="page-subtitle">{lang === 'ar' ? 'إنشاء وإدارة قوالب الردود الجاهزة والمخصصة' : 'Create and manage built-in and custom reply templates'}</p>
       </div>
@@ -237,7 +237,7 @@ export default function Templates() {
           <div>
             <div className="text-lg font-bold text-emerald-600 leading-none">{activeCount}</div>
             <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">
-              {lang === 'ar' ? 'القوالب النشطة' : 'Active'}
+              {t.common.active}
             </div>
           </div>
         </div>
@@ -260,9 +260,9 @@ export default function Templates() {
       {/* View tabs */}
       <div className="flex items-center gap-2">
         {([
-          { key: 'all' as const, label: lang === 'ar' ? 'الكل' : 'All', count: customDisplay.length + builtInDisplay.length },
-          { key: 'custom' as const, label: lang === 'ar' ? 'مخصصة' : 'Custom', count: customDisplay.length },
-          { key: 'builtin' as const, label: lang === 'ar' ? 'جاهزة' : 'Built-in', count: builtInDisplay.length },
+          { key: 'all' as const, label: t.common.all, count: customDisplay.length + builtInDisplay.length },
+          { key: 'custom' as const, label: t.templatesExt.custom, count: customDisplay.length },
+          { key: 'builtin' as const, label: t.templatesExt.builtIn, count: builtInDisplay.length },
         ]).map(tab => (
           <button
             key={tab.key}
@@ -315,7 +315,7 @@ export default function Templates() {
                         {tpl.isBuiltIn ? (
                           <Badge variant="info">
                             <Lock size={9} className="inline -mt-px" />{' '}
-                            {lang === 'ar' ? 'جاهز' : 'Built-in'}
+                            {t.templatesExt.builtIn}
                           </Badge>
                         ) : (
                           <Badge variant="info">
@@ -368,7 +368,7 @@ export default function Templates() {
 
       {showModal && (
         <Modal
-          title={editTemplate ? (lang === 'ar' ? 'تعديل القالب' : 'Edit Template') : t.templatesPage.addTemplate}
+          title={editTemplate ? t.templatesExt.editTemplate : t.templatesPage.addTemplate}
           onClose={() => setShowModal(false)}
           footer={
             <>

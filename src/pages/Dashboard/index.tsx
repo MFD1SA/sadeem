@@ -58,33 +58,33 @@ export default function Dashboard() {
   if (!stats) return null;
 
   const isAr = lang === 'ar';
-  const greeting = isAr ? 'مرحباً' : 'Welcome back';
+  const greeting = t.dashboardExt?.greeting || (isAr ? 'مرحباً' : 'Welcome back');
   const name = profile?.full_name?.split(' ')[0] || '';
   const branchMap: Record<string, string> = {};
   branches.forEach(b => { branchMap[b.id] = b.internal_name; });
 
   const statCards = [
     {
-      icon: Star, label: isAr ? 'متوسط التقييم' : 'Avg Rating',
+      icon: Star, label: t.dashboard.avgRating,
       value: stats.avgRating > 0 ? stats.avgRating.toFixed(1) : '—',
       iconBg: 'bg-amber-50', iconColor: 'text-amber-500',
       valueColor: 'text-content-primary',
     },
     {
-      icon: MessageSquareText, label: isAr ? 'تقييمات اليوم' : 'New Today',
+      icon: MessageSquareText, label: t.dashboardExt?.reviewsToday || t.dashboard.newReviews,
       value: String(stats.newReviewsToday),
       iconBg: 'bg-brand-50', iconColor: 'text-brand-500',
       valueColor: 'text-content-primary',
     },
     {
-      icon: AlertCircle, label: isAr ? 'غير مردود عليها' : 'Unreplied',
+      icon: AlertCircle, label: t.dashboard.unreplied,
       value: String(stats.unrepliedCount),
       iconBg: stats.unrepliedCount > 5 ? 'bg-red-50' : 'bg-amber-50',
       iconColor: stats.unrepliedCount > 5 ? 'text-red-500' : 'text-amber-500',
       valueColor: stats.unrepliedCount > 5 ? 'text-red-600' : 'text-amber-600',
     },
     {
-      icon: TrendingUp, label: isAr ? 'معدل الاستجابة' : 'Response Rate',
+      icon: TrendingUp, label: t.dashboard.responseRate,
       value: `${stats.responseRate}%`,
       iconBg: 'bg-emerald-50', iconColor: 'text-emerald-500',
       valueColor: 'text-emerald-600',
@@ -92,10 +92,10 @@ export default function Dashboard() {
   ];
 
   const quickLinks = [
-    { to: '/dashboard/reviews', icon: MessageSquareText, label: isAr ? 'مركز التقييمات' : 'Reviews Center', color: 'bg-brand-50 text-brand-600', count: stats.totalReviews },
-    { to: '/dashboard/replies', icon: Inbox, label: isAr ? 'صندوق الردود' : 'Responses Inbox', color: 'bg-violet-50 text-violet-600', count: stats.unrepliedCount },
-    { to: '/dashboard/branches', icon: GitBranch, label: isAr ? 'الفروع' : 'Branches', color: 'bg-amber-50 text-amber-600', count: stats.totalBranches },
-    { to: '/dashboard/templates', icon: FileText, label: isAr ? 'القوالب' : 'Templates', color: 'bg-emerald-50 text-emerald-600', count: null },
+    { to: '/dashboard/reviews', icon: MessageSquareText, label: t.nav.reviews, color: 'bg-brand-50 text-brand-600', count: stats.totalReviews },
+    { to: '/dashboard/replies', icon: Inbox, label: t.nav.replies, color: 'bg-violet-50 text-violet-600', count: stats.unrepliedCount },
+    { to: '/dashboard/branches', icon: GitBranch, label: t.nav.branches, color: 'bg-amber-50 text-amber-600', count: stats.totalBranches },
+    { to: '/dashboard/templates', icon: FileText, label: t.nav.templates, color: 'bg-emerald-50 text-emerald-600', count: null },
   ];
 
   return (

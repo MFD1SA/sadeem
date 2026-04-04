@@ -49,7 +49,7 @@ export default function Team() {
     if (!organization || !inviteEmail.trim()) return;
     // Re-check limit at submit time (covers race conditions)
     if (members.length >= limits.maxTeamMembers) {
-      setInviteError(lang === 'ar' ? `وصلت للحد الأقصى (${limits.maxTeamMembers} أعضاء). يرجى ترقية الباقة.` : `Member limit reached (${limits.maxTeamMembers}). Please upgrade your plan.`);
+      setInviteError(t.teamExt.memberLimitMsg.replace('{0}', String(limits.maxTeamMembers)));
       return;
     }
     setInviting(true);
@@ -86,9 +86,9 @@ export default function Team() {
       <div>
         <h1 className="page-title flex items-center gap-2">
           <UserPlus size={20} className="text-brand-500" />
-          {lang === 'ar' ? 'إدارة الفريق' : 'Team Management'}
+          {t.teamExt.teamManagement}
         </h1>
-        <p className="page-subtitle">{lang === 'ar' ? 'أضف وأدِر أعضاء فريق العمل وصلاحياتهم' : 'Add and manage team members and their roles'}</p>
+        <p className="page-subtitle">{t.teamExt.teamManagementDesc}</p>
       </div>
 
       {/* Stats Summary */}
@@ -100,7 +100,7 @@ export default function Team() {
           <div>
             <div className="text-lg font-bold text-content-primary leading-none">{members.length}</div>
             <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">
-              {lang === 'ar' ? 'إجمالي الأعضاء' : 'Total Members'}
+              {t.teamExt.totalMembers}
             </div>
           </div>
         </div>
@@ -111,7 +111,7 @@ export default function Team() {
           <div>
             <div className="text-lg font-bold text-emerald-600 leading-none">{activeCount}</div>
             <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">
-              {lang === 'ar' ? 'الأعضاء النشطون' : 'Active Members'}
+              {t.teamExt.activeMembers}
             </div>
           </div>
         </div>
@@ -122,7 +122,7 @@ export default function Team() {
           <div>
             <div className="text-lg font-bold text-violet-600 leading-none">{adminCount}</div>
             <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">
-              {lang === 'ar' ? 'المالكون / الإداريون' : 'Owners / Admins'}
+              {t.teamExt.ownersAdmins}
             </div>
           </div>
         </div>
@@ -139,11 +139,11 @@ export default function Team() {
             className="btn btn-primary btn-sm"
             type="button"
             disabled={!canAddMember}
-            title={atMemberLimit ? (lang === 'ar' ? `وصلت للحد الأقصى (${maxMembers} أعضاء). يرجى ترقية الباقة.` : `Member limit reached (${maxMembers}). Upgrade to add more.`) : undefined}
+            title={atMemberLimit ? t.teamExt.memberLimitTitle.replace('{0}', String(maxMembers)) : undefined}
             onClick={() => { if (canAddMember) { setShowInvite(true); setInviteError(''); setInviteSuccess(false); } }}
           >
             {atMemberLimit ? <Lock size={14} /> : <UserPlus size={14} />}
-            {lang === 'ar' ? 'دعوة عضو' : 'Invite Member'}
+            {t.teamExt.inviteMember}
           </button>
         </div>
 
@@ -151,9 +151,7 @@ export default function Team() {
           <div className="mx-4 mb-3 flex items-center gap-2 rounded-lg bg-amber-500/10 border border-amber-500/20 px-3 py-2.5 text-xs text-amber-600">
             <Lock size={13} className="flex-shrink-0" />
             <span>
-              {lang === 'ar'
-                ? `وصلت للحد الأقصى لعدد الأعضاء في باقتك الحالية (${maxMembers}). قم بترقية الباقة لإضافة المزيد.`
-                : `You've reached the team member limit for your plan (${maxMembers}). Upgrade to add more.`}
+              {t.teamExt.memberLimitBanner.replace('{0}', String(maxMembers))}
             </span>
           </div>
         )}
@@ -205,7 +203,7 @@ export default function Team() {
 
                   {/* Join Date */}
                   <div className="text-2xs text-content-tertiary">
-                    {lang === 'ar' ? 'تاريخ الانضمام: ' : 'Joined: '}
+                    {t.teamExt.joined}
                     {formatDateTime(u.created_at, locale)}
                   </div>
                 </div>
@@ -220,35 +218,35 @@ export default function Team() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" role="presentation" onClick={(e) => { if (e.target === e.currentTarget) setShowInvite(false); }}>
           <div className="bg-surface-primary rounded-2xl shadow-2xl w-full max-w-md border border-border" role="dialog" aria-modal="true" aria-labelledby="invite-modal-title">
             <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-              <h3 id="invite-modal-title" className="font-semibold text-content-primary text-sm">{lang === 'ar' ? 'دعوة عضو جديد' : 'Invite New Member'}</h3>
+              <h3 id="invite-modal-title" className="font-semibold text-content-primary text-sm">{t.teamExt.inviteNewMember}</h3>
               <button onClick={() => setShowInvite(false)} className="text-content-tertiary hover:text-content-primary transition-colors focus:outline-2 focus:outline-brand-500 rounded-lg" aria-label="Close"><X size={16} /></button>
             </div>
             <form onSubmit={handleInvite} className="p-5 space-y-4">
               <div>
-                <label className="block text-xs font-medium text-content-secondary mb-1.5">{lang === 'ar' ? 'البريد الإلكتروني' : 'Email Address'}</label>
+                <label className="block text-xs font-medium text-content-secondary mb-1.5">{t.teamExt.inviteEmail}</label>
                 <input
                   type="email"
                   value={inviteEmail}
                   onChange={e => setInviteEmail(e.target.value)}
-                  placeholder={lang === 'ar' ? 'example@email.com' : 'example@email.com'}
+                  placeholder="example@email.com"
                   className="input w-full"
                   required
                   autoFocus
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-content-secondary mb-1.5">{lang === 'ar' ? 'الدور' : 'Role'}</label>
+                <label className="block text-xs font-medium text-content-secondary mb-1.5">{t.teamExt.inviteRole}</label>
                 <select value={inviteRole} onChange={e => setInviteRole(e.target.value as 'member' | 'admin')} className="input w-full">
-                  <option value="member">{lang === 'ar' ? 'عضو' : 'Member'}</option>
-                  <option value="admin">{lang === 'ar' ? 'مشرف' : 'Admin'}</option>
+                  <option value="member">{t.teamExt.member}</option>
+                  <option value="admin">{t.teamExt.admin}</option>
                 </select>
               </div>
               {inviteError && <p className="text-xs text-red-600 bg-red-50 rounded-lg px-3 py-2">{inviteError}</p>}
-              {inviteSuccess && <p className="text-xs text-emerald-700 bg-emerald-50 rounded-lg px-3 py-2">{lang === 'ar' ? 'تمت الدعوة بنجاح!' : 'Member added successfully!'}</p>}
+              {inviteSuccess && <p className="text-xs text-emerald-700 bg-emerald-50 rounded-lg px-3 py-2">{t.teamExt.memberAdded}</p>}
               <div className="flex gap-2 pt-1">
-                <button type="button" onClick={() => setShowInvite(false)} className="btn btn-ghost btn-sm flex-1">{lang === 'ar' ? 'إلغاء' : 'Cancel'}</button>
+                <button type="button" onClick={() => setShowInvite(false)} className="btn btn-ghost btn-sm flex-1">{t.common.cancel}</button>
                 <button type="submit" disabled={inviting} className="btn btn-primary btn-sm flex-1">
-                  {inviting ? (lang === 'ar' ? 'جاري الإضافة…' : 'Adding…') : (lang === 'ar' ? 'إضافة العضو' : 'Add Member')}
+                  {inviting ? t.teamExt.adding : t.teamPage.addMember}
                 </button>
               </div>
             </form>

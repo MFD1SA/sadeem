@@ -21,7 +21,7 @@ export function DataTable<T>({ columns, data, keyField, onRowClick, emptyMessage
         <thead>
           <tr>
             {columns.map(col => (
-              <th key={col.key} className={`text-right rtl:text-right ltr:text-left px-3.5 py-2.5 text-xs font-semibold text-content-secondary bg-surface-secondary border-b border-border whitespace-nowrap ${col.className || ''}`}>
+              <th key={col.key} scope="col" className={`text-right rtl:text-right ltr:text-left px-3.5 py-2.5 text-xs font-semibold text-content-secondary bg-surface-secondary border-b border-border whitespace-nowrap ${col.className || ''}`}>
                 {col.header}
               </th>
             ))}
@@ -39,7 +39,10 @@ export function DataTable<T>({ columns, data, keyField, onRowClick, emptyMessage
               <tr
                 key={String(item[keyField])}
                 onClick={() => onRowClick?.(item)}
-                className={`border-b border-border last:border-b-0 hover:bg-surface-secondary/60 transition-colors ${onRowClick ? 'cursor-pointer' : ''}`}
+                onKeyDown={(e) => { if (onRowClick && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); onRowClick(item); } }}
+                tabIndex={onRowClick ? 0 : undefined}
+                role={onRowClick ? 'button' : undefined}
+                className={`border-b border-border last:border-b-0 hover:bg-surface-secondary/60 transition-colors ${onRowClick ? 'cursor-pointer focus:bg-surface-secondary/60 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-brand-500' : ''}`}
               >
                 {columns.map(col => (
                   <td key={col.key} className={`px-3.5 py-2.5 text-content-primary align-middle ${col.className || ''}`}>

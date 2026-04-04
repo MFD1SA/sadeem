@@ -71,8 +71,9 @@ export function Topbar({ onMenuClick }: TopbarProps) {
         <div className="flex min-w-0 items-center gap-3">
           <button
             type="button"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-white text-content-secondary shadow-sm transition-colors hover:bg-surface-secondary hover:text-content-primary lg:hidden"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-white text-content-secondary shadow-sm transition-colors hover:bg-surface-secondary hover:text-content-primary focus:ring-2 focus:ring-brand-500 focus:outline-none lg:hidden"
             onClick={onMenuClick}
+            aria-label={lang === 'ar' ? 'فتح القائمة' : 'Open menu'}
           >
             <Menu size={18} />
           </button>
@@ -107,8 +108,8 @@ export function Topbar({ onMenuClick }: TopbarProps) {
           <button
             type="button"
             onClick={toggleLanguage}
-            className="inline-flex h-10 items-center justify-center gap-1.5 rounded-xl border border-border bg-white px-3 text-xs font-medium text-content-secondary shadow-sm transition-colors hover:bg-surface-secondary hover:text-content-primary"
-            title={lang === 'ar' ? 'تغيير اللغة' : 'Change language'}
+            className="inline-flex h-10 items-center justify-center gap-1.5 rounded-xl border border-border bg-white px-3 text-xs font-medium text-content-secondary shadow-sm transition-colors hover:bg-surface-secondary hover:text-content-primary focus:ring-2 focus:ring-brand-500 focus:outline-none"
+            aria-label={lang === 'ar' ? 'تغيير اللغة إلى الإنجليزية' : 'Switch to Arabic'}
           >
             <Globe size={14} />
             <span className="hidden sm:inline">{lang === 'ar' ? 'AR' : 'EN'}</span>
@@ -118,8 +119,8 @@ export function Topbar({ onMenuClick }: TopbarProps) {
           <button
             type="button"
             onClick={() => navigate('/dashboard/notifications')}
-            className="relative inline-flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-white text-content-secondary shadow-sm transition-colors hover:bg-surface-secondary hover:text-content-primary"
-            title={lang === 'ar' ? 'الإشعارات' : 'Notifications'}
+            className="relative inline-flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-white text-content-secondary shadow-sm transition-colors hover:bg-surface-secondary hover:text-content-primary focus:ring-2 focus:ring-brand-500 focus:outline-none"
+            aria-label={lang === 'ar' ? 'الإشعارات' : 'Notifications'}
           >
             <Bell size={16} />
           </button>
@@ -132,7 +133,7 @@ export function Topbar({ onMenuClick }: TopbarProps) {
               className="flex h-10 items-center gap-2 rounded-xl border border-border bg-white px-2.5 sm:px-3 shadow-sm transition-colors hover:bg-surface-secondary"
             >
               {userAvatar ? (
-                <img src={userAvatar} alt="" className="h-7 w-7 rounded-full object-cover ring-1 ring-border" />
+                <img src={userAvatar} alt={userName || 'User avatar'} className="h-7 w-7 rounded-full object-cover ring-1 ring-border" />
               ) : (
                 <div className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-600 text-xs font-semibold text-white">
                   {userInitial}

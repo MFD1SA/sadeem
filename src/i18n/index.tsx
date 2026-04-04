@@ -11,8 +11,7 @@ type Translations = Record<string, unknown>;
 interface LanguageContextType {
   lang: Language;
   dir: Direction;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  t: any;
+  t: typeof ar;
   setLanguage: (lang: Language) => void;
   toggleLanguage: () => void;
 }

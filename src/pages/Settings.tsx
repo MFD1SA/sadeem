@@ -52,7 +52,7 @@ export default function Settings() {
   const [smartTemplateMode, setSmartTemplateMode] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }: { data: any }) => {
+    supabase.auth.getSession().then(({ data }: { data: { session: { user: { app_metadata?: Record<string, unknown>; user_metadata?: Record<string, unknown> } } | null } }) => {
       const provider = data?.session?.user?.app_metadata?.provider;
       setIsGoogleUser(provider === 'google');
       const avatarUrl = data?.session?.user?.user_metadata?.avatar_url
