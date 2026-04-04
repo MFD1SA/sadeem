@@ -258,10 +258,11 @@ export const aiService = {
     // Abusive → manual review, draft rejected
     if (aiResult.isAbusive) {
       await supabase.from('reviews').update({ status: 'manual_review_required' } as Record<string, unknown>).eq('id', reviewId);
-      await supabase.from('reply_drafts').insert({
+      const { error: draftErr } = await supabase.from('reply_drafts').insert({
         review_id: reviewId, organization_id: rev.organization_id,
         ai_reply: aiResult.reply, source: 'ai', status: 'rejected',
       });
+      if (draftErr) { console.error('[AI] Draft insert failed:', draftErr.message); return; }
       return;
     }
 
@@ -269,10 +270,11 @@ export const aiService = {
     if (aiResult.decision === 'manual' || rev.rating === 1) {
       // 1★ or complaint/sarcasm in high-star → manual review required
       await supabase.from('reviews').update({ status: 'manual_review_required' } as Record<string, unknown>).eq('id', reviewId);
-      await supabase.from('reply_drafts').insert({
+      const { error: draftErr2 } = await supabase.from('reply_drafts').insert({
         review_id: reviewId, organization_id: rev.organization_id,
         ai_reply: aiResult.reply, source: 'ai', status: 'pending',
       });
+      if (draftErr2) { console.error('[AI] Draft insert failed:', draftErr2.message); return; }
       // Trigger notification for critical reviews
       if (rev.rating <= 2) {
         notificationService.notifyCriticalReview(rev.organization_id, rev.reviewer_name, rev.rating, reviewId).catch(() => {});
@@ -285,19 +287,21 @@ export const aiService = {
 
     if (aiResult.decision === 'auto') {
       // 4-5★ positive → template auto-reply (pending approval)
-      await supabase.from('reply_drafts').insert({
+      const { error: draftErr3 } = await supabase.from('reply_drafts').insert({
         review_id: reviewId, organization_id: rev.organization_id,
         ai_reply: aiResult.reply, source: 'template', status: 'pending',
       });
+      if (draftErr3) { console.error('[AI] Draft insert failed:', draftErr3.message); return; }
       await supabase.from('reviews').update({ status: 'pending_reply' } as Record<string, unknown>).eq('id', reviewId);
       return;
     }
 
     // Default: AI reply (3★, 2★ or unclassified)
-    await supabase.from('reply_drafts').insert({
+    const { error: draftErr4 } = await supabase.from('reply_drafts').insert({
       review_id: reviewId, organization_id: rev.organization_id,
       ai_reply: aiResult.reply, source: 'ai', status: 'pending',
     });
+    if (draftErr4) { console.error('[AI] Draft insert failed:', draftErr4.message); return; }
     await supabase.from('reviews').update({ status: 'pending_reply' } as Record<string, unknown>).eq('id', reviewId);
   },
 };

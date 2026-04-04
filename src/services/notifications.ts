@@ -85,4 +85,14 @@ export const notificationService = {
       entity_id: reviewId,
     });
   },
+
+  async notifyTicketReply(organizationId: string, ticketSubject: string, ticketId?: string): Promise<void> {
+    await this.create({
+      organization_id: organizationId,
+      type: 'ticket_reply',
+      title: `رد جديد على التذكرة: ${ticketSubject}`,
+      body: 'قام فريق الدعم الفني بالرد على تذكرتك',
+      entity_id: ticketId,
+    });
+  },
 };

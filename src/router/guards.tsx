@@ -18,7 +18,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 
 const ADMIN_CACHE_KEY = 'sadeem_admin_check';
-const ADMIN_CHECK_TIMEOUT_MS = 2000;
+const ADMIN_CHECK_TIMEOUT_MS = 1500;
 
 /**
  * Hook: check if current auth.uid() is an admin.

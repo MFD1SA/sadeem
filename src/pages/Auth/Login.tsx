@@ -7,6 +7,7 @@ import { useState, useEffect, useRef, type ChangeEvent, type FormEvent } from 'r
 import { useLanguage } from '@/i18n';
 import { authService } from '@/services/auth';
 import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/hooks/useAuth';
 import { getBranding, type BrandingConfig } from '@/services/branding';
 import { CheckCircle2, Star, BarChart3, MessageSquare, GitBranch, ArrowRight } from 'lucide-react';
 
@@ -106,53 +107,25 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
     if (!tokenHash || type !== 'email') return;
     supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'email' })
       .then(({ error: e }) => {
-        window.location.href = e ? '/login?error=confirmation_failed' : '/dashboard';
+        if (e) window.location.href = '/login?error=confirmation_failed';
+        // If success, AuthProvider will detect the session and
+        // RedirectIfAuthenticated will redirect to /dashboard.
       });
   }, []);
 
-  // PKCE: listen for SIGNED_IN immediately — redirect as soon as session is ready
-  useEffect(() => {
-    if (!isOAuthCallback) return;
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'SIGNED_IN') window.location.href = '/dashboard';
-    });
-    // Fast fallback at 1s and again at 4s in case the event was missed
-    const t1 = setTimeout(async () => {
-      const { data: { session } } = await supabase.auth.getSession().catch(() => ({ data: { session: null } }));
-      if (session?.user) window.location.href = '/dashboard';
-    }, 1000);
-    const t2 = setTimeout(async () => {
-      const { data: { session } } = await supabase.auth.getSession().catch(() => ({ data: { session: null } }));
-      if (session?.user) window.location.href = '/dashboard';
-    }, 4000);
-    return () => { subscription.unsubscribe(); clearTimeout(t1); clearTimeout(t2); };
-  }, []);
+  // OAuth callback: AuthProvider handles SIGNED_IN event and hydrates auth state.
+  // RedirectIfAuthenticated guard will automatically redirect to /dashboard
+  // once isAuthenticated becomes true. No manual redirect needed here.
 
-  // ── OAuth callback loading screen ─────────────────────────────────────────
+  // ── OAuth callback loading screen (minimal) ────────────────────────────────
   if (isOAuthCallback) {
-    const logoUrl = branding?.logo_icon_url || branding?.logo_full_url || '';
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #1e3a8a 0%, #3b5bdb 50%, #1e40af 100%)' }}>
+      <div className="min-h-screen flex items-center justify-center bg-surface-secondary">
         <div className="text-center flex flex-col items-center">
-          {/* Logo */}
-          <div className="mb-6">
-            <img
-              src={logoUrl || '/sadeem-logo.png'}
-              alt="SADEEM"
-              className="w-32 h-32 object-contain drop-shadow-2xl mx-auto"
-              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-            />
-          </div>
-          {/* Brand name */}
-          <div className="text-white text-xl font-bold tracking-widest mb-1" style={{ letterSpacing: '0.2em' }}>
-            {branding?.platform_name_en || 'SADEEM'}
-          </div>
-          {/* Loading text */}
-          <div className="text-white/60 text-sm mb-8 font-light">
-            {isAr ? 'جاري التحميل…' : 'Loading…'}
-          </div>
-          {/* Spinner */}
-          <div className="w-8 h-8 rounded-full border-2 border-white/20 border-t-white animate-spin" />
+          <div className="w-8 h-8 rounded-full border-2 border-gray-200 border-t-brand-500 animate-spin mb-4" />
+          <p className="text-sm text-content-tertiary">
+            {isAr ? 'جاري تسجيل الدخول…' : 'Signing in…'}
+          </p>
         </div>
       </div>
     );
@@ -188,17 +161,19 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
     try {
       if (isSignUp) {
         await authService.signUp(email, password, fullName);
+        setLoading(false);
         setSuccess(isAr
           ? 'تم إنشاء الحساب! يرجى فتح بريدك الإلكتروني والضغط على رابط التأكيد.'
           : 'Account created! Please check your email and click the confirmation link.');
       } else {
         await authService.login(email, password);
-        window.location.href = '/dashboard';
+        // Keep loading=true — AuthProvider will detect SIGNED_IN event,
+        // hydrate auth, and RedirectIfAuthenticated guard will redirect
+        // to /dashboard automatically. No full page reload needed.
       }
     } catch (err: unknown) {
-      setError(translateError((err as Error).message || '', isAr));
-    } finally {
       setLoading(false);
+      setError(translateError((err as Error).message || '', isAr));
     }
   };
 

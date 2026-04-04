@@ -208,22 +208,41 @@ export default function Templates() {
 
   return (
     <div className="space-y-5">
+      {/* Page header */}
+      <div>
+        <h1 className="page-title flex items-center gap-2">
+          <BarChart2 size={20} className="text-brand-500" />
+          {lang === 'ar' ? 'قوالب الردود' : 'Reply Templates'}
+        </h1>
+        <p className="page-subtitle">{lang === 'ar' ? 'إنشاء وإدارة قوالب الردود الجاهزة والمخصصة' : 'Create and manage built-in and custom reply templates'}</p>
+      </div>
+
       {/* Stats Summary */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        <div className="card card-body text-center">
-          <div className="text-2xl font-bold text-content-primary">{allTemplates.length}</div>
-          <div className="text-xs text-content-tertiary mt-0.5">
-            {lang === 'ar' ? 'إجمالي القوالب' : 'Total Templates'}
+        <div className="stat-card flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-brand-50 flex items-center justify-center">
+            <span className="text-brand-500 text-xs font-bold">{allTemplates.length}</span>
+          </div>
+          <div>
+            <div className="text-lg font-bold text-content-primary leading-none">{allTemplates.length}</div>
+            <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">
+              {lang === 'ar' ? 'إجمالي القوالب' : 'Total Templates'}
+            </div>
           </div>
         </div>
-        <div className="card card-body text-center">
-          <div className="text-2xl font-bold text-content-primary">{activeCount}</div>
-          <div className="text-xs text-content-tertiary mt-0.5">
-            {lang === 'ar' ? 'القوالب النشطة' : 'Active Templates'}
+        <div className="stat-card flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center">
+            <span className="text-emerald-500 text-xs font-bold">{activeCount}</span>
+          </div>
+          <div>
+            <div className="text-lg font-bold text-emerald-600 leading-none">{activeCount}</div>
+            <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">
+              {lang === 'ar' ? 'القوالب النشطة' : 'Active'}
+            </div>
           </div>
         </div>
-        <div className="card card-body col-span-2 sm:col-span-1">
-          <div className="text-xs font-semibold text-content-secondary mb-2">
+        <div className="stat-card col-span-2 sm:col-span-1">
+          <div className="text-[10px] font-semibold text-content-tertiary mb-2 uppercase tracking-wider">
             {lang === 'ar' ? 'حسب الفئة' : 'By Category'}
           </div>
           <div className="flex flex-wrap gap-x-3 gap-y-1">

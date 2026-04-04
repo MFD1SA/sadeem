@@ -50,6 +50,9 @@ export default function Support() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
+  // Unread admin replies: set of ticket IDs where the last reply is from support
+  const [ticketsWithNewReply, setTicketsWithNewReply] = useState<Set<string>>(new Set());
+
   // Detail / thread state
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [replies, setReplies] = useState<TicketReply[]>([]);
@@ -73,6 +76,38 @@ export default function Support() {
   }, [organization, lang]);
 
   useEffect(() => { loadTickets(); }, [loadTickets]);
+
+  // Check which tickets have unread admin replies (last reply is from 'support')
+  useEffect(() => {
+    if (!tickets.length) { setTicketsWithNewReply(new Set()); return; }
+    const checkUnread = async () => {
+      try {
+        const ticketIds = tickets.map(t => t.id);
+        const { data } = await supabase
+          .from('ticket_replies')
+          .select('id, ticket_id, sender_type, created_at')
+          .in('ticket_id', ticketIds)
+          .order('created_at', { ascending: false });
+        if (!data) return;
+        // For each ticket, find the most recent reply and check if it's from support
+        const lastReplyByTicket = new Map<string, { sender_type: string }>();
+        for (const reply of data) {
+          const tid = (reply as { ticket_id: string }).ticket_id;
+          if (!lastReplyByTicket.has(tid)) {
+            lastReplyByTicket.set(tid, { sender_type: reply.sender_type });
+          }
+        }
+        const unread = new Set<string>();
+        lastReplyByTicket.forEach((val, ticketId) => {
+          if (val.sender_type === 'support') unread.add(ticketId);
+        });
+        setTicketsWithNewReply(unread);
+      } catch {
+        // Silently ignore — badge is non-critical
+      }
+    };
+    checkUnread();
+  }, [tickets]);
 
   // Load replies for selected ticket
   const loadReplies = useCallback(async (ticketId: string) => {
@@ -148,8 +183,12 @@ export default function Support() {
       // Reload replies and ticket list (status may have changed)
       await loadReplies(selectedTicket.id);
       await loadTickets();
-      // Update selected ticket status if it was reopened
-      const updated = tickets.find(t => t.id === selectedTicket.id);
+      // Re-fetch the selected ticket directly
+      const { data: updated } = await supabase
+        .from('support_tickets')
+        .select('*')
+        .eq('id', selectedTicket.id)
+        .single();
       if (updated) setSelectedTicket(updated);
     } catch {
       setError(lang === 'ar' ? 'فشل في إرسال الرد' : 'Failed to send reply');
@@ -277,24 +316,63 @@ export default function Support() {
   }
 
   // ─── List View ───
+  const openTickets = tickets.filter(t => t.status === 'open' || t.status === 'in_progress').length;
+  const resolvedTickets = tickets.filter(t => t.status === 'resolved' || t.status === 'closed').length;
+
   return (
     <div className="space-y-4">
-      {/* Header card */}
-      <div className="card card-body">
-        <div className="flex items-center justify-between gap-4 flex-wrap">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-brand-50 flex items-center justify-center text-brand-600">
-              <HelpCircle size={20} />
-            </div>
-            <div>
-              <h2 className="text-sm font-semibold text-content-primary">{lang === 'ar' ? 'الدعم الفني' : 'Support'}</h2>
-              <p className="text-xs text-content-tertiary mt-0.5">{lang === 'ar' ? 'نرد خلال 24 ساعة • support@sadeem.sa' : 'We respond within 24h • support@sadeem.sa'}</p>
-            </div>
+      {/* Page header */}
+      <div className="flex items-start justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="page-title flex items-center gap-2">
+            <HelpCircle size={20} className="text-brand-500" />
+            {lang === 'ar' ? 'الدعم الفني' : 'Support'}
+          </h1>
+          <p className="page-subtitle">{lang === 'ar' ? 'نرد خلال 24 ساعة • support@sadeem.sa' : 'We respond within 24h • support@sadeem.sa'}</p>
+        </div>
+        <button onClick={() => setShowForm(v => !v)} className="btn btn-primary">
+          {showForm ? <X size={14} /> : <Plus size={14} />}
+          {showForm ? (lang === 'ar' ? 'إلغاء' : 'Cancel') : (lang === 'ar' ? 'تذكرة جديدة' : 'New Ticket')}
+        </button>
+      </div>
+
+      {/* Quick stats */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="stat-card flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-brand-50 flex items-center justify-center">
+            <MessageSquare size={16} className="text-brand-500" />
           </div>
-          <button onClick={() => setShowForm(v => !v)} className="btn btn-primary">
-            {showForm ? <X size={14} /> : <Plus size={14} />}
-            {showForm ? (lang === 'ar' ? 'إلغاء' : 'Cancel') : (lang === 'ar' ? 'تذكرة جديدة' : 'New Ticket')}
-          </button>
+          <div>
+            <div className="text-lg font-bold text-content-primary leading-none">{tickets.length}</div>
+            <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">{lang === 'ar' ? 'إجمالي التذاكر' : 'Total Tickets'}</div>
+          </div>
+        </div>
+        <div className="stat-card flex items-center gap-3">
+          <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${openTickets > 0 ? 'bg-amber-50' : 'bg-gray-50'}`}>
+            <Clock size={16} className={openTickets > 0 ? 'text-amber-500' : 'text-gray-400'} />
+          </div>
+          <div>
+            <div className={`text-lg font-bold leading-none ${openTickets > 0 ? 'text-amber-600' : 'text-content-primary'}`}>{openTickets}</div>
+            <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">{lang === 'ar' ? 'قيد المعالجة' : 'Open'}</div>
+          </div>
+        </div>
+        <div className="stat-card flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center">
+            <CheckCircle size={16} className="text-emerald-500" />
+          </div>
+          <div>
+            <div className="text-lg font-bold text-emerald-600 leading-none">{resolvedTickets}</div>
+            <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">{lang === 'ar' ? 'محلولة' : 'Resolved'}</div>
+          </div>
+        </div>
+        <div className="stat-card flex items-center gap-3">
+          <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${ticketsWithNewReply.size > 0 ? 'bg-blue-50' : 'bg-gray-50'}`}>
+            <span className={`text-xs font-bold ${ticketsWithNewReply.size > 0 ? 'text-blue-500' : 'text-gray-400'}`}>{ticketsWithNewReply.size}</span>
+          </div>
+          <div>
+            <div className={`text-lg font-bold leading-none ${ticketsWithNewReply.size > 0 ? 'text-blue-600' : 'text-content-primary'}`}>{ticketsWithNewReply.size}</div>
+            <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">{lang === 'ar' ? 'ردود جديدة' : 'New Replies'}</div>
+          </div>
         </div>
       </div>
 
@@ -383,6 +461,9 @@ export default function Support() {
                       </div>
                     </div>
                     <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+                      {ticketsWithNewReply.has(ticket.id) && (
+                        <Badge variant="success">{lang === 'ar' ? 'رد جديد' : 'New Reply'}</Badge>
+                      )}
                       <Badge variant={status.color}>{lang === 'ar' ? status.label : status.labelEn}</Badge>
                       <Badge variant={priority.color}>{lang === 'ar' ? priority.label : priority.labelEn}</Badge>
                     </div>

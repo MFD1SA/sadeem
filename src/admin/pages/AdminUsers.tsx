@@ -41,7 +41,7 @@ export default function AdminUsers() {
   const [creating, setCreating] = useState(false);
 
   // Action menu
-  const [activeMenu, setActiveMenu] = useState<{ id: string; top: number; right: number } | null>(null);
+  const [activeMenu, setActiveMenu] = useState<{ id: string; top: number; left: number } | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!activeMenu) return;
@@ -297,13 +297,13 @@ export default function AdminUsers() {
                         {canManage && !isSelf && !u.is_super_admin && (
                           <div className="relative">
                             <button
-                              onClick={(e) => { e.stopPropagation(); const r = e.currentTarget.getBoundingClientRect(); setActiveMenu(activeMenu?.id === u.id ? null : { id: u.id, top: r.bottom + 4, right: window.innerWidth - r.right }); }}
+                              onClick={(e) => { e.stopPropagation(); const r = e.currentTarget.getBoundingClientRect(); setActiveMenu(activeMenu?.id === u.id ? null : { id: u.id, top: r.bottom + 4, left: Math.max(8, r.left - 160) }); }}
                               className="p-1.5 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-50 transition-colors"
                             >
                               <MoreVertical size={16} />
                             </button>
                             {activeMenu?.id === u.id && createPortal(
-                              <div ref={menuRef} style={{ position: 'fixed', top: activeMenu.top, right: activeMenu.right, zIndex: 9999 }} className="w-44 bg-white border border-gray-200 rounded-xl shadow-lg py-1.5">
+                              <div ref={menuRef} style={{ position: 'fixed', top: activeMenu.top, left: activeMenu.left, zIndex: 9999 }} className="w-44 bg-white border border-gray-200 rounded-xl shadow-lg py-1.5">
                                 <PermissionGate permission={PERMISSIONS.ROLES_ASSIGN}>
                                   <button
                                     onClick={() => openRoleModal(u)}

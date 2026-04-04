@@ -5,9 +5,10 @@ export const organizationService = {
   async getUserOrganization(
     userId: string
   ): Promise<{ org: DbOrganization; membership: DbMembership } | null> {
+    // Single query with join instead of 2 sequential queries
     const { data: membership, error: memErr } = await supabase
       .from('memberships')
-      .select('*')
+      .select('*, organizations(*)')
       .eq('user_id', userId)
       .eq('status', 'active')
       .limit(1)
@@ -20,22 +21,18 @@ export const organizationService = {
 
     if (!membership) return null;
 
-    const mem = membership as DbMembership;
+    const mem = membership as DbMembership & { organizations: DbOrganization | null };
+    const org = mem.organizations;
 
-    const { data: org, error: orgErr } = await supabase
-      .from('organizations')
-      .select('*')
-      .eq('id', mem.organization_id)
-      .maybeSingle();
-
-    if (orgErr) {
-      console.warn('[Sadeem] Organization lookup failed:', orgErr.message);
+    if (!org) {
+      console.warn('[Sadeem] Organization not found for membership');
       return null;
     }
 
-    if (!org) return null;
+    // Strip the joined org from the membership object
+    const { organizations: _, ...cleanMem } = mem;
 
-    return { org: org as DbOrganization, membership: mem };
+    return { org: org as DbOrganization, membership: cleanMem as DbMembership };
   },
 
   async createOrganization(

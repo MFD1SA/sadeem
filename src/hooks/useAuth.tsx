@@ -4,7 +4,9 @@ import {
 } from 'react';
 import { supabase } from '@/lib/supabase';
 import { organizationService } from '@/services/organizations';
+import { subscriptionService } from '@/services/subscription';
 import type { DbUser, DbOrganization, DbMembership } from '@/types/database';
+import type { DbSubscription } from '@/types/subscription';
 
 interface AuthState {
   session: unknown;
@@ -12,6 +14,7 @@ interface AuthState {
   profile: DbUser | null;
   organization: DbOrganization | null;
   membership: DbMembership | null;
+  subscription: DbSubscription | null;
   isLoading: boolean;
   isAuthenticated: boolean;
   hasOrganization: boolean;
@@ -32,6 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     profile: null,
     organization: null,
     membership: null,
+    subscription: null,
     isLoading: true,
     isAuthenticated: false,
     hasOrganization: false,
@@ -100,6 +104,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           profile: null,
           organization: null,
           membership: null,
+          subscription: null,
           isLoading: false,
           isAuthenticated: false,
           hasOrganization: false,
@@ -108,10 +113,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       try {
+        // Phase 1: Load profile + org in parallel (org is now a single joined query)
         const [profile, orgData] = await Promise.all([
           loadProfile(session.user.id, session),
           loadOrganization(session.user.id),
         ]);
+
+        // Phase 2: If org exists, pre-load subscription in parallel
+        // This saves PlanProvider from having to wait and fetch it separately
+        let sub: DbSubscription | null = null;
+        if (orgData?.org) {
+          try {
+            sub = await subscriptionService.getByOrganization(orgData.org.id);
+          } catch {
+            // Non-critical — PlanProvider can retry
+          }
+        }
 
         setState({
           session,
@@ -119,20 +136,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           profile,
           organization: orgData?.org || null,
           membership: orgData?.membership || null,
+          subscription: sub,
           isLoading: false,
           isAuthenticated: true,
           hasOrganization: !!orgData?.org,
         });
       } catch (err) {
         console.error('[Sadeem] Auth hydrate failed:', err);
-        // IMPORTANT: keep the session alive even if profile/org queries fail.
-        // The session token is still valid — don't log the user out on DB error.
         setState({
           session,
           user: { id: session.user.id, email: session.user.email },
           profile: null,
           organization: null,
           membership: null,
+          subscription: null,
           isLoading: false,
           isAuthenticated: true,
           hasOrganization: false,
@@ -171,6 +188,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           profile: null,
           organization: null,
           membership: null,
+          subscription: null,
           isLoading: false,
           isAuthenticated: false,
           hasOrganization: false,
@@ -178,8 +196,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
 
-    // Fallback: if INITIAL_SESSION doesn't fire within 400 ms (lock contention),
-    // call getSession() ourselves. Only runs if INITIAL_SESSION hasn't fired yet.
+    // Fallback: if INITIAL_SESSION doesn't fire within 300ms, call getSession()
     const fallback = setTimeout(() => {
       if (!initialSessionHandled.current && mounted) {
         supabase.auth.getSession().then(({ data: { session } }) => {
@@ -188,12 +205,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         });
       }
-    }, 400);
+    }, 300);
 
-    // PKCE race fallback: when INITIAL_SESSION fires with null but the URL has
-    // ?code= (OAuth callback in progress), the SIGNED_IN event may have already
-    // fired before our listener registered. Poll getSession() once after 1.5s to
-    // catch this case and hydrate from the newly-stored session.
+    // PKCE race fallback for OAuth callback
     const hasPkceCode = typeof window !== 'undefined' && window.location.search.includes('code=');
     const pkceTimer = hasPkceCode ? setTimeout(() => {
       if (!mounted) return;
@@ -202,17 +216,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           hydrateAuth(session);
         }
       });
-    }, 1500) : null;
+    }, 1000) : null;
 
-    // Hard safety timeout: if auth still hasn't resolved after 6 seconds
-    // (e.g. Supabase lock is stuck or network failure), force isLoading=false
-    // so the user sees the login form instead of an infinite spinner.
+    // Safety timeout: force isLoading=false after 4 seconds
     const safetyTimer = setTimeout(() => {
       if (mounted && !initialSessionHandled.current) {
         initialSessionHandled.current = true;
         setState((prev) => ({ ...prev, isLoading: false }));
       }
-    }, 6000);
+    }, 4000);
 
     return () => {
       mounted = false;
@@ -251,6 +263,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         profile: null,
         organization: null,
         membership: null,
+        subscription: null,
         isLoading: false,
         isAuthenticated: false,
         hasOrganization: false,

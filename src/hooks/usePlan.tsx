@@ -42,7 +42,7 @@ const noSubscriptionTrial: TrialState = {
 };
 
 export function PlanProvider({ children }: { children: ReactNode }) {
-  const { organization, isLoading: authLoading } = useAuth();
+  const { organization, isLoading: authLoading, subscription: preloadedSub } = useAuth();
   const [subscription, setSubscription] = useState<DbSubscription | null>(null);
   const [branchCount, setBranchCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -52,8 +52,6 @@ export function PlanProvider({ children }: { children: ReactNode }) {
 
   // ─── Compute trial state ───
   const computeTrial = useCallback((sub: DbSubscription | null): TrialState => {
-    // No subscription row → treat as expired. Prevents implicit free access
-    // when the trial trigger failed or no plan has been assigned yet.
     if (!sub) return noSubscriptionTrial;
 
     const isTrial = sub.status === 'trial';
@@ -65,35 +63,37 @@ export function PlanProvider({ children }: { children: ReactNode }) {
       ? Math.max(0, Math.floor((endsAt.getTime() - now.getTime()) / (1000 * 60 * 60)))
       : 0;
 
+    const planLimits = getPlanLimits(sub.plan || 'orbit');
+
     return {
       isTrial,
       isExpired,
       hoursRemaining,
       aiUsed: sub.ai_replies_used || 0,
-      aiMax: isTrial ? TRIAL_LIMITS.maxAiReplies : 999999,
+      aiMax: isTrial ? TRIAL_LIMITS.maxAiReplies : planLimits.maxAiReplies,
       templateUsed: sub.template_replies_used || 0,
-      templateMax: isTrial ? TRIAL_LIMITS.maxTemplateReplies : 999999,
+      templateMax: isTrial ? TRIAL_LIMITS.maxTemplateReplies : planLimits.maxTemplateReplies,
     };
   }, []);
 
   const [trial, setTrial] = useState<TrialState>(defaultTrial);
 
-  // Use the primitive ID (not the full object) so the callback is only
-  // recreated when the org actually changes — not on every auth re-render.
   const orgId = organization?.id;
 
   const loadPlan = useCallback(async () => {
-    // Wait for auth to finish before deciding — prevents premature isLoading=false
     if (authLoading) return;
     if (!orgId) { setIsLoading(false); return; }
 
-    // Safety timeout: never stay in loading state for more than 8 seconds.
-    // Guards against hanging Supabase queries (e.g. cold start, network issues).
-    const safetyTimer = setTimeout(() => { setIsLoading(false); }, 8000);
+    const safetyTimer = setTimeout(() => { setIsLoading(false); }, 5000);
 
     try {
+      // Use pre-loaded subscription from AuthProvider if available (saves a round-trip)
+      const subPromise = preloadedSub
+        ? Promise.resolve(preloadedSub)
+        : subscriptionService.getByOrganization(orgId);
+
       const [sub, branches] = await Promise.all([
-        subscriptionService.getByOrganization(orgId),
+        subPromise,
         branchesService.list(orgId),
       ]);
       setSubscription(sub);
@@ -101,7 +101,6 @@ export function PlanProvider({ children }: { children: ReactNode }) {
       setBranchCount(branches.filter((b: { status: string }) => b.status === 'active').length);
     } catch (err) {
       console.warn('[Sadeem] Plan load failed:', err);
-      // Clear stale data from previous org so we don't show wrong plan state
       setSubscription(null);
       setTrial(noSubscriptionTrial);
       setBranchCount(0);
@@ -109,7 +108,7 @@ export function PlanProvider({ children }: { children: ReactNode }) {
       clearTimeout(safetyTimer);
       setIsLoading(false);
     }
-  }, [orgId, authLoading, computeTrial]);
+  }, [orgId, authLoading, preloadedSub, computeTrial]);
 
   useEffect(() => { loadPlan(); }, [loadPlan]);
 

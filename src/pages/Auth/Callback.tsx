@@ -86,14 +86,10 @@ export default function AuthCallback() {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-brand-600 to-brand-800">
-      <div className="text-center">
-        <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center mx-auto mb-5 shadow-lg">
-          <span className="text-white text-3xl font-bold">س</span>
-        </div>
-        <div className="text-white font-semibold text-base mb-1">سديم</div>
-        <div className="text-white/70 text-sm mb-6">جاري تسجيل الدخول…</div>
-        <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto" />
+    <div className="min-h-screen flex items-center justify-center bg-surface-secondary">
+      <div className="text-center flex flex-col items-center">
+        <div className="w-8 h-8 rounded-full border-2 border-gray-200 border-t-brand-500 animate-spin mb-4" />
+        <p className="text-sm text-content-tertiary">جاري تسجيل الدخول…</p>
       </div>
     </div>
   );

@@ -7,26 +7,28 @@ export function TrialBanner() {
   const { lang } = useLanguage();
   const { trial, isLoading } = usePlan();
   const navigate = useNavigate();
+  const isAr = lang === 'ar';
 
   if (isLoading) return null;
 
-  // ─── Trial Expired Banner ───
+  // Trial Expired Banner
   if (trial.isExpired) {
     return (
-      <div className="bg-gradient-to-r from-red-50 to-amber-50 border border-red-200/60 rounded-xl px-5 py-4 mb-4">
-        <div className="flex items-start justify-between gap-4">
+      <div className="rounded-xl px-5 py-4 border" style={{
+        background: 'linear-gradient(135deg, #fef2f2 0%, #fffbeb 100%)',
+        borderColor: 'rgba(239,68,68,0.15)',
+      }}>
+        <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="flex items-start gap-3">
-            <div className="w-9 h-9 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-              <AlertTriangle size={17} className="text-red-600" />
+            <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <AlertTriangle size={18} className="text-red-600" />
             </div>
             <div>
               <div className="text-[13px] font-bold text-content-primary mb-0.5">
-                {lang === 'ar'
-                  ? 'انتهت الفترة التجريبية لسديم'
-                  : 'Your Sadeem trial has expired'}
+                {isAr ? 'انتهت الفترة التجريبية لسديم' : 'Your Sadeem trial has expired'}
               </div>
               <p className="text-xs text-content-secondary leading-relaxed">
-                {lang === 'ar'
+                {isAr
                   ? 'قم بالترقية للاستمرار في الرد على تقييمات Google باستخدام الذكاء الاصطناعي.'
                   : 'Upgrade to continue responding to Google reviews with AI.'}
               </p>
@@ -37,40 +39,52 @@ export function TrialBanner() {
             className="btn btn-primary btn-sm flex-shrink-0"
           >
             <ArrowUpRight size={13} />
-            {lang === 'ar' ? 'ترقية الاشتراك' : 'Upgrade'}
+            {isAr ? 'ترقية الاشتراك' : 'Upgrade'}
           </button>
         </div>
       </div>
     );
   }
 
-  // ─── Active Trial Banner ───
+  // Active Trial Banner
   if (trial.isTrial && !trial.isExpired) {
+    const aiPercent = trial.aiMax > 0 ? Math.min(100, (trial.aiUsed / trial.aiMax) * 100) : 0;
+    const templatePercent = trial.templateMax > 0 ? Math.min(100, (trial.templateUsed / trial.templateMax) * 100) : 0;
+
     return (
-      <div className="bg-gradient-to-r from-brand-50 to-blue-50 border border-brand-200/40 rounded-xl px-5 py-3.5 mb-4">
-        <div className="flex items-center justify-between gap-4">
+      <div className="rounded-xl px-5 py-4 border" style={{
+        background: 'linear-gradient(135deg, rgba(76,110,245,0.04) 0%, rgba(59,130,246,0.04) 100%)',
+        borderColor: 'rgba(76,110,245,0.12)',
+      }}>
+        <div className="flex items-center justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center flex-shrink-0">
-              <Clock size={15} className="text-brand-600" />
+            <div className="w-10 h-10 rounded-xl bg-brand-50 flex items-center justify-center flex-shrink-0">
+              <Clock size={17} className="text-brand-600" />
             </div>
             <div>
               <div className="text-[13px] font-semibold text-content-primary">
-                {lang === 'ar'
+                {isAr
                   ? `الفترة التجريبية — متبقي ${trial.hoursRemaining} ${trial.hoursRemaining === 1 ? 'ساعة' : 'ساعات'}`
                   : `Trial — ${trial.hoursRemaining}h remaining`}
               </div>
-              <div className="flex items-center gap-3 mt-0.5">
-                <span className="text-2xs text-content-tertiary flex items-center gap-1">
-                  <Zap size={10} />
-                  {lang === 'ar'
-                    ? `الذكاء الاصطناعي: ${trial.aiUsed}/${trial.aiMax}`
-                    : `AI: ${trial.aiUsed}/${trial.aiMax}`}
-                </span>
-                <span className="text-2xs text-content-tertiary">
-                  {lang === 'ar'
-                    ? `القوالب: ${trial.templateUsed}/${trial.templateMax}`
-                    : `Templates: ${trial.templateUsed}/${trial.templateMax}`}
-                </span>
+              <div className="flex items-center gap-4 mt-1.5">
+                <div className="flex items-center gap-2">
+                  <Zap size={11} className="text-brand-400" />
+                  <span className="text-[11px] text-content-tertiary font-medium">
+                    {isAr ? `AI: ${trial.aiUsed}/${trial.aiMax}` : `AI: ${trial.aiUsed}/${trial.aiMax}`}
+                  </span>
+                  <div className="w-16 h-1 rounded-full bg-gray-100 overflow-hidden">
+                    <div className="h-full rounded-full bg-brand-400 transition-all" style={{ width: `${aiPercent}%` }} />
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] text-content-tertiary font-medium">
+                    {isAr ? `القوالب: ${trial.templateUsed}/${trial.templateMax}` : `Templates: ${trial.templateUsed}/${trial.templateMax}`}
+                  </span>
+                  <div className="w-16 h-1 rounded-full bg-gray-100 overflow-hidden">
+                    <div className="h-full rounded-full bg-violet-400 transition-all" style={{ width: `${templatePercent}%` }} />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -78,13 +92,12 @@ export function TrialBanner() {
             onClick={() => navigate('/dashboard/billing')}
             className="btn btn-secondary btn-sm flex-shrink-0"
           >
-            {lang === 'ar' ? 'عرض الخطط' : 'View Plans'}
+            {isAr ? 'عرض الخطط' : 'View Plans'}
           </button>
         </div>
       </div>
     );
   }
 
-  // Not trial, not expired → paid user, no banner
   return null;
 }

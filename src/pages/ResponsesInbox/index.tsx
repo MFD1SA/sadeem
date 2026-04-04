@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '@/lib/supabase';
 import { useLanguage } from '@/i18n';
 import { useAuth } from '@/hooks/useAuth';
 import { replyDraftsService, reviewsService } from '@/services/reviews';
@@ -39,10 +40,9 @@ export default function ResponsesInbox() {
   }, [organization?.id]);
 
   useEffect(() => {
-    if (authLoading) return;
-    if (!organization?.id) { setLoading(false); return; }
+    if (!organization?.id) { if (!authLoading) setLoading(false); return; }
     void loadDrafts();
-  }, [authLoading, organization?.id, loadDrafts]);
+  }, [organization?.id, loadDrafts, authLoading]);
 
   const handleApprove = async (draftId: string, finalReply: string) => {
     if (!user || !organization?.id) return;
@@ -58,6 +58,9 @@ export default function ResponsesInbox() {
         );
         return;
       }
+
+      // Save edited text before sending
+      await supabase.from('reply_drafts').update({ reply_text: finalReply }).eq('id', draftId);
 
       await reviewSyncService.sendReplyToGoogle(draftId, user.id);
 
@@ -85,7 +88,7 @@ export default function ResponsesInbox() {
     }
   };
 
-  if (authLoading || loading) {
+  if (loading) {
     return <LoadingState message={t.common.loading} />;
   }
 
@@ -126,28 +129,85 @@ export default function ResponsesInbox() {
     ? drafts
     : drafts.filter((d: DbReplyDraft) => d.status === tab);
 
+  const pendingCount = drafts.filter((d: DbReplyDraft) => d.status === 'pending').length;
+  const sentCount = drafts.filter((d: DbReplyDraft) => d.status === 'sent' || d.status === 'auto_sent').length;
+
   return (
-    <div className="card">
-      <div className="px-5 pt-4">
-        <Tabs tabs={tabs} active={tab} onChange={setTab} />
+    <div className="space-y-4">
+      {/* Page header */}
+      <div className="flex items-start justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="page-title flex items-center gap-2">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-brand-500"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            {lang === 'ar' ? 'صندوق الردود' : 'Responses Inbox'}
+          </h1>
+          <p className="page-subtitle">{lang === 'ar' ? 'مراجعة واعتماد ردود التقييمات قبل إرسالها' : 'Review and approve reply drafts before sending'}</p>
+        </div>
       </div>
 
-      {filtered.length === 0 ? (
-        <EmptyState message={t.common.noResults} />
-      ) : (
-        <div>
-          {filtered.map((d: DbReplyDraft) => {
-            const cardProps: ResponseCardProps = {
-              draft: d,
-              onApprove: handleApprove,
-              onReject: handleReject,
-              onDefer: handleDefer,
-            };
-
-            return <ResponseCard key={d.id} {...cardProps} />;
-          })}
+      {/* Quick stats */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="stat-card flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-brand-50 flex items-center justify-center">
+            <span className="text-brand-500 text-xs font-bold">{drafts.length}</span>
+          </div>
+          <div>
+            <div className="text-lg font-bold text-content-primary leading-none">{drafts.length}</div>
+            <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">{lang === 'ar' ? 'إجمالي الردود' : 'Total Drafts'}</div>
+          </div>
         </div>
-      )}
+        <div className="stat-card flex items-center gap-3">
+          <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${pendingCount > 0 ? 'bg-amber-50' : 'bg-gray-50'}`}>
+            <span className={`text-xs font-bold ${pendingCount > 0 ? 'text-amber-500' : 'text-gray-400'}`}>{pendingCount}</span>
+          </div>
+          <div>
+            <div className={`text-lg font-bold leading-none ${pendingCount > 0 ? 'text-amber-600' : 'text-content-primary'}`}>{pendingCount}</div>
+            <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">{lang === 'ar' ? 'بانتظار الموافقة' : 'Pending'}</div>
+          </div>
+        </div>
+        <div className="stat-card flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center">
+            <span className="text-emerald-500 text-xs font-bold">{sentCount}</span>
+          </div>
+          <div>
+            <div className="text-lg font-bold text-emerald-600 leading-none">{sentCount}</div>
+            <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">{lang === 'ar' ? 'تم الإرسال' : 'Sent'}</div>
+          </div>
+        </div>
+        <div className="stat-card flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-red-50 flex items-center justify-center">
+            <span className="text-red-500 text-xs font-bold">{drafts.filter((d: DbReplyDraft) => d.status === 'rejected').length}</span>
+          </div>
+          <div>
+            <div className="text-lg font-bold text-red-600 leading-none">{drafts.filter((d: DbReplyDraft) => d.status === 'rejected').length}</div>
+            <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">{lang === 'ar' ? 'مرفوضة' : 'Rejected'}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main card with tabs */}
+      <div className="card">
+        <div className="px-5 pt-4 border-b border-border">
+          <Tabs tabs={tabs} active={tab} onChange={setTab} />
+        </div>
+
+        {filtered.length === 0 ? (
+          <EmptyState message={t.common.noResults} />
+        ) : (
+          <div className="p-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+            {filtered.map((d: DbReplyDraft) => {
+              const cardProps: ResponseCardProps = {
+                draft: d,
+                onApprove: handleApprove,
+                onReject: handleReject,
+                onDefer: handleDefer,
+              };
+
+              return <ResponseCard key={d.id} {...cardProps} />;
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

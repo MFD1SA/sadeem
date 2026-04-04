@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { Tabs } from '@/components/ui/Tabs';
 import { Toggle } from '@/components/ui/Toggle';
-import { Shield, Camera, Building2, UserCircle2, Globe2, Save } from 'lucide-react';
+import { Shield, Camera, Building2, UserCircle2, Globe2, Save, Upload, ImageIcon } from 'lucide-react';
 
 export default function Settings() {
   const { t, lang, setLanguage } = useLanguage();
@@ -40,6 +40,9 @@ export default function Settings() {
 
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+
+  const logoInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
 
   const [isGoogleUser, setIsGoogleUser] = useState(false);
 
@@ -138,6 +141,48 @@ export default function Settings() {
     }
   };
 
+  const handleLogoUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !organization) return;
+
+    setUploadingLogo(true);
+    setOrgMessage('');
+
+    try {
+      const ext = file.name.split('.').pop()?.toLowerCase() || 'png';
+      const filePath = `${organization.id}/logo.${ext}`;
+
+      const { error: upErr } = await supabase.storage
+        .from('branding')
+        .upload(filePath, file, { upsert: true });
+
+      if (upErr) {
+        if (upErr.message?.includes('Bucket not found') || upErr.message?.includes('bucket')) {
+          throw new Error(lang === 'ar' ? 'خدمة رفع الصور غير مهيأة بعد. تواصل مع الدعم.' : 'Image upload service not configured. Contact support.');
+        }
+        throw upErr;
+      }
+
+      const { data: urlData } = supabase.storage.from('branding').getPublicUrl(filePath);
+      const publicUrl = `${urlData.publicUrl}?t=${Date.now()}`;
+
+      const { error: updateErr } = await supabase
+        .from('organizations')
+        .update({ logo_url: publicUrl })
+        .eq('id', organization.id);
+
+      if (updateErr) throw updateErr;
+
+      await refreshOrganization();
+      setOrgMessage(lang === 'ar' ? 'تم تحديث شعار النشاط بنجاح' : 'Logo updated successfully');
+    } catch (err: unknown) {
+      setOrgMessage((err as Error).message || (lang === 'ar' ? 'فشل رفع الشعار' : 'Logo upload failed'));
+    } finally {
+      setUploadingLogo(false);
+      if (logoInputRef.current) logoInputRef.current.value = '';
+    }
+  };
+
   const handleSaveOrg = async () => {
     if (!organization) return;
 
@@ -223,28 +268,26 @@ export default function Settings() {
   return (
     <div className="space-y-5">
       {/* Header */}
-      <div className="rounded-3xl border border-border bg-white px-5 py-5 shadow-sm sm:px-6">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-lg font-semibold text-content-primary sm:text-xl">
-              {t.settingsPage.title}
-            </h1>
-            <p className="mt-1 text-xs text-content-tertiary sm:text-sm">
-              {lang === 'ar'
-                ? 'إدارة بيانات النشاط، الملف الشخصي، وسياسات المنصة من مكان واحد'
-                : 'Manage organization details, profile, and platform policies from one place'}
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-border bg-surface-secondary/50 px-4 py-3 text-xs text-content-tertiary">
-            <div className="font-medium text-content-primary">{organization.name}</div>
-            <div className="mt-1">{organization.industry || (lang === 'ar' ? 'غير محدد' : 'Not set')}</div>
-          </div>
+      <div className="flex items-start justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="page-title flex items-center gap-2">
+            <Shield size={20} className="text-brand-500" />
+            {t.settingsPage.title}
+          </h1>
+          <p className="page-subtitle">
+            {lang === 'ar'
+              ? 'إدارة بيانات النشاط، الملف الشخصي، وسياسات المنصة من مكان واحد'
+              : 'Manage organization details, profile, and platform policies from one place'}
+          </p>
+        </div>
+        <div className="rounded-xl border border-border bg-surface-secondary/50 px-4 py-2.5 text-xs text-content-tertiary">
+          <div className="font-medium text-content-primary">{organization.name}</div>
+          <div className="mt-0.5">{organization.industry || (lang === 'ar' ? 'غير محدد' : 'Not set')}</div>
         </div>
       </div>
 
       {/* Main card */}
-      <div className="overflow-hidden rounded-3xl border border-border bg-white shadow-sm">
+      <div className="card overflow-hidden">
         <div className="border-b border-border/70 px-5 py-4 sm:px-6">
           <Tabs tabs={tabs} active={tab} onChange={setTab} />
         </div>
@@ -254,6 +297,70 @@ export default function Settings() {
           {tab === 'organization' && (
             <div className="mx-auto max-w-3xl">
               {renderMessage(orgMessage)}
+
+              {/* Logo Upload Section */}
+              <div className="mb-6 rounded-2xl border border-border bg-surface-secondary/40 p-5">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-5">
+                  <div className="relative group self-start">
+                    {organization.logo_url ? (
+                      <img
+                        src={organization.logo_url}
+                        alt=""
+                        className="h-20 w-20 rounded-2xl object-cover ring-4 ring-white shadow-md"
+                      />
+                    ) : (
+                      <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-brand-100 text-2xl font-bold text-brand-700 ring-4 ring-white shadow-md">
+                        {orgName?.charAt(0) || '?'}
+                      </div>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => logoInputRef.current?.click()}
+                      disabled={uploadingLogo}
+                      className="absolute inset-0 flex items-center justify-center rounded-2xl bg-black/45 opacity-0 transition-opacity group-hover:opacity-100"
+                    >
+                      <Camera size={20} className="text-white" />
+                    </button>
+                    <input
+                      ref={logoInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleLogoUpload}
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start gap-3">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-brand-50 text-brand-600 flex-shrink-0">
+                        <ImageIcon size={20} />
+                      </div>
+                      <div>
+                        <div className="text-sm font-semibold text-content-primary">
+                          {lang === 'ar' ? 'شعار النشاط التجاري' : 'Business Logo'}
+                        </div>
+                        <div className="mt-1 text-xs leading-6 text-content-tertiary">
+                          {lang === 'ar'
+                            ? 'يظهر في صفحة هبوط QR ولوحة التحكم. يُفضل صورة مربعة بحجم 200×200 بكسل.'
+                            : 'Shown on QR landing page and dashboard. Square image (200×200px) recommended.'}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => logoInputRef.current?.click()}
+                          disabled={uploadingLogo}
+                          className="btn btn-secondary btn-sm mt-2"
+                        >
+                          <Upload size={13} />
+                          {uploadingLogo
+                            ? (lang === 'ar' ? 'جاري الرفع...' : 'Uploading...')
+                            : organization.logo_url
+                              ? (lang === 'ar' ? 'تغيير الشعار' : 'Change Logo')
+                              : (lang === 'ar' ? 'رفع شعار' : 'Upload Logo')}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
               <div className="mb-6 flex items-start gap-3 rounded-2xl border border-border bg-surface-secondary/40 p-4">
                 <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-brand-50 text-brand-600">

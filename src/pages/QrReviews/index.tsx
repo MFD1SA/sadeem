@@ -407,7 +407,7 @@ export default function QrReviews() {
                       <button
                         className="btn-icon w-7 h-7 flex-shrink-0"
                         title={lang === 'ar' ? 'نسخ الرابط' : 'Copy link'}
-                        onClick={() => copyLink(qrUrl || '')}
+                        onClick={() => copyLink(landingUrl || '')}
                       >
                         <Copy size={12} />
                       </button>

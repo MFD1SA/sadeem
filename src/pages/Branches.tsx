@@ -56,10 +56,9 @@ export default function Branches() {
   }, [organization?.id]);
 
   useEffect(() => {
-    if (authLoading) return;
-    if (!organization?.id) { setLoading(false); return; }
+    if (!organization?.id) { if (!authLoading) setLoading(false); return; }
     void loadBranches();
-  }, [authLoading, organization?.id, loadBranches]);
+  }, [organization?.id, loadBranches, authLoading]);
 
   const openCreate = () => {
     if (!canAddBranch) {
@@ -144,7 +143,7 @@ export default function Branches() {
     }
   };
 
-  if (authLoading || loading) {
+  if (loading) {
     return <LoadingState message={t.common.loading} />;
   }
 
@@ -192,36 +191,59 @@ export default function Branches() {
         </div>
       )}
 
+      {/* Page header */}
+      <div>
+        <h1 className="page-title flex items-center gap-2">
+          <MapPin size={20} className="text-brand-500" />
+          {lang === 'ar' ? 'إدارة الفروع' : 'Branch Management'}
+        </h1>
+        <p className="page-subtitle">{lang === 'ar' ? 'إدارة فروع نشاطك التجاري وربطها بـ Google Business' : 'Manage your business branches and Google Business links'}</p>
+      </div>
+
       {/* Stats Summary */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="card card-body text-center">
-          <div className="text-2xl font-bold text-content-primary">{branches.length}</div>
-          <div className="text-xs text-content-tertiary mt-0.5">
-            {lang === 'ar' ? 'إجمالي الفروع' : 'Total Branches'}
+        <div className="stat-card flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-brand-50 flex items-center justify-center">
+            <MapPin size={16} className="text-brand-500" />
+          </div>
+          <div>
+            <div className="text-lg font-bold text-content-primary leading-none">{branches.length}</div>
+            <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">
+              {lang === 'ar' ? 'إجمالي الفروع' : 'Total Branches'}
+            </div>
           </div>
         </div>
-        <div className="card card-body text-center">
-          <div className="text-2xl font-bold text-content-primary">{activeCount}</div>
-          <div className="text-xs text-content-tertiary mt-0.5">
-            {lang === 'ar' ? 'الفروع النشطة' : 'Active Branches'}
+        <div className="stat-card flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center">
+            <span className="text-emerald-500 text-xs font-bold">{activeCount}</span>
+          </div>
+          <div>
+            <div className="text-lg font-bold text-emerald-600 leading-none">{activeCount}</div>
+            <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">
+              {lang === 'ar' ? 'الفروع النشطة' : 'Active'}
+            </div>
           </div>
         </div>
-        <div className="card card-body text-center">
-          <div className="text-2xl font-bold text-content-primary">{linkedCount}</div>
-          <div className="flex items-center justify-center gap-1 mt-0.5">
-            <Link2 size={11} className="text-green-500" />
-            <span className="text-xs text-content-tertiary">
+        <div className="stat-card flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-green-50 flex items-center justify-center">
+            <Link2 size={16} className="text-green-500" />
+          </div>
+          <div>
+            <div className="text-lg font-bold text-green-600 leading-none">{linkedCount}</div>
+            <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">
               {lang === 'ar' ? 'مرتبطة بجوجل' : 'Google Linked'}
-            </span>
+            </div>
           </div>
         </div>
-        <div className="card card-body text-center">
-          <div className="text-2xl font-bold text-content-primary">{unlinkedCount}</div>
-          <div className="flex items-center justify-center gap-1 mt-0.5">
-            <Unlink size={11} className="text-content-tertiary" />
-            <span className="text-xs text-content-tertiary">
+        <div className="stat-card flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-gray-50 flex items-center justify-center">
+            <Unlink size={16} className="text-gray-400" />
+          </div>
+          <div>
+            <div className="text-lg font-bold text-content-primary leading-none">{unlinkedCount}</div>
+            <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">
               {lang === 'ar' ? 'غير مرتبطة' : 'Not Linked'}
-            </span>
+            </div>
           </div>
         </div>
       </div>

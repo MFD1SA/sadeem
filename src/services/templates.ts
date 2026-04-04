@@ -71,9 +71,10 @@ export const templatesService = {
   },
 
   async update(templateId: string, updates: Partial<DbReplyTemplate>): Promise<DbReplyTemplate> {
+    const { organization_id, id, ...safeUpdates } = updates;
     const { data, error } = await supabase
       .from('reply_templates')
-      .update(updates as Record<string, unknown>)
+      .update(safeUpdates as Record<string, unknown>)
       .eq('id', templateId)
       .select()
       .single();

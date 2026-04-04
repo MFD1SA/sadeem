@@ -143,6 +143,11 @@ export const replyDraftsService = {
 
     if (error) throw error;
 
+    // Update parent review status to 'replied'
+    if (ctx?.review_id) {
+      await supabase.from('reviews').update({ status: 'replied' } as Record<string, unknown>).eq('id', ctx.review_id);
+    }
+
     if (ctx) {
       const wasEdited = ctx.ai_reply !== null && finalReply !== ctx.ai_reply;
       auditLog.track({

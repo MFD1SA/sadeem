@@ -1,5 +1,6 @@
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/i18n';
+import { useAuth } from '@/hooks/useAuth';
 import {
   LayoutDashboard,
   MessageSquareText,
@@ -17,6 +18,8 @@ import {
   X,
   QrCode,
   Target,
+  LogOut,
+  User,
 } from 'lucide-react';
 
 const navItems = [
@@ -43,8 +46,21 @@ interface SidebarProps {
 }
 
 export function Sidebar({ mobileSidebarOpen, onCloseMobile }: SidebarProps) {
-  const { t } = useLanguage();
-  useLocation(); // subscribe to route changes for NavLink active state
+  const { t, lang } = useLanguage();
+  const { profile, signOut, session } = useAuth();
+  const navigate = useNavigate();
+  useLocation();
+
+  const userName = profile?.full_name || profile?.email || '';
+  const sessionMeta = (session as { user?: { user_metadata?: { avatar_url?: string } } } | null)?.user?.user_metadata;
+  const userAvatar = profile?.avatar_url || sessionMeta?.avatar_url || null;
+  const userInitial = userName.charAt(0) || '?';
+
+  const handleLogout = async () => {
+    onCloseMobile();
+    await signOut();
+    navigate('/login', { replace: true });
+  };
 
   return (
     <>
@@ -58,7 +74,7 @@ export function Sidebar({ mobileSidebarOpen, onCloseMobile }: SidebarProps) {
 
       <aside
         className={[
-          'fixed top-0 bottom-0 z-50 w-[240px] bg-sidebar-bg flex flex-col overflow-y-auto overflow-x-hidden',
+          'fixed top-0 bottom-0 z-50 w-[260px] bg-sidebar-bg flex flex-col overflow-y-auto overflow-x-hidden',
           'rtl:right-0 ltr:left-0',
           'lg:relative lg:z-auto lg:!translate-x-0 lg:flex',
           'lg:transition-none transition-transform duration-200 ease-out',
@@ -66,23 +82,33 @@ export function Sidebar({ mobileSidebarOpen, onCloseMobile }: SidebarProps) {
             ? 'translate-x-0'
             : 'max-lg:rtl:translate-x-full max-lg:ltr:-translate-x-full',
         ].join(' ')}
+        style={{ scrollbarWidth: 'thin', scrollbarColor: '#1e293b transparent' }}
       >
-        <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
-          <div className="flex items-center gap-2.5">
-            <span className="text-lg font-bold text-white tracking-tight">{t.appName}</span>
-            <span className="text-[9px] font-semibold text-brand-300/80 bg-brand-500/15 px-1.5 py-0.5 rounded">
-              Beta
-            </span>
+        {/* Header */}
+        <div className="flex items-center justify-between h-16 px-5 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #4c6ef5, #3b5bdb)' }}>
+              <span className="text-white text-sm font-bold">S</span>
+            </div>
+            <div>
+              <span className="text-[13.5px] font-bold text-white tracking-wide">{t.appName}</span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded" style={{ color: 'rgba(76,110,245,0.8)', background: 'rgba(76,110,245,0.12)' }}>
+                  Beta
+                </span>
+              </div>
+            </div>
           </div>
           <button
-            className="lg:hidden text-sidebar-text hover:text-white"
+            className="lg:hidden text-sidebar-text hover:text-white transition-colors"
             onClick={onCloseMobile}
           >
             <X size={18} />
           </button>
         </div>
 
-        <nav className="flex-1 py-2">
+        {/* Navigation */}
+        <nav className="flex-1 py-2 px-2 space-y-0.5">
           {navItems.map((item) => (
             <NavLink
               key={item.path}
@@ -93,14 +119,51 @@ export function Sidebar({ mobileSidebarOpen, onCloseMobile }: SidebarProps) {
                 `sidebar-item ${isActive ? 'active' : ''}`
               }
             >
-              <item.icon size={18} />
+              <item.icon size={17} />
               <span>{t.nav[item.key]}</span>
             </NavLink>
           ))}
         </nav>
 
-        <div className="px-5 py-2.5 border-t border-white/[0.06]">
-          <div className="text-[10px] text-sidebar-text/40">سديم v0.1.0</div>
+        {/* User profile footer */}
+        <div className="p-3 border-t" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+          <div className="rounded-xl p-2.5" style={{ background: 'rgba(255,255,255,0.04)' }}>
+            <div className="flex items-center gap-2.5 mb-2">
+              {userAvatar ? (
+                <img src={userAvatar} alt="" className="w-8 h-8 rounded-full object-cover ring-1 ring-white/10" />
+              ) : (
+                <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold text-white" style={{ background: 'linear-gradient(135deg, #334155, #1e293b)' }}>
+                  {userInitial}
+                </div>
+              )}
+              <div className="min-w-0 flex-1">
+                <div className="text-[13px] font-semibold truncate" style={{ color: '#e2e8f0' }}>{userName}</div>
+                <div className="text-[11px] truncate" style={{ color: '#94a3b8' }}>{profile?.email || ''}</div>
+              </div>
+            </div>
+            <div className="flex gap-1">
+              <button
+                onClick={() => { onCloseMobile(); navigate('/dashboard/settings'); }}
+                className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium transition-colors"
+                style={{ color: '#94a3b8' }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = '#e2e8f0'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#94a3b8'; }}
+              >
+                <User size={13} />
+                {lang === 'ar' ? 'الملف' : 'Profile'}
+              </button>
+              <button
+                onClick={handleLogout}
+                className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium transition-colors"
+                style={{ color: '#ef4444' }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(239,68,68,0.08)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+              >
+                <LogOut size={13} />
+                {lang === 'ar' ? 'خروج' : 'Logout'}
+              </button>
+            </div>
+          </div>
         </div>
       </aside>
     </>

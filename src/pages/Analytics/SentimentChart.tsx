@@ -9,9 +9,9 @@ export function SentimentChart({ breakdown }: Props) {
   const total = breakdown.positive + breakdown.neutral + breakdown.negative;
 
   const segments = [
-    { key: 'positive', label: t.sentiment.positive, value: breakdown.positive, color: '#12b886' },
-    { key: 'neutral', label: t.sentiment.neutral, value: breakdown.neutral, color: '#f59f00' },
-    { key: 'negative', label: t.sentiment.negative, value: breakdown.negative, color: '#e03131' },
+    { key: 'positive', label: t.sentiment.positive, value: breakdown.positive, color: '#059669', bg: 'bg-emerald-50' },
+    { key: 'neutral', label: t.sentiment.neutral, value: breakdown.neutral, color: '#f59e0b', bg: 'bg-amber-50' },
+    { key: 'negative', label: t.sentiment.negative, value: breakdown.negative, color: '#ef4444', bg: 'bg-red-50' },
   ];
 
   return (
@@ -21,25 +21,28 @@ export function SentimentChart({ breakdown }: Props) {
       </div>
       <div className="card-body">
         {/* Horizontal bar */}
-        <div className="flex h-4 rounded-full overflow-hidden mb-4">
+        <div className="flex h-3 rounded-full overflow-hidden mb-5">
           {segments.map(seg => (
             <div
               key={seg.key}
-              style={{ width: `${total > 0 ? (seg.value / total) * 100 : 0}%`, backgroundColor: seg.color }}
-              className="transition-all duration-500"
+              style={{ width: `${total > 0 ? (seg.value / total) * 100 : 33.3}%`, backgroundColor: seg.color }}
+              className="transition-all duration-700 ease-out first:rounded-s-full last:rounded-e-full"
             />
           ))}
         </div>
 
-        {/* Legend */}
-        <div className="flex items-center justify-center gap-6">
-          {segments.map(seg => (
-            <div key={seg.key} className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full" style={{ backgroundColor: seg.color }} />
-              <span className="text-xs text-content-secondary">{seg.label}</span>
-              <span className="text-xs font-semibold text-content-primary">{seg.value}%</span>
-            </div>
-          ))}
+        {/* Legend cards */}
+        <div className="grid grid-cols-3 gap-3">
+          {segments.map(seg => {
+            const percent = total > 0 ? ((seg.value / total) * 100).toFixed(0) : '0';
+            return (
+              <div key={seg.key} className="text-center p-3 rounded-xl" style={{ background: `${seg.color}08`, border: `1px solid ${seg.color}15` }}>
+                <div className="text-xl font-bold" style={{ color: seg.color }}>{percent}%</div>
+                <div className="text-[11px] text-content-tertiary font-medium mt-0.5">{seg.label}</div>
+                <div className="text-[10px] text-content-tertiary">{seg.value} {t.common?.reviews || 'reviews'}</div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

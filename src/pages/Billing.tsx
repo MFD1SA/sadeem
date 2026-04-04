@@ -212,8 +212,8 @@ export default function Billing() {
                     <Icon size={17} className={colors.iconText} />
                   </div>
                   <div>
-                    <div className="font-bold text-content-primary text-sm">{plan.name_ar}</div>
-                    <div className="text-[10px] text-content-tertiary">{plan.desc_ar}</div>
+                    <div className="font-bold text-content-primary text-sm">{isAr ? plan.name_ar : plan.name_en}</div>
+                    <div className="text-[10px] text-content-tertiary">{isAr ? plan.desc_ar : plan.desc_en}</div>
                   </div>
                 </div>
 

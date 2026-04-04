@@ -102,12 +102,17 @@ export default function Insights() {
 
   if (loadError) {
     return (
-      <div className="text-center py-16">
-        <AlertTriangle size={36} className="mx-auto mb-3 text-red-400" />
-        <p className="text-sm text-red-600 mb-3">{loadError}</p>
-        <button onClick={loadData} className="btn btn-secondary text-sm">
-          {lang === 'ar' ? 'إعادة المحاولة' : 'Retry'}
-        </button>
+      <div className="card">
+        <div className="text-center py-16">
+          <div className="w-14 h-14 rounded-2xl bg-red-50 flex items-center justify-center mx-auto mb-4">
+            <AlertTriangle size={24} className="text-red-400" />
+          </div>
+          <p className="text-sm font-medium text-content-primary mb-1">{lang === 'ar' ? 'حدث خطأ' : 'Something went wrong'}</p>
+          <p className="text-xs text-red-600 mb-4">{loadError}</p>
+          <button onClick={loadData} className="btn btn-secondary btn-sm">
+            {lang === 'ar' ? 'إعادة المحاولة' : 'Retry'}
+          </button>
+        </div>
       </div>
     );
   }
@@ -115,17 +120,28 @@ export default function Insights() {
   return (
     <FeatureGate feature="advancedAnalytics">
       <div className="space-y-4">
+        {/* Page header */}
+        <div>
+          <h1 className="page-title flex items-center gap-2">
+            <TrendingUp size={20} className="text-brand-500" />
+            {lang === 'ar' ? 'التحليل الذكي' : 'Smart Insights'}
+          </h1>
+          <p className="page-subtitle">{lang === 'ar' ? 'تحليل SEO والمنافسين واستخراج مقتطفات التقييمات بالذكاء الاصطناعي' : 'SEO analysis, competitor insights, and AI-powered review extraction'}</p>
+        </div>
+
         {/* Tab switcher */}
-        <div className="flex gap-2 flex-wrap">
-          <button onClick={() => setTab('seo')} className={`btn btn-sm ${tab === 'seo' ? 'btn-primary' : 'btn-secondary'}`}>
-            <Target size={13} /> {lang === 'ar' ? 'تحسين SEO' : 'SEO Score'}
-          </button>
-          <button onClick={() => setTab('reviews')} className={`btn btn-sm ${tab === 'reviews' ? 'btn-primary' : 'btn-secondary'}`}>
-            <MessageSquare size={13} /> {lang === 'ar' ? 'مقتطفات التقييمات' : 'Review Insights'}
-          </button>
-          <button onClick={() => setTab('competitors')} className={`btn btn-sm ${tab === 'competitors' ? 'btn-primary' : 'btn-secondary'}`}>
-            <TrendingUp size={13} /> {lang === 'ar' ? 'تحليل المنافسين' : 'Competitors'}
-          </button>
+        <div className="card card-body !py-2 !px-2">
+          <div className="flex gap-1 flex-wrap">
+            <button onClick={() => setTab('seo')} className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium transition-all ${tab === 'seo' ? 'bg-brand-600 text-white shadow-sm' : 'text-content-secondary hover:text-content-primary hover:bg-surface-secondary'}`}>
+              <Target size={13} /> {lang === 'ar' ? 'تحسين SEO' : 'SEO Score'}
+            </button>
+            <button onClick={() => setTab('reviews')} className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium transition-all ${tab === 'reviews' ? 'bg-brand-600 text-white shadow-sm' : 'text-content-secondary hover:text-content-primary hover:bg-surface-secondary'}`}>
+              <MessageSquare size={13} /> {lang === 'ar' ? 'مقتطفات التقييمات' : 'Review Insights'}
+            </button>
+            <button onClick={() => setTab('competitors')} className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium transition-all ${tab === 'competitors' ? 'bg-brand-600 text-white shadow-sm' : 'text-content-secondary hover:text-content-primary hover:bg-surface-secondary'}`}>
+              <TrendingUp size={13} /> {lang === 'ar' ? 'تحليل المنافسين' : 'Competitors'}
+            </button>
+          </div>
         </div>
 
         {/* SEO Tab */}

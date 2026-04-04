@@ -82,24 +82,48 @@ export default function Team() {
 
   return (
     <div className="space-y-5">
+      {/* Page header */}
+      <div>
+        <h1 className="page-title flex items-center gap-2">
+          <UserPlus size={20} className="text-brand-500" />
+          {lang === 'ar' ? 'إدارة الفريق' : 'Team Management'}
+        </h1>
+        <p className="page-subtitle">{lang === 'ar' ? 'أضف وأدِر أعضاء فريق العمل وصلاحياتهم' : 'Add and manage team members and their roles'}</p>
+      </div>
+
       {/* Stats Summary */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        <div className="card card-body text-center">
-          <div className="text-2xl font-bold text-content-primary">{members.length}</div>
-          <div className="text-xs text-content-tertiary mt-0.5">
-            {lang === 'ar' ? 'إجمالي الأعضاء' : 'Total Members'}
+        <div className="stat-card flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-brand-50 flex items-center justify-center">
+            <span className="text-brand-500 text-xs font-bold">{members.length}</span>
+          </div>
+          <div>
+            <div className="text-lg font-bold text-content-primary leading-none">{members.length}</div>
+            <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">
+              {lang === 'ar' ? 'إجمالي الأعضاء' : 'Total Members'}
+            </div>
           </div>
         </div>
-        <div className="card card-body text-center">
-          <div className="text-2xl font-bold text-content-primary">{activeCount}</div>
-          <div className="text-xs text-content-tertiary mt-0.5">
-            {lang === 'ar' ? 'الأعضاء النشطون' : 'Active Members'}
+        <div className="stat-card flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center">
+            <span className="text-emerald-500 text-xs font-bold">{activeCount}</span>
+          </div>
+          <div>
+            <div className="text-lg font-bold text-emerald-600 leading-none">{activeCount}</div>
+            <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">
+              {lang === 'ar' ? 'الأعضاء النشطون' : 'Active Members'}
+            </div>
           </div>
         </div>
-        <div className="card card-body text-center col-span-2 sm:col-span-1">
-          <div className="text-2xl font-bold text-content-primary">{adminCount}</div>
-          <div className="text-xs text-content-tertiary mt-0.5">
-            {lang === 'ar' ? 'المالكون / الإداريون' : 'Owners / Admins'}
+        <div className="stat-card flex items-center gap-3 col-span-2 sm:col-span-1">
+          <div className="w-9 h-9 rounded-xl bg-violet-50 flex items-center justify-center">
+            <span className="text-violet-500 text-xs font-bold">{adminCount}</span>
+          </div>
+          <div>
+            <div className="text-lg font-bold text-violet-600 leading-none">{adminCount}</div>
+            <div className="text-[10px] text-content-tertiary mt-0.5 font-medium">
+              {lang === 'ar' ? 'المالكون / الإداريون' : 'Owners / Admins'}
+            </div>
           </div>
         </div>
       </div>

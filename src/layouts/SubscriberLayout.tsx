@@ -23,8 +23,8 @@ export function SubscriberLayout() {
         <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
           <Topbar onMenuClick={openMobileSidebar} />
 
-          <main className="flex-1 overflow-y-auto">
-            <div className="mx-auto w-full max-w-[1600px] px-3 py-3 sm:px-4 sm:py-4 lg:px-6 lg:py-6 xl:px-8">
+          <main className="flex-1 overflow-y-auto" style={{ scrollbarWidth: 'thin', scrollbarColor: '#d1d5db transparent' }}>
+            <div className="mx-auto w-full max-w-[1400px] px-4 py-4 sm:px-6 sm:py-5 lg:px-8 lg:py-6">
               <div className="mb-4 sm:mb-5">
                 <TrialBanner />
               </div>
