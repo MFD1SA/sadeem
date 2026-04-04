@@ -1,173 +1,113 @@
 // ============================================================================
-// SENDA — Public Marketing Homepage
-// Colors: bg=#0F1117 · card=#151922 · border=#242A36
-//         text=#F3F4F6 · muted=#A7AFBD · brand=#C9D8E6
-// Typography: Semibold headings, Medium labels, Regular body — no excessive bold
-// Routing: دخول المشتركين → /login  |  تسجيل جديد → /login
+// SENDA — Public Marketing Homepage (Light Theme, Gold Accent)
+// Background: #F8F9FB · Cards: #FFFFFF · Text: #1A1A2E · Gold: #B8965A
+// Routing: دخول → /login  |  ابدأ مجانًا → /login
 // Contact form submits to Edge Function (destination email never exposed)
 // ============================================================================
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Star, MessageSquare, QrCode, BarChart3, Building2, Users, Zap, Shield,
-  Brain, FileText, CheckCircle2, X, ChevronDown, Send, Loader2, Menu,
+  Brain, QrCode, BarChart3, Building2, Users, FileText,
+  CheckCircle2, ChevronDown, Send, Loader2, Menu, X,
+  Sparkles, Shield, Clock, ArrowLeft, ArrowRight,
+  Star, MessageSquare, LayoutDashboard, Zap,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const C = {
-  bg:      '#0F1117',
-  card:    '#151922',
-  card2:   '#1A2030',
-  border:  '#242A36',
-  text:    '#F3F4F6',
-  muted:   '#A7AFBD',
-  brand:   '#C9D8E6',
-  cyan:    '#06B6D4',
-  purple:  '#8B5CF6',
-  green:   '#10B981',
-  amber:   '#F59E0B',
-  pink:    '#EC4899',
-  orange:  '#F97316',
-  red:     '#EF4444',
-  indigo:  '#6366F1',
+  bg: '#F8F9FB',
+  card: '#FFFFFF',
+  text: '#1A1A2E',
+  muted: '#6B7280',
+  gold: '#B8965A',
+  goldLight: '#D4AF6A',
+  dark: '#1A1A2E',
+  border: '#E8E8EC',
+  greenCheck: '#22C55E',
+  red: '#EF4444',
 };
-const GRAD = 'linear-gradient(135deg, #06B6D4, #8B5CF6)';
-
-// ─── Nav links ────────────────────────────────────────────────────────────────
-const NAV: { label: string; id?: string; href?: string }[] = [
-  { label: 'الرئيسية',        id: 'hero'         },
-  { label: 'المميزات',        id: 'features'     },
-  { label: 'كيف تعمل',       id: 'how-it-works' },
-  { label: 'الأسعار',         id: 'pricing'      },
-  { label: 'الأسئلة الشائعة', id: 'faq'         },
-  { label: 'قصة سيندا',        href: '/story'     },
-  { label: 'اتصل بنا',        id: 'contact'      },
-];
-
-// ─── Static QR pixel pattern (8×8 deterministic) ─────────────────────────────
-const QR_GRID = [
-  1,1,1,0,1,1,1,1,
-  1,0,1,1,0,0,1,0,
-  1,0,1,0,1,1,1,1,
-  0,1,0,1,0,1,0,0,
-  1,1,1,1,1,0,1,1,
-  0,0,1,0,0,1,0,1,
-  1,1,0,1,1,1,0,1,
-  1,0,1,1,0,0,1,1,
-];
+const GOLD_GRAD = 'linear-gradient(135deg, #B8965A, #D4AF6A)';
 
 // ─── Translations ─────────────────────────────────────────────────────────────
-const T = {
+type Lang = 'ar' | 'en';
+
+const T: Record<Lang, Record<string, any>> = {
   ar: {
-    nav: ['الرئيسية', 'المميزات', 'كيف تعمل', 'الأسعار', 'الأسئلة الشائعة', 'قصة سيندا', 'اتصل بنا'],
-    heroBadge: 'منصة إدارة تقييمات جوجل رقم 1 عربيًا',
-    heroH1a: 'كل تقييم جوجل',
-    heroH1b: 'فرصة حقيقية',
-    heroH1c: 'لنمو عملك',
-    heroDesc: 'ردود ذكية بالـ AI، جمع تقييمات بـ QR، وتحليلات السمعة لجميع فروعك — كل شيء في مكان واحد',
-    heroCtaStart: 'ابدأ الآن',
-    heroCtaLogin: 'دخول المشتركين',
-    heroCtaWatch: 'شاهد كيف تعمل سيندا',
-    heroStats: [{ val: '+500', lbl: 'عمل نشط' }, { val: '98%', lbl: 'رضا العملاء' }, { val: '4.8★', lbl: 'تقييمنا' }, { val: '24/7', lbl: 'دعم مستمر' }],
-    dashTitle: 'لوحة تحكم سيندا',
-    dashStats: [{ label: 'التقييمات', value: '2,847' }, { label: 'المتوسط', value: '4.8 ★' }, { label: 'نسبة الرد', value: '94%' }, { label: 'هذا الشهر', value: '+124' }],
-    reviewDone: 'تم الرد',
-    reviewAi: 'AI يرد…',
-    aiCardTitle: 'رد ذكي جاهز',
-    aiCardText: '"شكرًا على ملاحظتك القيّمة! نعمل باستمرار على تحسين..."',
-    aiPublish: 'نشر',
-    aiEdit: 'تعديل',
-    googleNew: 'تقييم جوجل جديد',
-    googleTime: 'منذ دقيقة',
-    googleText: '"أحسنتم! السرعة والجودة في مكان واحد"',
-    benefitLabels: ['ردود بالذكاء الاصطناعي', 'جمع تقييمات بـ QR', 'تحليلات متقدمة', 'إدارة الفروع', 'تعاون الفريق', 'تكاملات سلسة'],
-    featuresLabel: 'لماذا سيندا؟',
-    featuresH2: 'كل ما تحتاجه لإدارة سمعتك الرقمية',
-    featuresDesc: 'سيندا يجمع في منصة واحدة جميع الأدوات التي تحتاجها لتحسين تقييماتك وبناء ثقة عملائك',
-    featureCards: [
-      { title: 'ردود بالذكاء الاصطناعي', desc: 'ردود مخصصة لكل تقييم تعكس هوية علامتك في ثوانٍ معدودة' },
-      { title: 'سرعة رد غير مسبوقة',    desc: 'رد قبل المنافسين وأثبت لعملائك اهتمامك الحقيقي بآرائهم' },
-      { title: 'جمع تقييمات بـ QR',      desc: 'حوّل كل لقاء مع عميل إلى تقييم جوجل بمجرد مسح رمز بسيط' },
-      { title: 'تحليلات عميقة',           desc: 'بيانات حقيقية عن أداء سمعتك لاتخاذ قرارات أذكى وأسرع' },
-      { title: 'إدارة متعددة الفروع',    desc: 'أدر جميع فروعك ومواقعك من لوحة تحكم مركزية واحدة' },
-      { title: 'قوالب ردود احترافية',   desc: 'مكتبة من القوالب الجاهزة يمكنك تخصيصها لتناسب نبرة علامتك' },
-      { title: 'إدارة الفريق',           desc: 'وزّع المهام وراقب أداء الفريق مع صلاحيات مخصصة لكل عضو' },
-      { title: 'أمان وموثوقية',          desc: 'بياناتك محمية بمعايير تشفير عالمية مع نسخ احتياطية تلقائية' },
+    dir: 'rtl',
+    langToggle: 'EN',
+    nav: ['الرئيسية', 'المميزات', 'كيف يعمل', 'الأسعار', 'اتصل بنا'],
+    navIds: ['hero', 'features', 'how-it-works', 'pricing', 'contact'],
+    loginBtn: 'دخول',
+    ctaBtn: 'ابدأ مجانًا',
+    heroH1: 'إدارة تقييمات جوجل بذكاء اصطناعي',
+    heroSub: 'منصة متكاملة للرد الذكي وجمع التقييمات وتحليل السمعة الرقمية لجميع فروعك',
+    heroCtaPrimary: 'ابدأ تجربتك المجانية',
+    heroCtaSecondary: 'تعرف على المميزات',
+    dashPreviewTitle: 'لوحة تحكم سيندا',
+    dashTabs: ['التقييمات', 'التحليلات', 'الفروع'],
+    dashReviews: [
+      { name: 'أحمد محمد', stars: 5, text: 'خدمة رائعة وسريعة!', status: 'تم الرد بالـ AI' },
+      { name: 'سارة علي', stars: 4, text: 'جيد جداً، مع بعض الملاحظات', status: 'بانتظار المراجعة' },
+      { name: 'خالد العمري', stars: 5, text: 'تجربة ممتازة، أنصح بها', status: 'تم الرد بالـ AI' },
     ],
-    sec1Label: 'الذكاء الاصطناعي',
-    sec1H2: 'الذكاء الاصطناعي يرد بدلًا عنك — بأسلوبك أنت',
-    sec1Desc: 'لا مزيد من قضاء ساعات في صياغة ردود على التقييمات. سيندا يحلل كل تقييم ويولّد ردًا يناسب نبرة علامتك التجارية — سواء كان التقييم إيجابيًا أو سلبيًا. فقط راجع وانشر.',
-    sec1Items: ['تحليل المشاعر وفهم سياق التقييم تلقائيًا', 'ردود باللغة العربية والإنجليزية', 'تعديل النبرة بما يناسب نوع عملك', 'مراجعة وتعديل الرد قبل نشره'],
-    sec1ReviewText: 'خدمة ممتازة ومحترفة. سأعود بكل تأكيد!',
-    sec1ReviewName: 'محمد أحمد',
-    sec1AiLabel: 'سيندا يولد ردًا مناسبًا...',
-    sec1AiReply: 'شكرًا جزيلًا يا محمد على هذا التقييم الجميل! يسعدنا أنك أحببت تجربتك معنا، ننتظر زيارتك القادمة بكل سرور 😊',
-    sec1PostReply: 'نشر الرد',
-    sec1Edit: 'تعديل',
-    sec2Label: 'QR Reviews',
-    sec2H2: 'اجمع تقييمات جوجل بمسح بسيط',
-    sec2Desc: 'بدلًا من طلب التقييم بشكل محرج، ضع QR Code على الطاولة أو المنصة أو الفاتورة. يمسحه العميل، يختار الموظف، ويصل مباشرة لصفحة جوجل.',
-    sec2Items: ['QR Code مخصص لكل فرع أو موظف', 'تتبع مصدر كل تقييم تلقائيًا', 'تصميم بهوية علامتك التجارية', 'بيانات آنية عن حجم التقييمات'],
-    sec2ScanText: 'امسح واكتب تقييمك على جوجل',
-    sec2Branches: [{ name: 'فرع الرياض', count: 47 }, { name: 'فرع جدة', count: 32 }, { name: 'فرع الدمام', count: 28 }],
-    sec3Label: 'التحليلات',
-    sec3H2: 'تحليلات تخبرك بما لا تراه بالعين المجردة',
-    sec3Desc: 'من أي فرع يأتي أكثر التقييمات؟ ما الكلمات التي تتكرر في التقييمات السلبية؟ متى يتراجع معدل الرد؟ سيندا يجيب تلقائيًا حتى تعرف أين تركز جهودك.',
-    sec3Items: ['مقارنة الأداء بين جميع الفروع', 'تحليل المشاعر والكلمات المتكررة', 'تقارير أسبوعية وشهرية تلقائية', 'تنبيهات فورية للتقييمات السلبية'],
-    sec3ChartTitle: 'التقييمات هذا الشهر',
-    sec3Branches: [{ label: 'فرع الرياض', pct: 78 }, { label: 'فرع جدة', pct: 65 }, { label: 'فرع الدمام', pct: 52 }],
-    sec3StatLabels: ['متوسط التقييم', 'معدل الرد'],
-    sec4Label: 'إدارة الفريق',
-    sec4H2: 'فريقك الكامل في بيئة عمل واحدة',
-    sec4Desc: 'أضف أعضاء الفريق، خصص صلاحياتهم، واجعل كل شخص يرى فقط ما يحتاجه. من مدير الفرع إلى صاحب العمل — الجميع في صفحة واحدة بمعلومات صحيحة.',
-    sec4Items: ['أدوار وصلاحيات مرنة لكل عضو', 'مراقبة أداء الفريق في الوقت الفعلي', 'تعيين تقييمات محددة لأفراد', 'إشعارات فورية للمهام الجديدة'],
-    sec4Team: [{ name: 'أحمد', role: 'مدير عام' }, { name: 'سارة', role: 'مديرة فرع الرياض' }, { name: 'خالد', role: 'مشرف فرع جدة' }, { name: 'نورة', role: 'موظفة دعم العملاء' }],
-    sec4RepliesLabel: 'ردًا',
-    baH2: 'قبل وبعد سيندا',
-    baDesc: 'الفرق واضح — والنتائج حقيقية',
-    baBeforeTitle: 'قبل سيندا',
-    baAfterTitle: 'بعد سيندا',
-    baBefore: ['ردود متأخرة أو مفقودة على التقييمات', 'جمع التقييمات يعتمد على الحظ والمزاج', 'لا رؤية حقيقية للأداء عبر الفروع', 'الفريق يعمل دون تنسيق واضح', 'ساعات ضائعة في صياغة ردود يدوية', 'التقييمات السلبية تمر دون تدخل'],
-    baAfter: ['رد في دقائق بمساعدة الذكاء الاصطناعي', 'QR Code يجمع التقييمات بشكل منتظم', 'تقارير شاملة لكل فرع في مكان واحد', 'فريق منظم بصلاحيات وأدوار واضحة', 'وقت أقل — نتائج وسمعة أفضل بكثير', 'تنبيهات فورية للتقييمات تحتاج اهتمامًا'],
-    philLabel: 'من نحن',
-    philH2: 'ما الذي يجعلنا مختلفين؟',
-    philDesc: 'سيندا ليس مجرد أداة — هو شريك تقني مبني للسوق العربي بكل تفاصيله واحتياجاته',
-    philCards: [
-      { emoji: '🎯', title: 'سهولة الاستخدام', desc: 'منتج بسيط بما يكفي أن تستخدمه بدون تدريب أو خبرة تقنية مسبقة' },
-      { emoji: '🌍', title: 'عربي في جوهره',   desc: 'مبني للسوق العربي من البداية، وليس مجرد ترجمة لمنتج غربي' },
-      { emoji: '🤝', title: 'شراكة حقيقية',   desc: 'نستمع لعملائنا باستمرار ونبني ما يحتاجونه فعلًا، لا ما نظن أنهم يريدونه' },
-      { emoji: '🚀', title: 'نمو مستمر',       desc: 'نحدّث سيندا باستمرار بناءً على ملاحظاتك ومتطلبات السوق المتغيرة' },
+    featuresLabel: 'ماذا يقدم سيندا',
+    featuresH2: 'كل أدوات إدارة السمعة في منصة واحدة',
+    featureCards: [
+      { title: 'ردود بالذكاء الاصطناعي', desc: 'ردود مخصصة لكل تقييم تعكس هوية علامتك التجارية في ثوانٍ معدودة', icon: 'Brain' },
+      { title: 'جمع تقييمات بـ QR', desc: 'حوّل كل لقاء مع عميل إلى تقييم جوجل بمجرد مسح رمز بسيط', icon: 'QrCode' },
+      { title: 'تحليلات متقدمة', desc: 'بيانات حقيقية عن أداء سمعتك لاتخاذ قرارات أذكى وأسرع', icon: 'BarChart3' },
+      { title: 'إدارة متعددة الفروع', desc: 'أدر جميع فروعك ومواقعك من لوحة تحكم مركزية واحدة', icon: 'Building2' },
+      { title: 'إدارة الفريق', desc: 'وزّع المهام وراقب أداء الفريق مع صلاحيات مخصصة لكل عضو', icon: 'Users' },
+      { title: 'قوالب ردود احترافية', desc: 'مكتبة من القوالب الجاهزة يمكنك تخصيصها لتناسب نبرة علامتك', icon: 'FileText' },
+    ],
+    benefitsLabel: 'المزايا',
+    benefitsH2: 'لماذا تختار سيندا؟',
+    benefits: [
+      { title: 'توفير الوقت', desc: 'وفّر ساعات أسبوعيًا بالرد التلقائي الذكي على جميع تقييماتك بدلًا من الصياغة اليدوية', icon: 'Clock' },
+      { title: 'زيادة التقييمات الإيجابية', desc: 'اجمع تقييمات أكثر من عملائك السعداء عبر أكواد QR الذكية الموزعة في فروعك', icon: 'Star' },
+      { title: 'قرارات مبنية على بيانات', desc: 'حلّل أداء كل فرع وموظف واتخذ قرارات محسوبة لتحسين تجربة العملاء', icon: 'BarChart3' },
+      { title: 'حماية سمعتك', desc: 'تنبيهات فورية للتقييمات السلبية مع ردود ذكية تحافظ على صورة علامتك التجارية', icon: 'Shield' },
+    ],
+    howLabel: 'كيف يعمل',
+    howH2: 'ثلاث خطوات لإدارة سمعتك',
+    howSteps: [
+      { num: '1', title: 'اربط حسابك', desc: 'اربط حساب جوجل للأعمال الخاص بك في دقائق وأضف فروعك' },
+      { num: '2', title: 'فعّل الذكاء الاصطناعي', desc: 'خصص نبرة الردود واضبط إعدادات الرد التلقائي حسب علامتك' },
+      { num: '3', title: 'راقب وحسّن', desc: 'تابع التقييمات والتحليلات وحسّن سمعتك الرقمية باستمرار' },
     ],
     pricingLabel: 'الخطط والأسعار',
     pricingH2: 'ابدأ بالخطة المناسبة لعملك',
     pricingDesc: 'جميع الخطط تشمل فترة تجريبية مجانية — لا بطاقة ائتمان مطلوبة',
+    pricingMo: 'ر.س/شهر',
     pricingMostPopular: 'الأكثر طلبًا',
-    plans: [
-      { name: 'Orbit', nameLocal: 'الأساسي', desc: 'للمشاريع الصغيرة التي تبدأ رحلتها في إدارة السمعة', features: ['فرع واحد', 'رد ذكي بالـ AI', 'QR Code مخصص', 'تقارير أساسية', 'دعم عبر البريد'] },
-      { name: 'Nova',  nameLocal: 'المتقدم',  desc: 'للأعمال المتنامية التي تدير أكثر من فرع وفريق عمل', features: ['حتى 5 فروع', 'كل مميزات Orbit', 'إدارة الفريق', 'تحليلات متقدمة', 'قوالب مخصصة', 'دعم أولوية'] },
-      { name: 'Galaxy',  nameLocal: 'المحترف',  desc: 'للمؤسسات الكبيرة التي تحتاج حلولًا متكاملة وغير محدودة', features: ['فروع غير محدودة', 'كل مميزات Nova', 'تكاملات API', 'تقارير مخصصة', 'مدير حساب مخصص', 'SLA مضمون'] },
-      { name: 'Infinity', nameLocal: 'المؤسسي', desc: 'للمجموعات والامتيازات الكبيرة — حل مؤسسي شامل بلا قيود', features: ['فروع غير محدودة', 'كل مميزات Galaxy', 'API كامل', 'تقارير white-label', 'فريق دعم مخصص', 'SLA 99.9%', 'تدريب الفريق'] },
-    ],
-    pricingCtaHighlight: 'ابدأ مجانًا الآن',
+    pricingContactUs: 'تواصل معنا',
     pricingCtaDefault: 'ابدأ مجانًا',
-    compareTitle: 'مقارنة بين الخطط',
+    pricingCtaHighlight: 'ابدأ مجانًا الآن',
+    plans: [
+      { name: 'Orbit', nameAr: 'مدار', price: '99', features: ['1 فرع', '1 عضو', '50 رد AI شهريًا', '100 قالب', '1 كود QR'] },
+      { name: 'Nova', nameAr: 'نوفا', price: '199', popular: true, features: ['3 فروع', '3 أعضاء', '300 رد AI شهريًا', '500 قالب', '3 أكواد QR'] },
+      { name: 'Galaxy', nameAr: 'جالكسي', price: '399', features: ['10 فروع', '10 أعضاء', '1,500 رد AI شهريًا', 'قوالب غير محدودة', '10 أكواد QR'] },
+      { name: 'Infinity', nameAr: 'إنفينيتي', price: null, features: ['فروع غير محدودة', 'أعضاء غير محدودين', 'ردود AI غير محدودة', 'قوالب غير محدودة', 'أكواد QR غير محدودة'] },
+    ],
+    compareTitle: 'مقارنة شاملة بين الخطط',
     compareFeatureCol: 'الميزة',
     compareRows: [
-      { label: 'عدد الفروع',     vals: ['1', '5', 'غير محدود', 'غير محدود'] },
-      { label: 'رد ذكي بالـ AI', vals: ['✓', '✓', '✓', '✓'] },
-      { label: 'QR Code مخصص',   vals: ['✓', '✓', '✓', '✓'] },
-      { label: 'إدارة الفريق',   vals: ['—', '✓', '✓', '✓'] },
-      { label: 'تحليلات متقدمة', vals: ['—', '✓', '✓', '✓'] },
-      { label: 'تكامل API',      vals: ['—', '—', '✓', '✓'] },
-      { label: 'مدير حساب مخصص', vals: ['—', '—', '✓', '✓'] },
-      { label: 'White-label',    vals: ['—', '—', '—', '✓'] },
-      { label: 'SLA مضمون',      vals: ['—', '—', '✓', '99.9%'] },
-      { label: 'دعم',            vals: ['بريد', 'أولوية', 'مخصص', 'فريق كامل'] },
+      { label: 'عدد الفروع', vals: ['1', '3', '10', 'غير محدود'] },
+      { label: 'أعضاء الفريق', vals: ['1', '3', '10', 'غير محدود'] },
+      { label: 'ردود AI', vals: ['50', '300', '1,500', 'غير محدود'] },
+      { label: 'ردود القوالب', vals: ['100', '500', 'غير محدودة', 'غير محدودة'] },
+      { label: 'أكواد QR', vals: ['1', '3', '10', 'غير محدود'] },
+      { label: 'تحليلات متقدمة', vals: ['--', 'check', 'check', 'check'] },
+      { label: 'مقارنة الفروع', vals: ['--', 'check', 'check', 'check'] },
+      { label: 'إدارة الفريق', vals: ['--', 'check', 'check', 'check'] },
+      { label: 'المهام', vals: ['--', 'check', 'check', 'check'] },
+      { label: 'رفع الشعار', vals: ['--', '--', 'check', 'check'] },
+      { label: 'وصول API', vals: ['--', '--', 'check', 'check'] },
+      { label: 'دعم مميز', vals: ['بريد', 'أولوية', 'مخصص', 'فريق كامل'] },
+      { label: 'رد تلقائي AI', vals: ['--', 'check', 'check', 'check'] },
     ],
-    pricingCustomText: 'تحتاج خطة مخصصة لمؤسستك؟',
-    pricingContactLink: 'تواصل معنا',
     faqLabel: 'الأسئلة الشائعة',
     faqH2: 'لديك أسئلة؟ لدينا إجابات',
     faqs: [
@@ -175,10 +115,8 @@ const T = {
       { q: 'كيف يعمل الرد التلقائي بالذكاء الاصطناعي؟', a: 'عند وصول تقييم جديد، يقرأ نظام الذكاء الاصطناعي التقييم ويولّد ردًا يتطابق مع نبرة علامتك التجارية. يمكنك مراجعة الرد وتعديله قبل النشر، أو ضبط الرد التلقائي الفوري.' },
       { q: 'هل يمكنني إدارة أكثر من فرع؟', a: 'بالطبع! سيندا مصمم أصلًا لإدارة متعددة الفروع. تستطيع ربط جميع مواقعك ورؤية التقارير والتقييمات لكل فرع بشكل منفصل أو مجمّع.' },
       { q: 'هل هناك تجربة مجانية؟', a: 'نعم! جميع الخطط تتضمن فترة تجريبية مجانية لا تحتاج فيها إلى بطاقة ائتمان. سجّل الآن وجرّب سيندا بكل راحة.' },
-      { q: 'ما الفرق بين خطط Orbit وNova وGalaxy؟', a: 'Orbit مثالية للمشاريع الصغيرة بفرع واحد. Nova مناسبة للأعمال المتنامية بعدة فروع وفريق عمل. Galaxy مصممة للمؤسسات الكبيرة بفروع غير محدودة وتكاملات API ومدير حساب مخصص.' },
-      { q: 'كيف يعمل نظام QR Code بالتفصيل؟', a: 'تنشئ رمز QR خاصًا بكل فرع أو موظف عبر سيندا، تطبعه أو تعرضه للعملاء. عند المسح، يصل العميل مباشرة لصفحة التقييم على جوجل مع تتبع تلقائي لمصدر التقييم والموظف المُخدِّم.' },
-      { q: 'هل بياناتي ومعلومات عملائي آمنة؟', a: 'بالتأكيد. نستخدم معايير تشفير عالمية لحماية جميع البيانات مع نسخ احتياطية تلقائية يومية. لا نبيع أو نشارك أي بيانات مع أطراف خارجية بأي شكل.' },
-      { q: 'كيف أتواصل مع فريق الدعم؟', a: 'نقدم دعمًا متخصصًا عبر البريد الإلكتروني وبوابة الدعم داخل لوحة التحكم. عملاء خطة Galaxy يحصلون على مدير حساب مخصص مع استجابة مضمونة خلال ساعة عمل.' },
+      { q: 'ما الفرق بين خطط Orbit وNova وGalaxy؟', a: 'Orbit (مدار) مثالية للمشاريع الصغيرة بفرع واحد. Nova (نوفا) مناسبة للأعمال المتنامية بعدة فروع وفريق عمل. Galaxy (جالكسي) مصممة للمؤسسات الكبيرة بفروع وأعضاء أكثر وتكاملات API.' },
+      { q: 'كيف يعمل نظام QR Code؟', a: 'تنشئ رمز QR خاصًا بكل فرع عبر سيندا، تطبعه أو تعرضه للعملاء. عند المسح، يصل العميل مباشرة لصفحة التقييم على جوجل مع تتبع تلقائي لمصدر التقييم.' },
     ],
     contactLabel: 'تواصل معنا',
     contactH2: 'نحب أن نسمع منك',
@@ -191,204 +129,172 @@ const T = {
     contactSuccessDesc: 'سيتواصل معك فريقنا في أقرب وقت ممكن',
     contactSuccessRetry: 'إرسال رسالة أخرى',
     contactError: 'حدث خطأ أثناء الإرسال. يرجى المحاولة مرة أخرى.',
-    footerTagline: 'منصة متكاملة لإدارة تقييمات جوجل وتحسين السمعة الرقمية للأعمال العربية',
-    footerCols: [
-      { heading: 'المنتج',   items: ['المميزات', 'الخطط والأسعار', 'كيف يعمل', 'التحديثات الجديدة', 'دراسات حالة'] },
-      { heading: 'الدعم',    items: ['مركز المساعدة', 'تواصل معنا', 'بوابة الدعم الفني', 'التوثيق التقني', 'حالة الخدمة'] },
+    footerTagline: 'منصة متكاملة لإدارة تقييمات جوجل وتحسين السمعة الرقمية',
+    footerProduct: 'المنتج',
+    footerProductLinks: ['المميزات', 'الأسعار', 'كيف يعمل'],
+    footerSupport: 'الدعم',
+    footerSupportLinks: ['مركز المساعدة', 'تواصل معنا'],
+    footerLegal: 'قانوني',
+    footerLegalLinks: [
+      { label: 'سياسة الخصوصية', path: '/privacy' },
+      { label: 'شروط الاستخدام', path: '/terms' },
     ],
-    footerLegal: { heading: 'قانوني', links: [{ label: 'سياسة الخصوصية', path: '/privacy' }, { label: 'شروط الاستخدام', path: '/terms' }, { label: 'قصة سيندا', path: '/story' }, { label: 'إشعار قانوني', path: '/terms' }, { label: 'خريطة الموقع', path: '/' }] },
-    footerBottomLinks: [{ label: 'سياسة الخصوصية', path: '/privacy' }, { label: 'شروط الاستخدام', path: '/terms' }, { label: 'قصة سيندا', path: '/story' }, { label: 'إشعار قانوني', path: '/terms' }, { label: 'الرئيسية', path: '/' }],
-    copyright: '© 2026 سيندا. جميع الحقوق محفوظة.',
-    loginBtn: 'دخول المشتركين',
-    registerBtn: 'تسجيل جديد',
+    copyright: '© 2025 SENDA. جميع الحقوق محفوظة.',
   },
   en: {
-    nav: ['Home', 'Features', 'How It Works', 'Pricing', 'FAQ', 'Our Story', 'Contact'],
-    heroBadge: 'The #1 Google Reviews Platform in the Arab World',
-    heroH1a: 'Every Google Review',
-    heroH1b: 'a Real Opportunity',
-    heroH1c: 'to Grow Your Business',
-    heroDesc: 'Smart AI replies, QR review collection, and reputation analytics for all your branches — everything in one place',
-    heroCtaStart: 'Get Started',
-    heroCtaLogin: 'Subscriber Login',
-    heroCtaWatch: 'See How SENDA Works',
-    heroStats: [{ val: '500+', lbl: 'Active Businesses' }, { val: '98%', lbl: 'Customer Satisfaction' }, { val: '4.8★', lbl: 'Our Rating' }, { val: '24/7', lbl: 'Ongoing Support' }],
-    dashTitle: 'SENDA Dashboard',
-    dashStats: [{ label: 'Reviews', value: '2,847' }, { label: 'Average', value: '4.8 ★' }, { label: 'Reply Rate', value: '94%' }, { label: 'This Month', value: '+124' }],
-    reviewDone: 'Replied',
-    reviewAi: 'AI Replying…',
-    aiCardTitle: 'Smart Reply Ready',
-    aiCardText: '"Thank you for your valuable feedback! We continuously work to improve..."',
-    aiPublish: 'Publish',
-    aiEdit: 'Edit',
-    googleNew: 'New Google Review',
-    googleTime: '1 min ago',
-    googleText: '"Excellent! Speed and quality in one place"',
-    benefitLabels: ['AI-Powered Replies', 'QR Review Collection', 'Advanced Analytics', 'Branch Management', 'Team Collaboration', 'Seamless Integrations'],
-    featuresLabel: 'WHY SENDA?',
-    featuresH2: 'Everything You Need to Manage Your Digital Reputation',
-    featuresDesc: 'SENDA brings together in one platform all the tools you need to improve your reviews and build customer trust',
+    dir: 'ltr',
+    langToggle: 'عربي',
+    nav: ['Home', 'Features', 'How it Works', 'Pricing', 'Contact'],
+    navIds: ['hero', 'features', 'how-it-works', 'pricing', 'contact'],
+    loginBtn: 'Login',
+    ctaBtn: 'Start Free',
+    heroH1: 'AI-Powered Google Review Management',
+    heroSub: 'A complete platform for smart replies, review collection, and reputation analytics across all your branches',
+    heroCtaPrimary: 'Start Your Free Trial',
+    heroCtaSecondary: 'Explore Features',
+    dashPreviewTitle: 'SENDA Dashboard',
+    dashTabs: ['Reviews', 'Analytics', 'Branches'],
+    dashReviews: [
+      { name: 'Ahmed M.', stars: 5, text: 'Great and fast service!', status: 'AI Replied' },
+      { name: 'Sara A.', stars: 4, text: 'Very good, with some notes', status: 'Pending Review' },
+      { name: 'Khalid O.', stars: 5, text: 'Excellent experience, recommended', status: 'AI Replied' },
+    ],
+    featuresLabel: 'What SENDA Offers',
+    featuresH2: 'All Reputation Tools in One Platform',
     featureCards: [
-      { title: 'AI-Powered Replies',          desc: 'Personalized replies for every review that reflect your brand identity in seconds' },
-      { title: 'Unmatched Reply Speed',        desc: 'Reply before competitors and show customers you truly care about their feedback' },
-      { title: 'QR Review Collection',         desc: 'Turn every customer encounter into a Google review with a simple scan' },
-      { title: 'Deep Analytics',               desc: 'Real data about your reputation performance to make smarter, faster decisions' },
-      { title: 'Multi-Branch Management',      desc: 'Manage all your branches and locations from one centralized dashboard' },
-      { title: 'Professional Reply Templates', desc: 'A library of ready templates you can customize to match your brand tone' },
-      { title: 'Team Management',              desc: 'Distribute tasks and monitor team performance with custom permissions' },
-      { title: 'Security & Reliability',       desc: 'Your data is protected with global encryption standards and automatic backups' },
+      { title: 'AI-Powered Replies', desc: 'Custom replies for each review that reflect your brand identity in seconds', icon: 'Brain' },
+      { title: 'QR Review Collection', desc: 'Turn every customer interaction into a Google review with a simple scan', icon: 'QrCode' },
+      { title: 'Advanced Analytics', desc: 'Real data about your reputation performance for smarter decisions', icon: 'BarChart3' },
+      { title: 'Multi-Branch Management', desc: 'Manage all your branches from a single centralized dashboard', icon: 'Building2' },
+      { title: 'Team Management', desc: 'Assign tasks and monitor team performance with custom permissions', icon: 'Users' },
+      { title: 'Reply Templates', desc: 'A library of ready templates you can customize to match your brand tone', icon: 'FileText' },
     ],
-    sec1Label: 'ARTIFICIAL INTELLIGENCE',
-    sec1H2: 'AI Replies for You — In Your Voice',
-    sec1Desc: 'No more spending hours crafting review responses. SENDA analyzes each review and generates a reply that matches your brand tone — whether the review is positive or negative. Just review and publish.',
-    sec1Items: ['Automatic sentiment analysis and context understanding', 'Replies in both Arabic and English', 'Tone adjustment to match your business type', 'Review and edit the reply before publishing'],
-    sec1ReviewText: 'Excellent and professional service. I will definitely return!',
-    sec1ReviewName: 'Mohammed Ahmed',
-    sec1AiLabel: 'SENDA is generating a reply...',
-    sec1AiReply: 'Thank you so much, Mohammed, for this wonderful review! We are delighted you enjoyed your experience with us. We look forward to your next visit! 😊',
-    sec1PostReply: 'Post Reply',
-    sec1Edit: 'Edit',
-    sec2Label: 'QR REVIEWS',
-    sec2H2: 'Collect Google Reviews with a Simple Scan',
-    sec2Desc: 'Instead of awkwardly asking for reviews, place a QR Code on the table, counter, or receipt. The customer scans it, chooses a staff member, and lands directly on your Google page.',
-    sec2Items: ['Custom QR Code for each branch or employee', 'Automatically track the source of every review', 'Designed with your brand identity', 'Real-time data on review volume'],
-    sec2ScanText: 'Scan and leave your Google review',
-    sec2Branches: [{ name: 'Riyadh Branch', count: 47 }, { name: 'Jeddah Branch', count: 32 }, { name: 'Dammam Branch', count: 28 }],
-    sec3Label: 'ANALYTICS',
-    sec3H2: 'Analytics That Reveal What You Cannot See',
-    sec3Desc: 'Which branch gets the most reviews? What words repeat in negative reviews? When does reply rate drop? SENDA answers automatically so you know where to focus.',
-    sec3Items: ['Performance comparison across all branches', 'Sentiment analysis and recurring keywords', 'Automatic weekly and monthly reports', 'Instant alerts for negative reviews'],
-    sec3ChartTitle: 'Reviews This Month',
-    sec3Branches: [{ label: 'Riyadh Branch', pct: 78 }, { label: 'Jeddah Branch', pct: 65 }, { label: 'Dammam Branch', pct: 52 }],
-    sec3StatLabels: ['Avg. Rating', 'Reply Rate'],
-    sec4Label: 'TEAM MANAGEMENT',
-    sec4H2: 'Your Entire Team in One Workspace',
-    sec4Desc: 'Add team members, set their permissions, and let each person see only what they need. From branch manager to business owner — everyone on one page with the right information.',
-    sec4Items: ['Flexible roles and permissions for each member', 'Monitor team performance in real time', 'Assign specific reviews to individuals', 'Instant notifications for new tasks'],
-    sec4Team: [{ name: 'Ahmed', role: 'General Manager' }, { name: 'Sara', role: 'Riyadh Branch Manager' }, { name: 'Khalid', role: 'Jeddah Branch Supervisor' }, { name: 'Noura', role: 'Customer Support Staff' }],
-    sec4RepliesLabel: 'replies',
-    baH2: 'Before & After SENDA',
-    baDesc: 'The difference is clear — the results are real',
-    baBeforeTitle: 'Before SENDA',
-    baAfterTitle: 'After SENDA',
-    baBefore: ['Delayed or missed responses to reviews', 'Collecting reviews relies on luck and mood', 'No real visibility across branches', 'Team works without clear coordination', 'Hours wasted writing manual replies', 'Negative reviews pass without action'],
-    baAfter: ['Reply in minutes with AI assistance', 'QR Code collects reviews consistently', 'Comprehensive reports for each branch', 'Organized team with clear roles and permissions', 'Less time — far better results and reputation', 'Instant alerts for reviews needing attention'],
-    philLabel: 'WHO WE ARE',
-    philH2: 'What Makes Us Different?',
-    philDesc: 'SENDA is more than a tool — it\'s a technology partner built for the Arab market with all its details and needs',
-    philCards: [
-      { emoji: '🎯', title: 'Ease of Use',       desc: 'Simple enough to use without training or prior technical knowledge' },
-      { emoji: '🌍', title: 'Arabic at Heart',    desc: 'Built for the Arab market from the ground up, not just a translation of a Western product' },
-      { emoji: '🤝', title: 'True Partnership',   desc: 'We listen to our customers and build what they actually need, not what we think they want' },
-      { emoji: '🚀', title: 'Continuous Growth',  desc: 'We continuously update SENDA based on your feedback and evolving market requirements' },
+    benefitsLabel: 'Benefits',
+    benefitsH2: 'Why Choose SENDA?',
+    benefits: [
+      { title: 'Save Time', desc: 'Save hours weekly with smart auto-replies on all your reviews instead of manual drafting', icon: 'Clock' },
+      { title: 'Increase Positive Reviews', desc: 'Collect more reviews from happy customers via smart QR codes across your branches', icon: 'Star' },
+      { title: 'Data-Driven Decisions', desc: 'Analyze every branch and team member performance for informed customer experience decisions', icon: 'BarChart3' },
+      { title: 'Protect Your Reputation', desc: 'Instant alerts for negative reviews with smart replies that preserve your brand image', icon: 'Shield' },
     ],
-    pricingLabel: 'PLANS & PRICING',
-    pricingH2: 'Start with the Plan That Fits Your Business',
-    pricingDesc: 'All plans include a free trial — no credit card required',
+    howLabel: 'How It Works',
+    howH2: 'Three Steps to Manage Your Reputation',
+    howSteps: [
+      { num: '1', title: 'Connect Your Account', desc: 'Link your Google Business account in minutes and add your branches' },
+      { num: '2', title: 'Activate AI', desc: 'Customize reply tone and configure auto-reply settings for your brand' },
+      { num: '3', title: 'Monitor & Improve', desc: 'Track reviews and analytics to continuously improve your digital reputation' },
+    ],
+    pricingLabel: 'Plans & Pricing',
+    pricingH2: 'Start with the Right Plan',
+    pricingDesc: 'All plans include a free trial - no credit card required',
+    pricingMo: 'SAR/mo',
     pricingMostPopular: 'Most Popular',
-    plans: [
-      { name: 'Orbit',    nameLocal: 'Starter',    desc: 'For small businesses starting their reputation management journey', features: ['1 branch', 'AI smart replies', 'Custom QR Code', 'Basic reports', 'Email support'] },
-      { name: 'Nova',     nameLocal: 'Advanced',   desc: 'For growing businesses managing multiple branches and teams', features: ['Up to 5 branches', 'Everything in Orbit', 'Team management', 'Advanced analytics', 'Custom templates', 'Priority support'] },
-      { name: 'Galaxy',   nameLocal: 'Professional', desc: 'For large enterprises needing comprehensive unlimited solutions', features: ['Unlimited branches', 'Everything in Nova', 'API integrations', 'Custom reports', 'Dedicated account manager', 'Guaranteed SLA'] },
-      { name: 'Infinity', nameLocal: 'Enterprise',  desc: 'For large groups and franchises — full enterprise solution with no limits', features: ['Unlimited branches', 'Everything in Galaxy', 'Full API access', 'White-label reports', 'Dedicated support team', '99.9% SLA', 'Team training'] },
-    ],
-    pricingCtaHighlight: 'Start Free Now',
+    pricingContactUs: 'Contact Us',
     pricingCtaDefault: 'Start Free',
-    compareTitle: 'Plan Comparison',
+    pricingCtaHighlight: 'Start Free Now',
+    plans: [
+      { name: 'Orbit', nameAr: 'Orbit', price: '99', features: ['1 Branch', '1 Member', '50 AI Replies/mo', '100 Templates', '1 QR Code'] },
+      { name: 'Nova', nameAr: 'Nova', price: '199', popular: true, features: ['3 Branches', '3 Members', '300 AI Replies/mo', '500 Templates', '3 QR Codes'] },
+      { name: 'Galaxy', nameAr: 'Galaxy', price: '399', features: ['10 Branches', '10 Members', '1,500 AI Replies/mo', 'Unlimited Templates', '10 QR Codes'] },
+      { name: 'Infinity', nameAr: 'Infinity', price: null, features: ['Unlimited Branches', 'Unlimited Members', 'Unlimited AI Replies', 'Unlimited Templates', 'Unlimited QR Codes'] },
+    ],
+    compareTitle: 'Full Plan Comparison',
     compareFeatureCol: 'Feature',
     compareRows: [
-      { label: 'Number of Branches',      vals: ['1', '5', 'Unlimited', 'Unlimited'] },
-      { label: 'AI Smart Reply',           vals: ['✓', '✓', '✓', '✓'] },
-      { label: 'Custom QR Code',           vals: ['✓', '✓', '✓', '✓'] },
-      { label: 'Team Management',          vals: ['—', '✓', '✓', '✓'] },
-      { label: 'Advanced Analytics',       vals: ['—', '✓', '✓', '✓'] },
-      { label: 'API Integration',          vals: ['—', '—', '✓', '✓'] },
-      { label: 'Dedicated Account Manager',vals: ['—', '—', '✓', '✓'] },
-      { label: 'White-label',              vals: ['—', '—', '—', '✓'] },
-      { label: 'Guaranteed SLA',           vals: ['—', '—', '✓', '99.9%'] },
-      { label: 'Support',                  vals: ['Email', 'Priority', 'Dedicated', 'Full Team'] },
+      { label: 'Branches', vals: ['1', '3', '10', 'Unlimited'] },
+      { label: 'Team Members', vals: ['1', '3', '10', 'Unlimited'] },
+      { label: 'AI Replies', vals: ['50', '300', '1,500', 'Unlimited'] },
+      { label: 'Template Replies', vals: ['100', '500', 'Unlimited', 'Unlimited'] },
+      { label: 'QR Codes', vals: ['1', '3', '10', 'Unlimited'] },
+      { label: 'Advanced Analytics', vals: ['--', 'check', 'check', 'check'] },
+      { label: 'Branch Comparison', vals: ['--', 'check', 'check', 'check'] },
+      { label: 'Team Management', vals: ['--', 'check', 'check', 'check'] },
+      { label: 'Tasks', vals: ['--', 'check', 'check', 'check'] },
+      { label: 'Logo Upload', vals: ['--', '--', 'check', 'check'] },
+      { label: 'API Access', vals: ['--', '--', 'check', 'check'] },
+      { label: 'Premium Support', vals: ['Email', 'Priority', 'Dedicated', 'Full Team'] },
+      { label: 'Auto AI Reply', vals: ['--', 'check', 'check', 'check'] },
     ],
-    pricingCustomText: 'Need a custom plan for your organization?',
-    pricingContactLink: 'Contact Us',
     faqLabel: 'FAQ',
-    faqH2: 'Have Questions? We Have Answers',
+    faqH2: 'Got Questions? We Have Answers',
     faqs: [
-      { q: 'What is SENDA and how does it help my business?', a: 'SENDA is a comprehensive platform for managing Google reviews. It helps you respond to reviews with AI, collect new reviews via QR Code, and monitor your reputation performance across all your branches in one dashboard.' },
-      { q: 'How does the AI auto-reply work?', a: 'When a new review arrives, the AI reads it and generates a reply that matches your brand tone. You can review and edit it before publishing, or set it to auto-reply instantly.' },
-      { q: 'Can I manage more than one branch?', a: 'Absolutely! SENDA is designed for multi-branch management. You can connect all your locations and view reports and reviews for each branch separately or combined.' },
-      { q: 'Is there a free trial?', a: 'Yes! All plans include a free trial with no credit card required. Sign up now and try SENDA with complete peace of mind.' },
-      { q: 'What is the difference between Orbit, Nova, and Galaxy plans?', a: 'Orbit is ideal for small businesses with one branch. Nova is suited for growing businesses with multiple branches and a team. Galaxy is designed for large enterprises with unlimited branches, API integrations, and a dedicated account manager.' },
-      { q: 'How does the QR Code system work in detail?', a: 'You create a unique QR code for each branch or employee via SENDA, then print or display it for customers. When scanned, the customer goes directly to your Google review page with automatic tracking of the review source and serving staff.' },
-      { q: 'Is my data and customer information secure?', a: 'Absolutely. We use global encryption standards to protect all data with automatic daily backups. We never sell or share any data with third parties in any form.' },
-      { q: 'How do I contact the support team?', a: 'We provide specialized support via email and the support portal inside the dashboard. Galaxy plan customers get a dedicated account manager with a guaranteed response within one business hour.' },
+      { q: 'What is SENDA and how does it help my business?', a: 'SENDA is a complete Google review management platform. It helps you reply to reviews with AI, collect new reviews via QR codes, and monitor your reputation across all branches from one dashboard.' },
+      { q: 'How does the AI auto-reply work?', a: 'When a new review arrives, our AI reads it and generates a reply matching your brand tone. You can review and edit before publishing, or enable fully automatic replies.' },
+      { q: 'Can I manage multiple branches?', a: 'Absolutely! SENDA is designed for multi-branch management. Link all your locations and view reports per branch or aggregated.' },
+      { q: 'Is there a free trial?', a: 'Yes! All plans include a free trial with no credit card required. Sign up now and try SENDA risk-free.' },
+      { q: 'What is the difference between Orbit, Nova, and Galaxy?', a: 'Orbit is ideal for small businesses with one branch. Nova suits growing businesses with multiple branches and a team. Galaxy is designed for large enterprises with more branches, members, and API integrations.' },
+      { q: 'How does the QR Code system work?', a: 'Create a unique QR code for each branch via SENDA, print or display it for customers. When scanned, the customer goes directly to your Google review page with automatic source tracking.' },
     ],
-    contactLabel: 'CONTACT US',
-    contactH2: "We'd Love to Hear from You",
-    contactDesc: 'Whether you have a question, want a trial, or need more information — our team is here',
-    contactFields: { name: 'Full Name *', email: 'Email Address *', phone: 'Phone Number', company: 'Company Name', message: 'Your Message *' },
-    contactPlaceholders: { name: 'John Smith', email: 'email@example.com', phone: '+966 5X XXX XXXX', company: 'Your company or restaurant...', message: 'Tell us about your business and what you need...' },
+    contactLabel: 'Contact Us',
+    contactH2: 'We\'d Love to Hear from You',
+    contactDesc: 'Whether you have a question, want a demo, or want to learn more - our team is here',
+    contactFields: { name: 'Full Name *', email: 'Email *', phone: 'Phone', company: 'Company', message: 'Your Message *' },
+    contactPlaceholders: { name: 'John Doe', email: 'email@example.com', phone: '+966 5X XXX XXXX', company: 'Your company...', message: 'Tell us about your business and what you need...' },
     contactSubmit: 'Send Message',
     contactSending: 'Sending...',
     contactSuccessTitle: 'Message Sent Successfully!',
-    contactSuccessDesc: 'Our team will get in touch with you as soon as possible',
+    contactSuccessDesc: 'Our team will get back to you as soon as possible',
     contactSuccessRetry: 'Send Another Message',
-    contactError: 'An error occurred while sending. Please try again.',
-    footerTagline: 'A comprehensive platform for managing Google reviews and improving digital reputation for Arab businesses',
-    footerCols: [
-      { heading: 'Product', items: ['Features', 'Plans & Pricing', 'How It Works', "What's New", 'Case Studies'] },
-      { heading: 'Support', items: ['Help Center', 'Contact Us', 'Technical Support', 'Documentation', 'Service Status'] },
+    contactError: 'An error occurred. Please try again.',
+    footerTagline: 'A complete platform for Google review management and digital reputation',
+    footerProduct: 'Product',
+    footerProductLinks: ['Features', 'Pricing', 'How it Works'],
+    footerSupport: 'Support',
+    footerSupportLinks: ['Help Center', 'Contact Us'],
+    footerLegal: 'Legal',
+    footerLegalLinks: [
+      { label: 'Privacy Policy', path: '/privacy' },
+      { label: 'Terms of Service', path: '/terms' },
     ],
-    footerLegal: { heading: 'Legal', links: [{ label: 'Privacy Policy', path: '/privacy' }, { label: 'Terms of Use', path: '/terms' }, { label: 'SENDA Story', path: '/story' }, { label: 'Legal Notice', path: '/terms' }, { label: 'Sitemap', path: '/' }] },
-    footerBottomLinks: [{ label: 'Privacy Policy', path: '/privacy' }, { label: 'Terms of Use', path: '/terms' }, { label: 'SENDA Story', path: '/story' }, { label: 'Legal Notice', path: '/terms' }, { label: 'Home', path: '/' }],
-    copyright: '© 2026 SENDA. All rights reserved.',
-    loginBtn: 'Subscriber Login',
-    registerBtn: 'Register',
+    copyright: '© 2025 SENDA. All rights reserved.',
   },
 };
 
-// ─── Shared helpers ───────────────────────────────────────────────────────────
-function SectionLabel({ color = C.cyan, children }: { color?: string; children: string }) {
-  return (
-    <div style={{ fontSize: 12, color, marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-      {children}
-    </div>
-  );
-}
+// ─── Icon map ──────────────────────────────────────────────────────────────────
+const IconMap: Record<string, any> = { Brain, QrCode, BarChart3, Building2, Users, FileText, Clock, Star, Shield };
 
-function CheckItem({ children, color = C.cyan }: { children: string; color?: string }) {
-  return (
-    <li className="flex items-start gap-3">
-      <CheckCircle2 size={16} style={{ color, flexShrink: 0, marginTop: 2 }} />
-      <span style={{ fontSize: 14, color: C.muted, lineHeight: 1.6 }}>{children}</span>
-    </li>
-  );
-}
+// ─── Shared styles ────────────────────────────────────────────────────────────
+const sectionPadding: React.CSSProperties = { padding: '100px 24px', maxWidth: 1200, margin: '0 auto' };
+const sectionTitle = (lang: Lang): React.CSSProperties => ({
+  fontSize: 'clamp(28px, 4vw, 40px)', fontWeight: 700, color: C.text, marginBottom: 16,
+  textAlign: 'center', lineHeight: 1.3,
+});
+const sectionSub: React.CSSProperties = { fontSize: 17, color: C.muted, textAlign: 'center', maxWidth: 640, margin: '0 auto 56px', lineHeight: 1.7 };
+const goldBtn: React.CSSProperties = {
+  background: GOLD_GRAD, color: '#fff', border: 'none', borderRadius: 10, padding: '14px 32px',
+  fontSize: 16, fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s', display: 'inline-flex', alignItems: 'center', gap: 8,
+};
+const outlineBtn: React.CSSProperties = {
+  background: 'transparent', color: C.gold, border: `2px solid ${C.gold}`, borderRadius: 10, padding: '12px 28px',
+  fontSize: 16, fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s', display: 'inline-flex', alignItems: 'center', gap: 8,
+};
+const cardStyle: React.CSSProperties = {
+  background: C.card, borderRadius: 16, border: `1px solid ${C.border}`, padding: 32,
+  boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03)', transition: 'all 0.25s',
+};
 
-// ─── Main component ───────────────────────────────────────────────────────────
+// ─── Component ────────────────────────────────────────────────────────────────
 export default function HomePage() {
   const navigate = useNavigate();
-  const [mobileOpen, setMobileOpen]   = useState(false);
-  const [scrolled,   setScrolled]     = useState(false);
-  const [faqOpen,    setFaqOpen]      = useState<number | null>(null);
+  const [lang, setLang] = useState<Lang>('ar');
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [form, setForm] = useState({ name: '', email: '', phone: '', company: '', message: '' });
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [formError, setFormError] = useState('');
-  const [lang, setLang] = useState<'ar' | 'en'>('ar');
+  const t = T[lang];
 
-  const toggleLang = () => setLang(l => l === 'ar' ? 'en' : 'ar');
-
-  // Page title
   useEffect(() => {
-    document.title = lang === 'ar'
-      ? 'سيندا — منصة إدارة تقييمات جوجل بالذكاء الاصطناعي'
-      : 'SENDA — AI-Powered Google Reviews Management';
+    document.title = lang === 'ar' ? 'سيندا — إدارة تقييمات جوجل بذكاء اصطناعي' : 'SENDA — AI Google Review Management';
+    document.documentElement.dir = t.dir;
+    document.documentElement.lang = lang;
   }, [lang]);
 
-  // Navbar background on scroll
   useEffect(() => {
-    const fn = () => setScrolled(window.scrollY > 24);
-    window.addEventListener('scroll', fn, { passive: true });
-    return () => window.removeEventListener('scroll', fn);
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   const scrollTo = (id: string) => {
@@ -408,660 +314,360 @@ export default function HomePage() {
     } catch (err) {
       console.error('[Contact]', err);
       setStatus('error');
-      setFormError(T[lang].contactError);
+      setFormError(t.contactError);
     }
   };
 
-  // ── Input style helper ──
-  const inputStyle: React.CSSProperties = {
-    width: '100%', background: C.card, border: `1px solid ${C.border}`,
-    borderRadius: 10, padding: '11px 14px', color: C.text, fontSize: 14,
-    outline: 'none', boxSizing: 'border-box',
+  const dir = t.dir;
+  const isRtl = lang === 'ar';
+
+  // ─── Stars helper ───────────────────────────────────────────────────────────
+  const Stars = ({ count }: { count: number }) => (
+    <span style={{ display: 'inline-flex', gap: 2 }}>
+      {Array.from({ length: count }).map((_, i) => (
+        <Star key={i} size={14} fill={C.gold} color={C.gold} />
+      ))}
+    </span>
+  );
+
+  // ─── Check / Dash for comparison table ──────────────────────────────────────
+  const CellVal = ({ v }: { v: string }) => {
+    if (v === 'check') return <CheckCircle2 size={18} color={C.greenCheck} />;
+    if (v === '--') return <span style={{ color: C.border, fontSize: 18 }}>--</span>;
+    return <span style={{ fontSize: 14, fontWeight: 500, color: C.text }}>{v}</span>;
   };
-  const inputFocus = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) =>
-    (e.target.style.borderColor = C.cyan);
-  const inputBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) =>
-    (e.target.style.borderColor = C.border);
 
   return (
-    <div dir={lang === 'ar' ? 'rtl' : 'ltr'} style={{ background: C.bg, color: C.text, minHeight: '100vh', overflowX: 'hidden' }}>
+    <div style={{ direction: dir, fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', background: C.bg, color: C.text, minHeight: '100vh', overflowX: 'hidden' }}>
 
-      {/* ══════════════════════════════════════════════════════════
-          MAIN NAVBAR (sticky)
-      ══════════════════════════════════════════════════════════ */}
-      <header style={{
-        position: 'sticky', top: 0, zIndex: 50,
-        background: scrolled ? 'rgba(15,17,23,0.96)' : 'rgba(15,17,23,0.8)',
-        backdropFilter: 'blur(18px)',
-        borderBottom: `1px solid ${scrolled ? C.border : 'transparent'}`,
-        transition: 'all 0.25s ease',
+      {/* ═══════════════════ NAVBAR ═══════════════════ */}
+      <nav style={{
+        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1000,
+        background: scrolled ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.8)',
+        backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+        borderBottom: scrolled ? `1px solid ${C.border}` : '1px solid transparent',
+        transition: 'all 0.3s',
       }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
-          {/* Logo — PNG image */}
-          <button onClick={() => scrollTo('hero')} className="flex items-center gap-2 flex-shrink-0" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
-            <img src="/senda-logo.png" alt="SENDA" style={{ height: 32, width: 'auto' }} />
-          </button>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 72 }}>
+          {/* Logo */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }} onClick={() => scrollTo('hero')}>
+            <img src="/senda-logo.png" alt="SENDA" style={{ height: 40, borderRadius: 8 }} />
+            <span style={{ fontSize: 20, fontWeight: 700, color: C.text, letterSpacing: '-0.3px' }}>SENDA</span>
+          </div>
 
           {/* Desktop nav */}
-          <nav className="hidden lg:flex items-center gap-5">
-            {NAV.map((n, ni) => (
-              <button
-                key={n.id ?? n.href}
-                onClick={() => n.href ? navigate(n.href) : scrollTo(n.id!)}
-                style={{ color: C.muted, fontSize: 14, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 400 }}
-                onMouseOver={e => (e.currentTarget.style.color = C.text)}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 32 }} className="nav-desktop">
+            {t.nav.map((label: string, i: number) => (
+              <button key={i} onClick={() => scrollTo(t.navIds[i])} style={{
+                background: 'none', border: 'none', color: C.muted, fontSize: 15, fontWeight: 500,
+                cursor: 'pointer', padding: '4px 0', transition: 'color 0.2s',
+              }}
+                onMouseOver={e => (e.currentTarget.style.color = C.gold)}
                 onMouseOut={e => (e.currentTarget.style.color = C.muted)}
-              >{T[lang].nav[ni]}</button>
+              >{label}</button>
             ))}
-          </nav>
+          </div>
 
           {/* CTAs */}
-          <div className="flex items-center gap-2 flex-shrink-0">
-            {/* Language toggle */}
-            <button
-              onClick={toggleLang}
-              style={{ color: C.muted, fontSize: 12, padding: '6px 10px', border: `1px solid ${C.border}`, borderRadius: 8, background: 'none', cursor: 'pointer', letterSpacing: '0.04em' }}
-              className="hidden md:block"
-              onMouseOver={e => { e.currentTarget.style.color = C.text; e.currentTarget.style.borderColor = '#374151'; }}
-              onMouseOut={e => { e.currentTarget.style.color = C.muted; e.currentTarget.style.borderColor = C.border; }}
-            >{lang === 'ar' ? 'EN' : 'ع'}</button>
-            <button
-              onClick={() => navigate('/login')}
-              style={{ color: C.muted, fontSize: 13, padding: '8px 14px', border: `1px solid ${C.border}`, borderRadius: 10, background: 'none', cursor: 'pointer' }}
-              className="hidden sm:block"
-              onMouseOver={e => { e.currentTarget.style.borderColor = '#374151'; e.currentTarget.style.color = C.text; }}
-              onMouseOut={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.muted; }}
-            >{T[lang].loginBtn}</button>
-            <button
-              onClick={() => navigate('/register')}
-              style={{ background: GRAD, color: 'white', fontSize: 13, padding: '8px 18px', borderRadius: 10, border: 'none', cursor: 'pointer', boxShadow: '0 4px 16px rgba(6,182,212,0.25)', fontWeight: 500 }}
-            >{T[lang].registerBtn}</button>
-            <button
-              onClick={() => setMobileOpen(v => !v)}
-              style={{ color: C.muted, background: 'none', border: 'none', cursor: 'pointer', padding: 6 }}
-              className="lg:hidden"
-            >
-              {mobileOpen ? <X size={20} /> : <Menu size={20} />}
-            </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }} className="nav-ctas">
+            <button onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')} style={{
+              background: 'none', border: `1px solid ${C.border}`, borderRadius: 8, padding: '6px 14px',
+              fontSize: 13, fontWeight: 600, color: C.muted, cursor: 'pointer',
+            }}>{t.langToggle}</button>
+            <button onClick={() => navigate('/login')} style={{
+              background: 'none', border: 'none', color: C.text, fontSize: 15, fontWeight: 500, cursor: 'pointer', padding: '8px 16px',
+            }}>{t.loginBtn}</button>
+            <button onClick={() => navigate('/login')} style={{
+              ...goldBtn, padding: '10px 22px', fontSize: 14, borderRadius: 8,
+            }}>{t.ctaBtn}</button>
           </div>
+
+          {/* Mobile hamburger */}
+          <button onClick={() => setMobileOpen(!mobileOpen)} style={{
+            display: 'none', background: 'none', border: 'none', color: C.text, cursor: 'pointer', padding: 8,
+          }} className="nav-mobile-toggle">
+            {mobileOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
         </div>
 
         {/* Mobile menu */}
         {mobileOpen && (
-          <div style={{ background: C.bg, borderTop: `1px solid ${C.border}` }} className="lg:hidden">
-            <div style={{ padding: '12px 16px 16px' }}>
-              {NAV.map((n, ni) => (
-                <button
-                  key={n.id ?? n.href}
-                  onClick={() => n.href ? navigate(n.href) : scrollTo(n.id!)}
-                  style={{ display: 'block', width: '100%', textAlign: 'right', padding: '12px 16px', color: C.muted, fontSize: 14, background: 'none', border: 'none', cursor: 'pointer', borderRadius: 10 }}
-                  onMouseOver={e => { e.currentTarget.style.background = C.card; e.currentTarget.style.color = C.text; }}
-                  onMouseOut={e => { e.currentTarget.style.background = ''; e.currentTarget.style.color = C.muted; }}
-                >{T[lang].nav[ni]}</button>
-              ))}
-              <div className="flex gap-2 mt-3">
-                <button onClick={() => navigate('/login')} style={{ flex: 1, color: C.muted, fontSize: 14, padding: '11px', border: `1px solid ${C.border}`, borderRadius: 10, background: 'none', cursor: 'pointer' }}>{T[lang].loginBtn}</button>
-                <button onClick={() => navigate('/register')} style={{ flex: 1, background: GRAD, color: 'white', fontSize: 14, padding: '11px', borderRadius: 10, border: 'none', cursor: 'pointer' }}>{T[lang].registerBtn}</button>
-              </div>
+          <div style={{
+            position: 'absolute', top: 72, left: 0, right: 0, background: C.card,
+            borderBottom: `1px solid ${C.border}`, padding: '16px 24px', boxShadow: '0 8px 24px rgba(0,0,0,0.08)',
+          }}>
+            {t.nav.map((label: string, i: number) => (
+              <button key={i} onClick={() => scrollTo(t.navIds[i])} style={{
+                display: 'block', width: '100%', textAlign: isRtl ? 'right' : 'left', background: 'none',
+                border: 'none', color: C.text, fontSize: 16, fontWeight: 500, padding: '12px 0',
+                borderBottom: `1px solid ${C.border}`, cursor: 'pointer',
+              }}>{label}</button>
+            ))}
+            <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
+              <button onClick={() => { setLang(lang === 'ar' ? 'en' : 'ar'); setMobileOpen(false); }} style={{
+                background: 'none', border: `1px solid ${C.border}`, borderRadius: 8, padding: '8px 16px',
+                fontSize: 14, color: C.muted, cursor: 'pointer', fontWeight: 600,
+              }}>{t.langToggle}</button>
+              <button onClick={() => { navigate('/login'); setMobileOpen(false); }} style={{
+                ...goldBtn, padding: '10px 20px', fontSize: 14, borderRadius: 8, flex: 1, justifyContent: 'center',
+              }}>{t.ctaBtn}</button>
             </div>
           </div>
         )}
-      </header>
+      </nav>
 
-      {/* ══════════════════════════════════════════════════════════
-          HERO — 2-column split: text (right) + AI visual (left)
-      ══════════════════════════════════════════════════════════ */}
-      <section id="hero" style={{ padding: '56px 0 72px', position: 'relative', overflow: 'hidden' }}>
-        {/* Ambient glow */}
-        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
-          <div style={{ position: 'absolute', top: '0%', right: '15%', width: 600, height: 600, background: 'radial-gradient(ellipse, rgba(6,182,212,0.08) 0%, transparent 60%)' }} />
-          <div style={{ position: 'absolute', top: '10%', left: '5%', width: 500, height: 500, background: 'radial-gradient(ellipse, rgba(139,92,246,0.06) 0%, transparent 60%)' }} />
-        </div>
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ position: 'relative' }}>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
-
-            {/* ── TEXT column (right in RTL) ── */}
-            <div>
-              {/* Badge */}
-              <div className="inline-flex items-center gap-2" style={{ background: 'rgba(6,182,212,0.07)', border: '1px solid rgba(6,182,212,0.18)', borderRadius: 30, padding: '5px 16px', marginBottom: 22 }}>
-                <div style={{ width: 6, height: 6, borderRadius: '50%', background: C.cyan }} className="animate-pulse" />
-                <span style={{ color: C.cyan, fontSize: 12 }}>{T[lang].heroBadge}</span>
-              </div>
-
-              <h1 style={{ fontSize: 'clamp(26px, 3.8vw, 52px)', fontWeight: 600, lineHeight: 1.3, marginBottom: 18, color: C.text, letterSpacing: '-0.01em' }}>
-                {T[lang].heroH1a}{' '}
-                <span style={{ background: GRAD, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-                  {T[lang].heroH1b}
-                </span>
-                {' '}{T[lang].heroH1c}
-              </h1>
-
-              <p style={{ fontSize: 'clamp(14px, 1.5vw, 17px)', color: C.muted, marginBottom: 32, lineHeight: 1.8, fontWeight: 400 }}>
-                {T[lang].heroDesc}
-              </p>
-
-              {/* CTA — single primary action */}
-              <div className="flex items-center gap-3 flex-wrap">
-                <button
-                  onClick={() => navigate('/register')}
-                  style={{ background: GRAD, color: 'white', fontSize: 15, padding: '13px 32px', borderRadius: 11, border: 'none', cursor: 'pointer', boxShadow: '0 8px 28px rgba(6,182,212,0.28)', fontWeight: 500 }}
-                >{T[lang].heroCtaStart}</button>
-                <button
-                  onClick={() => scrollTo('features')}
-                  style={{ background: 'transparent', color: C.muted, fontSize: 14, padding: '13px 20px', borderRadius: 11, border: `1px solid ${C.border}`, cursor: 'pointer' }}
-                  onMouseOver={e => { e.currentTarget.style.borderColor = '#374151'; e.currentTarget.style.color = C.text; }}
-                  onMouseOut={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.muted; }}
-                >{lang === 'ar' ? 'اكتشف المميزات' : 'Explore Features'}</button>
-              </div>
+      {/* ═══════════════════ HERO ═══════════════════ */}
+      <section id="hero" style={{ paddingTop: 140, paddingBottom: 80, background: `linear-gradient(180deg, #FFFFFF 0%, ${C.bg} 100%)` }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 60 }}>
+          {/* Text side */}
+          <div style={{ flex: '1 1 480px', minWidth: 320 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 32 }}>
+              <img src="/senda-logo.png" alt="SENDA" style={{ height: 56, borderRadius: 12 }} />
             </div>
+            <h1 style={{
+              fontSize: 'clamp(32px, 5vw, 52px)', fontWeight: 800, color: C.text, lineHeight: 1.2, marginBottom: 20, letterSpacing: '-0.5px',
+            }}>
+              {t.heroH1}
+            </h1>
+            <p style={{ fontSize: 18, color: C.muted, lineHeight: 1.7, marginBottom: 36, maxWidth: 520 }}>
+              {t.heroSub}
+            </p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
+              <button onClick={() => navigate('/login')} style={goldBtn}
+                onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(184,150,90,0.35)'; }}
+                onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
+              >
+                {t.heroCtaPrimary}
+                {isRtl ? <ArrowLeft size={18} /> : <ArrowRight size={18} />}
+              </button>
+              <button onClick={() => scrollTo('features')} style={outlineBtn}
+                onMouseOver={e => { e.currentTarget.style.background = C.gold; e.currentTarget.style.color = '#fff'; }}
+                onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = C.gold; }}
+              >
+                {t.heroCtaSecondary}
+              </button>
+            </div>
+          </div>
 
-            {/* ── VISUAL column — premium 3-step product scene ── */}
-            <div style={{ position: 'relative' }}>
-              {/* Glow */}
-              <div style={{ position: 'absolute', inset: -40, background: 'radial-gradient(ellipse at 55% 40%, rgba(6,182,212,0.14) 0%, rgba(139,92,246,0.09) 45%, transparent 68%)', pointerEvents: 'none' }} />
-
-              <div style={{ position: 'relative', borderRadius: 22, overflow: 'hidden', boxShadow: '0 48px 120px rgba(0,0,0,0.65), 0 0 0 1px rgba(255,255,255,0.06)', background: C.card }}>
-
-                {/* ── Window bar ── */}
-                <div style={{ padding: '12px 16px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: C.card2 }}>
+          {/* Dashboard mockup */}
+          <div style={{ flex: '1 1 480px', minWidth: 320 }}>
+            <div style={{
+              background: C.card, borderRadius: 20, border: `1px solid ${C.border}`,
+              boxShadow: '0 4px 24px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04)',
+              overflow: 'hidden',
+            }}>
+              {/* Title bar */}
+              <div style={{
+                padding: '14px 20px', borderBottom: `1px solid ${C.border}`,
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                background: '#FAFBFC',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <div style={{ display: 'flex', gap: 6 }}>
-                    {['#EF4444','#F59E0B','#10B981'].map((c,i) => <div key={i} style={{ width: 10, height: 10, borderRadius: '50%', background: c, opacity: 0.7 }} />)}
+                    <span style={{ width: 12, height: 12, borderRadius: '50%', background: '#EF4444' }} />
+                    <span style={{ width: 12, height: 12, borderRadius: '50%', background: '#F59E0B' }} />
+                    <span style={{ width: 12, height: 12, borderRadius: '50%', background: '#22C55E' }} />
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                    <img src="/senda-logo.png" alt="SENDA" style={{ height: 18, width: 'auto', opacity: 0.85 }} />
-                    <span style={{ fontSize: 11, color: C.muted }}>Review Assistant</span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: C.green }} className="animate-pulse" />
-                    <span style={{ fontSize: 10, color: C.green }}>{lang === 'ar' ? 'نشط' : 'Live'}</span>
-                  </div>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: C.muted, marginInlineStart: 8 }}>{t.dashPreviewTitle}</span>
                 </div>
+                <LayoutDashboard size={16} color={C.gold} />
+              </div>
 
-                {/* ── Step 1: Google review ── */}
-                <div style={{ padding: '16px 18px', borderBottom: `1px solid ${C.border}` }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
-                    <div style={{ width: 18, height: 18, borderRadius: 4, background: 'rgba(6,182,212,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <span style={{ fontSize: 9, fontWeight: 700, color: C.cyan }}>01</span>
-                    </div>
-                    <span style={{ fontSize: 10, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{lang === 'ar' ? 'تقييم جوجل وارد' : 'Incoming Google Review'}</span>
-                  </div>
+              {/* Tabs */}
+              <div style={{ display: 'flex', borderBottom: `1px solid ${C.border}` }}>
+                {t.dashTabs.map((tab: string, i: number) => (
+                  <div key={i} style={{
+                    flex: 1, textAlign: 'center', padding: '10px 0', fontSize: 13, fontWeight: 600,
+                    color: i === 0 ? C.gold : C.muted,
+                    borderBottom: i === 0 ? `2px solid ${C.gold}` : '2px solid transparent',
+                  }}>{tab}</div>
+                ))}
+              </div>
 
-                  {/* Google review card — white inner card */}
-                  <div style={{ background: '#ffffff', borderRadius: 12, padding: '12px 14px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                      {/* Reviewer avatar */}
-                      <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'linear-gradient(135deg,#4285F4,#34A853)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 13, fontWeight: 600, flexShrink: 0 }}>أ</div>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                          <span style={{ fontSize: 12, fontWeight: 600, color: '#111827' }}>{T[lang].sec1ReviewName}</span>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                            <svg width="14" height="14" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-                            <span style={{ fontSize: 9, color: '#6B7280' }}>{T[lang].googleTime}</span>
-                          </div>
-                        </div>
-                        <div style={{ fontSize: 12, color: '#F59E0B', marginTop: 1 }}>★★★★☆</div>
+              {/* Review rows */}
+              <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {t.dashReviews.map((r: any, i: number) => (
+                  <div key={i} style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    padding: '12px 14px', borderRadius: 10, background: C.bg, border: `1px solid ${C.border}`,
+                  }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <div style={{
+                          width: 28, height: 28, borderRadius: '50%', background: GOLD_GRAD,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          color: '#fff', fontSize: 12, fontWeight: 700,
+                        }}>{r.name.charAt(0)}</div>
+                        <span style={{ fontSize: 14, fontWeight: 600, color: C.text }}>{r.name}</span>
+                        <Stars count={r.stars} />
                       </div>
+                      <span style={{ fontSize: 13, color: C.muted, paddingInlineStart: 36 }}>{r.text}</span>
                     </div>
-                    <p style={{ fontSize: 12, color: '#374151', lineHeight: 1.65, margin: 0 }}>
-                      {lang === 'ar'
-                        ? '«الخدمة ممتازة والفريق محترف جداً، لكن وقت الانتظار كان أطول من المعتاد بعض الشيء»'
-                        : '«Service was excellent and the team very professional, though the wait time was a bit longer than usual»'}
-                    </p>
+                    <span style={{
+                      fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 6,
+                      background: i !== 1 ? 'rgba(184,150,90,0.1)' : 'rgba(107,114,128,0.1)',
+                      color: i !== 1 ? C.gold : C.muted,
+                      whiteSpace: 'nowrap',
+                    }}>{r.status}</span>
                   </div>
-                </div>
-
-                {/* ── Step 2: AI analysis ── */}
-                <div style={{ padding: '14px 18px', borderBottom: `1px solid ${C.border}`, background: 'rgba(6,182,212,0.03)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
-                    <div style={{ width: 18, height: 18, borderRadius: 4, background: 'rgba(139,92,246,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <span style={{ fontSize: 9, fontWeight: 700, color: C.purple }}>02</span>
-                    </div>
-                    <span style={{ fontSize: 10, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{lang === 'ar' ? 'سيندا تحلل وتفهم' : 'SENDA Analyzes'}</span>
-                    <div style={{ marginRight: 'auto', display: 'flex', alignItems: 'center', gap: 4 }}>
-                      <div style={{ width: 56, height: 3, background: C.border, borderRadius: 2, overflow: 'hidden' }}>
-                        <div style={{ height: '100%', width: '100%', background: GRAD }} />
-                      </div>
-                      <span style={{ fontSize: 9, color: C.green }}>✓</span>
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: 10, padding: '3px 10px', borderRadius: 20, background: 'rgba(16,185,129,0.1)', color: C.green, border: '1px solid rgba(16,185,129,0.2)' }}>
-                      {lang === 'ar' ? '✓ إيجابي — الخدمة والفريق' : '✓ Positive — service & team'}
-                    </span>
-                    <span style={{ fontSize: 10, padding: '3px 10px', borderRadius: 20, background: 'rgba(245,158,11,0.1)', color: C.amber, border: '1px solid rgba(245,158,11,0.2)' }}>
-                      {lang === 'ar' ? '⚠ ملاحظة — وقت الانتظار' : '⚠ Note — wait time'}
-                    </span>
-                    <span style={{ fontSize: 10, padding: '3px 10px', borderRadius: 20, background: 'rgba(99,102,241,0.1)', color: C.indigo, border: '1px solid rgba(99,102,241,0.2)' }}>
-                      {lang === 'ar' ? '★ 4/5 — تقييم جيد' : '★ 4/5 — good rating'}
-                    </span>
-                  </div>
-                </div>
-
-                {/* ── Step 3: Professional reply ── */}
-                <div style={{ padding: '14px 18px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
-                    <div style={{ width: 18, height: 18, borderRadius: 4, background: 'rgba(6,182,212,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <span style={{ fontSize: 9, fontWeight: 700, color: C.cyan }}>03</span>
-                    </div>
-                    <span style={{ fontSize: 10, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{lang === 'ar' ? 'رد احترافي جاهز' : 'Professional Reply Ready'}</span>
-                    <span style={{ fontSize: 9, marginRight: 'auto', padding: '2px 8px', borderRadius: 10, background: 'rgba(16,185,129,0.1)', color: C.green, border: '1px solid rgba(16,185,129,0.18)' }}>AI</span>
-                  </div>
-                  <p style={{ fontSize: 12, color: C.text, lineHeight: 1.75, margin: '0 0 14px', padding: '12px 14px', background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, borderRight: `3px solid ${C.cyan}` }}>
-                    {T[lang].sec1AiReply}
-                  </p>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <button style={{ flex: 1, background: GRAD, color: 'white', border: 'none', borderRadius: 10, padding: '10px 0', fontSize: 12, cursor: 'pointer', fontWeight: 600, letterSpacing: '0.01em', boxShadow: '0 4px 16px rgba(6,182,212,0.25)' }}>
-                      {lang === 'ar' ? '✓ نشر الرد على جوجل' : '✓ Post to Google'}
-                    </button>
-                    <button style={{ background: C.card2, color: C.muted, border: `1px solid ${C.border}`, borderRadius: 10, padding: '10px 16px', fontSize: 12, cursor: 'pointer' }}>
-                      {lang === 'ar' ? 'تعديل' : 'Edit'}
-                    </button>
-                  </div>
-                </div>
-
+                ))}
               </div>
             </div>
-
           </div>
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════════════════════
-          BENEFITS STRIP
-      ══════════════════════════════════════════════════════════ */}
-      <div style={{ background: C.card, borderTop: `1px solid ${C.border}`, borderBottom: `1px solid ${C.border}`, padding: '22px 0' }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-            {[
-              { icon: <Brain size={17} />,     color: C.cyan   },
-              { icon: <QrCode size={17} />,    color: C.purple },
-              { icon: <BarChart3 size={17} />, color: C.amber  },
-              { icon: <Building2 size={17} />, color: C.green  },
-              { icon: <Users size={17} />,     color: C.pink   },
-              { icon: <Zap size={17} />,       color: C.orange },
-            ].map((b, i) => (
-              <div key={i} className="flex items-center justify-center gap-2">
-                <span style={{ color: b.color }}>{b.icon}</span>
-                <span style={{ fontSize: 13, color: C.muted }}>{T[lang].benefitLabels[i]}</span>
+      {/* ═══════════════════ FEATURES ═══════════════════ */}
+      <section id="features" style={{ background: C.bg }}>
+        <div style={sectionPadding}>
+          <p style={{ textAlign: 'center', fontSize: 14, fontWeight: 600, color: C.gold, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 12 }}>
+            {t.featuresLabel}
+          </p>
+          <h2 style={sectionTitle(lang)}>{t.featuresH2}</h2>
+          <div style={{ height: 24 }} />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 24 }}>
+            {t.featureCards.map((f: any, i: number) => {
+              const Icon = IconMap[f.icon] || Sparkles;
+              return (
+                <div key={i} style={{ ...cardStyle, cursor: 'default' }}
+                  onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(0,0,0,0.08)'; }}
+                  onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = cardStyle.boxShadow as string; }}
+                >
+                  <div style={{
+                    width: 48, height: 48, borderRadius: 12, background: 'rgba(184,150,90,0.1)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20,
+                  }}>
+                    <Icon size={24} color={C.gold} />
+                  </div>
+                  <h3 style={{ fontSize: 18, fontWeight: 700, color: C.text, marginBottom: 10 }}>{f.title}</h3>
+                  <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.7, margin: 0 }}>{f.desc}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════ BENEFITS ═══════════════════ */}
+      <section style={{ background: '#FFFFFF' }}>
+        <div style={sectionPadding}>
+          <p style={{ textAlign: 'center', fontSize: 14, fontWeight: 600, color: C.gold, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 12 }}>
+            {t.benefitsLabel}
+          </p>
+          <h2 style={sectionTitle(lang)}>{t.benefitsH2}</h2>
+          <div style={{ height: 24 }} />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 32 }}>
+            {t.benefits.map((b: any, i: number) => {
+              const Icon = IconMap[b.icon] || Sparkles;
+              return (
+                <div key={i} style={{ textAlign: 'center', padding: '24px 16px' }}>
+                  <div style={{
+                    width: 64, height: 64, borderRadius: '50%', background: GOLD_GRAD,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px',
+                    boxShadow: '0 4px 16px rgba(184,150,90,0.3)',
+                  }}>
+                    <Icon size={28} color="#fff" />
+                  </div>
+                  <h3 style={{ fontSize: 18, fontWeight: 700, color: C.text, marginBottom: 10 }}>{b.title}</h3>
+                  <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.7, margin: 0 }}>{b.desc}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════ HOW IT WORKS ═══════════════════ */}
+      <section id="how-it-works" style={{ background: C.bg }}>
+        <div style={sectionPadding}>
+          <p style={{ textAlign: 'center', fontSize: 14, fontWeight: 600, color: C.gold, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 12 }}>
+            {t.howLabel}
+          </p>
+          <h2 style={sectionTitle(lang)}>{t.howH2}</h2>
+          <div style={{ height: 24 }} />
+          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 40 }}>
+            {t.howSteps.map((s: any, i: number) => (
+              <div key={i} style={{ flex: '1 1 280px', maxWidth: 340, textAlign: 'center' }}>
+                <div style={{
+                  width: 64, height: 64, borderRadius: '50%', background: i === 1 ? GOLD_GRAD : C.card,
+                  border: i !== 1 ? `2px solid ${C.gold}` : 'none',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px',
+                  fontSize: 24, fontWeight: 800, color: i === 1 ? '#fff' : C.gold,
+                  boxShadow: i === 1 ? '0 4px 16px rgba(184,150,90,0.3)' : '0 2px 8px rgba(0,0,0,0.04)',
+                }}>
+                  {s.num}
+                </div>
+                <h3 style={{ fontSize: 18, fontWeight: 700, color: C.text, marginBottom: 10 }}>{s.title}</h3>
+                <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.7, margin: 0 }}>{s.desc}</p>
+                {i < t.howSteps.length - 1 && (
+                  <div style={{ display: 'none' }} className="step-connector" />
+                )}
               </div>
             ))}
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* ══════════════════════════════════════════════════════════
-          CORE VALUES (8 cards)
-      ══════════════════════════════════════════════════════════ */}
-      <section id="features" style={{ padding: '96px 0' }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center" style={{ marginBottom: 60 }}>
-            <SectionLabel>{T[lang].featuresLabel}</SectionLabel>
-            <h2 style={{ fontSize: 'clamp(24px, 3.5vw, 42px)', fontWeight: 600, color: C.text, marginBottom: 14, letterSpacing: '-0.01em' }}>
-              {T[lang].featuresH2}
-            </h2>
-            <p style={{ fontSize: 17, color: C.muted, maxWidth: 520, margin: '0 auto', fontWeight: 400, lineHeight: 1.75 }}>
-              {T[lang].featuresDesc}
-            </p>
-          </div>
+      {/* ═══════════════════ PRICING ═══════════════════ */}
+      <section id="pricing" style={{ background: '#FFFFFF' }}>
+        <div style={sectionPadding}>
+          <p style={{ textAlign: 'center', fontSize: 14, fontWeight: 600, color: C.gold, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 12 }}>
+            {t.pricingLabel}
+          </p>
+          <h2 style={sectionTitle(lang)}>{t.pricingH2}</h2>
+          <p style={sectionSub}>{t.pricingDesc}</p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {[
-              { icon: <Brain size={22} />,     color: C.cyan   },
-              { icon: <Zap size={22} />,       color: C.amber  },
-              { icon: <QrCode size={22} />,    color: C.purple },
-              { icon: <BarChart3 size={22} />, color: C.green  },
-              { icon: <Building2 size={22} />, color: C.pink   },
-              { icon: <FileText size={22} />,  color: C.orange },
-              { icon: <Users size={22} />,     color: C.cyan   },
-              { icon: <Shield size={22} />,    color: C.indigo },
-            ].map((c, i) => {
-              const card = T[lang].featureCards[i];
-              const bgRgb = c.color.startsWith('#06') ? '6,182,212' : c.color.startsWith('#F5') ? '245,158,11' : c.color.startsWith('#8B') ? '139,92,246' : c.color.startsWith('#10') ? '16,185,129' : c.color.startsWith('#EC') ? '236,72,153' : c.color.startsWith('#F9') ? '249,115,22' : c.color.startsWith('#63') ? '99,102,241' : '6,182,212';
+          {/* Plan cards */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 24, marginBottom: 80 }}>
+            {t.plans.map((plan: any, i: number) => {
+              const isPopular = plan.popular;
               return (
-                <div
-                  key={i}
-                  style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 18, padding: 24, transition: 'all 0.2s ease', cursor: 'default' }}
-                  onMouseOver={e => { const el = e.currentTarget; el.style.borderColor = c.color + '50'; el.style.transform = 'translateY(-3px)'; el.style.boxShadow = `0 12px 40px rgba(${bgRgb},0.12)`; }}
-                  onMouseOut={e => { const el = e.currentTarget; el.style.borderColor = C.border; el.style.transform = ''; el.style.boxShadow = ''; }}
+                <div key={i} style={{
+                  ...cardStyle,
+                  border: isPopular ? `2px solid ${C.gold}` : `1px solid ${C.border}`,
+                  position: 'relative',
+                  transform: isPopular ? 'scale(1.03)' : 'none',
+                  boxShadow: isPopular ? '0 8px 32px rgba(184,150,90,0.15)' : cardStyle.boxShadow as string,
+                }}
+                  onMouseOver={e => { e.currentTarget.style.transform = isPopular ? 'scale(1.05)' : 'translateY(-4px)'; }}
+                  onMouseOut={e => { e.currentTarget.style.transform = isPopular ? 'scale(1.03)' : 'none'; }}
                 >
-                  <div style={{ width: 46, height: 46, borderRadius: 13, background: `rgba(${bgRgb},0.1)`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: c.color, marginBottom: 16 }}>
-                    {c.icon}
-                  </div>
-                  <h3 style={{ fontSize: 15, fontWeight: 600, color: C.text, marginBottom: 8 }}>{card.title}</h3>
-                  <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.65, fontWeight: 400, margin: 0 }}>{card.desc}</p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════════════════════════
-          MARKETING SECTIONS (4 alternating)
-      ══════════════════════════════════════════════════════════ */}
-      <section id="how-it-works" style={{ padding: '20px 0 100px' }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ display: 'flex', flexDirection: 'column', gap: 96 }}>
-
-          {/* ── 1: AI replies ── */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <div>
-              <SectionLabel color={C.cyan}>{T[lang].sec1Label}</SectionLabel>
-              <h2 style={{ fontSize: 'clamp(22px, 3vw, 36px)', fontWeight: 600, color: C.text, marginBottom: 16, lineHeight: 1.3, letterSpacing: '-0.01em' }}>
-                {T[lang].sec1H2}
-              </h2>
-              <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.8, marginBottom: 24, fontWeight: 400 }}>
-                {T[lang].sec1Desc}
-              </p>
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {T[lang].sec1Items.map((t, i) => (
-                  <CheckItem key={i} color={C.cyan}>{t}</CheckItem>
-                ))}
-              </ul>
-            </div>
-            <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 22, padding: 24 }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                <div style={{ background: C.bg, borderRadius: 12, padding: 16 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                    <span style={{ fontSize: 13, color: C.amber }}>★★★★★</span>
-                    <span style={{ fontSize: 11, color: C.muted }}>{T[lang].sec1ReviewName}</span>
-                  </div>
-                  <p style={{ fontSize: 13, color: C.text, margin: 0 }}>{T[lang].sec1ReviewText}</p>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0' }}>
-                  <div style={{ width: 24, height: 24, borderRadius: 7, background: GRAD, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Brain size={12} style={{ color: 'white' }} />
-                  </div>
-                  <span style={{ fontSize: 11, color: C.cyan }}>{T[lang].sec1AiLabel}</span>
-                </div>
-                <div style={{ background: 'rgba(6,182,212,0.05)', border: '1px solid rgba(6,182,212,0.15)', borderRadius: 12, padding: 16 }}>
-                  <p style={{ fontSize: 13, color: C.text, lineHeight: 1.65, margin: '0 0 12px' }}>
-                    {T[lang].sec1AiReply}
-                  </p>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <button style={{ flex: 1, background: GRAD, color: 'white', fontSize: 12, padding: '8px', borderRadius: 9, border: 'none', cursor: 'pointer', fontWeight: 500 }}>{T[lang].sec1PostReply}</button>
-                    <button style={{ background: C.bg, border: `1px solid ${C.border}`, color: C.muted, fontSize: 12, padding: '8px 14px', borderRadius: 9, cursor: 'pointer' }}>{T[lang].sec1Edit}</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* ── 2: QR Code ── */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <div className="lg:order-2">
-              <SectionLabel color={C.purple}>{T[lang].sec2Label}</SectionLabel>
-              <h2 style={{ fontSize: 'clamp(22px, 3vw, 36px)', fontWeight: 600, color: C.text, marginBottom: 16, lineHeight: 1.3, letterSpacing: '-0.01em' }}>
-                {T[lang].sec2H2}
-              </h2>
-              <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.8, marginBottom: 24, fontWeight: 400 }}>
-                {T[lang].sec2Desc}
-              </p>
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {T[lang].sec2Items.map((t, i) => (
-                  <CheckItem key={i} color={C.purple}>{t}</CheckItem>
-                ))}
-              </ul>
-            </div>
-            <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 22, padding: 32, display: 'flex', flexDirection: 'column', alignItems: 'center' }} className="lg:order-1">
-              {/* QR visual */}
-              <div style={{ width: 156, height: 156, background: 'white', borderRadius: 16, padding: 14, marginBottom: 20, display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gap: 3 }}>
-                {QR_GRID.map((v, i) => (
-                  <div key={i} style={{ background: v ? '#1F2937' : 'transparent', borderRadius: 2 }} />
-                ))}
-              </div>
-              <p style={{ fontSize: 13, color: C.muted, marginBottom: 20, textAlign: 'center' }}>{T[lang].sec2ScanText}</p>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, width: '100%' }}>
-                {T[lang].sec2Branches.map((b, i) => (
-                  <div key={i} style={{ background: C.bg, borderRadius: 11, padding: 12, textAlign: 'center' }}>
-                    <div style={{ fontSize: 20, fontWeight: 600, color: C.purple }}>{b.count}</div>
-                    <div style={{ fontSize: 10, color: C.muted }}>{b.name}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* ── 3: Analytics ── */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <div>
-              <SectionLabel color={C.green}>{T[lang].sec3Label}</SectionLabel>
-              <h2 style={{ fontSize: 'clamp(22px, 3vw, 36px)', fontWeight: 600, color: C.text, marginBottom: 16, lineHeight: 1.3, letterSpacing: '-0.01em' }}>
-                {T[lang].sec3H2}
-              </h2>
-              <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.8, marginBottom: 24, fontWeight: 400 }}>
-                {T[lang].sec3Desc}
-              </p>
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {T[lang].sec3Items.map((t, i) => (
-                  <CheckItem key={i} color={C.green}>{t}</CheckItem>
-                ))}
-              </ul>
-            </div>
-            <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 22, padding: 24 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-                <span style={{ fontSize: 14, color: C.text, fontWeight: 500 }}>{T[lang].sec3ChartTitle}</span>
-                <span style={{ fontSize: 13, color: C.green }}>↑ 23%</span>
-              </div>
-              {T[lang].sec3Branches.map((b, i) => (
-                <div key={i} style={{ marginBottom: 14 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
-                    <span style={{ fontSize: 12, color: C.muted }}>{b.label}</span>
-                    <span style={{ fontSize: 12, color: C.text }}>{b.pct}%</span>
-                  </div>
-                  <div style={{ height: 7, background: C.bg, borderRadius: 4, overflow: 'hidden' }}>
-                    <div style={{ width: `${b.pct}%`, height: '100%', background: `linear-gradient(90deg, ${C.green}, ${C.cyan})`, borderRadius: 4 }} />
-                  </div>
-                </div>
-              ))}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 20 }}>
-                {[
-                  { value: '4.7', color: C.amber },
-                  { value: '91%', color: C.green },
-                ].map((s, i) => (
-                  <div key={i} style={{ background: C.bg, borderRadius: 12, padding: 14, textAlign: 'center' }}>
-                    <div style={{ fontSize: 26, fontWeight: 600, color: s.color }}>{s.value}</div>
-                    <div style={{ fontSize: 11, color: C.muted, marginTop: 2 }}>{T[lang].sec3StatLabels[i]}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* ── 4: Team ── */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <div className="lg:order-2">
-              <SectionLabel color={C.pink}>{T[lang].sec4Label}</SectionLabel>
-              <h2 style={{ fontSize: 'clamp(22px, 3vw, 36px)', fontWeight: 600, color: C.text, marginBottom: 16, lineHeight: 1.3, letterSpacing: '-0.01em' }}>
-                {T[lang].sec4H2}
-              </h2>
-              <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.8, marginBottom: 24, fontWeight: 400 }}>
-                {T[lang].sec4Desc}
-              </p>
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {T[lang].sec4Items.map((t, i) => (
-                  <CheckItem key={i} color={C.pink}>{t}</CheckItem>
-                ))}
-              </ul>
-            </div>
-            <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 22, padding: 24 }} className="lg:order-1">
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {T[lang].sec4Team.map((m, i) => {
-                  const colors = [C.cyan, C.purple, C.green, C.amber];
-                  const replies = [24, 31, 18, 12];
-                  const color = colors[i];
-                  return (
-                    <div key={i} style={{ background: C.bg, borderRadius: 12, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
-                      <div style={{ width: 36, height: 36, borderRadius: 10, background: color + '20', display: 'flex', alignItems: 'center', justifyContent: 'center', color: color, fontSize: 15, fontWeight: 600, flexShrink: 0 }}>
-                        {m.name[0]}
-                      </div>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: 13, fontWeight: 500, color: C.text }}>{m.name}</div>
-                        <div style={{ fontSize: 11, color: C.muted }}>{m.role}</div>
-                      </div>
-                      <div style={{ textAlign: 'center', flexShrink: 0 }}>
-                        <div style={{ fontSize: 18, fontWeight: 600, color: color }}>{replies[i]}</div>
-                        <div style={{ fontSize: 10, color: C.muted }}>{T[lang].sec4RepliesLabel}</div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════════════════════════
-          BEFORE / AFTER
-      ══════════════════════════════════════════════════════════ */}
-      <section style={{ background: C.card, borderTop: `1px solid ${C.border}`, borderBottom: `1px solid ${C.border}`, padding: '80px 0' }}>
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center" style={{ marginBottom: 48 }}>
-            <h2 style={{ fontSize: 'clamp(24px, 3vw, 38px)', fontWeight: 600, color: C.text, marginBottom: 8 }}>{T[lang].baH2}</h2>
-            <p style={{ fontSize: 16, color: C.muted, fontWeight: 400 }}>{T[lang].baDesc}</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Before */}
-            <div style={{ background: 'rgba(239,68,68,0.04)', border: '1px solid rgba(239,68,68,0.14)', borderRadius: 20, padding: 28 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
-                <div style={{ width: 38, height: 38, borderRadius: 11, background: 'rgba(239,68,68,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <X size={18} style={{ color: C.red }} />
-                </div>
-                <h3 style={{ fontSize: 18, fontWeight: 600, color: C.red, margin: 0 }}>{T[lang].baBeforeTitle}</h3>
-              </div>
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {T[lang].baBefore.map((t, i) => (
-                  <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                    <div style={{ width: 18, height: 18, borderRadius: '50%', background: 'rgba(239,68,68,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>
-                      <X size={10} style={{ color: C.red }} />
-                    </div>
-                    <span style={{ fontSize: 14, color: C.muted, lineHeight: 1.55 }}>{t}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* After */}
-            <div style={{ background: 'rgba(16,185,129,0.04)', border: '1px solid rgba(16,185,129,0.14)', borderRadius: 20, padding: 28 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
-                <div style={{ width: 38, height: 38, borderRadius: 11, background: 'rgba(16,185,129,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <CheckCircle2 size={18} style={{ color: C.green }} />
-                </div>
-                <h3 style={{ fontSize: 18, fontWeight: 600, color: C.green, margin: 0 }}>{T[lang].baAfterTitle}</h3>
-              </div>
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {T[lang].baAfter.map((t, i) => (
-                  <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                    <div style={{ width: 18, height: 18, borderRadius: '50%', background: 'rgba(16,185,129,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>
-                      <CheckCircle2 size={10} style={{ color: C.green }} />
-                    </div>
-                    <span style={{ fontSize: 14, color: C.muted, lineHeight: 1.55 }}>{t}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════════════════════════
-          PHILOSOPHY (4 cards)
-      ══════════════════════════════════════════════════════════ */}
-      <section id="philosophy" style={{ padding: '96px 0' }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center" style={{ marginBottom: 56 }}>
-            <SectionLabel>{T[lang].philLabel}</SectionLabel>
-            <h2 style={{ fontSize: 'clamp(24px, 3.5vw, 40px)', fontWeight: 600, color: C.text, marginBottom: 14, letterSpacing: '-0.01em' }}>
-              {T[lang].philH2}
-            </h2>
-            <p style={{ fontSize: 16, color: C.muted, maxWidth: 480, margin: '0 auto', fontWeight: 400, lineHeight: 1.7 }}>
-              {T[lang].philDesc}
-            </p>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {T[lang].philCards.map((c, i) => {
-              const colors = [C.cyan, C.purple, C.green, C.amber];
-              const color = colors[i];
-              return (
-                <div key={i} style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 20, padding: 28, textAlign: 'center', transition: 'border-color 0.2s' }}
-                  onMouseOver={e => (e.currentTarget.style.borderColor = color + '40')}
-                  onMouseOut={e => (e.currentTarget.style.borderColor = C.border)}
-                >
-                  <div style={{ fontSize: 44, marginBottom: 16 }}>{c.emoji}</div>
-                  <h3 style={{ fontSize: 17, fontWeight: 600, color: C.text, marginBottom: 10 }}>{c.title}</h3>
-                  <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.65, margin: 0, fontWeight: 400 }}>{c.desc}</p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════════════════════════
-          PRICING
-      ══════════════════════════════════════════════════════════ */}
-      <section id="pricing" style={{ background: C.card, borderTop: `1px solid ${C.border}`, borderBottom: `1px solid ${C.border}`, padding: '80px 0 100px' }}>
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center" style={{ marginBottom: 56 }}>
-            <SectionLabel>{T[lang].pricingLabel}</SectionLabel>
-            <h2 style={{ fontSize: 'clamp(24px, 3.5vw, 40px)', fontWeight: 600, color: C.text, marginBottom: 10, letterSpacing: '-0.01em' }}>
-              {T[lang].pricingH2}
-            </h2>
-            <p style={{ fontSize: 15, color: C.muted, fontWeight: 400 }}>{T[lang].pricingDesc}</p>
-          </div>
-
-          {/* Plan cards — 4 plans */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-            {T[lang].plans.map((plan, i) => {
-              const highlight = i === 1;
-              const badge = highlight ? T[lang].pricingMostPopular : null;
-              const colors = [C.cyan, C.cyan, C.purple, C.amber];
-              const color = colors[i];
-              return (
-                <div
-                  key={i}
-                  style={{
-                    background: highlight ? C.card2 : C.bg,
-                    border: highlight ? `1px solid rgba(6,182,212,0.35)` : `1px solid ${C.border}`,
-                    borderRadius: 20, padding: '26px 22px', position: 'relative',
-                    boxShadow: highlight ? '0 24px 64px rgba(6,182,212,0.1)' : 'none',
-                    display: 'flex', flexDirection: 'column',
-                  }}
-                >
-                  {badge && (
-                    <div style={{ position: 'absolute', top: -13, right: 20, background: GRAD, color: 'white', fontSize: 11, padding: '4px 14px', borderRadius: 20, fontWeight: 500 }}>
-                      {badge}
-                    </div>
+                  {isPopular && (
+                    <div style={{
+                      position: 'absolute', top: -14, left: '50%', transform: 'translateX(-50%)',
+                      background: GOLD_GRAD, color: '#fff', fontSize: 12, fontWeight: 700,
+                      padding: '5px 18px', borderRadius: 20, whiteSpace: 'nowrap',
+                    }}>{t.pricingMostPopular}</div>
                   )}
-                  <div style={{ marginBottom: 20 }}>
-                    <div style={{ fontSize: 11, color: highlight ? C.cyan : color, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{plan.name}</div>
-                    <div style={{ fontSize: 20, fontWeight: 600, color: C.text, marginBottom: 8 }}>{plan.nameLocal}</div>
-                    <p style={{ fontSize: 12, color: C.muted, lineHeight: 1.55, margin: 0 }}>{plan.desc}</p>
+                  <div style={{ textAlign: 'center', marginBottom: 24 }}>
+                    <h3 style={{ fontSize: 22, fontWeight: 800, color: C.text, marginBottom: 4 }}>{plan.name}</h3>
+                    <p style={{ fontSize: 14, color: C.gold, fontWeight: 600, marginBottom: 16 }}>{plan.nameAr}</p>
+                    {plan.price ? (
+                      <div>
+                        <span style={{ fontSize: 42, fontWeight: 800, color: C.text }}>{plan.price}</span>
+                        <span style={{ fontSize: 15, color: C.muted, marginInlineStart: 4 }}>{t.pricingMo}</span>
+                      </div>
+                    ) : (
+                      <div style={{ fontSize: 24, fontWeight: 700, color: C.gold, padding: '10px 0' }}>{t.pricingContactUs}</div>
+                    )}
                   </div>
-                  <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 24px', display: 'flex', flexDirection: 'column', gap: 9, flex: 1 }}>
-                    {plan.features.map((f, fi) => (
-                      <li key={fi} style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-                        <CheckCircle2 size={14} style={{ color: highlight ? C.cyan : color, flexShrink: 0 }} />
-                        <span style={{ fontSize: 12, color: C.muted }}>{f}</span>
+                  <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 28px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    {plan.features.map((f: string, fi: number) => (
+                      <li key={fi} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 14, color: C.text }}>
+                        <CheckCircle2 size={16} color={C.greenCheck} style={{ flexShrink: 0 }} />
+                        {f}
                       </li>
                     ))}
                   </ul>
-                  <button
-                    onClick={() => navigate('/login')}
-                    style={{
-                      width: '100%', padding: '11px 0',
-                      background: highlight ? GRAD : 'transparent',
-                      color: highlight ? 'white' : C.text,
-                      border: highlight ? 'none' : `1px solid ${C.border}`,
-                      borderRadius: 11, fontSize: 13, cursor: 'pointer', fontWeight: 500,
-                      boxShadow: highlight ? '0 8px 24px rgba(6,182,212,0.22)' : 'none',
-                    }}
-                    onMouseOver={e => { if (!highlight) e.currentTarget.style.borderColor = '#374151'; }}
-                    onMouseOut={e => { if (!highlight) e.currentTarget.style.borderColor = C.border; }}
+                  <button onClick={() => plan.price ? navigate('/login') : scrollTo('contact')} style={{
+                    ...(isPopular ? goldBtn : outlineBtn),
+                    width: '100%', justifyContent: 'center', borderRadius: 10,
+                    padding: '12px 0',
+                  }}
+                    onMouseOver={e => { if (!isPopular) { e.currentTarget.style.background = C.gold; e.currentTarget.style.color = '#fff'; } }}
+                    onMouseOut={e => { if (!isPopular) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = C.gold; } }}
                   >
-                    {highlight ? T[lang].pricingCtaHighlight : T[lang].pricingCtaDefault}
+                    {plan.price ? (isPopular ? t.pricingCtaHighlight : t.pricingCtaDefault) : t.pricingContactUs}
                   </button>
                 </div>
               );
@@ -1069,65 +675,65 @@ export default function HomePage() {
           </div>
 
           {/* Comparison table */}
-          <div style={{ marginTop: 56 }}>
-            <h3 style={{ fontSize: 18, fontWeight: 600, color: C.text, textAlign: 'center', marginBottom: 28 }}>{T[lang].compareTitle}</h3>
-            <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 18, overflow: 'hidden' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{ borderBottom: `1px solid ${C.border}` }}>
-                    <th style={{ padding: '14px 20px', textAlign: 'right', fontSize: 13, color: C.muted, fontWeight: 500, width: '35%' }}>{T[lang].compareFeatureCol}</th>
-                    {['Orbit', 'Nova', 'Galaxy', 'Infinity'].map((p, i) => (
-                      <th key={i} style={{ padding: '14px 12px', textAlign: 'center', fontSize: 12, color: i === 1 ? C.cyan : C.muted, fontWeight: i === 1 ? 600 : 500 }}>{p}</th>
+          <h3 style={{ fontSize: 24, fontWeight: 700, color: C.text, textAlign: 'center', marginBottom: 32 }}>{t.compareTitle}</h3>
+          <div style={{ overflowX: 'auto', borderRadius: 16, border: `1px solid ${C.border}`, background: C.card }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 640, fontSize: 14 }}>
+              <thead>
+                <tr style={{ background: C.bg }}>
+                  <th style={{ padding: '14px 20px', textAlign: isRtl ? 'right' : 'left', fontWeight: 700, color: C.text, borderBottom: `1px solid ${C.border}` }}>
+                    {t.compareFeatureCol}
+                  </th>
+                  {t.plans.map((p: any, i: number) => (
+                    <th key={i} style={{
+                      padding: '14px 16px', textAlign: 'center', fontWeight: 700, borderBottom: `1px solid ${C.border}`,
+                      color: p.popular ? C.gold : C.text,
+                    }}>
+                      {p.name}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {t.compareRows.map((row: any, ri: number) => (
+                  <tr key={ri} style={{ borderBottom: ri < t.compareRows.length - 1 ? `1px solid ${C.border}` : 'none' }}>
+                    <td style={{ padding: '12px 20px', fontWeight: 500, color: C.text }}>{row.label}</td>
+                    {row.vals.map((v: string, vi: number) => (
+                      <td key={vi} style={{ padding: '12px 16px', textAlign: 'center' }}><CellVal v={v} /></td>
                     ))}
                   </tr>
-                </thead>
-                <tbody>
-                  {T[lang].compareRows.map((row, ri) => (
-                    <tr key={ri} style={{ borderBottom: ri < T[lang].compareRows.length - 1 ? `1px solid ${C.border}` : 'none', background: ri % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.015)' }}>
-                      <td style={{ padding: '12px 20px', fontSize: 13, color: C.muted }}>{row.label}</td>
-                      {row.vals.map((v, vi) => (
-                        <td key={vi} style={{ padding: '12px 12px', textAlign: 'center', fontSize: 13, color: v === '✓' ? C.green : v === '—' ? '#3A4150' : vi === 1 ? C.cyan : C.muted, fontWeight: v === '✓' ? 600 : 400 }}>{v}</td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                ))}
+              </tbody>
+            </table>
           </div>
-
-          <p style={{ textAlign: 'center', marginTop: 28, fontSize: 14, color: C.muted }}>
-            {T[lang].pricingCustomText}{' '}
-            <button onClick={() => scrollTo('contact')} style={{ color: C.cyan, background: 'none', border: 'none', cursor: 'pointer', fontSize: 14 }}>
-              {T[lang].pricingContactLink}
-            </button>
-          </p>
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════════════════════
-          FAQ
-      ══════════════════════════════════════════════════════════ */}
-      <section id="faq" style={{ padding: '96px 0' }}>
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center" style={{ marginBottom: 56 }}>
-            <SectionLabel>{T[lang].faqLabel}</SectionLabel>
-            <h2 style={{ fontSize: 'clamp(24px, 3.5vw, 40px)', fontWeight: 600, color: C.text, letterSpacing: '-0.01em' }}>
-              {T[lang].faqH2}
-            </h2>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {T[lang].faqs.map((item, i) => (
-              <div key={i} style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, overflow: 'hidden' }}>
-                <button
-                  onClick={() => setFaqOpen(faqOpen === i ? null : i)}
-                  style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 20px', background: 'none', border: 'none', cursor: 'pointer', color: C.text, textAlign: 'right', gap: 12 }}
-                >
-                  <span style={{ fontSize: 15, fontWeight: 500 }}>{item.q}</span>
-                  <ChevronDown size={18} style={{ color: C.muted, flexShrink: 0, transform: faqOpen === i ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease' }} />
-                </button>
-                {faqOpen === i && (
-                  <div style={{ padding: '0 20px 20px', borderTop: `1px solid ${C.border}` }}>
-                    <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.75, margin: '16px 0 0', fontWeight: 400 }}>{item.a}</p>
+      {/* ═══════════════════ FAQ ═══════════════════ */}
+      <section id="faq" style={{ background: C.bg }}>
+        <div style={sectionPadding}>
+          <p style={{ textAlign: 'center', fontSize: 14, fontWeight: 600, color: C.gold, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 12 }}>
+            {t.faqLabel}
+          </p>
+          <h2 style={sectionTitle(lang)}>{t.faqH2}</h2>
+          <div style={{ height: 24 }} />
+          <div style={{ maxWidth: 760, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {t.faqs.map((faq: any, i: number) => (
+              <div key={i} style={{
+                ...cardStyle, padding: 0, overflow: 'hidden', cursor: 'pointer',
+                border: openFaq === i ? `1px solid ${C.gold}` : `1px solid ${C.border}`,
+              }} onClick={() => setOpenFaq(openFaq === i ? null : i)}>
+                <div style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 24px',
+                }}>
+                  <span style={{ fontSize: 16, fontWeight: 600, color: C.text, flex: 1 }}>{faq.q}</span>
+                  <ChevronDown size={20} color={C.gold} style={{
+                    transition: 'transform 0.3s', transform: openFaq === i ? 'rotate(180deg)' : 'rotate(0deg)',
+                    flexShrink: 0, marginInlineStart: 12,
+                  }} />
+                </div>
+                {openFaq === i && (
+                  <div style={{ padding: '0 24px 20px', fontSize: 15, color: C.muted, lineHeight: 1.8 }}>
+                    {faq.a}
                   </div>
                 )}
               </div>
@@ -1136,189 +742,204 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════════════════════
-          CONTACT FORM
-      ══════════════════════════════════════════════════════════ */}
-      <section id="contact" style={{ background: C.card, borderTop: `1px solid ${C.border}`, padding: '80px 0 100px' }}>
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center" style={{ marginBottom: 48 }}>
-            <SectionLabel>{T[lang].contactLabel}</SectionLabel>
-            <h2 style={{ fontSize: 'clamp(24px, 3.5vw, 40px)', fontWeight: 600, color: C.text, marginBottom: 10, letterSpacing: '-0.01em' }}>
-              {T[lang].contactH2}
-            </h2>
-            <p style={{ fontSize: 15, color: C.muted, fontWeight: 400 }}>{T[lang].contactDesc}</p>
+      {/* ═══════════════════ CONTACT ═══════════════════ */}
+      <section id="contact" style={{ background: '#FFFFFF' }}>
+        <div style={sectionPadding}>
+          <p style={{ textAlign: 'center', fontSize: 14, fontWeight: 600, color: C.gold, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 12 }}>
+            {t.contactLabel}
+          </p>
+          <h2 style={sectionTitle(lang)}>{t.contactH2}</h2>
+          <p style={sectionSub}>{t.contactDesc}</p>
+
+          <div style={{ maxWidth: 600, margin: '0 auto' }}>
+            {status === 'success' ? (
+              <div style={{ ...cardStyle, textAlign: 'center', padding: 48 }}>
+                <div style={{
+                  width: 64, height: 64, borderRadius: '50%', background: 'rgba(34,197,94,0.1)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px',
+                }}>
+                  <CheckCircle2 size={32} color={C.greenCheck} />
+                </div>
+                <h3 style={{ fontSize: 22, fontWeight: 700, color: C.text, marginBottom: 8 }}>{t.contactSuccessTitle}</h3>
+                <p style={{ fontSize: 16, color: C.muted, marginBottom: 24 }}>{t.contactSuccessDesc}</p>
+                <button onClick={() => setStatus('idle')} style={outlineBtn}>{t.contactSuccessRetry}</button>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} style={{ ...cardStyle, padding: 36, display: 'flex', flexDirection: 'column', gap: 20 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: 14, fontWeight: 600, color: C.text, marginBottom: 6 }}>{t.contactFields.name}</label>
+                    <input required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
+                      placeholder={t.contactPlaceholders.name}
+                      style={{
+                        width: '100%', padding: '12px 14px', borderRadius: 10, border: `1px solid ${C.border}`,
+                        fontSize: 15, color: C.text, background: C.bg, outline: 'none', boxSizing: 'border-box',
+                        direction: dir,
+                      }}
+                      onFocus={e => e.currentTarget.style.borderColor = C.gold}
+                      onBlur={e => e.currentTarget.style.borderColor = C.border}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: 14, fontWeight: 600, color: C.text, marginBottom: 6 }}>{t.contactFields.email}</label>
+                    <input required type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })}
+                      placeholder={t.contactPlaceholders.email}
+                      style={{
+                        width: '100%', padding: '12px 14px', borderRadius: 10, border: `1px solid ${C.border}`,
+                        fontSize: 15, color: C.text, background: C.bg, outline: 'none', boxSizing: 'border-box',
+                        direction: 'ltr',
+                      }}
+                      onFocus={e => e.currentTarget.style.borderColor = C.gold}
+                      onBlur={e => e.currentTarget.style.borderColor = C.border}
+                    />
+                  </div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: 14, fontWeight: 600, color: C.text, marginBottom: 6 }}>{t.contactFields.phone}</label>
+                    <input value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })}
+                      placeholder={t.contactPlaceholders.phone}
+                      style={{
+                        width: '100%', padding: '12px 14px', borderRadius: 10, border: `1px solid ${C.border}`,
+                        fontSize: 15, color: C.text, background: C.bg, outline: 'none', boxSizing: 'border-box',
+                        direction: 'ltr',
+                      }}
+                      onFocus={e => e.currentTarget.style.borderColor = C.gold}
+                      onBlur={e => e.currentTarget.style.borderColor = C.border}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: 14, fontWeight: 600, color: C.text, marginBottom: 6 }}>{t.contactFields.company}</label>
+                    <input value={form.company} onChange={e => setForm({ ...form, company: e.target.value })}
+                      placeholder={t.contactPlaceholders.company}
+                      style={{
+                        width: '100%', padding: '12px 14px', borderRadius: 10, border: `1px solid ${C.border}`,
+                        fontSize: 15, color: C.text, background: C.bg, outline: 'none', boxSizing: 'border-box',
+                        direction: dir,
+                      }}
+                      onFocus={e => e.currentTarget.style.borderColor = C.gold}
+                      onBlur={e => e.currentTarget.style.borderColor = C.border}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: 14, fontWeight: 600, color: C.text, marginBottom: 6 }}>{t.contactFields.message}</label>
+                  <textarea required rows={4} value={form.message} onChange={e => setForm({ ...form, message: e.target.value })}
+                    placeholder={t.contactPlaceholders.message}
+                    style={{
+                      width: '100%', padding: '12px 14px', borderRadius: 10, border: `1px solid ${C.border}`,
+                      fontSize: 15, color: C.text, background: C.bg, outline: 'none', resize: 'vertical',
+                      fontFamily: 'inherit', boxSizing: 'border-box', direction: dir,
+                    }}
+                    onFocus={e => e.currentTarget.style.borderColor = C.gold}
+                    onBlur={e => e.currentTarget.style.borderColor = C.border}
+                  />
+                </div>
+                {formError && (
+                  <p style={{ color: C.red, fontSize: 14, margin: 0 }}>{formError}</p>
+                )}
+                <button type="submit" disabled={status === 'loading'} style={{
+                  ...goldBtn, width: '100%', justifyContent: 'center', padding: '14px 0', borderRadius: 10,
+                  opacity: status === 'loading' ? 0.7 : 1,
+                }}>
+                  {status === 'loading' ? (
+                    <><Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> {t.contactSending}</>
+                  ) : (
+                    <><Send size={18} /> {t.contactSubmit}</>
+                  )}
+                </button>
+              </form>
+            )}
           </div>
-
-          {status === 'success' ? (
-            <div style={{ background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.18)', borderRadius: 22, padding: 56, textAlign: 'center' }}>
-              <div style={{ fontSize: 52, marginBottom: 16 }}>✅</div>
-              <h3 style={{ fontSize: 22, fontWeight: 600, color: C.text, marginBottom: 8 }}>{T[lang].contactSuccessTitle}</h3>
-              <p style={{ fontSize: 15, color: C.muted, marginBottom: 20 }}>{T[lang].contactSuccessDesc}</p>
-              <button onClick={() => setStatus('idle')} style={{ color: C.cyan, background: 'none', border: 'none', cursor: 'pointer', fontSize: 14 }}>
-                {T[lang].contactSuccessRetry}
-              </button>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 22, padding: 32 }}>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4" style={{ marginBottom: 16 }}>
-                {/* Name */}
-                <div>
-                  <label style={{ display: 'block', fontSize: 13, color: C.muted, marginBottom: 6 }}>{T[lang].contactFields.name}</label>
-                  <input
-                    type="text" required
-                    value={form.name}
-                    onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                    placeholder={T[lang].contactPlaceholders.name}
-                    style={inputStyle}
-                    onFocus={inputFocus} onBlur={inputBlur}
-                  />
-                </div>
-                {/* Email */}
-                <div>
-                  <label style={{ display: 'block', fontSize: 13, color: C.muted, marginBottom: 6 }}>{T[lang].contactFields.email}</label>
-                  <input
-                    type="email" required dir="ltr"
-                    value={form.email}
-                    onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                    placeholder={T[lang].contactPlaceholders.email}
-                    style={inputStyle}
-                    onFocus={inputFocus} onBlur={inputBlur}
-                  />
-                </div>
-                {/* Phone */}
-                <div>
-                  <label style={{ display: 'block', fontSize: 13, color: C.muted, marginBottom: 6 }}>{T[lang].contactFields.phone}</label>
-                  <input
-                    type="tel" dir="ltr"
-                    value={form.phone}
-                    onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
-                    placeholder={T[lang].contactPlaceholders.phone}
-                    style={inputStyle}
-                    onFocus={inputFocus} onBlur={inputBlur}
-                  />
-                </div>
-                {/* Company */}
-                <div>
-                  <label style={{ display: 'block', fontSize: 13, color: C.muted, marginBottom: 6 }}>{T[lang].contactFields.company}</label>
-                  <input
-                    type="text"
-                    value={form.company}
-                    onChange={e => setForm(f => ({ ...f, company: e.target.value }))}
-                    placeholder={T[lang].contactPlaceholders.company}
-                    style={inputStyle}
-                    onFocus={inputFocus} onBlur={inputBlur}
-                  />
-                </div>
-              </div>
-
-              {/* Message */}
-              <div style={{ marginBottom: 20 }}>
-                <label style={{ display: 'block', fontSize: 13, color: C.muted, marginBottom: 6 }}>{T[lang].contactFields.message}</label>
-                <textarea
-                  required rows={5}
-                  value={form.message}
-                  onChange={e => setForm(f => ({ ...f, message: e.target.value }))}
-                  placeholder={T[lang].contactPlaceholders.message}
-                  style={{ ...inputStyle, resize: 'vertical' } as React.CSSProperties}
-                  onFocus={inputFocus} onBlur={inputBlur}
-                />
-              </div>
-
-              {/* Error */}
-              {status === 'error' && (
-                <div style={{ background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.18)', borderRadius: 10, padding: '12px 16px', marginBottom: 16, fontSize: 13, color: C.red }}>
-                  {formError}
-                </div>
-              )}
-
-              {/* Submit */}
-              <button
-                type="submit"
-                disabled={status === 'loading'}
-                style={{
-                  width: '100%', padding: '14px 0', fontSize: 15, fontWeight: 500, border: 'none', borderRadius: 12,
-                  background: status === 'loading' ? C.card : GRAD,
-                  color: 'white', cursor: status === 'loading' ? 'not-allowed' : 'pointer',
-                  boxShadow: status === 'loading' ? 'none' : '0 6px 24px rgba(6,182,212,0.22)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                }}
-              >
-                {status === 'loading'
-                  ? <><Loader2 size={17} className="animate-spin" /> {T[lang].contactSending}</>
-                  : <><Send size={16} /> {T[lang].contactSubmit}</>
-                }
-              </button>
-            </form>
-          )}
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════════════════════
-          FOOTER
-      ══════════════════════════════════════════════════════════ */}
-      <footer style={{ background: '#0A0D14', borderTop: `1px solid ${C.border}`, paddingTop: 64 }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10" style={{ marginBottom: 56 }}>
-
-            {/* Col 1: About + social */}
-            <div>
-              <div className="flex items-center gap-2" style={{ marginBottom: 16 }}>
-                <img src="/senda-logo.png" alt="SENDA" style={{ height: 30, width: 'auto', borderRadius: 5 }} />
+      {/* ═══════════════════ FOOTER ═══════════════════ */}
+      <footer style={{ background: C.dark, color: '#fff' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '60px 24px 32px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 40, marginBottom: 48 }}>
+            {/* Brand col */}
+            <div style={{ minWidth: 200 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+                <img src="/senda-logo.png" alt="SENDA" style={{ height: 36, borderRadius: 8 }} />
+                <span style={{ fontSize: 18, fontWeight: 700 }}>SENDA</span>
               </div>
-              <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.7, marginBottom: 20, fontWeight: 400 }}>
-                {T[lang].footerTagline}
-              </p>
-              {/* Social icons — 5 key platforms */}
-              <div style={{ display: 'flex', gap: 8 }}>
-                {[
-                  { name: 'X',         sym: '𝕏',  hov: '#E7E9EA' },
-                  { name: 'Instagram', sym: '◈',  hov: '#E1306C' },
-                  { name: 'TikTok',    sym: '▲',  hov: '#FF0050' },
-                  { name: 'Snapchat',  sym: '◎',  hov: '#FFFC00' },
-                  { name: 'LinkedIn',  sym: 'in', hov: '#0A66C2' },
-                ].map((s, i) => (
-                  <a
-                    key={i}
-                    href="#"
-                    title={s.name}
-                    aria-label={s.name}
-                    style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8A94A6', fontSize: s.sym === 'in' ? 12 : 14, fontWeight: s.sym === 'in' ? 700 : 400, textDecoration: 'none', transition: 'all 0.18s', letterSpacing: s.sym === 'in' ? '-0.02em' : 0 }}
-                    onMouseOver={e => { const el = e.currentTarget as HTMLAnchorElement; el.style.color = s.hov; el.style.borderColor = s.hov + '55'; el.style.background = s.hov + '12'; }}
-                    onMouseOut={e => { const el = e.currentTarget as HTMLAnchorElement; el.style.color = '#8A94A6'; el.style.borderColor = C.border; el.style.background = 'rgba(255,255,255,0.04)'; }}
-                  >{s.sym}</a>
-                ))}
+              <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)', lineHeight: 1.7, maxWidth: 280 }}>{t.footerTagline}</p>
+              {/* Social */}
+              <div style={{ display: 'flex', gap: 12, marginTop: 20 }}>
+                {/* Twitter/X */}
+                <a href="https://x.com" target="_blank" rel="noopener noreferrer" style={{
+                  width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.1)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.2s',
+                }}
+                  onMouseOver={e => e.currentTarget.style.background = 'rgba(184,150,90,0.3)'}
+                  onMouseOut={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                  </svg>
+                </a>
+                {/* LinkedIn */}
+                <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" style={{
+                  width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.1)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.2s',
+                }}
+                  onMouseOver={e => e.currentTarget.style.background = 'rgba(184,150,90,0.3)'}
+                  onMouseOut={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
+                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                  </svg>
+                </a>
               </div>
             </div>
 
-            {/* Col 2 & 3: Product + Support */}
-            {T[lang].footerCols.map((col, ci) => (
-              <div key={ci}>
-                <h4 style={{ fontSize: 14, fontWeight: 600, color: C.text, marginBottom: 18 }}>{col.heading}</h4>
-                <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  {col.items.map((t, i) => (
-                    <li key={i}>
-                      <button style={{ color: C.muted, fontSize: 13, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-                        onMouseOver={e => (e.currentTarget.style.color = C.text)}
-                        onMouseOut={e => (e.currentTarget.style.color = C.muted)}
-                      >{t}</button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-
-            {/* Col 4: Legal */}
+            {/* Product col */}
             <div>
-              <h4 style={{ fontSize: 14, fontWeight: 600, color: C.text, marginBottom: 18 }}>{T[lang].footerLegal.heading}</h4>
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {T[lang].footerLegal.links.map((l, i) => (
+              <h4 style={{ fontSize: 14, fontWeight: 700, marginBottom: 18, color: 'rgba(255,255,255,0.9)' }}>{t.footerProduct}</h4>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {t.footerProductLinks.map((link: string, i: number) => (
                   <li key={i}>
-                    <button
-                      onClick={() => navigate(l.path)}
-                      style={{ color: C.muted, fontSize: 13, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-                      onMouseOver={e => (e.currentTarget.style.color = C.text)}
-                      onMouseOut={e => (e.currentTarget.style.color = C.muted)}
-                    >{l.label}</button>
+                    <button onClick={() => scrollTo(['features', 'pricing', 'how-it-works'][i])} style={{
+                      background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', fontSize: 14, cursor: 'pointer', padding: 0,
+                    }}
+                      onMouseOver={e => e.currentTarget.style.color = C.gold}
+                      onMouseOut={e => e.currentTarget.style.color = 'rgba(255,255,255,0.5)'}
+                    >{link}</button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Support col */}
+            <div>
+              <h4 style={{ fontSize: 14, fontWeight: 700, marginBottom: 18, color: 'rgba(255,255,255,0.9)' }}>{t.footerSupport}</h4>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {t.footerSupportLinks.map((link: string, i: number) => (
+                  <li key={i}>
+                    <button onClick={() => i === 1 ? scrollTo('contact') : undefined} style={{
+                      background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', fontSize: 14, cursor: 'pointer', padding: 0,
+                    }}
+                      onMouseOver={e => e.currentTarget.style.color = C.gold}
+                      onMouseOut={e => e.currentTarget.style.color = 'rgba(255,255,255,0.5)'}
+                    >{link}</button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Legal col */}
+            <div>
+              <h4 style={{ fontSize: 14, fontWeight: 700, marginBottom: 18, color: 'rgba(255,255,255,0.9)' }}>{t.footerLegal}</h4>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {t.footerLegalLinks.map((link: any, i: number) => (
+                  <li key={i}>
+                    <button onClick={() => navigate(link.path)} style={{
+                      background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', fontSize: 14, cursor: 'pointer', padding: 0,
+                    }}
+                      onMouseOver={e => e.currentTarget.style.color = C.gold}
+                      onMouseOut={e => e.currentTarget.style.color = 'rgba(255,255,255,0.5)'}
+                    >{link.label}</button>
                   </li>
                 ))}
               </ul>
@@ -1326,23 +947,38 @@ export default function HomePage() {
           </div>
 
           {/* Bottom bar */}
-          <div style={{ borderTop: `1px solid ${C.border}`, padding: '20px 0' }}>
-            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '6px 20px', marginBottom: 12 }}>
-              {T[lang].footerBottomLinks.map((l, i) => (
-                <button key={i}
-                  onClick={() => navigate(l.path)}
-                  style={{ color: C.muted, fontSize: 12, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-                  onMouseOver={e => (e.currentTarget.style.color = C.brand)}
-                  onMouseOut={e => (e.currentTarget.style.color = C.muted)}
-                >{l.label}</button>
-              ))}
-            </div>
-            <p style={{ fontSize: 12, color: C.muted, margin: 0, textAlign: 'center' }}>
-              {T[lang].copyright}
-            </p>
+          <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: 24, textAlign: 'center' }}>
+            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', margin: 0 }}>{t.copyright}</p>
           </div>
         </div>
       </footer>
+
+      {/* ═══════════════════ GLOBAL STYLES ═══════════════════ */}
+      <style>{`
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        * { box-sizing: border-box; margin: 0; }
+
+        ::placeholder { color: ${C.muted}; opacity: 0.6; }
+
+        /* Desktop nav visibility */
+        .nav-desktop { display: flex !important; }
+        .nav-ctas { display: flex !important; }
+        .nav-mobile-toggle { display: none !important; }
+
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+          .nav-desktop { display: none !important; }
+          .nav-ctas { display: none !important; }
+          .nav-mobile-toggle { display: flex !important; }
+        }
+
+        /* Smooth scroll */
+        html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+
+        /* Selection color */
+        ::selection { background: rgba(184, 150, 90, 0.2); }
+      `}</style>
     </div>
   );
 }

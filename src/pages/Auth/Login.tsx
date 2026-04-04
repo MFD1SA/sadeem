@@ -121,10 +121,10 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
   // ── OAuth callback loading screen (minimal) ────────────────────────────────
   if (isOAuthCallback) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-surface-secondary">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#F8F9FB' }}>
         <div className="text-center flex flex-col items-center">
-          <div className="w-8 h-8 rounded-full border-2 border-gray-200 border-t-brand-500 animate-spin mb-4" />
-          <p className="text-sm text-content-tertiary">
+          <div className="w-8 h-8 rounded-full border-2 border-gray-200 animate-spin mb-4" style={{ borderTopColor: '#B8965A' }} />
+          <p className="text-sm text-[#6B7280]">
             {t.auth.signingIn}
           </p>
         </div>
@@ -213,10 +213,10 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
   const BrandingPanel = (
     <div
       className="hidden lg:flex lg:w-[45%] flex-col justify-between p-10 relative overflow-hidden"
-      style={{ background: 'linear-gradient(135deg, #06B6D4 0%, #8B5CF6 100%)' }}
+      style={{ background: '#1A1A2E' }}
     >
-      <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full pointer-events-none" style={{ background: 'rgba(255,255,255,0.06)' }} />
-      <div className="absolute -bottom-32 -left-16 w-80 h-80 rounded-full pointer-events-none" style={{ background: 'rgba(0,0,0,0.08)' }} />
+      <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full pointer-events-none" style={{ background: 'rgba(184,150,90,0.08)' }} />
+      <div className="absolute -bottom-32 -left-16 w-80 h-80 rounded-full pointer-events-none" style={{ background: 'rgba(184,150,90,0.05)' }} />
 
       {/* Logo */}
       <div className="relative z-10 flex items-center gap-3">
@@ -237,8 +237,8 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
         <div className="space-y-3">
           {FEATURES.map(({ icon: Icon, ar, en }) => (
             <div key={ar} className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(255,255,255,0.18)' }}>
-                <Icon size={15} className="text-white" />
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(184,150,90,0.2)' }}>
+                <Icon size={15} style={{ color: '#D4AF6A' }} />
               </div>
               <span className="text-sm" style={{ color: 'rgba(255,255,255,0.88)' }}>{isAr ? ar : en}</span>
             </div>
@@ -255,13 +255,13 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
   // ── Mobile logo ────────────────────────────────────────────────────────────
   const MobileLogo = (
     <div className="flex flex-col items-center mb-8 lg:hidden">
-      <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center mb-3 shadow-lg">
+      <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-3 shadow-lg" style={{ background: 'linear-gradient(135deg, #B8965A, #D4AF6A)' }}>
         {logoIconUrl
           ? <img src={logoIconUrl} alt="logo" className="w-9 h-9 object-contain" />
           : <span className="text-white text-2xl font-bold">س</span>}
       </div>
-      <h2 className="text-xl font-bold text-content-primary">{platformNameAr}</h2>
-      <p className="text-xs text-content-tertiary mt-1 text-center">{tagline}</p>
+      <h2 className="text-xl font-bold text-[#1A1A2E]">{platformNameAr}</h2>
+      <p className="text-xs text-[#6B7280] mt-1 text-center">{tagline}</p>
     </div>
   );
 
@@ -270,24 +270,25 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
     return (
       <div className="min-h-screen flex" dir={isAr ? 'rtl' : 'ltr'}>
         {BrandingPanel}
-        <div className="flex-1 flex flex-col items-center justify-center bg-surface-secondary p-6 sm:p-10">
+        <div className="flex-1 flex flex-col items-center justify-center p-6 sm:p-10" style={{ background: '#F8F9FB' }}>
           <div className="w-full max-w-sm">
             {MobileLogo}
 
             {/* Back link */}
             <button
               onClick={resetToLogin}
-              className="flex items-center gap-1.5 text-xs text-brand-600 hover:text-brand-700 mb-6 transition-colors"
+              className="flex items-center gap-1.5 text-xs mb-6 transition-colors"
+              style={{ color: '#B8965A' }}
             >
               <ArrowRight size={13} className={isAr ? '' : 'rotate-180'} />
               {t.auth.backToSignIn}
             </button>
 
             <div className="mb-6">
-              <h2 className="text-xl font-bold text-content-primary">
+              <h2 className="text-xl font-bold text-[#1A1A2E]">
                 {t.auth.resetYourPassword}
               </h2>
-              <p className="text-sm text-content-tertiary mt-1">
+              <p className="text-sm text-[#6B7280] mt-1">
                 {t.auth.resetYourPasswordDesc}
               </p>
             </div>
@@ -305,7 +306,7 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
             {!success && (
               <form onSubmit={handleForgotPassword} className="space-y-3">
                 <div>
-                  <label className="block text-xs font-medium text-content-secondary mb-1.5">
+                  <label className="block text-xs font-medium text-[#4B5563] mb-1.5">
                     {t.auth.email}
                   </label>
                   <input
@@ -322,7 +323,8 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
                 <button
                   type="submit"
                   disabled={loading}
-                  className="btn btn-primary w-full justify-center py-2.5"
+                  className="w-full justify-center py-2.5 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-50"
+                  style={{ background: 'linear-gradient(135deg, #B8965A, #D4AF6A)' }}
                 >
                   {loading
                     ? t.auth.sending
@@ -334,7 +336,8 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
             {success && (
               <button
                 onClick={resetToLogin}
-                className="btn btn-primary w-full justify-center py-2.5 mt-2"
+                className="w-full justify-center py-2.5 mt-2 rounded-xl text-sm font-semibold text-white transition-all"
+                style={{ background: 'linear-gradient(135deg, #B8965A, #D4AF6A)' }}
               >
                 {t.auth.backToSignIn}
               </button>
@@ -350,16 +353,16 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
     <div className="min-h-screen flex" dir={isAr ? 'rtl' : 'ltr'}>
       {BrandingPanel}
 
-      <div className="flex-1 flex flex-col items-center justify-center bg-surface-secondary p-6 sm:p-10">
+      <div className="flex-1 flex flex-col items-center justify-center p-6 sm:p-10" style={{ background: '#F8F9FB' }}>
         <div className="w-full max-w-sm">
           {MobileLogo}
 
           {/* Heading */}
           <div className="mb-6">
-            <h2 className="text-xl font-bold text-content-primary">
+            <h2 className="text-xl font-bold text-[#1A1A2E]">
               {isSignUp ? t.auth.createNewAccount : t.auth.welcomeBack}
             </h2>
-            <p className="text-sm text-content-tertiary mt-1">
+            <p className="text-sm text-[#6B7280] mt-1">
               {isSignUp ? t.auth.signUpToGetStarted : t.auth.signInToContinue}
             </p>
           </div>
@@ -378,7 +381,8 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
           {/* Google login */}
           <button
             onClick={handleGoogleLogin}
-            className="w-full flex items-center justify-center gap-3 py-2.5 px-4 rounded-xl border border-border bg-white text-content-primary text-sm font-medium hover:bg-surface-secondary transition-colors shadow-sm mb-4"
+            className="w-full flex items-center justify-center gap-3 py-2.5 px-4 rounded-xl border bg-white text-[#1A1A2E] text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm mb-4"
+            style={{ borderColor: '#E8E8EC' }}
           >
             <svg width="18" height="18" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
@@ -391,16 +395,16 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
 
           {/* Divider */}
           <div className="flex items-center gap-3 mb-4">
-            <div className="flex-1 border-t border-border" />
-            <span className="text-xs text-content-tertiary">{t.auth.or}</span>
-            <div className="flex-1 border-t border-border" />
+            <div className="flex-1 border-t border-[#E8E8EC]" />
+            <span className="text-xs text-[#6B7280]">{t.auth.or}</span>
+            <div className="flex-1 border-t border-[#E8E8EC]" />
           </div>
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-3" autoComplete="on">
             {isSignUp && (
               <div>
-                <label className="block text-xs font-medium text-content-secondary mb-1.5">
+                <label className="block text-xs font-medium text-[#4B5563] mb-1.5">
                   {t.auth.fullName}
                 </label>
                 <input
@@ -416,7 +420,7 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
             )}
 
             <div>
-              <label className="block text-xs font-medium text-content-secondary mb-1.5">
+              <label className="block text-xs font-medium text-[#4B5563] mb-1.5">
                 {t.auth.email}
               </label>
               <input
@@ -439,7 +443,7 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
 
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-xs font-medium text-content-secondary">
+                <label className="block text-xs font-medium text-[#4B5563]">
                   {t.auth.password}
                 </label>
                 {/* Forgot password link — only on login form */}
@@ -447,7 +451,8 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
                   <button
                     type="button"
                     onClick={() => { setIsForgotPw(true); setError(''); setSuccess(''); }}
-                    className="text-[11px] text-brand-600 hover:text-brand-700 hover:underline transition-colors"
+                    className="text-[11px] hover:underline transition-colors"
+                    style={{ color: '#B8965A' }}
                   >
                     {t.auth.forgotPasswordQuestion}
                   </button>
@@ -481,7 +486,7 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
                 </div>
               )}
               {isSignUp && (
-                <p className="text-[11px] text-content-tertiary mt-1">
+                <p className="text-[11px] text-[#6B7280] mt-1">
                   {t.auth.passwordRecommendation}
                 </p>
               )}
@@ -490,7 +495,8 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
             <button
               type="submit"
               disabled={loading}
-              className="btn btn-primary w-full justify-center py-2.5 mt-1"
+              className="w-full justify-center py-2.5 mt-1 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-50"
+              style={{ background: 'linear-gradient(135deg, #B8965A, #D4AF6A)' }}
             >
               {loading
                 ? t.auth.processing
@@ -502,19 +508,20 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
 
           {/* Toggle login/signup */}
           <div className="text-center mt-5">
-            <span className="text-xs text-content-tertiary">
+            <span className="text-xs text-[#6B7280]">
               {isSignUp ? t.auth.hasAccount : t.auth.noAccount}
             </span>
             {' '}
             <button
-              className="text-xs font-medium text-brand-600 hover:text-brand-700 hover:underline transition-colors"
+              className="text-xs font-medium hover:underline transition-colors"
+              style={{ color: '#B8965A' }}
               onClick={() => { setIsSignUp(v => !v); setError(''); setSuccess(''); setPwStrength(0); setEmailTouched(false); setPassword(''); }}
             >
               {isSignUp ? t.auth.signInInstead : t.auth.signUpInstead}
             </button>
           </div>
 
-          <p className="text-center text-[11px] text-content-tertiary mt-6 leading-relaxed">
+          <p className="text-center text-[11px] text-[#6B7280] mt-6 leading-relaxed">
             {t.auth.googleButtonNote}
           </p>
         </div>

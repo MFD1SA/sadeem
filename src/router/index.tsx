@@ -57,6 +57,11 @@ import HomePage       from '@/pages/HomePage';
 import StoryPage      from '@/pages/StoryPage';
 import PrivacyPage    from '@/pages/legal/PrivacyPage';
 import TermsPage      from '@/pages/legal/TermsPage';
+import FeaturesPage          from '@/pages/marketing/FeaturesPage';
+import ReviewsManagementPage from '@/pages/marketing/ReviewsManagementPage';
+import AiRepliesPage         from '@/pages/marketing/AiRepliesPage';
+import AnalyticsMarketingPage from '@/pages/marketing/AnalyticsPage';
+import BranchesMarketingPage  from '@/pages/marketing/BranchesPage';
 
 // ── Lazily loaded admin pages (infrequently visited) ────────────────────────
 import { AdminLayout } from '@/admin/layouts/AdminLayout';
@@ -106,6 +111,11 @@ export function AppRouter() {
       <Route path="/story"   element={<StoryPage />} />
       <Route path="/privacy" element={<PrivacyPage />} />
       <Route path="/terms"   element={<TermsPage />} />
+      <Route path="/features"            element={<FeaturesPage />} />
+      <Route path="/reviews-management"  element={<ReviewsManagementPage />} />
+      <Route path="/ai-replies"          element={<AiRepliesPage />} />
+      <Route path="/analytics-page"      element={<AnalyticsMarketingPage />} />
+      <Route path="/branches-page"       element={<BranchesMarketingPage />} />
 
       <Route path="/r/:slug" element={<ReviewLanding />} />
       <Route path="/s/:city/:industry" element={<SeoLanding />} />
