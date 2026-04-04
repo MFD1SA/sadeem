@@ -42,7 +42,7 @@ BEGIN
 
   -- audit
   INSERT INTO public.admin_audit_logs (admin_user_id, admin_email, action, module, target_type, target_id, severity, details)
-  SELECT v_caller_id, au.email, 'org.update_info', 'subscribers', 'organization', p_org_id::text, 'info',
+  SELECT v_caller_id, au.email, 'org.update_info', 'subscribers', 'organization', p_org_id, 'info',
     jsonb_build_object('name', p_name, 'industry', p_industry, 'city', p_city, 'country', p_country)
   FROM public.admin_users au WHERE au.id = v_caller_id;
 END;
@@ -163,7 +163,7 @@ BEGIN
   WHERE id = p_template_id;
 
   INSERT INTO public.admin_audit_logs (admin_user_id, admin_email, action, module, target_type, target_id, severity, details)
-  SELECT v_caller_id, au.email, 'template.update', 'subscribers', 'template', p_template_id::text, 'info',
+  SELECT v_caller_id, au.email, 'template.update', 'subscribers', 'template', p_template_id, 'info',
     jsonb_build_object('org_id', v_org_id, 'name', p_name, 'category', p_category)
   FROM public.admin_users au WHERE au.id = v_caller_id;
 END;
@@ -202,7 +202,7 @@ BEGIN
   DELETE FROM public.reply_templates WHERE id = p_template_id;
 
   INSERT INTO public.admin_audit_logs (admin_user_id, admin_email, action, module, target_type, target_id, severity, details)
-  SELECT v_caller_id, au.email, 'template.delete', 'subscribers', 'template', p_template_id::text, 'warning',
+  SELECT v_caller_id, au.email, 'template.delete', 'subscribers', 'template', p_template_id, 'warning',
     jsonb_build_object('org_id', v_org_id, 'name', v_template_name)
   FROM public.admin_users au WHERE au.id = v_caller_id;
 END;
