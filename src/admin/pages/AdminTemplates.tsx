@@ -71,27 +71,34 @@ export default function AdminTemplates() {
   };
 
   const handleSaveEdit = async () => {
+    console.log('[AdminTemplates] handleSaveEdit called, editTarget:', editTarget?.id);
     if (!editTarget) return;
     try {
       setSaving(true);
+      console.log('[AdminTemplates] Calling update RPC with:', editTarget.id, editForm);
       await adminTemplatesService.update(editTarget.id, editForm);
+      console.log('[AdminTemplates] Update succeeded');
       showMsg('تم تحديث القالب بنجاح', 'success');
       setEditTarget(null);
       loadData();
-    } catch (err) {
+    } catch (err: unknown) {
+      console.error('[AdminTemplates] Update failed:', err);
       showMsg(err instanceof Error ? err.message : 'فشل في التحديث', 'error');
     } finally { setSaving(false); }
   };
 
   const handleDelete = async () => {
+    console.log('[AdminTemplates] handleDelete called, deleteTarget:', deleteTarget?.id);
     if (!deleteTarget) return;
     try {
       setDeleting(true);
       await adminTemplatesService.remove(deleteTarget.id);
+      console.log('[AdminTemplates] Delete succeeded');
       showMsg('تم حذف القالب بنجاح', 'success');
       setDeleteTarget(null);
       loadData();
-    } catch (err) {
+    } catch (err: unknown) {
+      console.error('[AdminTemplates] Delete failed:', err);
       showMsg(err instanceof Error ? err.message : 'فشل في الحذف', 'error');
     } finally { setDeleting(false); }
   };
