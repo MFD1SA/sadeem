@@ -1,3 +1,9 @@
+// ─── Scoring Constants ───
+const PHOTO_MAX_SCORE = 15;
+const PHOTO_DIVISOR = 2;
+const REVIEW_MAX_SCORE = 20;
+const REVIEW_DIVISOR = 5;
+
 export interface SeoScore {
   total: number;
   breakdown: SeoItem[];
@@ -60,15 +66,15 @@ export const seoService = {
     }
 
     // 2. Photos (15 points)
-    const photoScore = Math.min(15, Math.floor(input.photoCount / 2));
-    breakdown.push({ category: 'photos', score: photoScore, maxScore: 15, labelAr: 'الصور', labelEn: 'Photos' });
+    const photoScore = Math.min(PHOTO_MAX_SCORE, Math.floor(input.photoCount / PHOTO_DIVISOR));
+    breakdown.push({ category: 'photos', score: photoScore, maxScore: PHOTO_MAX_SCORE, labelAr: 'الصور', labelEn: 'Photos' });
     if (input.photoCount < 10) {
       suggestions.push({ priority: 'high', textAr: `أضف المزيد من الصور (لديك ${input.photoCount}، المطلوب 10+)`, textEn: `Add more photos (you have ${input.photoCount}, need 10+)`, actionType: 'add_photos' });
     }
 
     // 3. Reviews quantity (20 points)
-    const reviewScore = Math.min(20, Math.floor(input.reviewCount / 5));
-    breakdown.push({ category: 'reviews', score: reviewScore, maxScore: 20, labelAr: 'عدد التقييمات', labelEn: 'Review Count' });
+    const reviewScore = Math.min(REVIEW_MAX_SCORE, Math.floor(input.reviewCount / REVIEW_DIVISOR));
+    breakdown.push({ category: 'reviews', score: reviewScore, maxScore: REVIEW_MAX_SCORE, labelAr: 'عدد التقييمات', labelEn: 'Review Count' });
     if (input.reviewCount < 50) {
       suggestions.push({ priority: 'high', textAr: 'زِد عدد التقييمات باستخدام نظام QR', textEn: 'Increase reviews using QR system', actionType: 'increase_reviews' });
     }

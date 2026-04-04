@@ -42,7 +42,7 @@ export const analyticsService = {
     const responseRate = total > 0 ? Math.round((replied / total) * 100) : 0;
 
     const ratingDistribution: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-    all.forEach((r: ReviewRow) => { ratingDistribution[r.rating] = (ratingDistribution[r.rating] || 0) + 1; });
+    all.forEach((r: ReviewRow) => { ratingDistribution[r.rating] = (ratingDistribution[r.rating] ?? 0) + 1; });
 
     const sentimentBreakdown = { positive: 0, neutral: 0, negative: 0 };
     all.forEach((r: ReviewRow) => {

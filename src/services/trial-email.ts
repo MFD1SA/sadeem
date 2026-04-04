@@ -1,5 +1,7 @@
 import { supabase } from '@/lib/supabase';
 
+const APP_ORIGIN = typeof window !== 'undefined' ? window.location.origin : 'https://gandx.net';
+
 interface TrialEmailPayload {
   to: string;
   organizationName: string;
@@ -45,7 +47,7 @@ export const trialEmailService = {
           </p>
           
           <div style="text-align: center; margin-bottom: 24px;">
-            <a href="${window.location.origin}/dashboard/billing" 
+            <a href="${APP_ORIGIN}/dashboard/billing" 
                style="display: inline-block; padding: 12px 32px; background: #3b5bdb; color: #ffffff; font-size: 14px; font-weight: 600; text-decoration: none; border-radius: 8px;">
               ترقية الاشتراك
             </a>
