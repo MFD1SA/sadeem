@@ -45,6 +45,8 @@ export default function Settings() {
   const [uploadingLogo, setUploadingLogo] = useState(false);
 
   const [isGoogleUser, setIsGoogleUser] = useState(false);
+  const [googleAvatarUrl, setGoogleAvatarUrl] = useState<string | null>(null);
+  const [settingGoogleLogo, setSettingGoogleLogo] = useState(false);
 
   const [autoReplyFirstOnly, setAutoReplyFirstOnly] = useState(true);
   const [smartTemplateMode, setSmartTemplateMode] = useState(false);
@@ -53,6 +55,9 @@ export default function Settings() {
     supabase.auth.getSession().then(({ data }: { data: any }) => {
       const provider = data?.session?.user?.app_metadata?.provider;
       setIsGoogleUser(provider === 'google');
+      const avatarUrl = data?.session?.user?.user_metadata?.avatar_url
+        || data?.session?.user?.user_metadata?.picture;
+      if (avatarUrl) setGoogleAvatarUrl(avatarUrl);
     });
   }, []);
 
@@ -180,6 +185,27 @@ export default function Settings() {
     } finally {
       setUploadingLogo(false);
       if (logoInputRef.current) logoInputRef.current.value = '';
+    }
+  };
+
+  const handleUseGooglePhoto = async () => {
+    if (!googleAvatarUrl || !organization) return;
+    setSettingGoogleLogo(true);
+    setOrgMessage('');
+    try {
+      // Use the high-res version of Google avatar (replace s96 with s400)
+      const hiResUrl = googleAvatarUrl.replace(/=s\d+-c/, '=s400-c').replace(/\/s\d+-c\//, '/s400-c/');
+      const { error: updateErr } = await supabase
+        .from('organizations')
+        .update({ logo_url: hiResUrl })
+        .eq('id', organization.id);
+      if (updateErr) throw updateErr;
+      await refreshOrganization();
+      setOrgMessage(lang === 'ar' ? 'تم استخدام صورة Google كشعار بنجاح' : 'Google photo set as logo successfully');
+    } catch (err: unknown) {
+      setOrgMessage((err as Error).message || (lang === 'ar' ? 'فشل تعيين الصورة' : 'Failed to set photo'));
+    } finally {
+      setSettingGoogleLogo(false);
     }
   };
 
@@ -343,19 +369,34 @@ export default function Settings() {
                             ? 'يظهر في صفحة هبوط QR ولوحة التحكم. يُفضل صورة مربعة بحجم 200×200 بكسل.'
                             : 'Shown on QR landing page and dashboard. Square image (200×200px) recommended.'}
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => logoInputRef.current?.click()}
-                          disabled={uploadingLogo}
-                          className="btn btn-secondary btn-sm mt-2"
-                        >
-                          <Upload size={13} />
-                          {uploadingLogo
-                            ? (lang === 'ar' ? 'جاري الرفع...' : 'Uploading...')
-                            : organization.logo_url
-                              ? (lang === 'ar' ? 'تغيير الشعار' : 'Change Logo')
-                              : (lang === 'ar' ? 'رفع شعار' : 'Upload Logo')}
-                        </button>
+                        <div className="flex flex-wrap items-center gap-2 mt-2">
+                          <button
+                            type="button"
+                            onClick={() => logoInputRef.current?.click()}
+                            disabled={uploadingLogo}
+                            className="btn btn-secondary btn-sm"
+                          >
+                            <Upload size={13} />
+                            {uploadingLogo
+                              ? (lang === 'ar' ? 'جاري الرفع...' : 'Uploading...')
+                              : organization.logo_url
+                                ? (lang === 'ar' ? 'تغيير الشعار' : 'Change Logo')
+                                : (lang === 'ar' ? 'رفع شعار' : 'Upload Logo')}
+                          </button>
+                          {isGoogleUser && googleAvatarUrl && (
+                            <button
+                              type="button"
+                              onClick={handleUseGooglePhoto}
+                              disabled={settingGoogleLogo}
+                              className="btn btn-sm border border-border bg-white hover:bg-gray-50 text-content-primary gap-1.5"
+                            >
+                              <svg width="14" height="14" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                              {settingGoogleLogo
+                                ? (lang === 'ar' ? 'جاري التعيين...' : 'Setting...')
+                                : (lang === 'ar' ? 'استخدام صورة Google' : 'Use Google Photo')}
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
