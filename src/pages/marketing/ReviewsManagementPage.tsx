@@ -23,7 +23,7 @@ function Header() {
   return (
     <header style={{ position: 'sticky', top: 0, zIndex: 50, background: C.card, borderBottom: `1px solid ${C.border}`, direction: 'rtl' }}>
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 64 }}>
-        <img src="/senda-logo.png" alt="SENDA" style={{ height: 36, cursor: 'pointer' }} onClick={() => nav('/')} />
+        <img src="/senda-logo.png" alt="SENDA" style={{ height: 32, cursor: 'pointer' }} onClick={() => nav('/')} />
         <nav style={{ display: 'flex', gap: 32, alignItems: 'center' }}>
           {NAV.map(n => (
             <span key={n.href} onClick={() => nav(n.href)} style={{ cursor: 'pointer', color: C.muted, fontSize: 14, fontWeight: 500 }}>{n.label}</span>

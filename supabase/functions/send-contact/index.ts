@@ -87,8 +87,31 @@ Deno.serve(async (req: Request) => {
           const errText = await resendRes.text();
           console.error('[send-contact] Resend error (non-fatal):', resendRes.status, errText);
         } else {
-          console.log('[send-contact] Email sent successfully');
+          console.log('[send-contact] Admin notification email sent successfully');
         }
+
+        // ── Step 3: Send thank-you confirmation to submitter (best-effort) ──
+        try {
+          const thankYouRes = await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              from: FROM_EMAIL,
+              to: [email.trim()],
+              subject: 'شكراً لتواصلك — سيندا',
+              html: buildThankYouHtml(name.trim()),
+            }),
+          });
+          if (!thankYouRes.ok) {
+            const errText = await thankYouRes.text();
+            console.error('[send-contact] Thank-you email error (non-fatal):', thankYouRes.status, errText);
+          } else {
+            console.log('[send-contact] Thank-you email sent to', email.trim());
+          }
+        } catch (tyErr) {
+          console.error('[send-contact] Thank-you email exception (non-fatal):', tyErr);
+        }
+
       } catch (emailErr) {
         console.error('[send-contact] Email exception (non-fatal):', emailErr);
       }
@@ -150,6 +173,38 @@ function buildEmailHtml(p: { name: string; email: string; phone?: string; compan
       </div>
     </div>
     <div class="footer">تم الإرسال عبر نموذج التواصل في senda.app • للرد: ${esc(p.email)}</div>
+  </div>
+</body>
+</html>`;
+}
+
+// ─── Thank-you email HTML ────────────────────────────────────────────────────
+function buildThankYouHtml(name: string) {
+  return `<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: Arial, Helvetica, sans-serif; background: #f8fafc; margin: 0; padding: 24px; }
+    .card { background: #ffffff; border-radius: 12px; max-width: 560px; margin: 0 auto; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+    .header { background: linear-gradient(135deg, #06B6D4, #8B5CF6); padding: 24px 28px; }
+    .header h1 { color: #ffffff; font-size: 20px; margin: 0; font-weight: 600; }
+    .body { padding: 24px 28px; color: #374151; font-size: 15px; line-height: 1.8; }
+    .footer { background: #F9FAFB; border-top: 1px solid #E5E7EB; padding: 16px 28px; font-size: 12px; color: #9CA3AF; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="header">
+      <h1>شكراً لتواصلك معنا!</h1>
+    </div>
+    <div class="body">
+      <p>مرحباً ${esc(name)}،</p>
+      <p>تم استلام رسالتك بنجاح. سيقوم فريقنا بالرد عليك في أقرب وقت ممكن.</p>
+      <p>نقدّر اهتمامك بسيندا — منصة إدارة تقييمات جوجل الذكية.</p>
+      <p>مع تحيات فريق سيندا</p>
+    </div>
+    <div class="footer">سيندا — منصة إدارة تقييمات جوجل • senda.app</div>
   </div>
 </body>
 </html>`;

@@ -5,13 +5,13 @@
 // Contact form submits to Edge Function (destination email never exposed)
 // ============================================================================
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Brain, QrCode, BarChart3, Building2, Users, FileText,
-  CheckCircle2, ChevronDown, Send, Loader2, Menu, X,
+  CheckCircle2, Send, Loader2, Menu, X,
   Sparkles, Shield, Clock, ArrowLeft, ArrowRight,
-  Star, MessageSquare, LayoutDashboard, Zap,
+  Star, LayoutDashboard,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
@@ -46,11 +46,17 @@ const T: Record<Lang, Record<string, any>> = {
     heroCtaPrimary: 'ابدأ تجربتك المجانية',
     heroCtaSecondary: 'تعرف على المميزات',
     dashPreviewTitle: 'لوحة تحكم سيندا',
-    dashTabs: ['التقييمات', 'التحليلات', 'الفروع'],
+    dashSidebar: ['التقييمات', 'التحليلات', 'الفروع', 'الفريق', 'الإعدادات'],
+    dashStats: [
+      { label: 'إجمالي التقييمات', value: '1,284' },
+      { label: 'متوسط التقييم', value: '4.7' },
+      { label: 'ردود AI هذا الشهر', value: '186' },
+      { label: 'تقييمات جديدة', value: '24' },
+    ],
     dashReviews: [
-      { name: 'أحمد محمد', stars: 5, text: 'خدمة رائعة وسريعة!', status: 'تم الرد بالـ AI' },
-      { name: 'سارة علي', stars: 4, text: 'جيد جداً، مع بعض الملاحظات', status: 'بانتظار المراجعة' },
-      { name: 'خالد العمري', stars: 5, text: 'تجربة ممتازة، أنصح بها', status: 'تم الرد بالـ AI' },
+      { initials: 'أ', stars: 5, text: 'خدمة رائعة وسريعة، أنصح بها بشدة', status: 'تم الرد' },
+      { initials: 'س', stars: 4, text: 'جيد جدًا، التوصيل كان ممتاز', status: 'بانتظار' },
+      { initials: 'خ', stars: 5, text: 'تجربة لا مثيل لها، شكرًا لكم', status: 'تم الرد' },
     ],
     featuresLabel: 'ماذا يقدم سيندا',
     featuresH2: 'كل أدوات إدارة السمعة في منصة واحدة',
@@ -96,33 +102,30 @@ const T: Record<Lang, Record<string, any>> = {
     compareRows: [
       { label: 'عدد الفروع', vals: ['1', '3', '10', 'غير محدود'] },
       { label: 'أعضاء الفريق', vals: ['1', '3', '10', 'غير محدود'] },
-      { label: 'ردود AI', vals: ['50', '300', '1,500', 'غير محدود'] },
-      { label: 'ردود القوالب', vals: ['100', '500', 'غير محدودة', 'غير محدودة'] },
+      { label: 'ردود AI شهريًا', vals: ['50', '300', '1,500', 'غير محدود'] },
+      { label: 'ردود القوالب', vals: ['100', '500', 'غير محدود', 'غير محدود'] },
       { label: 'أكواد QR', vals: ['1', '3', '10', 'غير محدود'] },
-      { label: 'تحليلات متقدمة', vals: ['--', 'check', 'check', 'check'] },
-      { label: 'مقارنة الفروع', vals: ['--', 'check', 'check', 'check'] },
-      { label: 'إدارة الفريق', vals: ['--', 'check', 'check', 'check'] },
-      { label: 'المهام', vals: ['--', 'check', 'check', 'check'] },
-      { label: 'رفع الشعار', vals: ['--', '--', 'check', 'check'] },
-      { label: 'وصول API', vals: ['--', '--', 'check', 'check'] },
-      { label: 'دعم مميز', vals: ['بريد', 'أولوية', 'مخصص', 'فريق كامل'] },
-      { label: 'رد تلقائي AI', vals: ['--', 'check', 'check', 'check'] },
+      { label: 'QR لكل فرع', vals: ['x', 'check', 'check', 'check'] },
+      { label: 'صفحة QR مخصصة', vals: ['x', 'check', 'check', 'check'] },
+      { label: 'تحليلات QR', vals: ['x', 'check', 'check', 'check'] },
+      { label: 'تحليلات متقدمة', vals: ['x', 'check', 'check', 'check'] },
+      { label: 'مقارنة الفروع', vals: ['x', 'check', 'check', 'check'] },
+      { label: 'تقارير متقدمة', vals: ['x', 'x', 'check', 'check'] },
+      { label: 'إدارة الفريق', vals: ['x', 'check', 'check', 'check'] },
+      { label: 'المهام', vals: ['x', 'check', 'check', 'check'] },
+      { label: 'رفع الشعار', vals: ['x', 'check', 'check', 'check'] },
+      { label: 'وصول API', vals: ['x', 'x', 'x', 'check'] },
+      { label: 'دعم مميز', vals: ['x', 'x', 'check', 'check'] },
+      { label: 'رد تلقائي AI', vals: ['check', 'check', 'check', 'check'] },
     ],
-    faqLabel: 'الأسئلة الشائعة',
-    faqH2: 'لديك أسئلة؟ لدينا إجابات',
-    faqs: [
-      { q: 'ما هو سيندا وكيف يساعد عملي؟', a: 'سيندا منصة متكاملة لإدارة تقييمات جوجل. تساعدك على الرد على التقييمات بالذكاء الاصطناعي، وجمع تقييمات جديدة عبر QR Code، ومراقبة أداء سمعتك عبر جميع فروعك في لوحة تحكم واحدة.' },
-      { q: 'كيف يعمل الرد التلقائي بالذكاء الاصطناعي؟', a: 'عند وصول تقييم جديد، يقرأ نظام الذكاء الاصطناعي التقييم ويولّد ردًا يتطابق مع نبرة علامتك التجارية. يمكنك مراجعة الرد وتعديله قبل النشر، أو ضبط الرد التلقائي الفوري.' },
-      { q: 'هل يمكنني إدارة أكثر من فرع؟', a: 'بالطبع! سيندا مصمم أصلًا لإدارة متعددة الفروع. تستطيع ربط جميع مواقعك ورؤية التقارير والتقييمات لكل فرع بشكل منفصل أو مجمّع.' },
-      { q: 'هل هناك تجربة مجانية؟', a: 'نعم! جميع الخطط تتضمن فترة تجريبية مجانية لا تحتاج فيها إلى بطاقة ائتمان. سجّل الآن وجرّب سيندا بكل راحة.' },
-      { q: 'ما الفرق بين خطط Orbit وNova وGalaxy؟', a: 'Orbit (مدار) مثالية للمشاريع الصغيرة بفرع واحد. Nova (نوفا) مناسبة للأعمال المتنامية بعدة فروع وفريق عمل. Galaxy (جالكسي) مصممة للمؤسسات الكبيرة بفروع وأعضاء أكثر وتكاملات API.' },
-      { q: 'كيف يعمل نظام QR Code؟', a: 'تنشئ رمز QR خاصًا بكل فرع عبر سيندا، تطبعه أو تعرضه للعملاء. عند المسح، يصل العميل مباشرة لصفحة التقييم على جوجل مع تتبع تلقائي لمصدر التقييم.' },
-    ],
+    ctaSectionH2: 'ابدأ بتحسين سمعتك الرقمية اليوم',
+    ctaSectionDesc: 'انضم إلى الأعمال التي تدير سمعتها بذكاء مع سيندا',
+    ctaSectionBtn: 'ابدأ تجربتك المجانية',
     contactLabel: 'تواصل معنا',
     contactH2: 'نحب أن نسمع منك',
     contactDesc: 'سواء كان لديك سؤال، طلب تجربة، أو تريد معرفة المزيد — فريقنا هنا',
     contactFields: { name: 'الاسم الكامل *', email: 'البريد الإلكتروني *', phone: 'رقم الهاتف', company: 'اسم الشركة', message: 'رسالتك *' },
-    contactPlaceholders: { name: 'محمد أحمد', email: 'email@example.com', phone: '+966 5X XXX XXXX', company: 'شركتك أو مطعمك...', message: 'أخبرنا عن عملك وما تحتاجه...' },
+    contactPlaceholders: { name: 'الاسم الكامل', email: 'email@example.com', phone: '+966 5XXXXXXXX', company: 'اسم الشركة', message: 'اكتب رسالتك هنا...' },
     contactSubmit: 'إرسال الرسالة',
     contactSending: 'جاري الإرسال...',
     contactSuccessTitle: 'تم إرسال رسالتك بنجاح!',
@@ -153,11 +156,17 @@ const T: Record<Lang, Record<string, any>> = {
     heroCtaPrimary: 'Start Your Free Trial',
     heroCtaSecondary: 'Explore Features',
     dashPreviewTitle: 'SENDA Dashboard',
-    dashTabs: ['Reviews', 'Analytics', 'Branches'],
+    dashSidebar: ['Reviews', 'Analytics', 'Branches', 'Team', 'Settings'],
+    dashStats: [
+      { label: 'Total Reviews', value: '1,284' },
+      { label: 'Avg Rating', value: '4.7' },
+      { label: 'AI Replies This Month', value: '186' },
+      { label: 'New Reviews', value: '24' },
+    ],
     dashReviews: [
-      { name: 'Ahmed M.', stars: 5, text: 'Great and fast service!', status: 'AI Replied' },
-      { name: 'Sara A.', stars: 4, text: 'Very good, with some notes', status: 'Pending Review' },
-      { name: 'Khalid O.', stars: 5, text: 'Excellent experience, recommended', status: 'AI Replied' },
+      { initials: 'A', stars: 5, text: 'Great service, highly recommend!', status: 'Replied' },
+      { initials: 'S', stars: 4, text: 'Very good, delivery was excellent', status: 'Pending' },
+      { initials: 'K', stars: 5, text: 'Outstanding experience, thank you', status: 'Replied' },
     ],
     featuresLabel: 'What SENDA Offers',
     featuresH2: 'All Reputation Tools in One Platform',
@@ -203,33 +212,30 @@ const T: Record<Lang, Record<string, any>> = {
     compareRows: [
       { label: 'Branches', vals: ['1', '3', '10', 'Unlimited'] },
       { label: 'Team Members', vals: ['1', '3', '10', 'Unlimited'] },
-      { label: 'AI Replies', vals: ['50', '300', '1,500', 'Unlimited'] },
+      { label: 'AI Replies/mo', vals: ['50', '300', '1,500', 'Unlimited'] },
       { label: 'Template Replies', vals: ['100', '500', 'Unlimited', 'Unlimited'] },
       { label: 'QR Codes', vals: ['1', '3', '10', 'Unlimited'] },
-      { label: 'Advanced Analytics', vals: ['--', 'check', 'check', 'check'] },
-      { label: 'Branch Comparison', vals: ['--', 'check', 'check', 'check'] },
-      { label: 'Team Management', vals: ['--', 'check', 'check', 'check'] },
-      { label: 'Tasks', vals: ['--', 'check', 'check', 'check'] },
-      { label: 'Logo Upload', vals: ['--', '--', 'check', 'check'] },
-      { label: 'API Access', vals: ['--', '--', 'check', 'check'] },
-      { label: 'Premium Support', vals: ['Email', 'Priority', 'Dedicated', 'Full Team'] },
-      { label: 'Auto AI Reply', vals: ['--', 'check', 'check', 'check'] },
+      { label: 'QR per Branch', vals: ['x', 'check', 'check', 'check'] },
+      { label: 'Custom QR Page', vals: ['x', 'check', 'check', 'check'] },
+      { label: 'QR Analytics', vals: ['x', 'check', 'check', 'check'] },
+      { label: 'Advanced Analytics', vals: ['x', 'check', 'check', 'check'] },
+      { label: 'Branch Comparison', vals: ['x', 'check', 'check', 'check'] },
+      { label: 'Advanced Reports', vals: ['x', 'x', 'check', 'check'] },
+      { label: 'Team Management', vals: ['x', 'check', 'check', 'check'] },
+      { label: 'Tasks', vals: ['x', 'check', 'check', 'check'] },
+      { label: 'Logo Upload', vals: ['x', 'check', 'check', 'check'] },
+      { label: 'API Access', vals: ['x', 'x', 'x', 'check'] },
+      { label: 'Premium Support', vals: ['x', 'x', 'check', 'check'] },
+      { label: 'Auto AI Reply', vals: ['check', 'check', 'check', 'check'] },
     ],
-    faqLabel: 'FAQ',
-    faqH2: 'Got Questions? We Have Answers',
-    faqs: [
-      { q: 'What is SENDA and how does it help my business?', a: 'SENDA is a complete Google review management platform. It helps you reply to reviews with AI, collect new reviews via QR codes, and monitor your reputation across all branches from one dashboard.' },
-      { q: 'How does the AI auto-reply work?', a: 'When a new review arrives, our AI reads it and generates a reply matching your brand tone. You can review and edit before publishing, or enable fully automatic replies.' },
-      { q: 'Can I manage multiple branches?', a: 'Absolutely! SENDA is designed for multi-branch management. Link all your locations and view reports per branch or aggregated.' },
-      { q: 'Is there a free trial?', a: 'Yes! All plans include a free trial with no credit card required. Sign up now and try SENDA risk-free.' },
-      { q: 'What is the difference between Orbit, Nova, and Galaxy?', a: 'Orbit is ideal for small businesses with one branch. Nova suits growing businesses with multiple branches and a team. Galaxy is designed for large enterprises with more branches, members, and API integrations.' },
-      { q: 'How does the QR Code system work?', a: 'Create a unique QR code for each branch via SENDA, print or display it for customers. When scanned, the customer goes directly to your Google review page with automatic source tracking.' },
-    ],
+    ctaSectionH2: 'Start Improving Your Digital Reputation Today',
+    ctaSectionDesc: 'Join businesses that manage their reputation smartly with SENDA',
+    ctaSectionBtn: 'Start Your Free Trial',
     contactLabel: 'Contact Us',
     contactH2: 'We\'d Love to Hear from You',
     contactDesc: 'Whether you have a question, want a demo, or want to learn more - our team is here',
     contactFields: { name: 'Full Name *', email: 'Email *', phone: 'Phone', company: 'Company', message: 'Your Message *' },
-    contactPlaceholders: { name: 'John Doe', email: 'email@example.com', phone: '+966 5X XXX XXXX', company: 'Your company...', message: 'Tell us about your business and what you need...' },
+    contactPlaceholders: { name: 'Full name', email: 'email@example.com', phone: '+966 5XXXXXXXX', company: 'Company name', message: 'Write your message here...' },
     contactSubmit: 'Send Message',
     contactSending: 'Sending...',
     contactSuccessTitle: 'Message Sent Successfully!',
@@ -255,11 +261,11 @@ const IconMap: Record<string, any> = { Brain, QrCode, BarChart3, Building2, User
 
 // ─── Shared styles ────────────────────────────────────────────────────────────
 const sectionPadding: React.CSSProperties = { padding: '100px 24px', maxWidth: 1200, margin: '0 auto' };
-const sectionTitle = (lang: Lang): React.CSSProperties => ({
-  fontSize: 'clamp(28px, 4vw, 40px)', fontWeight: 700, color: C.text, marginBottom: 16,
+const sectionTitle = (): React.CSSProperties => ({
+  fontSize: 'clamp(28px, 4vw, 40px)', fontWeight: 600, color: C.text, marginBottom: 16,
   textAlign: 'center', lineHeight: 1.3,
 });
-const sectionSub: React.CSSProperties = { fontSize: 17, color: C.muted, textAlign: 'center', maxWidth: 640, margin: '0 auto 56px', lineHeight: 1.7 };
+const sectionSub: React.CSSProperties = { fontSize: 17, color: C.muted, textAlign: 'center', maxWidth: 640, margin: '0 auto 56px', lineHeight: 1.7, fontWeight: 400 };
 const goldBtn: React.CSSProperties = {
   background: GOLD_GRAD, color: '#fff', border: 'none', borderRadius: 10, padding: '14px 32px',
   fontSize: 16, fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s', display: 'inline-flex', alignItems: 'center', gap: 8,
@@ -279,7 +285,6 @@ export default function HomePage() {
   const [lang, setLang] = useState<Lang>('ar');
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [form, setForm] = useState({ name: '', email: '', phone: '', company: '', message: '' });
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [formError, setFormError] = useState('');
@@ -325,17 +330,23 @@ export default function HomePage() {
   const Stars = ({ count }: { count: number }) => (
     <span style={{ display: 'inline-flex', gap: 2 }}>
       {Array.from({ length: count }).map((_, i) => (
-        <Star key={i} size={14} fill={C.gold} color={C.gold} />
+        <Star key={i} size={12} fill={C.gold} color={C.gold} />
       ))}
     </span>
   );
 
-  // ─── Check / Dash for comparison table ──────────────────────────────────────
+  // ─── Check / X for comparison table ──────────────────────────────────────
   const CellVal = ({ v }: { v: string }) => {
-    if (v === 'check') return <CheckCircle2 size={18} color={C.greenCheck} />;
-    if (v === '--') return <span style={{ color: C.border, fontSize: 18 }}>--</span>;
+    if (v === 'check') return <span style={{ color: C.greenCheck, fontSize: 18, fontWeight: 700 }}>&#10003;</span>;
+    if (v === 'x') return <span style={{ color: '#D1D5DB', fontSize: 18, fontWeight: 700 }}>&#10005;</span>;
     return <span style={{ fontSize: 14, fontWeight: 500, color: C.text }}>{v}</span>;
   };
+
+  // ─── Logo component ─────────────────────────────────────────────────────────
+  // Logo helper — no wrapper needed (white-bg logo)
+  const LogoImg = ({ height = 32, invert = false }: { height?: number; invert?: boolean }) => (
+    <img src="/senda-logo.png" alt="SENDA" style={{ height, ...(invert ? { filter: 'brightness(0) invert(1)' } : {}) }} />
+  );
 
   return (
     <div style={{ direction: dir, fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', background: C.bg, color: C.text, minHeight: '100vh', overflowX: 'hidden' }}>
@@ -350,16 +361,16 @@ export default function HomePage() {
       }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 72 }}>
           {/* Logo */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }} onClick={() => scrollTo('hero')}>
-            <img src="/senda-logo.png" alt="SENDA" style={{ height: 40, borderRadius: 8 }} />
-            <span style={{ fontSize: 20, fontWeight: 700, color: C.text, letterSpacing: '-0.3px' }}>SENDA</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }} onClick={() => scrollTo('hero')}>
+            <LogoImg height={40} />
+            <span style={{ fontSize: 20, fontWeight: 600, color: C.text, letterSpacing: '-0.3px' }}>SENDA</span>
           </div>
 
           {/* Desktop nav */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 32 }} className="nav-desktop">
             {t.nav.map((label: string, i: number) => (
               <button key={i} onClick={() => scrollTo(t.navIds[i])} style={{
-                background: 'none', border: 'none', color: C.muted, fontSize: 15, fontWeight: 500,
+                background: 'none', border: 'none', color: C.muted, fontSize: 15, fontWeight: 400,
                 cursor: 'pointer', padding: '4px 0', transition: 'color 0.2s',
               }}
                 onMouseOver={e => (e.currentTarget.style.color = C.gold)}
@@ -375,7 +386,7 @@ export default function HomePage() {
               fontSize: 13, fontWeight: 600, color: C.muted, cursor: 'pointer',
             }}>{t.langToggle}</button>
             <button onClick={() => navigate('/login')} style={{
-              background: 'none', border: 'none', color: C.text, fontSize: 15, fontWeight: 500, cursor: 'pointer', padding: '8px 16px',
+              background: 'none', border: 'none', color: C.text, fontSize: 15, fontWeight: 400, cursor: 'pointer', padding: '8px 16px',
             }}>{t.loginBtn}</button>
             <button onClick={() => navigate('/login')} style={{
               ...goldBtn, padding: '10px 22px', fontSize: 14, borderRadius: 8,
@@ -399,7 +410,7 @@ export default function HomePage() {
             {t.nav.map((label: string, i: number) => (
               <button key={i} onClick={() => scrollTo(t.navIds[i])} style={{
                 display: 'block', width: '100%', textAlign: isRtl ? 'right' : 'left', background: 'none',
-                border: 'none', color: C.text, fontSize: 16, fontWeight: 500, padding: '12px 0',
+                border: 'none', color: C.text, fontSize: 16, fontWeight: 400, padding: '12px 0',
                 borderBottom: `1px solid ${C.border}`, cursor: 'pointer',
               }}>{label}</button>
             ))}
@@ -418,21 +429,22 @@ export default function HomePage() {
 
       {/* ═══════════════════ HERO ═══════════════════ */}
       <section id="hero" style={{ paddingTop: 140, paddingBottom: 80, background: `linear-gradient(180deg, #FFFFFF 0%, ${C.bg} 100%)` }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 60 }}>
-          {/* Text side */}
-          <div style={{ flex: '1 1 480px', minWidth: 320 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 32 }}>
-              <img src="/senda-logo.png" alt="SENDA" style={{ height: 56, borderRadius: 12 }} />
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px' }}>
+          {/* Text center */}
+          <div style={{ textAlign: 'center', maxWidth: 720, margin: '0 auto', marginBottom: 56 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 32 }}>
+              <span style={{ fontSize: 40, fontWeight: 600, color: C.gold, letterSpacing: '-1px' }}>S</span>
+              <span style={{ fontSize: 28, fontWeight: 600, color: C.text, letterSpacing: '-0.5px' }}>SENDA</span>
             </div>
             <h1 style={{
-              fontSize: 'clamp(32px, 5vw, 52px)', fontWeight: 800, color: C.text, lineHeight: 1.2, marginBottom: 20, letterSpacing: '-0.5px',
+              fontSize: 'clamp(32px, 5vw, 52px)', fontWeight: 600, color: C.text, lineHeight: 1.2, marginBottom: 20, letterSpacing: '-0.5px',
             }}>
               {t.heroH1}
             </h1>
-            <p style={{ fontSize: 18, color: C.muted, lineHeight: 1.7, marginBottom: 36, maxWidth: 520 }}>
+            <p style={{ fontSize: 18, color: C.muted, lineHeight: 1.7, marginBottom: 36, fontWeight: 400 }}>
               {t.heroSub}
             </p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, justifyContent: 'center' }}>
               <button onClick={() => navigate('/login')} style={goldBtn}
                 onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(184,150,90,0.35)'; }}
                 onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
@@ -449,68 +461,110 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Dashboard mockup */}
-          <div style={{ flex: '1 1 480px', minWidth: 320 }}>
+          {/* ── CSS-only Dashboard Mockup ── */}
+          <div style={{
+            maxWidth: 960, margin: '0 auto',
+            borderRadius: 16, overflow: 'hidden',
+            boxShadow: '0 25px 60px rgba(0,0,0,0.12), 0 8px 24px rgba(0,0,0,0.08)',
+            border: `1px solid ${C.border}`,
+            background: C.card,
+          }}>
+            {/* Browser chrome bar */}
             <div style={{
-              background: C.card, borderRadius: 20, border: `1px solid ${C.border}`,
-              boxShadow: '0 4px 24px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04)',
-              overflow: 'hidden',
+              display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px',
+              background: '#F3F4F6', borderBottom: `1px solid ${C.border}`,
             }}>
-              {/* Title bar */}
+              <span style={{ width: 12, height: 12, borderRadius: '50%', background: '#EF4444' }} />
+              <span style={{ width: 12, height: 12, borderRadius: '50%', background: '#F59E0B' }} />
+              <span style={{ width: 12, height: 12, borderRadius: '50%', background: '#22C55E' }} />
               <div style={{
-                padding: '14px 20px', borderBottom: `1px solid ${C.border}`,
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                background: '#FAFBFC',
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ display: 'flex', gap: 6 }}>
-                    <span style={{ width: 12, height: 12, borderRadius: '50%', background: '#EF4444' }} />
-                    <span style={{ width: 12, height: 12, borderRadius: '50%', background: '#F59E0B' }} />
-                    <span style={{ width: 12, height: 12, borderRadius: '50%', background: '#22C55E' }} />
-                  </div>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: C.muted, marginInlineStart: 8 }}>{t.dashPreviewTitle}</span>
-                </div>
-                <LayoutDashboard size={16} color={C.gold} />
-              </div>
+                flex: 1, marginInlineStart: 12, background: '#fff', borderRadius: 6, padding: '5px 14px',
+                fontSize: 12, color: C.muted, border: `1px solid ${C.border}`,
+              }}>gandx.net/dashboard</div>
+            </div>
 
-              {/* Tabs */}
-              <div style={{ display: 'flex', borderBottom: `1px solid ${C.border}` }}>
-                {t.dashTabs.map((tab: string, i: number) => (
+            {/* App body: sidebar + main */}
+            <div style={{ display: 'flex', minHeight: 360 }}>
+              {/* Sidebar */}
+              <div className="dash-sidebar" style={{
+                width: 200, background: '#1A1A2E', padding: '20px 0', flexShrink: 0,
+                display: 'flex', flexDirection: 'column', gap: 2,
+              }}>
+                <div style={{ padding: '0 16px 16px', borderBottom: '1px solid rgba(255,255,255,0.08)', marginBottom: 8 }}>
+                  <span style={{ color: C.gold, fontSize: 16, fontWeight: 600, letterSpacing: '-0.3px' }}>SENDA</span>
+                </div>
+                {t.dashSidebar.map((item: string, i: number) => (
                   <div key={i} style={{
-                    flex: 1, textAlign: 'center', padding: '10px 0', fontSize: 13, fontWeight: 600,
-                    color: i === 0 ? C.gold : C.muted,
-                    borderBottom: i === 0 ? `2px solid ${C.gold}` : '2px solid transparent',
-                  }}>{tab}</div>
+                    padding: '9px 16px', fontSize: 13, fontWeight: i === 0 ? 600 : 400,
+                    color: i === 0 ? C.gold : 'rgba(255,255,255,0.5)',
+                    background: i === 0 ? 'rgba(184,150,90,0.12)' : 'transparent',
+                    borderInlineStart: i === 0 ? `3px solid ${C.gold}` : '3px solid transparent',
+                  }}>{item}</div>
                 ))}
               </div>
 
-              {/* Review rows */}
-              <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {t.dashReviews.map((r: any, i: number) => (
-                  <div key={i} style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    padding: '12px 14px', borderRadius: 10, background: C.bg, border: `1px solid ${C.border}`,
+              {/* Main content area */}
+              <div style={{ flex: 1, padding: 20, background: '#FAFBFC', overflow: 'hidden' }}>
+                {/* Topbar */}
+                <div style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20,
+                }}>
+                  <span style={{ fontSize: 16, fontWeight: 600, color: C.text }}>{t.dashPreviewTitle}</span>
+                  <LayoutDashboard size={18} color={C.gold} />
+                </div>
+
+                {/* Stats cards row */}
+                <div className="dash-stats-grid" style={{
+                  display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 20,
+                }}>
+                  {t.dashStats.map((s: any, i: number) => (
+                    <div key={i} style={{
+                      background: '#fff', borderRadius: 10, padding: '14px 12px',
+                      border: `1px solid ${C.border}`,
+                    }}>
+                      <div style={{ fontSize: 11, color: C.muted, fontWeight: 400, marginBottom: 4 }}>{s.label}</div>
+                      <div style={{ fontSize: 20, fontWeight: 600, color: C.text }}>{s.value}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Reviews list */}
+                <div style={{
+                  background: '#fff', borderRadius: 10, border: `1px solid ${C.border}`, overflow: 'hidden',
+                }}>
+                  <div style={{
+                    padding: '10px 14px', borderBottom: `1px solid ${C.border}`,
+                    fontSize: 13, fontWeight: 600, color: C.text,
                   }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    {lang === 'ar' ? 'آخر التقييمات' : 'Recent Reviews'}
+                  </div>
+                  {t.dashReviews.map((r: any, i: number) => (
+                    <div key={i} style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      padding: '10px 14px',
+                      borderBottom: i < t.dashReviews.length - 1 ? `1px solid ${C.border}` : 'none',
+                      background: i % 2 === 1 ? '#FAFBFC' : '#fff',
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                         <div style={{
                           width: 28, height: 28, borderRadius: '50%', background: GOLD_GRAD,
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          color: '#fff', fontSize: 12, fontWeight: 700,
-                        }}>{r.name.charAt(0)}</div>
-                        <span style={{ fontSize: 14, fontWeight: 600, color: C.text }}>{r.name}</span>
-                        <Stars count={r.stars} />
+                          color: '#fff', fontSize: 12, fontWeight: 600, flexShrink: 0,
+                        }}>{r.initials}</div>
+                        <div>
+                          <Stars count={r.stars} />
+                          <div style={{ fontSize: 12, color: C.muted, fontWeight: 400, marginTop: 2 }}>{r.text}</div>
+                        </div>
                       </div>
-                      <span style={{ fontSize: 13, color: C.muted, paddingInlineStart: 36 }}>{r.text}</span>
+                      <span style={{
+                        fontSize: 10, fontWeight: 600, padding: '3px 8px', borderRadius: 6,
+                        background: r.status === (lang === 'ar' ? 'تم الرد' : 'Replied') ? 'rgba(184,150,90,0.1)' : 'rgba(107,114,128,0.1)',
+                        color: r.status === (lang === 'ar' ? 'تم الرد' : 'Replied') ? C.gold : C.muted,
+                        whiteSpace: 'nowrap',
+                      }}>{r.status}</span>
                     </div>
-                    <span style={{
-                      fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 6,
-                      background: i !== 1 ? 'rgba(184,150,90,0.1)' : 'rgba(107,114,128,0.1)',
-                      color: i !== 1 ? C.gold : C.muted,
-                      whiteSpace: 'nowrap',
-                    }}>{r.status}</span>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -523,7 +577,7 @@ export default function HomePage() {
           <p style={{ textAlign: 'center', fontSize: 14, fontWeight: 600, color: C.gold, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 12 }}>
             {t.featuresLabel}
           </p>
-          <h2 style={sectionTitle(lang)}>{t.featuresH2}</h2>
+          <h2 style={sectionTitle()}>{t.featuresH2}</h2>
           <div style={{ height: 24 }} />
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 24 }}>
             {t.featureCards.map((f: any, i: number) => {
@@ -539,8 +593,8 @@ export default function HomePage() {
                   }}>
                     <Icon size={24} color={C.gold} />
                   </div>
-                  <h3 style={{ fontSize: 18, fontWeight: 700, color: C.text, marginBottom: 10 }}>{f.title}</h3>
-                  <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.7, margin: 0 }}>{f.desc}</p>
+                  <h3 style={{ fontSize: 18, fontWeight: 600, color: C.text, marginBottom: 10 }}>{f.title}</h3>
+                  <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.7, margin: 0, fontWeight: 400 }}>{f.desc}</p>
                 </div>
               );
             })}
@@ -554,7 +608,7 @@ export default function HomePage() {
           <p style={{ textAlign: 'center', fontSize: 14, fontWeight: 600, color: C.gold, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 12 }}>
             {t.benefitsLabel}
           </p>
-          <h2 style={sectionTitle(lang)}>{t.benefitsH2}</h2>
+          <h2 style={sectionTitle()}>{t.benefitsH2}</h2>
           <div style={{ height: 24 }} />
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 32 }}>
             {t.benefits.map((b: any, i: number) => {
@@ -568,8 +622,8 @@ export default function HomePage() {
                   }}>
                     <Icon size={28} color="#fff" />
                   </div>
-                  <h3 style={{ fontSize: 18, fontWeight: 700, color: C.text, marginBottom: 10 }}>{b.title}</h3>
-                  <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.7, margin: 0 }}>{b.desc}</p>
+                  <h3 style={{ fontSize: 18, fontWeight: 600, color: C.text, marginBottom: 10 }}>{b.title}</h3>
+                  <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.7, margin: 0, fontWeight: 400 }}>{b.desc}</p>
                 </div>
               );
             })}
@@ -583,7 +637,7 @@ export default function HomePage() {
           <p style={{ textAlign: 'center', fontSize: 14, fontWeight: 600, color: C.gold, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 12 }}>
             {t.howLabel}
           </p>
-          <h2 style={sectionTitle(lang)}>{t.howH2}</h2>
+          <h2 style={sectionTitle()}>{t.howH2}</h2>
           <div style={{ height: 24 }} />
           <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 40 }}>
             {t.howSteps.map((s: any, i: number) => (
@@ -592,16 +646,13 @@ export default function HomePage() {
                   width: 64, height: 64, borderRadius: '50%', background: i === 1 ? GOLD_GRAD : C.card,
                   border: i !== 1 ? `2px solid ${C.gold}` : 'none',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px',
-                  fontSize: 24, fontWeight: 800, color: i === 1 ? '#fff' : C.gold,
+                  fontSize: 24, fontWeight: 600, color: i === 1 ? '#fff' : C.gold,
                   boxShadow: i === 1 ? '0 4px 16px rgba(184,150,90,0.3)' : '0 2px 8px rgba(0,0,0,0.04)',
                 }}>
                   {s.num}
                 </div>
-                <h3 style={{ fontSize: 18, fontWeight: 700, color: C.text, marginBottom: 10 }}>{s.title}</h3>
-                <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.7, margin: 0 }}>{s.desc}</p>
-                {i < t.howSteps.length - 1 && (
-                  <div style={{ display: 'none' }} className="step-connector" />
-                )}
+                <h3 style={{ fontSize: 18, fontWeight: 600, color: C.text, marginBottom: 10 }}>{s.title}</h3>
+                <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.7, margin: 0, fontWeight: 400 }}>{s.desc}</p>
               </div>
             ))}
           </div>
@@ -614,7 +665,7 @@ export default function HomePage() {
           <p style={{ textAlign: 'center', fontSize: 14, fontWeight: 600, color: C.gold, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 12 }}>
             {t.pricingLabel}
           </p>
-          <h2 style={sectionTitle(lang)}>{t.pricingH2}</h2>
+          <h2 style={sectionTitle()}>{t.pricingH2}</h2>
           <p style={sectionSub}>{t.pricingDesc}</p>
 
           {/* Plan cards */}
@@ -635,25 +686,25 @@ export default function HomePage() {
                   {isPopular && (
                     <div style={{
                       position: 'absolute', top: -14, left: '50%', transform: 'translateX(-50%)',
-                      background: GOLD_GRAD, color: '#fff', fontSize: 12, fontWeight: 700,
+                      background: GOLD_GRAD, color: '#fff', fontSize: 12, fontWeight: 600,
                       padding: '5px 18px', borderRadius: 20, whiteSpace: 'nowrap',
                     }}>{t.pricingMostPopular}</div>
                   )}
                   <div style={{ textAlign: 'center', marginBottom: 24 }}>
-                    <h3 style={{ fontSize: 22, fontWeight: 800, color: C.text, marginBottom: 4 }}>{plan.name}</h3>
+                    <h3 style={{ fontSize: 22, fontWeight: 600, color: C.text, marginBottom: 4 }}>{plan.name}</h3>
                     <p style={{ fontSize: 14, color: C.gold, fontWeight: 600, marginBottom: 16 }}>{plan.nameAr}</p>
                     {plan.price ? (
                       <div>
-                        <span style={{ fontSize: 42, fontWeight: 800, color: C.text }}>{plan.price}</span>
-                        <span style={{ fontSize: 15, color: C.muted, marginInlineStart: 4 }}>{t.pricingMo}</span>
+                        <span style={{ fontSize: 42, fontWeight: 600, color: C.text }}>{plan.price}</span>
+                        <span style={{ fontSize: 15, color: C.muted, marginInlineStart: 4, fontWeight: 400 }}>{t.pricingMo}</span>
                       </div>
                     ) : (
-                      <div style={{ fontSize: 24, fontWeight: 700, color: C.gold, padding: '10px 0' }}>{t.pricingContactUs}</div>
+                      <div style={{ fontSize: 24, fontWeight: 600, color: C.gold, padding: '10px 0' }}>{t.pricingContactUs}</div>
                     )}
                   </div>
                   <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 28px', display: 'flex', flexDirection: 'column', gap: 12 }}>
                     {plan.features.map((f: string, fi: number) => (
-                      <li key={fi} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 14, color: C.text }}>
+                      <li key={fi} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 14, color: C.text, fontWeight: 400 }}>
                         <CheckCircle2 size={16} color={C.greenCheck} style={{ flexShrink: 0 }} />
                         {f}
                       </li>
@@ -674,31 +725,52 @@ export default function HomePage() {
             })}
           </div>
 
-          {/* Comparison table */}
-          <h3 style={{ fontSize: 24, fontWeight: 700, color: C.text, textAlign: 'center', marginBottom: 32 }}>{t.compareTitle}</h3>
+          {/* ── Comparison table ── */}
+          <h3 style={{ fontSize: 24, fontWeight: 600, color: C.text, textAlign: 'center', marginBottom: 32 }}>{t.compareTitle}</h3>
           <div style={{ overflowX: 'auto', borderRadius: 16, border: `1px solid ${C.border}`, background: C.card }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 640, fontSize: 14 }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 700, fontSize: 14 }}>
               <thead>
-                <tr style={{ background: C.bg }}>
-                  <th style={{ padding: '14px 20px', textAlign: isRtl ? 'right' : 'left', fontWeight: 700, color: C.text, borderBottom: `1px solid ${C.border}` }}>
+                <tr style={{ background: '#F3F4F6', position: 'sticky', top: 0, zIndex: 2 }}>
+                  <th style={{
+                    padding: '14px 20px', textAlign: isRtl ? 'right' : 'left', fontWeight: 600, color: C.text,
+                    borderBottom: `2px solid ${C.border}`, background: '#F3F4F6',
+                  }}>
                     {t.compareFeatureCol}
                   </th>
                   {t.plans.map((p: any, i: number) => (
                     <th key={i} style={{
-                      padding: '14px 16px', textAlign: 'center', fontWeight: 700, borderBottom: `1px solid ${C.border}`,
+                      padding: '14px 16px', textAlign: 'center', fontWeight: 600,
+                      borderBottom: `2px solid ${C.border}`,
                       color: p.popular ? C.gold : C.text,
+                      background: p.popular ? 'rgba(184,150,90,0.06)' : '#F3F4F6',
+                      position: 'relative',
                     }}>
-                      {p.name}
+                      <div>{p.name}</div>
+                      <div style={{ fontSize: 12, fontWeight: 400, color: C.muted, marginTop: 2 }}>
+                        {p.price ? `${p.price} ${t.pricingMo}` : t.pricingContactUs}
+                      </div>
+                      {p.popular && (
+                        <div style={{
+                          position: 'absolute', top: -1, left: 0, right: 0, height: 3,
+                          background: GOLD_GRAD, borderRadius: '0 0 3px 3px',
+                        }} />
+                      )}
                     </th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {t.compareRows.map((row: any, ri: number) => (
-                  <tr key={ri} style={{ borderBottom: ri < t.compareRows.length - 1 ? `1px solid ${C.border}` : 'none' }}>
+                  <tr key={ri} style={{
+                    borderBottom: ri < t.compareRows.length - 1 ? `1px solid ${C.border}` : 'none',
+                    background: ri % 2 === 0 ? '#fff' : '#FAFBFC',
+                  }}>
                     <td style={{ padding: '12px 20px', fontWeight: 500, color: C.text }}>{row.label}</td>
                     {row.vals.map((v: string, vi: number) => (
-                      <td key={vi} style={{ padding: '12px 16px', textAlign: 'center' }}><CellVal v={v} /></td>
+                      <td key={vi} style={{
+                        padding: '12px 16px', textAlign: 'center',
+                        background: t.plans[vi]?.popular ? (ri % 2 === 0 ? 'rgba(184,150,90,0.03)' : 'rgba(184,150,90,0.06)') : undefined,
+                      }}><CellVal v={v} /></td>
                     ))}
                   </tr>
                 ))}
@@ -708,37 +780,24 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ═══════════════════ FAQ ═══════════════════ */}
-      <section id="faq" style={{ background: C.bg }}>
-        <div style={sectionPadding}>
-          <p style={{ textAlign: 'center', fontSize: 14, fontWeight: 600, color: C.gold, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 12 }}>
-            {t.faqLabel}
+      {/* ═══════════════════ CTA SECTION ═══════════════════ */}
+      <section style={{ background: C.dark }}>
+        <div style={{ maxWidth: 800, margin: '0 auto', padding: '80px 24px', textAlign: 'center' }}>
+          <h2 style={{ fontSize: 'clamp(24px, 4vw, 36px)', fontWeight: 600, color: '#fff', marginBottom: 16, lineHeight: 1.3 }}>
+            {t.ctaSectionH2}
+          </h2>
+          <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.6)', marginBottom: 36, lineHeight: 1.7, fontWeight: 400 }}>
+            {t.ctaSectionDesc}
           </p>
-          <h2 style={sectionTitle(lang)}>{t.faqH2}</h2>
-          <div style={{ height: 24 }} />
-          <div style={{ maxWidth: 760, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {t.faqs.map((faq: any, i: number) => (
-              <div key={i} style={{
-                ...cardStyle, padding: 0, overflow: 'hidden', cursor: 'pointer',
-                border: openFaq === i ? `1px solid ${C.gold}` : `1px solid ${C.border}`,
-              }} onClick={() => setOpenFaq(openFaq === i ? null : i)}>
-                <div style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 24px',
-                }}>
-                  <span style={{ fontSize: 16, fontWeight: 600, color: C.text, flex: 1 }}>{faq.q}</span>
-                  <ChevronDown size={20} color={C.gold} style={{
-                    transition: 'transform 0.3s', transform: openFaq === i ? 'rotate(180deg)' : 'rotate(0deg)',
-                    flexShrink: 0, marginInlineStart: 12,
-                  }} />
-                </div>
-                {openFaq === i && (
-                  <div style={{ padding: '0 24px 20px', fontSize: 15, color: C.muted, lineHeight: 1.8 }}>
-                    {faq.a}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
+          <button onClick={() => navigate('/login')} style={{
+            ...goldBtn, padding: '16px 40px', fontSize: 17, borderRadius: 12,
+          }}
+            onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(184,150,90,0.35)'; }}
+            onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
+          >
+            {t.ctaSectionBtn}
+            {isRtl ? <ArrowLeft size={18} /> : <ArrowRight size={18} />}
+          </button>
         </div>
       </section>
 
@@ -748,7 +807,7 @@ export default function HomePage() {
           <p style={{ textAlign: 'center', fontSize: 14, fontWeight: 600, color: C.gold, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 12 }}>
             {t.contactLabel}
           </p>
-          <h2 style={sectionTitle(lang)}>{t.contactH2}</h2>
+          <h2 style={sectionTitle()}>{t.contactH2}</h2>
           <p style={sectionSub}>{t.contactDesc}</p>
 
           <div style={{ maxWidth: 600, margin: '0 auto' }}>
@@ -760,13 +819,13 @@ export default function HomePage() {
                 }}>
                   <CheckCircle2 size={32} color={C.greenCheck} />
                 </div>
-                <h3 style={{ fontSize: 22, fontWeight: 700, color: C.text, marginBottom: 8 }}>{t.contactSuccessTitle}</h3>
-                <p style={{ fontSize: 16, color: C.muted, marginBottom: 24 }}>{t.contactSuccessDesc}</p>
+                <h3 style={{ fontSize: 22, fontWeight: 600, color: C.text, marginBottom: 8 }}>{t.contactSuccessTitle}</h3>
+                <p style={{ fontSize: 16, color: C.muted, marginBottom: 24, fontWeight: 400 }}>{t.contactSuccessDesc}</p>
                 <button onClick={() => setStatus('idle')} style={outlineBtn}>{t.contactSuccessRetry}</button>
               </div>
             ) : (
               <form onSubmit={handleSubmit} style={{ ...cardStyle, padding: 36, display: 'flex', flexDirection: 'column', gap: 20 }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                <div className="form-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                   <div>
                     <label style={{ display: 'block', fontSize: 14, fontWeight: 600, color: C.text, marginBottom: 6 }}>{t.contactFields.name}</label>
                     <input required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
@@ -774,7 +833,7 @@ export default function HomePage() {
                       style={{
                         width: '100%', padding: '12px 14px', borderRadius: 10, border: `1px solid ${C.border}`,
                         fontSize: 15, color: C.text, background: C.bg, outline: 'none', boxSizing: 'border-box',
-                        direction: dir,
+                        direction: dir, fontWeight: 400,
                       }}
                       onFocus={e => e.currentTarget.style.borderColor = C.gold}
                       onBlur={e => e.currentTarget.style.borderColor = C.border}
@@ -787,14 +846,14 @@ export default function HomePage() {
                       style={{
                         width: '100%', padding: '12px 14px', borderRadius: 10, border: `1px solid ${C.border}`,
                         fontSize: 15, color: C.text, background: C.bg, outline: 'none', boxSizing: 'border-box',
-                        direction: 'ltr',
+                        direction: 'ltr', fontWeight: 400,
                       }}
                       onFocus={e => e.currentTarget.style.borderColor = C.gold}
                       onBlur={e => e.currentTarget.style.borderColor = C.border}
                     />
                   </div>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                <div className="form-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                   <div>
                     <label style={{ display: 'block', fontSize: 14, fontWeight: 600, color: C.text, marginBottom: 6 }}>{t.contactFields.phone}</label>
                     <input value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })}
@@ -802,7 +861,7 @@ export default function HomePage() {
                       style={{
                         width: '100%', padding: '12px 14px', borderRadius: 10, border: `1px solid ${C.border}`,
                         fontSize: 15, color: C.text, background: C.bg, outline: 'none', boxSizing: 'border-box',
-                        direction: 'ltr',
+                        direction: 'ltr', fontWeight: 400,
                       }}
                       onFocus={e => e.currentTarget.style.borderColor = C.gold}
                       onBlur={e => e.currentTarget.style.borderColor = C.border}
@@ -815,7 +874,7 @@ export default function HomePage() {
                       style={{
                         width: '100%', padding: '12px 14px', borderRadius: 10, border: `1px solid ${C.border}`,
                         fontSize: 15, color: C.text, background: C.bg, outline: 'none', boxSizing: 'border-box',
-                        direction: dir,
+                        direction: dir, fontWeight: 400,
                       }}
                       onFocus={e => e.currentTarget.style.borderColor = C.gold}
                       onBlur={e => e.currentTarget.style.borderColor = C.border}
@@ -829,7 +888,7 @@ export default function HomePage() {
                     style={{
                       width: '100%', padding: '12px 14px', borderRadius: 10, border: `1px solid ${C.border}`,
                       fontSize: 15, color: C.text, background: C.bg, outline: 'none', resize: 'vertical',
-                      fontFamily: 'inherit', boxSizing: 'border-box', direction: dir,
+                      fontFamily: 'inherit', boxSizing: 'border-box', direction: dir, fontWeight: 400,
                     }}
                     onFocus={e => e.currentTarget.style.borderColor = C.gold}
                     onBlur={e => e.currentTarget.style.borderColor = C.border}
@@ -856,19 +915,19 @@ export default function HomePage() {
 
       {/* ═══════════════════ FOOTER ═══════════════════ */}
       <footer style={{ background: C.dark, color: '#fff' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '60px 24px 32px' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '60px 24px 0' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 40, marginBottom: 48 }}>
             {/* Brand col */}
             <div style={{ minWidth: 200 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-                <img src="/senda-logo.png" alt="SENDA" style={{ height: 36, borderRadius: 8 }} />
-                <span style={{ fontSize: 18, fontWeight: 700 }}>SENDA</span>
+                <LogoImg height={36} invert />
+                <span style={{ fontSize: 18, fontWeight: 600 }}>SENDA</span>
               </div>
-              <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)', lineHeight: 1.7, maxWidth: 280 }}>{t.footerTagline}</p>
+              <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)', lineHeight: 1.7, maxWidth: 280, fontWeight: 400 }}>{t.footerTagline}</p>
               {/* Social */}
               <div style={{ display: 'flex', gap: 12, marginTop: 20 }}>
                 {/* Twitter/X */}
-                <a href="https://x.com" target="_blank" rel="noopener noreferrer" style={{
+                <a href="https://x.com/sabortech" target="_blank" rel="noopener noreferrer" style={{
                   width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.1)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.2s',
                 }}
@@ -880,7 +939,7 @@ export default function HomePage() {
                   </svg>
                 </a>
                 {/* LinkedIn */}
-                <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" style={{
+                <a href="https://linkedin.com/company/sabortech" target="_blank" rel="noopener noreferrer" style={{
                   width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.1)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.2s',
                 }}
@@ -896,12 +955,12 @@ export default function HomePage() {
 
             {/* Product col */}
             <div>
-              <h4 style={{ fontSize: 14, fontWeight: 700, marginBottom: 18, color: 'rgba(255,255,255,0.9)' }}>{t.footerProduct}</h4>
+              <h4 style={{ fontSize: 14, fontWeight: 600, marginBottom: 18, color: 'rgba(255,255,255,0.9)' }}>{t.footerProduct}</h4>
               <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {t.footerProductLinks.map((link: string, i: number) => (
                   <li key={i}>
                     <button onClick={() => scrollTo(['features', 'pricing', 'how-it-works'][i])} style={{
-                      background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', fontSize: 14, cursor: 'pointer', padding: 0,
+                      background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', fontSize: 14, cursor: 'pointer', padding: 0, fontWeight: 400,
                     }}
                       onMouseOver={e => e.currentTarget.style.color = C.gold}
                       onMouseOut={e => e.currentTarget.style.color = 'rgba(255,255,255,0.5)'}
@@ -913,12 +972,12 @@ export default function HomePage() {
 
             {/* Support col */}
             <div>
-              <h4 style={{ fontSize: 14, fontWeight: 700, marginBottom: 18, color: 'rgba(255,255,255,0.9)' }}>{t.footerSupport}</h4>
+              <h4 style={{ fontSize: 14, fontWeight: 600, marginBottom: 18, color: 'rgba(255,255,255,0.9)' }}>{t.footerSupport}</h4>
               <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {t.footerSupportLinks.map((link: string, i: number) => (
                   <li key={i}>
                     <button onClick={() => i === 1 ? scrollTo('contact') : undefined} style={{
-                      background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', fontSize: 14, cursor: 'pointer', padding: 0,
+                      background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', fontSize: 14, cursor: 'pointer', padding: 0, fontWeight: 400,
                     }}
                       onMouseOver={e => e.currentTarget.style.color = C.gold}
                       onMouseOut={e => e.currentTarget.style.color = 'rgba(255,255,255,0.5)'}
@@ -930,12 +989,12 @@ export default function HomePage() {
 
             {/* Legal col */}
             <div>
-              <h4 style={{ fontSize: 14, fontWeight: 700, marginBottom: 18, color: 'rgba(255,255,255,0.9)' }}>{t.footerLegal}</h4>
+              <h4 style={{ fontSize: 14, fontWeight: 600, marginBottom: 18, color: 'rgba(255,255,255,0.9)' }}>{t.footerLegal}</h4>
               <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {t.footerLegalLinks.map((link: any, i: number) => (
                   <li key={i}>
                     <button onClick={() => navigate(link.path)} style={{
-                      background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', fontSize: 14, cursor: 'pointer', padding: 0,
+                      background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', fontSize: 14, cursor: 'pointer', padding: 0, fontWeight: 400,
                     }}
                       onMouseOver={e => e.currentTarget.style.color = C.gold}
                       onMouseOut={e => e.currentTarget.style.color = 'rgba(255,255,255,0.5)'}
@@ -947,8 +1006,21 @@ export default function HomePage() {
           </div>
 
           {/* Bottom bar */}
-          <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: 24, textAlign: 'center' }}>
-            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', margin: 0 }}>{t.copyright}</p>
+          <div style={{
+            borderTop: '1px solid rgba(255,255,255,0.1)', padding: '24px 0',
+            display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+          }}>
+            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', margin: 0, fontWeight: 400 }}>{t.copyright}</p>
+            <div style={{ display: 'flex', gap: 20 }}>
+              {t.footerLegalLinks.map((link: any, i: number) => (
+                <button key={i} onClick={() => navigate(link.path)} style={{
+                  background: 'none', border: 'none', color: 'rgba(255,255,255,0.35)', fontSize: 12, cursor: 'pointer', padding: 0, fontWeight: 400,
+                }}
+                  onMouseOver={e => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}
+                  onMouseOut={e => e.currentTarget.style.color = 'rgba(255,255,255,0.35)'}
+                >{link.label}</button>
+              ))}
+            </div>
           </div>
         </div>
       </footer>
@@ -971,6 +1043,9 @@ export default function HomePage() {
           .nav-desktop { display: none !important; }
           .nav-ctas { display: none !important; }
           .nav-mobile-toggle { display: flex !important; }
+          .dash-sidebar { display: none !important; }
+          .dash-stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
+          .form-grid-2 { grid-template-columns: 1fr !important; }
         }
 
         /* Smooth scroll */

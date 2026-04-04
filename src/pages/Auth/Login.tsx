@@ -223,7 +223,7 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
         <img
           src="/senda-logo.png"
           alt="SENDA"
-          style={{ height: 36, width: 'auto', filter: 'brightness(0) invert(1)', opacity: 0.92 }}
+          style={{ height: 36, width: 'auto', opacity: 0.92, filter: 'brightness(0) invert(1)' }}
           onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
         />
       </div>
