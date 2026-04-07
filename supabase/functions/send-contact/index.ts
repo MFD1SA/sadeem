@@ -1,17 +1,24 @@
 // ============================================================================
-// SENDA — send-contact Edge Function
-// 1. Always saves submission to contact_submissions table (guaranteed storage)
-// 2. Optionally sends email via Resend if RESEND_API_KEY + CONTACT_EMAIL are set
-//    FROM is onboarding@resend.dev (works without domain verification)
+// SENDA — send-contact Edge Function (Hardened)
+// 1. Rate-limited per IP (5 req / 15 min)
+// 2. Input validated + sanitized
+// 3. Structured JSON logging
+// 4. Timeout protection (8s)
 // ============================================================================
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { makeCorsHeaders } from '../_shared/cors.ts';
+import { checkRateLimit, getClientIP, rateLimitResponse } from '../_shared/rate-limit.ts';
+import { isNonEmptyString, isValidEmail, sanitizeString, logEvent, withTimeout } from '../_shared/validate.ts';
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY') ?? '';
 const CONTACT_EMAIL  = Deno.env.get('CONTACT_EMAIL')  ?? '';
-// Use Resend's shared domain — works on free tier without domain verification
 const FROM_EMAIL = 'SENDA Contact <onboarding@resend.dev>';
+
+const FN = 'send-contact';
+const RATE_LIMIT = 5;
+const RATE_WINDOW_MS = 15 * 60 * 1000; // 15 min
+const TIMEOUT_MS = 8000;
 
 Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
@@ -25,117 +32,140 @@ Deno.serve(async (req: Request) => {
     });
   }
 
+  const cors = makeCorsHeaders(req);
+  const clientIP = getClientIP(req);
+
+  // Rate limit per IP
+  const rl = checkRateLimit(`contact:${clientIP}`, RATE_LIMIT, RATE_WINDOW_MS);
+  if (!rl.allowed) {
+    logEvent(FN, 'warn', 'Rate limit exceeded', { ip: clientIP });
+    return rateLimitResponse(rl.retryAfterMs, cors);
+  }
+
   try {
-    const body = await req.json();
-    const { name, email, phone, company, message } = body as {
-      name?: string; email?: string; phone?: string; company?: string; message?: string;
-    };
+    const handler = async () => {
+      const body = await req.json();
+      const { name, email, phone, company, message } = body as {
+        name?: string; email?: string; phone?: string; company?: string; message?: string;
+      };
 
-    // Basic validation
-    if (!name?.trim() || !email?.trim() || !message?.trim()) {
-      return new Response(
-        JSON.stringify({ error: 'الاسم والبريد الإلكتروني والرسالة مطلوبة' }),
-        { status: 400, headers: { ...makeCorsHeaders(req), 'Content-Type': 'application/json' } }
+      // Input validation
+      if (!isNonEmptyString(name) || !isNonEmptyString(email) || !isNonEmptyString(message)) {
+        return new Response(
+          JSON.stringify({ error: 'الاسم والبريد الإلكتروني والرسالة مطلوبة' }),
+          { status: 400, headers: { ...cors, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      if (!isValidEmail(email)) {
+        return new Response(
+          JSON.stringify({ error: 'صيغة البريد الإلكتروني غير صحيحة' }),
+          { status: 400, headers: { ...cors, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Sanitize inputs
+      const sName    = sanitizeString(name, 200);
+      const sEmail   = sanitizeString(email, 320);
+      const sPhone   = phone ? sanitizeString(phone, 20) : null;
+      const sCompany = company ? sanitizeString(company, 200) : null;
+      const sMessage = sanitizeString(message, 5000);
+
+      // Save to DB
+      const supabase = createClient(
+        Deno.env.get('SUPABASE_URL')!,
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
       );
-    }
 
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailPattern.test(email.trim())) {
-      return new Response(
-        JSON.stringify({ error: 'صيغة البريد الإلكتروني غير صحيحة' }),
-        { status: 400, headers: { ...makeCorsHeaders(req), 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // ── Step 1: Save to DB (primary, always attempted) ─────────────────────
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
-    );
-
-    const { error: dbError } = await supabase
-      .from('contact_submissions')
-      .insert({
-        name:    name.trim(),
-        email:   email.trim(),
-        phone:   phone?.trim() || null,
-        company: company?.trim() || null,
-        message: message.trim(),
-      });
-
-    if (dbError) {
-      console.error('[send-contact] DB insert error:', dbError);
-      return new Response(
-        JSON.stringify({ error: 'فشل حفظ الرسالة. يرجى المحاولة لاحقًا.' }),
-        { status: 500, headers: { ...makeCorsHeaders(req), 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // ── Step 2: Send email via Resend (best-effort, won't fail the request) ─
-    if (RESEND_API_KEY && CONTACT_EMAIL) {
-      const subject = `رسالة جديدة من سيندا — ${name.trim()}${company?.trim() ? ` (${company.trim()})` : ''}`;
-      const htmlBody = buildEmailHtml({ name: name.trim(), email: email.trim(), phone: phone?.trim(), company: company?.trim(), message: message.trim() });
-
-      try {
-        const resendRes = await fetch('https://api.resend.com/emails', {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ from: FROM_EMAIL, to: [CONTACT_EMAIL], reply_to: email.trim(), subject, html: htmlBody }),
+      const { error: dbError } = await supabase
+        .from('contact_submissions')
+        .insert({
+          name: sName,
+          email: sEmail,
+          phone: sPhone,
+          company: sCompany,
+          message: sMessage,
         });
 
-        if (!resendRes.ok) {
-          const errText = await resendRes.text();
-          console.error('[send-contact] Resend error (non-fatal):', resendRes.status, errText);
-        } else {
-          console.log('[send-contact] Admin notification email sent successfully');
-        }
+      if (dbError) {
+        logEvent(FN, 'error', 'DB insert failed', { error: dbError.message });
+        return new Response(
+          JSON.stringify({ error: 'فشل حفظ الرسالة. يرجى المحاولة لاحقًا.' }),
+          { status: 500, headers: { ...cors, 'Content-Type': 'application/json' } }
+        );
+      }
 
-        // ── Step 3: Send thank-you confirmation to submitter (best-effort) ──
+      logEvent(FN, 'info', 'Contact submission saved', { email: sEmail });
+
+      // Send admin notification email (best-effort)
+      if (RESEND_API_KEY && CONTACT_EMAIL) {
+        const subject = `رسالة جديدة من سيندا — ${sName}${sCompany ? ` (${sCompany})` : ''}`;
+        const htmlBody = buildEmailHtml({ name: sName, email: sEmail, phone: sPhone, company: sCompany, message: sMessage });
+
         try {
-          const thankYouRes = await fetch('https://api.resend.com/emails', {
+          const resendRes = await fetch('https://api.resend.com/emails', {
             method: 'POST',
             headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              from: FROM_EMAIL,
-              to: [email.trim()],
-              subject: 'شكراً لتواصلك — سيندا',
-              html: buildThankYouHtml(name.trim()),
-            }),
+            body: JSON.stringify({ from: FROM_EMAIL, to: [CONTACT_EMAIL], reply_to: sEmail, subject, html: htmlBody }),
           });
-          if (!thankYouRes.ok) {
-            const errText = await thankYouRes.text();
-            console.error('[send-contact] Thank-you email error (non-fatal):', thankYouRes.status, errText);
+
+          if (!resendRes.ok) {
+            const errText = await resendRes.text();
+            logEvent(FN, 'warn', 'Admin email failed (non-fatal)', { status: resendRes.status, error: errText });
           } else {
-            console.log('[send-contact] Thank-you email sent to', email.trim());
+            logEvent(FN, 'info', 'Admin notification email sent');
           }
-        } catch (tyErr) {
-          console.error('[send-contact] Thank-you email exception (non-fatal):', tyErr);
+
+          // Send thank-you to submitter (best-effort)
+          try {
+            const thankYouRes = await fetch('https://api.resend.com/emails', {
+              method: 'POST',
+              headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                from: FROM_EMAIL,
+                to: [sEmail],
+                subject: 'شكراً لتواصلك — سيندا',
+                html: buildThankYouHtml(sName),
+              }),
+            });
+            if (!thankYouRes.ok) {
+              logEvent(FN, 'warn', 'Thank-you email failed (non-fatal)', { status: thankYouRes.status });
+            }
+          } catch (tyErr) {
+            logEvent(FN, 'warn', 'Thank-you email exception (non-fatal)', { error: String(tyErr) });
+          }
+
+        } catch (emailErr) {
+          logEvent(FN, 'warn', 'Email exception (non-fatal)', { error: String(emailErr) });
         }
-
-      } catch (emailErr) {
-        console.error('[send-contact] Email exception (non-fatal):', emailErr);
       }
-    } else {
-      console.log('[send-contact] No email secrets configured — submission saved to DB only');
-    }
 
-    // Submission saved to DB ✓ — always return success
-    return new Response(JSON.stringify({ success: true }), {
-      status: 200,
-      headers: { ...makeCorsHeaders(req), 'Content-Type': 'application/json' },
-    });
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: { ...cors, 'Content-Type': 'application/json' },
+      });
+    };
+
+    return await withTimeout(handler(), TIMEOUT_MS, FN);
 
   } catch (err) {
-    console.error('[send-contact] Unexpected error:', err);
+    const msg = err instanceof Error ? err.message : 'Unknown error';
+    if (msg.includes('timed out')) {
+      logEvent(FN, 'error', 'Request timeout', { ip: clientIP });
+      return new Response(JSON.stringify({ error: 'Request timeout' }), {
+        status: 504, headers: { ...cors, 'Content-Type': 'application/json' },
+      });
+    }
+    logEvent(FN, 'error', 'Unexpected error', { error: msg });
     return new Response(
       JSON.stringify({ error: 'خطأ غير متوقع. يرجى المحاولة لاحقًا.' }),
-      { status: 500, headers: { ...makeCorsHeaders(req), 'Content-Type': 'application/json' } }
+      { status: 500, headers: { ...cors, 'Content-Type': 'application/json' } }
     );
   }
 });
 
-// ─── Email HTML builder ───────────────────────────────────────────────────────
-function buildEmailHtml(p: { name: string; email: string; phone?: string; company?: string; message: string }) {
+// ─── Email HTML builders ─────────────────────────────────────────────────────
+function buildEmailHtml(p: { name: string; email: string; phone?: string | null; company?: string | null; message: string }) {
   return `<!DOCTYPE html>
 <html dir="rtl" lang="ar">
 <head>
@@ -172,13 +202,12 @@ function buildEmailHtml(p: { name: string; email: string; phone?: string; compan
         <div class="message-text">${esc(p.message)}</div>
       </div>
     </div>
-    <div class="footer">تم الإرسال عبر نموذج التواصل في senda.app • للرد: ${esc(p.email)}</div>
+    <div class="footer">تم الإرسال عبر نموذج التواصل في senda.app</div>
   </div>
 </body>
 </html>`;
 }
 
-// ─── Thank-you email HTML ────────────────────────────────────────────────────
 function buildThankYouHtml(name: string) {
   return `<!DOCTYPE html>
 <html dir="rtl" lang="ar">
@@ -204,7 +233,7 @@ function buildThankYouHtml(name: string) {
       <p>نقدّر اهتمامك بسيندا — منصة إدارة تقييمات جوجل الذكية.</p>
       <p>مع تحيات فريق سيندا</p>
     </div>
-    <div class="footer">سيندا — منصة إدارة تقييمات جوجل • senda.app</div>
+    <div class="footer">سيندا — منصة إدارة تقييمات جوجل</div>
   </div>
 </body>
 </html>`;

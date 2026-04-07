@@ -3,8 +3,12 @@ import { BrowserRouter } from 'react-router-dom';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { LanguageProvider } from '@/i18n';
 import { AuthProvider } from '@/hooks/useAuth';
+import { initErrorTracking } from '@/services/errorTracking';
 import App from './App';
 import './index.css';
+
+// Initialize global error tracking (unhandled errors + promise rejections)
+initErrorTracking();
 
 // React.StrictMode is intentionally removed: in development it mounts
 // components twice, which causes Supabase's BroadcastChannel auth lock

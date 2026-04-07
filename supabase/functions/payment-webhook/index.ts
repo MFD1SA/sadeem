@@ -1,22 +1,25 @@
 // ============================================================================
-// SENDA — Payment Webhook Edge Function
-//
-// Receives webhook events from Stripe or Moyasar.
-// Validates signature server-side, then calls SECURITY DEFINER RPCs
-// via service_role to update subscriptions/invoices/payments.
-//
-// SECRETS (set via `supabase secrets set`):
-//   STRIPE_WEBHOOK_SECRET   — Stripe endpoint signing secret (whsec_...)
-//   MOYASAR_WEBHOOK_SECRET  — Moyasar webhook secret
+// SENDA — Payment Webhook Edge Function (Hardened)
+// - HMAC verification + timestamp validation (5-min replay window)
+// - Idempotency via UNIQUE event_id index
+// - Structured JSON logging
+// - Timeout protection (8s)
+// - Rate-limited per IP (30 req / min — webhook bursts)
 //
 // Deploy: supabase functions deploy payment-webhook --no-verify-jwt
-//   (--no-verify-jwt because webhooks don't carry user JWTs)
 // ============================================================================
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { checkRateLimit, getClientIP, rateLimitResponse } from '../_shared/rate-limit.ts'
+import { logEvent, withTimeout } from '../_shared/validate.ts'
 
 const PROVIDER_STRIPE = 'stripe'
 const PROVIDER_MOYASAR = 'moyasar'
+
+const FN = 'payment-webhook'
+const RATE_LIMIT = 30
+const RATE_WINDOW_MS = 60 * 1000 // 1 min
+const TIMEOUT_MS = 8000
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -27,48 +30,78 @@ Deno.serve(async (req) => {
     return new Response('Method not allowed', { status: 405 })
   }
 
-  try {
-    const url = new URL(req.url)
-    const provider = url.searchParams.get('provider') || 'stripe'
+  const clientIP = getClientIP(req)
 
-    // Reject unknown providers before reading body
-    if (provider !== PROVIDER_STRIPE && provider !== PROVIDER_MOYASAR) {
+  // Rate limit webhooks per IP
+  const rl = checkRateLimit(`webhook:${clientIP}`, RATE_LIMIT, RATE_WINDOW_MS)
+  if (!rl.allowed) {
+    logEvent(FN, 'warn', 'Rate limit exceeded', { ip: clientIP })
+    return rateLimitResponse(rl.retryAfterMs, {})
+  }
+
+  try {
+    const handler = async () => {
+      const url = new URL(req.url)
+      const provider = url.searchParams.get('provider') || 'stripe'
+
+      if (provider !== PROVIDER_STRIPE && provider !== PROVIDER_MOYASAR) {
+        return jsonResponse({ error: 'Unknown provider' }, 400)
+      }
+
+      const rawBody = await req.text()
+
+      // Body size check (reject >1MB payloads)
+      if (rawBody.length > 1_000_000) {
+        logEvent(FN, 'warn', 'Payload too large', { size: rawBody.length, ip: clientIP })
+        return jsonResponse({ error: 'Payload too large' }, 413)
+      }
+
+      // Signature verification (fail closed)
+      const isValid = await verifySignature(req, rawBody, provider)
+      if (!isValid) {
+        logEvent(FN, 'error', 'Invalid webhook signature', { provider, ip: clientIP })
+        return jsonResponse({ error: 'Invalid webhook signature' }, 401)
+      }
+
+      let payload: Record<string, unknown>
+      try {
+        payload = JSON.parse(rawBody)
+      } catch {
+        logEvent(FN, 'error', 'Invalid JSON payload', { provider })
+        return jsonResponse({ error: 'Invalid JSON' }, 400)
+      }
+
+      // Service client
+      const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+      const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+      const serviceClient = createClient(supabaseUrl, serviceKey)
+
+      logEvent(FN, 'info', 'Processing webhook', { provider, ip: clientIP })
+
+      if (provider === PROVIDER_STRIPE) {
+        return await handleStripeEvent(serviceClient, payload)
+      } else if (provider === PROVIDER_MOYASAR) {
+        return await handleMoyasarEvent(serviceClient, payload)
+      }
+
       return jsonResponse({ error: 'Unknown provider' }, 400)
     }
 
-    const rawBody = await req.text()
-
-    // --- Signature verification (fail closed) ---
-    const isValid = await verifySignature(req, rawBody, provider)
-    if (!isValid) {
-      return jsonResponse({ error: 'Invalid webhook signature' }, 401)
-    }
-
-    const payload = JSON.parse(rawBody)
-
-    // --- Service client (server-side only) ---
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    const serviceClient = createClient(supabaseUrl, serviceKey)
-
-    // --- Route by provider ---
-    if (provider === PROVIDER_STRIPE) {
-      return await handleStripeEvent(serviceClient, payload)
-    } else if (provider === PROVIDER_MOYASAR) {
-      return await handleMoyasarEvent(serviceClient, payload)
-    }
-
-    return jsonResponse({ error: 'Unknown provider' }, 400)
+    return await withTimeout(handler(), TIMEOUT_MS, FN)
 
   } catch (err) {
-    console.error('Webhook error:', err)
+    const msg = (err as Error).message || 'Unknown error'
+    if (msg.includes('timed out')) {
+      logEvent(FN, 'error', 'Request timeout', { ip: clientIP })
+      return jsonResponse({ error: 'Request timeout' }, 504)
+    }
+    logEvent(FN, 'error', 'Webhook error', { error: msg })
     return jsonResponse({ error: 'Internal error' }, 500)
   }
 })
 
 
 // ─── Idempotency check ───
-// Returns true if this event_id was already processed (skip it).
 async function isAlreadyProcessed(
   client: ReturnType<typeof createClient>,
   eventId: string
@@ -91,17 +124,16 @@ async function handleStripeEvent(client: ReturnType<typeof createClient>, event:
 
   if (!obj) return jsonResponse({ received: true })
 
-  // Idempotency: skip if already processed
+  // Idempotency
   if (eventId && await isAlreadyProcessed(client, eventId)) {
+    logEvent(FN, 'info', 'Duplicate event skipped', { eventId })
     return jsonResponse({ received: true, skipped: 'duplicate' })
   }
 
-  // Extract org_id from metadata
   const metadata = (obj.metadata || {}) as Record<string, string>
   const orgId = metadata.organization_id
 
   if (!orgId) {
-    // Log event without org linking
     await client.from('payment_events').insert({
       gateway_provider: PROVIDER_STRIPE,
       event_type: eventType,
@@ -110,14 +142,15 @@ async function handleStripeEvent(client: ReturnType<typeof createClient>, event:
       status: 'failed',
       error_message: 'Missing organization_id in metadata',
       processed_at: new Date().toISOString(),
-    }).throwOnError().catch(() => {}) // best-effort log, don't break response
+    }).throwOnError().catch(() => {})
+    logEvent(FN, 'warn', 'Event missing org_id', { eventId, eventType })
     return jsonResponse({ received: true, warning: 'no org_id' })
   }
 
   switch (eventType) {
     case 'checkout.session.completed':
     case 'invoice.payment_succeeded': {
-      const amount = ((obj.amount_total || obj.amount_paid || 0) as number) / 100 // cents to units
+      const amount = ((obj.amount_total || obj.amount_paid || 0) as number) / 100
       await client.rpc('gateway_process_payment_success', {
         p_gateway_provider: PROVIDER_STRIPE,
         p_event_id: eventId,
@@ -139,6 +172,7 @@ async function handleStripeEvent(client: ReturnType<typeof createClient>, event:
           : null,
         p_payload: event,
       })
+      logEvent(FN, 'info', 'Payment success processed', { eventType, orgId, amount })
       break
     }
 
@@ -152,6 +186,7 @@ async function handleStripeEvent(client: ReturnType<typeof createClient>, event:
         p_gateway_payment_id: (obj.payment_intent as string) || null,
         p_payload: event,
       })
+      logEvent(FN, 'warn', 'Payment failure processed', { eventType, orgId })
       break
     }
 
@@ -162,11 +197,11 @@ async function handleStripeEvent(client: ReturnType<typeof createClient>, event:
         p_org_id: orgId,
         p_payload: event,
       })
+      logEvent(FN, 'info', 'Subscription cancelled', { orgId })
       break
     }
 
     default: {
-      // Log unknown events for monitoring — never process them
       await client.from('payment_events').insert({
         gateway_provider: PROVIDER_STRIPE,
         event_type: eventType,
@@ -176,6 +211,7 @@ async function handleStripeEvent(client: ReturnType<typeof createClient>, event:
         status: 'ignored',
         processed_at: new Date().toISOString(),
       }).throwOnError().catch(() => {})
+      logEvent(FN, 'info', 'Event ignored', { eventType, orgId })
     }
   }
 
@@ -192,18 +228,19 @@ async function handleMoyasarEvent(client: ReturnType<typeof createClient>, paylo
   const orgId = metadata.organization_id
 
   if (!orgId) {
+    logEvent(FN, 'warn', 'Moyasar event missing org_id', { eventId })
     return jsonResponse({ received: true, warning: 'no org_id' })
   }
 
-  // Idempotency: skip if already processed
   if (await isAlreadyProcessed(client, eventId)) {
+    logEvent(FN, 'info', 'Duplicate Moyasar event skipped', { eventId })
     return jsonResponse({ received: true, skipped: 'duplicate' })
   }
 
   const status = data.status as string
 
   if (status === 'paid') {
-    const amount = ((data.amount as number) || 0) / 100 // halalas to riyals
+    const amount = ((data.amount as number) || 0) / 100
     await client.rpc('gateway_process_payment_success', {
       p_gateway_provider: PROVIDER_MOYASAR,
       p_event_id: eventId,
@@ -216,6 +253,7 @@ async function handleMoyasarEvent(client: ReturnType<typeof createClient>, paylo
       p_plan: metadata.plan || null,
       p_payload: payload,
     })
+    logEvent(FN, 'info', 'Moyasar payment success', { orgId, amount })
   } else if (status === 'failed') {
     await client.rpc('gateway_process_payment_failure', {
       p_gateway_provider: PROVIDER_MOYASAR,
@@ -226,6 +264,7 @@ async function handleMoyasarEvent(client: ReturnType<typeof createClient>, paylo
       p_gateway_payment_id: data.id as string || null,
       p_payload: payload,
     })
+    logEvent(FN, 'warn', 'Moyasar payment failed', { orgId })
   }
 
   return jsonResponse({ received: true })
@@ -237,7 +276,7 @@ async function verifySignature(req: Request, body: string, provider: string): Pr
   if (provider === PROVIDER_STRIPE) {
     const secret = Deno.env.get('STRIPE_WEBHOOK_SECRET')
     if (!secret) {
-      console.error('STRIPE_WEBHOOK_SECRET not configured — rejecting webhook')
+      logEvent(FN, 'error', 'STRIPE_WEBHOOK_SECRET not configured')
       return false
     }
 
@@ -245,7 +284,6 @@ async function verifySignature(req: Request, body: string, provider: string): Pr
     if (!sigHeader) return false
 
     try {
-      // Parse Stripe signature: t=timestamp,v1=signature
       const parts = Object.fromEntries(
         sigHeader.split(',').map(p => {
           const [k, v] = p.split('=')
@@ -256,11 +294,10 @@ async function verifySignature(req: Request, body: string, provider: string): Pr
       const expectedSig = parts['v1']
       if (!timestamp || !expectedSig) return false
 
-      // Reject signatures older than 5 minutes (replay window)
+      // Reject signatures older than 5 minutes (replay protection)
       const ageSeconds = Math.floor(Date.now() / 1000) - parseInt(timestamp, 10)
-      if (isNaN(ageSeconds) || ageSeconds > 300) return false
+      if (isNaN(ageSeconds) || ageSeconds > 300 || ageSeconds < -60) return false
 
-      // Compute HMAC SHA-256
       const signedPayload = `${timestamp}.${body}`
       const key = await crypto.subtle.importKey(
         'raw',
@@ -289,15 +326,13 @@ async function verifySignature(req: Request, body: string, provider: string): Pr
   if (provider === PROVIDER_MOYASAR) {
     const secret = Deno.env.get('MOYASAR_WEBHOOK_SECRET')
     if (!secret) {
-      console.error('MOYASAR_WEBHOOK_SECRET not configured — rejecting webhook')
+      logEvent(FN, 'error', 'MOYASAR_WEBHOOK_SECRET not configured')
       return false
     }
 
-    // Moyasar uses basic auth or HMAC depending on config
     const authHeader = req.headers.get('authorization')
     if (!authHeader) return false
 
-    // Constant-time comparison of the secret portion
     const expected = `Basic ${btoa(secret + ':')}`
     if (authHeader.length !== expected.length) return false
     let mismatch = 0
@@ -307,7 +342,6 @@ async function verifySignature(req: Request, body: string, provider: string): Pr
     return mismatch === 0
   }
 
-  // Unknown provider — fail closed
   return false
 }
 

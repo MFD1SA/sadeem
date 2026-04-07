@@ -1,7 +1,9 @@
 import { Component, type ReactNode, type ErrorInfo } from 'react';
+import { captureComponentError } from '@/services/errorTracking';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
+  moduleName?: string;
 }
 
 interface ErrorBoundaryState {
@@ -18,6 +20,9 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('[Senda] Uncaught error:', error, errorInfo);
+
+    // Report to error tracking service
+    captureComponentError(error, this.props.moduleName || errorInfo.componentStack?.split('\n')[1]?.trim());
 
     // Auto-reload on chunk load failure (happens after deploy when old chunks are gone)
     const msg = error?.message || '';
