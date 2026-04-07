@@ -42,7 +42,7 @@ const PRIORITY_CONFIG = {
 export default function Support() {
   const { lang, t } = useLanguage();
   useEffect(() => { document.title = lang === 'ar' ? 'سيندا — الدعم' : 'SENDA — Support'; }, [lang]);
-  const { organization, user } = useAuth();
+  const { organization, user, profile } = useAuth();
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -156,7 +156,7 @@ export default function Support() {
         subject: form.subject.trim(),
         description: form.body.trim(),
         submitted_by_email: user.email || null,
-        submitted_by_name: user.email || null,
+        submitted_by_name: profile?.full_name || user.email || null,
         priority: form.priority,
         status: 'open',
       });

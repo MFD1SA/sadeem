@@ -181,7 +181,9 @@ export default function QrReviews() {
     try {
       await withTimeout(qrService.regenerateSlug(config.id, branchName), 12000);
       await loadData();
-    } catch {}
+    } catch (err: unknown) {
+      setError((err as Error).message || 'Failed to regenerate QR slug');
+    }
   };
 
   const copyLink = async (url: string) => {

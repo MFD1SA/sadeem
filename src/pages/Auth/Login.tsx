@@ -159,8 +159,14 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
     setError(''); setSuccess(''); setLoading(true);
     try {
       if (isSignUp) {
-        await authService.signUp(email, password, fullName);
+        if (!fullName.trim() || fullName.trim().length < 2) {
+          setLoading(false);
+          setError(isAr ? 'يرجى إدخال الاسم الكامل (حرفان على الأقل)' : 'Please enter your full name (at least 2 characters)');
+          return;
+        }
+        await authService.signUp(email, password, fullName.trim());
         setLoading(false);
+        setEmail(''); setPassword(''); setFullName(''); setPwStrength(0);
         setSuccess(t.auth.accountCreated);
       } else {
         await authService.login(email, password);
@@ -515,7 +521,7 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
             <button
               className="text-xs font-medium hover:underline transition-colors"
               style={{ color: '#B8965A' }}
-              onClick={() => { setIsSignUp(v => !v); setError(''); setSuccess(''); setPwStrength(0); setEmailTouched(false); setPassword(''); }}
+              onClick={() => { setIsSignUp(v => !v); setError(''); setSuccess(''); setPwStrength(0); setEmailTouched(false); setPassword(''); setEmail(''); setFullName(''); }}
             >
               {isSignUp ? t.auth.signInInstead : t.auth.signUpInstead}
             </button>
