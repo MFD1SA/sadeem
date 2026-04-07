@@ -34,6 +34,9 @@ type TabType = 'subscriber' | 'global';
 
 export default function AdminTemplates() {
   const { hasPermission } = useAdminAuth();
+
+  useEffect(() => { document.title = 'سيندا — القوالب'; }, []);
+
   const [activeTab, setActiveTab] = useState<TabType>('subscriber');
   const [msg, setMsg] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 

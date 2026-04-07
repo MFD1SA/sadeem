@@ -84,6 +84,7 @@ function StarDisplay({ min, max }: { min: number; max: number }) {
 
 export default function Templates() {
   const { t, lang } = useLanguage();
+  useEffect(() => { document.title = lang === 'ar' ? 'سيندا — القوالب' : 'SENDA — Templates'; }, [lang]);
   const { organization } = useAuth();
   const [customTemplates, setCustomTemplates] = useState<DbReplyTemplate[]>(_cache ?? []);
   const [loading, setLoading] = useState(_cache === null);

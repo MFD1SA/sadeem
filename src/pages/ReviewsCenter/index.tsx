@@ -28,7 +28,8 @@ const defaultFilters: ReviewFilters = {
 };
 
 export default function ReviewsCenter() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
+  useEffect(() => { document.title = lang === 'ar' ? 'سيندا — المراجعات' : 'SENDA — Reviews'; }, [lang]);
   const { organization, isLoading: authLoading } = useAuth();
   const location = useLocation();
   const [reviews, setReviews] = useState<DbReview[]>([]);

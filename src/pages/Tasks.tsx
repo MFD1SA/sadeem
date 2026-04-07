@@ -25,6 +25,7 @@ const PRIORITY_LABEL_EN: Record<string, string> = { high: 'High', medium: 'Med',
 
 export default function Tasks() {
   const { lang, t } = useLanguage();
+  useEffect(() => { document.title = lang === 'ar' ? 'سيندا — المهام' : 'SENDA — Tasks'; }, [lang]);
   const { organization } = useAuth();
 
   const [tasks, setTasks] = useState<DbTask[]>([]);

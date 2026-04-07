@@ -17,6 +17,8 @@ const STATUS_MAP: Record<string, { ar: string; color: string }> = {
 };
 
 export default function AdminAIUsage() {
+  useEffect(() => { document.title = 'سيندا — استخدام الذكاء الاصطناعي'; }, []);
+
   const [overview, setOverview] = useState<AIUsageOverview | null>(null);
   const [logs, setLogs] = useState<AIUsageLogItem[]>([]);
   const [total, setTotal] = useState(0);

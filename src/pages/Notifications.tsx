@@ -10,6 +10,7 @@ import { formatTimeAgo } from '@/utils/helpers';
 
 export default function Notifications() {
   const { t, lang } = useLanguage();
+  useEffect(() => { document.title = lang === 'ar' ? 'سيندا — الإشعارات' : 'SENDA — Notifications'; }, [lang]);
   const { organization } = useAuth();
   const [items, setItems] = useState<DbNotification[]>([]);
   const [loading, setLoading] = useState(true);

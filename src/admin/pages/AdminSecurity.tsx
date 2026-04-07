@@ -3,13 +3,15 @@
 // Uses Supabase Auth MFA: auth.mfa.enroll / verify / unenroll
 // ============================================================================
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAdminAuth } from '../contexts/AdminAuthContext';
 import { adminSupabase } from '../services/adminSupabase';
 import { Lock, Shield, Eye, EyeOff, Save, Smartphone, X, CheckCircle, AlertTriangle } from 'lucide-react';
 
 export default function AdminSecurity() {
   const { user, changePassword, refreshUser } = useAdminAuth();
+
+  useEffect(() => { document.title = 'سيندا — الأمان'; }, []);
 
   // Password state
   const [currentPassword, setCurrentPassword] = useState('');

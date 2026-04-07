@@ -78,6 +78,7 @@ const STEPS = [
 
 export default function Onboarding() {
   const navigate = useNavigate();
+  useEffect(() => { document.title = 'سيندا — الإعداد'; }, []);
   const { user, hasOrganization } = useAuth();
   const [step, setStep] = useState(1);
   const [saving, setSaving] = useState(false);

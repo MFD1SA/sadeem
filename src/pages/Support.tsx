@@ -41,6 +41,7 @@ const PRIORITY_CONFIG = {
 
 export default function Support() {
   const { lang, t } = useLanguage();
+  useEffect(() => { document.title = lang === 'ar' ? 'سيندا — الدعم' : 'SENDA — Support'; }, [lang]);
   const { organization, user } = useAuth();
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);

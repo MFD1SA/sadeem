@@ -12,6 +12,8 @@ import { Palette, Shield, Globe, Bell, Server, Save, Upload, Check, Search, Cred
 import { AdminSelect } from '../components/AdminSelect';
 
 export default function AdminSettings() {
+  useEffect(() => { document.title = 'سيندا — الإعدادات'; }, []);
+
   const [activeSection, setActiveSection] = useState('branding');
   const [msg, setMsg] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
   const showMsg = (t: string, ty: 'success' | 'error') => { setMsg({ text: t, type: ty }); setTimeout(() => setMsg(null), 4000); };

@@ -2,7 +2,7 @@
 // SENDA Admin — Profile Page (with Avatar Upload)
 // ============================================================================
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useAdminAuth } from '../contexts/AdminAuthContext';
 import { adminSupabase } from '../services/adminSupabase';
 import { Save, Camera, User } from 'lucide-react';
@@ -10,6 +10,8 @@ import { Save, Camera, User } from 'lucide-react';
 export default function AdminProfile() {
   const { user, updateProfile, refreshUser } = useAdminAuth();
   const fileRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => { document.title = 'سيندا — الملف الشخصي'; }, []);
 
   const [nameAr, setNameAr] = useState(user?.full_name_ar || '');
   const [nameEn, setNameEn] = useState(user?.full_name_en || '');

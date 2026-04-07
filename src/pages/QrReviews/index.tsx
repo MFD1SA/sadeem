@@ -49,6 +49,7 @@ function withTimeout<T>(promise: Promise<T>, ms = 12000): Promise<T> {
 
 export default function QrReviews() {
   const { lang, t } = useLanguage();
+  useEffect(() => { document.title = lang === 'ar' ? 'سيندا — رمز QR' : 'SENDA — QR Reviews'; }, [lang]);
   const { organization } = useAuth();
 
   const [items, setItems] = useState<BranchQr[]>([]);

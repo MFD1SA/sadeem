@@ -72,6 +72,8 @@ const ENTITY_LABELS: Record<string, string> = {
 type ActiveTab = 'admin' | 'subscriber';
 
 export default function AdminAuditLogs() {
+  useEffect(() => { document.title = 'سيندا — سجل المراجعة'; }, []);
+
   const [activeTab, setActiveTab] = useState<ActiveTab>('subscriber');
 
   return (

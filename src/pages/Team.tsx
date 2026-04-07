@@ -14,6 +14,7 @@ let _cache: TeamMemberRow[] | null = null;
 
 export default function Team() {
   const { t, lang } = useLanguage();
+  useEffect(() => { document.title = lang === 'ar' ? 'سيندا — الفريق' : 'SENDA — Team'; }, [lang]);
   const { organization } = useAuth();
   const { limits, trial } = usePlan();
   const [members, setMembers] = useState<TeamMemberRow[]>(_cache ?? []);

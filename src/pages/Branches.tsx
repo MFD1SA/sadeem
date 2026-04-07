@@ -14,7 +14,8 @@ import type { DbBranch } from '@/types/database';
 let _cache: DbBranch[] | null = null;
 
 export default function Branches() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
+  useEffect(() => { document.title = lang === 'ar' ? 'سيندا — الفروع' : 'SENDA — Branches'; }, [lang]);
   const { organization, isLoading: authLoading } = useAuth();
   const {
     canAdd: canAddBranch,
