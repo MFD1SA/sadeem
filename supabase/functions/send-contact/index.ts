@@ -7,7 +7,7 @@
 // ============================================================================
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { makeCorsHeaders } from '../_shared/cors.ts';
+import { makeCorsHeaders, isOriginAllowed } from '../_shared/cors.ts';
 import { checkRateLimit, getClientIP, rateLimitResponse } from '../_shared/rate-limit.ts';
 import { isNonEmptyString, isValidEmail, sanitizeString, logEvent, withTimeout } from '../_shared/validate.ts';
 
@@ -35,11 +35,19 @@ Deno.serve(async (req: Request) => {
   const cors = makeCorsHeaders(req);
   const clientIP = getClientIP(req);
 
-  // Rate limit per IP
-  const rl = checkRateLimit(`contact:${clientIP}`, RATE_LIMIT, RATE_WINDOW_MS);
+  // Block unauthorized browser origins
+  if (!isOriginAllowed(req)) {
+    logEvent(FN, 'warn', 'Blocked unauthorized origin', { origin: req.headers.get('origin'), ip: clientIP });
+    return new Response(JSON.stringify({ error: 'Forbidden' }), {
+      status: 403, headers: { ...cors, 'Content-Type': 'application/json' },
+    });
+  }
+
+  // Rate limit per IP (persistent DB-based)
+  const rl = await checkRateLimit(`contact:${clientIP}`, RATE_LIMIT, RATE_WINDOW_MS);
   if (!rl.allowed) {
     logEvent(FN, 'warn', 'Rate limit exceeded', { ip: clientIP });
-    return rateLimitResponse(rl.retryAfterMs, cors);
+    return rateLimitResponse(60, cors);
   }
 
   try {

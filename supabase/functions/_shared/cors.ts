@@ -17,6 +17,22 @@ export function getCorsOrigin(req?: Request): string {
   return ALLOWED_ORIGINS[0];
 }
 
+/**
+ * Check if the request origin is allowed.
+ * Returns false for non-browser requests (no origin header) — these are allowed
+ * since they could be legitimate server-to-server calls (webhooks, cURL).
+ * Returns false for requests from unauthorized origins.
+ */
+export function isOriginAllowed(req: Request): boolean {
+  const origin = req.headers.get('origin');
+  // No origin header = not a browser request (cURL, webhook, etc.) — allow
+  if (!origin) return true;
+  if (ALLOWED_ORIGINS.includes(origin)) return true;
+  if (origin.endsWith('.vercel.app')) return true;
+  if (origin.startsWith('http://localhost:')) return true;
+  return false;
+}
+
 export const corsHeaders = {
   'Access-Control-Allow-Origin': ALLOWED_ORIGINS[0],
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',

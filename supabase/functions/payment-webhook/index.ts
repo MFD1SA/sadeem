@@ -33,10 +33,10 @@ Deno.serve(async (req) => {
   const clientIP = getClientIP(req)
 
   // Rate limit webhooks per IP
-  const rl = checkRateLimit(`webhook:${clientIP}`, RATE_LIMIT, RATE_WINDOW_MS)
+  const rl = await checkRateLimit(`webhook:${clientIP}`, RATE_LIMIT, RATE_WINDOW_MS)
   if (!rl.allowed) {
     logEvent(FN, 'warn', 'Rate limit exceeded', { ip: clientIP })
-    return rateLimitResponse(rl.retryAfterMs, {})
+    return rateLimitResponse(60, {})
   }
 
   try {

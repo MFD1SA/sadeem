@@ -41,10 +41,10 @@ Deno.serve(async (req: Request) => {
 
   // Rate limit
   const tokenKey = authHeader.slice(-16);
-  const rl = checkRateLimit(`email:${tokenKey}:${clientIP}`, RATE_LIMIT_COUNT, RATE_WINDOW_MS);
+  const rl = await checkRateLimit(`email:${tokenKey}:${clientIP}`, RATE_LIMIT_COUNT, RATE_WINDOW_MS);
   if (!rl.allowed) {
     logEvent(FN, 'warn', 'Rate limit exceeded', { ip: clientIP });
-    return rateLimitResponse(rl.retryAfterMs, cors);
+    return rateLimitResponse(60, cors);
   }
 
   try {

@@ -34,10 +34,10 @@ Deno.serve(async (req) => {
   // Rate limit per bearer token hash (user-scoped)
   const tokenKey = authHeader.slice(-16); // last 16 chars as key
   const clientIP = getClientIP(req);
-  const rl = checkRateLimit(`ai:${tokenKey}:${clientIP}`, RATE_LIMIT, RATE_WINDOW_MS);
+  const rl = await checkRateLimit(`ai:${tokenKey}:${clientIP}`, RATE_LIMIT, RATE_WINDOW_MS);
   if (!rl.allowed) {
     logEvent(FN, 'warn', 'Rate limit exceeded', { ip: clientIP });
-    return rateLimitResponse(rl.retryAfterMs, cors);
+    return rateLimitResponse(60, cors);
   }
 
   try {

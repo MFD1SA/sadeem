@@ -22,7 +22,8 @@ export function isPositiveNumber(val: unknown): val is number {
 }
 
 export function sanitizeString(val: string, maxLen = 1000): string {
-  return val.trim().slice(0, maxLen);
+  // Strip HTML tags to prevent stored XSS, then trim and truncate
+  return val.replace(/<[^>]*>/g, '').trim().slice(0, maxLen);
 }
 
 /** Structured log for edge function monitoring */

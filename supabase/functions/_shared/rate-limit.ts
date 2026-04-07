@@ -1,53 +1,57 @@
 // ============================================================================
-// SENDA — In-memory rate limiter for Edge Functions (Deno)
-// Sliding window per key (IP or user_id). Auto-prunes expired entries.
+// SENDA — Persistent rate limiter for Edge Functions (Deno)
+// Uses Supabase DB table `rate_limits` so state persists across isolates.
+// Falls back to in-memory if DB is unavailable.
 // ============================================================================
 
-interface RateLimitEntry {
-  timestamps: number[];
-}
-
-const store = new Map<string, RateLimitEntry>();
-let lastPrune = Date.now();
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 /**
- * Check if a key has exceeded the rate limit.
- * @returns { allowed: boolean, remaining: number, retryAfterMs: number }
+ * Check if a key has exceeded the rate limit using persistent DB storage.
  */
-export function checkRateLimit(
+export async function checkRateLimit(
   key: string,
   maxRequests: number,
   windowMs: number,
-): { allowed: boolean; remaining: number; retryAfterMs: number } {
-  const now = Date.now();
-  const cutoff = now - windowMs;
+): Promise<{ allowed: boolean; remaining: number }> {
+  try {
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const client = createClient(supabaseUrl, serviceKey);
 
-  // Prune stale entries every 60s to prevent memory growth
-  if (now - lastPrune > 60_000) {
-    for (const [k, v] of store) {
-      v.timestamps = v.timestamps.filter(t => t > cutoff);
-      if (v.timestamps.length === 0) store.delete(k);
+    const windowStart = new Date(Date.now() - windowMs).toISOString();
+
+    // Count requests in window
+    const { count, error: countErr } = await client
+      .from('rate_limits')
+      .select('*', { count: 'exact', head: true })
+      .eq('key', key)
+      .gte('ts', windowStart);
+
+    if (countErr) {
+      // DB error — fail open (allow request but log)
+      console.warn('[rate-limit] DB count error, failing open:', countErr.message);
+      return { allowed: true, remaining: maxRequests };
     }
-    lastPrune = now;
+
+    const currentCount = count || 0;
+
+    if (currentCount >= maxRequests) {
+      return { allowed: false, remaining: 0 };
+    }
+
+    // Record this request
+    await client.from('rate_limits').insert({ key, ts: new Date().toISOString() });
+
+    // Best-effort cleanup: delete old entries for this key (>1 hour)
+    const cleanupCutoff = new Date(Date.now() - 3600_000).toISOString();
+    client.from('rate_limits').delete().eq('key', key).lt('ts', cleanupCutoff).then(() => {});
+
+    return { allowed: true, remaining: maxRequests - currentCount - 1 };
+  } catch (err) {
+    console.warn('[rate-limit] Exception, failing open:', err);
+    return { allowed: true, remaining: maxRequests };
   }
-
-  let entry = store.get(key);
-  if (!entry) {
-    entry = { timestamps: [] };
-    store.set(key, entry);
-  }
-
-  // Remove timestamps outside window
-  entry.timestamps = entry.timestamps.filter(t => t > cutoff);
-
-  if (entry.timestamps.length >= maxRequests) {
-    const oldestInWindow = entry.timestamps[0];
-    const retryAfterMs = oldestInWindow + windowMs - now;
-    return { allowed: false, remaining: 0, retryAfterMs: Math.max(0, retryAfterMs) };
-  }
-
-  entry.timestamps.push(now);
-  return { allowed: true, remaining: maxRequests - entry.timestamps.length, retryAfterMs: 0 };
 }
 
 /**
@@ -63,7 +67,7 @@ export function getClientIP(req: Request): string {
 /**
  * Build a 429 Too Many Requests response.
  */
-export function rateLimitResponse(retryAfterMs: number, corsHeaders: Record<string, string>): Response {
+export function rateLimitResponse(retryAfterSec: number, corsHeaders: Record<string, string>): Response {
   return new Response(
     JSON.stringify({ error: 'Too many requests. Please try again later.' }),
     {
@@ -71,7 +75,7 @@ export function rateLimitResponse(retryAfterMs: number, corsHeaders: Record<stri
       headers: {
         ...corsHeaders,
         'Content-Type': 'application/json',
-        'Retry-After': String(Math.ceil(retryAfterMs / 1000)),
+        'Retry-After': String(retryAfterSec),
       },
     },
   );
