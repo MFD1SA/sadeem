@@ -5,7 +5,8 @@ import { usePlan } from '@/hooks/usePlan';
 import { dashboardService, type DashboardStats } from '@/services/dashboard';
 import { branchesService } from '@/services/branches';
 import { LoadingState, ErrorState } from '@/components/ui/LoadingState';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
+import ConfettiBurst from '@/components/ui/ConfettiBurst';
 import {
   MessageSquareText, Inbox, GitBranch, FileText,
   Star, TrendingUp, Clock, AlertCircle, Zap,
@@ -19,6 +20,18 @@ let _cache: { stats: DashboardStats; criticalReviews: DbReview[]; branches: DbBr
 export default function Dashboard() {
   const { t, lang } = useLanguage();
   const { organization, profile, isLoading: authLoading } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [showConfetti, setShowConfetti] = useState(false);
+
+  // Fire confetti on successful payment redirect
+  useEffect(() => {
+    if (searchParams.get('payment') === 'success') {
+      setShowConfetti(true);
+      // Clean URL without reload
+      searchParams.delete('payment');
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   useEffect(() => {
     document.title = lang === 'ar' ? 'سيندا — لوحة التحكم' : 'SENDA — Dashboard';
@@ -105,6 +118,8 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
+      <ConfettiBurst active={showConfetti} onComplete={() => setShowConfetti(false)} />
+
       {/* Greeting + plan badge */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
