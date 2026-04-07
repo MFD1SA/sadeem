@@ -20,10 +20,13 @@ export default function AdminProfile() {
   const [uploading, setUploading] = useState(false);
   const [msg, setMsg] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
+  const msgTimer = useRef<ReturnType<typeof setTimeout>>();
   const showMsg = (text: string, type: 'success' | 'error') => {
     setMsg({ text, type });
-    setTimeout(() => setMsg(null), 4000);
+    if (msgTimer.current) clearTimeout(msgTimer.current);
+    msgTimer.current = setTimeout(() => setMsg(null), 4000);
   };
+  useEffect(() => () => { if (msgTimer.current) clearTimeout(msgTimer.current); }, []);
 
   const handleSave = async () => {
     setSaving(true);

@@ -45,6 +45,8 @@ export default function ResponsesInbox() {
     void loadDrafts();
   }, [organization?.id, loadDrafts, authLoading]);
 
+  useEffect(() => { _cache = null; }, [organization?.id]);
+
   const handleApprove = async (draftId: string, finalReply: string) => {
     if (!user || !organization?.id) return;
 

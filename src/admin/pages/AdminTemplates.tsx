@@ -4,7 +4,7 @@
 // Tab 2: Global plan templates (full CRUD)
 // ============================================================================
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { adminTemplatesService, type AdminTemplateItem } from '../services/adminTemplates.service';
 import { adminGlobalTemplatesService, type GlobalTemplateItem } from '../services/adminGlobalTemplates.service';
 import { useAdminAuth } from '../contexts/AdminAuthContext';
@@ -40,10 +40,13 @@ export default function AdminTemplates() {
   const [activeTab, setActiveTab] = useState<TabType>('subscriber');
   const [msg, setMsg] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
+  const msgTimer = useRef<ReturnType<typeof setTimeout>>();
   const showMsg = (text: string, type: 'success' | 'error') => {
     setMsg({ text, type });
-    setTimeout(() => setMsg(null), 4000);
+    if (msgTimer.current) clearTimeout(msgTimer.current);
+    msgTimer.current = setTimeout(() => setMsg(null), 4000);
   };
+  useEffect(() => () => { if (msgTimer.current) clearTimeout(msgTimer.current); }, []);
 
   return (
     <div>

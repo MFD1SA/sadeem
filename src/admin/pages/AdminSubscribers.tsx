@@ -85,10 +85,13 @@ export default function AdminSubscribers() {
   const [editOrgForm, setEditOrgForm] = useState({ name: '', industry: '', city: '', country: '' });
   const [savingOrg, setSavingOrg] = useState(false);
 
+  const msgTimer = useRef<ReturnType<typeof setTimeout>>();
   const showMsg = (text: string, type: 'success' | 'error') => {
     setMsg({ text, type });
-    setTimeout(() => setMsg(null), 4000);
+    if (msgTimer.current) clearTimeout(msgTimer.current);
+    msgTimer.current = setTimeout(() => setMsg(null), 4000);
   };
+  useEffect(() => () => { if (msgTimer.current) clearTimeout(msgTimer.current); }, []);
 
   const loadList = useCallback(async () => {
     try {

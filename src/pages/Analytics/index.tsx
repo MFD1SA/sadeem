@@ -42,6 +42,8 @@ export default function Analytics() {
     void loadData();
   }, [organization?.id, loadData, authLoading]);
 
+  useEffect(() => { _cache = null; }, [organization?.id]);
+
   if (loading) {
     return <LoadingState message={t.common.loading} />;
   }

@@ -63,9 +63,13 @@ export default function AdminBilling() {
   const [payForm, setPayForm] = useState({ amount: '', method: 'bank_transfer', reference: '', notes: '' });
   const [paying, setPaying] = useState(false);
 
+  const msgTimer = useRef<ReturnType<typeof setTimeout>>();
   const showMsg = (text: string, type: 'success' | 'error') => {
-    setMsg({ text, type }); setTimeout(() => setMsg(null), 4000);
+    setMsg({ text, type });
+    if (msgTimer.current) clearTimeout(msgTimer.current);
+    msgTimer.current = setTimeout(() => setMsg(null), 4000);
   };
+  useEffect(() => () => { if (msgTimer.current) clearTimeout(msgTimer.current); }, []);
 
   const loadData = useCallback(async () => {
     try {

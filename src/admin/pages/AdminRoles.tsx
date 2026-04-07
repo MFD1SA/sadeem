@@ -3,7 +3,7 @@
 // View roles, view/edit permissions per role — all via RPCs.
 // ============================================================================
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useAdminAuth } from '../contexts/AdminAuthContext';
 import { adminRolesService } from '../services/adminRoles.service';
 import { PERMISSIONS } from '../utils/constants';
@@ -49,10 +49,13 @@ export default function AdminRoles() {
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  const msgTimer = useRef<ReturnType<typeof setTimeout>>();
   const showMsg = (text: string, type: 'success' | 'error') => {
     setMsg({ text, type });
-    setTimeout(() => setMsg(null), 4000);
+    if (msgTimer.current) clearTimeout(msgTimer.current);
+    msgTimer.current = setTimeout(() => setMsg(null), 4000);
   };
+  useEffect(() => () => { if (msgTimer.current) clearTimeout(msgTimer.current); }, []);
 
   const loadData = useCallback(async () => {
     try {

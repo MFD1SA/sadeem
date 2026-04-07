@@ -124,6 +124,8 @@ export default function Templates() {
 
   useEffect(() => { loadTemplates(); }, [loadTemplates]);
 
+  useEffect(() => { _cache = null; }, [organization?.id]);
+
   const openCreate = () => {
     setEditTemplate(null);
     setForm({ name: '', body: '', category: 'general', rating_min: 1, rating_max: 5, is_active: true, language: 'ar' });

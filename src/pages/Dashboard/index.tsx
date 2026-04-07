@@ -57,6 +57,8 @@ export default function Dashboard() {
     void loadData();
   }, [organization?.id, loadData, authLoading]);
 
+  useEffect(() => { _cache = null; }, [organization?.id]);
+
   if (loading) return <LoadingState message={t.common.loading} />;
   if (error) return <ErrorState message={error} onRetry={loadData} />;
   if (!stats) return null;

@@ -4,7 +4,7 @@
 // Branding logos uploaded to Supabase Storage and URLs saved in settings.
 // ============================================================================
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAdminAuth } from '../contexts/AdminAuthContext';
 import { adminSettingsService, type BrandingSettings } from '../services/adminSettings.service';
 import { adminSupabase } from '../services/adminSupabase';
@@ -16,7 +16,13 @@ export default function AdminSettings() {
 
   const [activeSection, setActiveSection] = useState('branding');
   const [msg, setMsg] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
-  const showMsg = (t: string, ty: 'success' | 'error') => { setMsg({ text: t, type: ty }); setTimeout(() => setMsg(null), 4000); };
+  const msgTimer = useRef<ReturnType<typeof setTimeout>>();
+  const showMsg = (t: string, ty: 'success' | 'error') => {
+    setMsg({ text: t, type: ty });
+    if (msgTimer.current) clearTimeout(msgTimer.current);
+    msgTimer.current = setTimeout(() => setMsg(null), 4000);
+  };
+  useEffect(() => () => { if (msgTimer.current) clearTimeout(msgTimer.current); }, []);
 
   const sections = [
     { id: 'branding', label: 'هوية المنصة', icon: Palette },

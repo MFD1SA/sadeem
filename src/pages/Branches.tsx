@@ -61,6 +61,8 @@ export default function Branches() {
     void loadBranches();
   }, [organization?.id, loadBranches, authLoading]);
 
+  useEffect(() => { _cache = null; }, [organization?.id]);
+
   const openCreate = () => {
     if (!canAddBranch) {
       setLimitWarning(true);

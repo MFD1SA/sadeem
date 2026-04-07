@@ -25,6 +25,9 @@ interface TicketReply {
   created_at: string;
 }
 
+const TICKET_RATE_LIMIT = 5;
+const _ticketTimestamps: number[] = [];
+
 const STATUS_CONFIG = {
   open:        { label: 'مفتوحة',    labelEn: 'Open',        color: 'info'    as const, icon: MessageSquare },
   in_progress: { label: 'قيد المعالجة', labelEn: 'In Progress', color: 'warning' as const, icon: Clock },
@@ -148,6 +151,16 @@ export default function Support() {
       return;
     }
     if (!organization || !user) return;
+
+    // Rate limiting: max 5 tickets per day
+    const now = Date.now();
+    const dayAgo = now - 24 * 60 * 60 * 1000;
+    const recentCount = _ticketTimestamps.filter(ts => ts > dayAgo).length;
+    if (recentCount >= TICKET_RATE_LIMIT) {
+      setError(lang === 'ar' ? 'لقد تجاوزت الحد الأقصى لإنشاء التذاكر اليوم. يرجى المحاولة غداً.' : 'You have reached the daily ticket limit. Please try again tomorrow.');
+      return;
+    }
+
     setSubmitting(true);
     setError('');
     try {
@@ -161,6 +174,7 @@ export default function Support() {
         status: 'open',
       });
       if (err) throw err;
+      _ticketTimestamps.push(Date.now());
       setSuccess(t.supportExt.ticketSubmitted);
       setForm({ subject: '', body: '', priority: 'medium' });
       setShowForm(false);

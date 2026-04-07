@@ -46,7 +46,13 @@ export default function AdminTickets() {
   const [replySending, setReplySending] = useState(false);
   const threadEndRef = useRef<HTMLDivElement>(null);
 
-  const showMsg = (t: string, ty: 'success' | 'error') => { setMsg({ text: t, type: ty }); setTimeout(() => setMsg(null), 4000); };
+  const msgTimer = useRef<ReturnType<typeof setTimeout>>();
+  const showMsg = (t: string, ty: 'success' | 'error') => {
+    setMsg({ text: t, type: ty });
+    if (msgTimer.current) clearTimeout(msgTimer.current);
+    msgTimer.current = setTimeout(() => setMsg(null), 4000);
+  };
+  useEffect(() => () => { if (msgTimer.current) clearTimeout(msgTimer.current); }, []);
 
   const loadData = useCallback(async () => {
     try {
