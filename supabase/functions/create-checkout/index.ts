@@ -11,24 +11,24 @@
 // ============================================================================
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { corsHeaders } from '../_shared/cors.ts'
+import { corsHeaders, makeCorsHeaders } from '../_shared/cors.ts'
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response('ok', { headers: makeCorsHeaders(req) })
   }
 
   try {
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) {
-      return jsonResponse({ error: 'Unauthorized' }, 401)
+      return jsonResponse({ error: 'Unauthorized' }, 401, req)
     }
 
     const body = await req.json()
     const { organization_id, plan } = body
 
     if (!organization_id || !plan) {
-      return jsonResponse({ error: 'organization_id and plan are required' }, 400)
+      return jsonResponse({ error: 'organization_id and plan are required' }, 400, req)
     }
 
     // --- Authenticate caller and get user ID ---
@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
 
     const { data: { user }, error: userErr } = await callerClient.auth.getUser()
     if (userErr || !user) {
-      return jsonResponse({ error: 'Invalid or expired token' }, 401)
+      return jsonResponse({ error: 'Invalid or expired token' }, 401, req)
     }
 
     // --- Verify caller owns the organization (explicit user_id binding) ---
@@ -53,7 +53,7 @@ Deno.serve(async (req) => {
       .single()
 
     if (!membership || membership.role !== 'owner') {
-      return jsonResponse({ error: 'Only organization owner can create checkout' }, 403)
+      return jsonResponse({ error: 'Only organization owner can create checkout' }, 403, req)
     }
 
     // --- Get org details for metadata ---
@@ -73,7 +73,7 @@ Deno.serve(async (req) => {
       || Deno.env.get('PUBLIC_SITE_URL')
       || req.headers.get('origin')
     if (!appUrl) {
-      return jsonResponse({ error: 'APP_URL not configured' }, 500)
+      return jsonResponse({ error: 'APP_URL not configured' }, 500, req)
     }
     const successUrl = `${appUrl}/dashboard?payment=success`
     const cancelUrl = `${appUrl}/dashboard?payment=cancelled`
@@ -87,11 +87,11 @@ Deno.serve(async (req) => {
     }
     const price = PLAN_PRICES[plan]
     if (!price) {
-      return jsonResponse({ error: 'Invalid plan' }, 400)
+      return jsonResponse({ error: 'Invalid plan' }, 400, req)
     }
 
     if (provider === 'stripe') {
-      return await createStripeCheckout({
+      return await createStripeCheckout(req, {
         organizationId: organization_id,
         orgName: org?.name || 'Senda Customer',
         plan,
@@ -102,7 +102,7 @@ Deno.serve(async (req) => {
     }
 
     if (provider === 'moyasar') {
-      return await createMoyasarCheckout({
+      return await createMoyasarCheckout(req, {
         organizationId: organization_id,
         orgName: org?.name || 'Senda Customer',
         plan,
@@ -111,15 +111,15 @@ Deno.serve(async (req) => {
       })
     }
 
-    return jsonResponse({ error: 'No payment gateway configured' }, 500)
+    return jsonResponse({ error: 'No payment gateway configured' }, 500, req)
 
   } catch (err) {
-    return jsonResponse({ error: (err as Error).message || 'Internal error' }, 500)
+    return jsonResponse({ error: (err as Error).message || 'Internal error' }, 500, req)
   }
 })
 
 
-async function createStripeCheckout(params: {
+async function createStripeCheckout(req: Request, params: {
   organizationId: string
   orgName: string
   plan: string
@@ -129,7 +129,7 @@ async function createStripeCheckout(params: {
 }) {
   const stripeKey = Deno.env.get('STRIPE_SECRET_KEY')
   if (!stripeKey) {
-    return jsonResponse({ error: 'Stripe not configured' }, 500)
+    return jsonResponse({ error: 'Stripe not configured' }, 500, req)
   }
 
   const response = await fetch('https://api.stripe.com/v1/checkout/sessions', {
@@ -158,18 +158,18 @@ async function createStripeCheckout(params: {
   const session = await response.json()
 
   if (!response.ok) {
-    return jsonResponse({ error: session.error?.message || 'Stripe error' }, 400)
+    return jsonResponse({ error: session.error?.message || 'Stripe error' }, 400, req)
   }
 
   return jsonResponse({
     checkout_url: session.url,
     session_id: session.id,
     provider: 'stripe',
-  })
+  }, 200, req)
 }
 
 
-async function createMoyasarCheckout(params: {
+async function createMoyasarCheckout(req: Request, params: {
   organizationId: string
   orgName: string
   plan: string
@@ -178,7 +178,7 @@ async function createMoyasarCheckout(params: {
 }) {
   const moyasarKey = Deno.env.get('MOYASAR_SECRET_KEY')
   if (!moyasarKey) {
-    return jsonResponse({ error: 'Moyasar not configured' }, 500)
+    return jsonResponse({ error: 'Moyasar not configured' }, 500, req)
   }
 
   const response = await fetch('https://api.moyasar.com/v1/invoices', {
@@ -202,20 +202,20 @@ async function createMoyasarCheckout(params: {
   const invoice = await response.json()
 
   if (!response.ok) {
-    return jsonResponse({ error: invoice.message || 'Moyasar error' }, 400)
+    return jsonResponse({ error: invoice.message || 'Moyasar error' }, 400, req)
   }
 
   return jsonResponse({
     checkout_url: invoice.url,
     invoice_id: invoice.id,
     provider: 'moyasar',
-  })
+  }, 200, req)
 }
 
 
-function jsonResponse(data: unknown, status = 200) {
+function jsonResponse(data: unknown, status = 200, req?: Request) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    headers: { ...(req ? makeCorsHeaders(req) : corsHeaders), 'Content-Type': 'application/json' },
   })
 }

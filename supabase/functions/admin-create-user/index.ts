@@ -15,12 +15,12 @@
 // ============================================================================
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { corsHeaders } from '../_shared/cors.ts'
+import { makeCorsHeaders } from '../_shared/cors.ts'
 
 Deno.serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response('ok', { headers: makeCorsHeaders(req) })
   }
 
   try {
@@ -29,7 +29,7 @@ Deno.serve(async (req) => {
     if (!authHeader) {
       return new Response(
         JSON.stringify({ error: 'Missing Authorization header' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 401, headers: { ...makeCorsHeaders(req), 'Content-Type': 'application/json' } }
       )
     }
 
@@ -40,14 +40,14 @@ Deno.serve(async (req) => {
     if (!email || !password || !full_name_ar) {
       return new Response(
         JSON.stringify({ error: 'email, password, and full_name_ar are required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...makeCorsHeaders(req), 'Content-Type': 'application/json' } }
       )
     }
 
     if (password.length < 8) {
       return new Response(
         JSON.stringify({ error: 'Password must be at least 8 characters' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...makeCorsHeaders(req), 'Content-Type': 'application/json' } }
       )
     }
 
@@ -76,14 +76,14 @@ Deno.serve(async (req) => {
       const status = msg.includes('Permission denied') ? 403 : 400
       return new Response(
         JSON.stringify({ error: msg }),
-        { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status, headers: { ...makeCorsHeaders(req), 'Content-Type': 'application/json' } }
       )
     }
 
     if (!permCheck) {
       return new Response(
         JSON.stringify({ error: 'Permission verification failed' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 403, headers: { ...makeCorsHeaders(req), 'Content-Type': 'application/json' } }
       )
     }
 
@@ -100,14 +100,14 @@ Deno.serve(async (req) => {
     if (authErr) {
       return new Response(
         JSON.stringify({ error: 'Failed to create auth user: ' + authErr.message }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...makeCorsHeaders(req), 'Content-Type': 'application/json' } }
       )
     }
 
     if (!authUser.user) {
       return new Response(
         JSON.stringify({ error: 'Auth user creation returned null' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 500, headers: { ...makeCorsHeaders(req), 'Content-Type': 'application/json' } }
       )
     }
 
@@ -129,7 +129,7 @@ Deno.serve(async (req) => {
       await serviceClient.auth.admin.deleteUser(authUser.user.id)
       return new Response(
         JSON.stringify({ error: 'Failed to create admin record: ' + insertErr.message }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...makeCorsHeaders(req), 'Content-Type': 'application/json' } }
       )
     }
 
@@ -138,13 +138,13 @@ Deno.serve(async (req) => {
         success: true,
         data: adminResult,
       }),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 200, headers: { ...makeCorsHeaders(req), 'Content-Type': 'application/json' } }
     )
 
   } catch (err) {
     return new Response(
       JSON.stringify({ error: err.message || 'Internal server error' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 500, headers: { ...makeCorsHeaders(req), 'Content-Type': 'application/json' } }
     )
   }
 })

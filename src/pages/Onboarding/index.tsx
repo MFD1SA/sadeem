@@ -117,6 +117,8 @@ export default function Onboarding() {
         industry: form.businessType,
         country: form.country,
         city: form.city,
+        language: form.language,
+        tone: form.tone,
       });
       // Org + membership created in DB. Force a full page reload so
       // AuthProvider re-hydrates from scratch and picks up the new org.

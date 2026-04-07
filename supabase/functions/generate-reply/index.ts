@@ -7,14 +7,14 @@
 // Deploy: supabase functions deploy generate-reply
 // ============================================================================
 
-import { corsHeaders } from '../_shared/cors.ts'
+import { makeCorsHeaders } from '../_shared/cors.ts'
 
 const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models'
 const MODEL = 'gemini-2.0-flash-lite'
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response('ok', { headers: makeCorsHeaders(req) })
   }
 
   try {
@@ -23,7 +23,7 @@ Deno.serve(async (req) => {
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return new Response(
         JSON.stringify({ error: 'Missing authorization' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 401, headers: { ...makeCorsHeaders(req), 'Content-Type': 'application/json' } }
       )
     }
 
@@ -31,7 +31,7 @@ Deno.serve(async (req) => {
     if (!apiKey) {
       return new Response(
         JSON.stringify({ error: 'GEMINI_API_KEY not configured on server' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 500, headers: { ...makeCorsHeaders(req), 'Content-Type': 'application/json' } }
       )
     }
 
@@ -41,7 +41,7 @@ Deno.serve(async (req) => {
     if (!prompt || typeof prompt !== 'string') {
       return new Response(
         JSON.stringify({ error: 'prompt is required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...makeCorsHeaders(req), 'Content-Type': 'application/json' } }
       )
     }
 
@@ -71,20 +71,20 @@ Deno.serve(async (req) => {
         || `Gemini error: ${geminiRes.status}`
       return new Response(
         JSON.stringify({ error: msg }),
-        { status: geminiRes.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: geminiRes.status, headers: { ...makeCorsHeaders(req), 'Content-Type': 'application/json' } }
       )
     }
 
     const data = await geminiRes.json()
     return new Response(
       JSON.stringify({ ...data, durationMs }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { headers: { ...makeCorsHeaders(req), 'Content-Type': 'application/json' } }
     )
 
   } catch (err) {
     return new Response(
       JSON.stringify({ error: err instanceof Error ? err.message : 'Unknown error' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 500, headers: { ...makeCorsHeaders(req), 'Content-Type': 'application/json' } }
     )
   }
 })

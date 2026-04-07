@@ -43,6 +43,8 @@ export const organizationService = {
       country: string;
       city: string;
       logoUrl?: string;
+      language?: string;
+      tone?: string;
     }
   ): Promise<DbOrganization> {
     const slug =
@@ -68,6 +70,8 @@ export const organizationService = {
         country: input.country,
         city: input.city,
         logo_url: input.logoUrl || null,
+        ...(input.language && { preferred_language: input.language }),
+        ...(input.tone && { preferred_tone: input.tone }),
       })
       .select()
       .single();

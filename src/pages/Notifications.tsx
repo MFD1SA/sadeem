@@ -8,6 +8,8 @@ import { Badge } from '@/components/ui/Badge';
 import { Bell, Star, AlertTriangle, CheckCircle } from 'lucide-react';
 import { formatTimeAgo } from '@/utils/helpers';
 
+const PAGE_SIZE = 20;
+
 export default function Notifications() {
   const { t, lang } = useLanguage();
   useEffect(() => { document.title = lang === 'ar' ? 'سيندا — الإشعارات' : 'SENDA — Notifications'; }, [lang]);
@@ -15,6 +17,7 @@ export default function Notifications() {
   const [items, setItems] = useState<DbNotification[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [page, setPage] = useState(1);
 
   const loadNotifications = useCallback(async () => {
     if (!organization) { setLoading(false); return; }
@@ -54,6 +57,8 @@ export default function Notifications() {
   if (error && items.length === 0) return <ErrorState message={error} onRetry={loadNotifications} />;
 
   const unreadCount = items.filter((n: DbNotification) => !n.is_read).length;
+  const paginatedItems = items.slice(0, page * PAGE_SIZE);
+  const hasMore = items.length > page * PAGE_SIZE;
 
   return (
     <div className="space-y-4">
@@ -120,7 +125,7 @@ export default function Notifications() {
           />
         ) : (
           <div className="divide-y divide-border/60">
-            {items.map((n: DbNotification) => (
+            {paginatedItems.map((n: DbNotification) => (
               <div
                 key={n.id}
                 className={`px-5 py-3.5 transition-all duration-150 cursor-pointer hover:bg-surface-secondary/40 ${n.is_read ? '' : 'bg-brand-50/30 border-s-[3px] border-brand-400'}`}
@@ -153,6 +158,16 @@ export default function Notifications() {
                 </div>
               </div>
             ))}
+            {hasMore && (
+              <div className="text-center pt-4">
+                <button
+                  className="btn btn-secondary btn-sm"
+                  onClick={() => setPage(p => p + 1)}
+                >
+                  {lang === 'ar' ? 'عرض المزيد' : 'Load more'}
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
