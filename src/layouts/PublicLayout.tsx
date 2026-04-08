@@ -28,7 +28,7 @@ const T: Record<Lang, Record<string, any>> = {
       { label: 'سياسة الخصوصية', path: '/privacy' },
       { label: 'شروط الاستخدام', path: '/terms' },
     ],
-    copyright: '© 2025 SENDA. جميع الحقوق محفوظة.',
+    copyright: 'جميع الحقوق محفوظة لـ © 2025 SENDA',
   },
   en: {
     dir: 'ltr',
@@ -49,7 +49,7 @@ const T: Record<Lang, Record<string, any>> = {
       { label: 'Privacy Policy', path: '/privacy' },
       { label: 'Terms of Service', path: '/terms' },
     ],
-    copyright: '© 2025 SENDA. All rights reserved.',
+    copyright: 'All rights reserved © 2025 SENDA',
   },
 };
 

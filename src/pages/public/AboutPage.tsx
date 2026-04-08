@@ -14,12 +14,6 @@ const T: Record<Lang, Record<string, any>> = {
     heroH1: 'نبني مستقبل إدارة السمعة الرقمية',
     heroSub: 'سيندا منصة سعودية تمكّن الأنشطة التجارية من إدارة تقييماتها وتحسين حضورها الرقمي بذكاء وكفاءة',
     heroBtn: 'ابدأ تجربتك المجانية',
-    stats: [
-      { value: '+500', label: 'نشاط تجاري' },
-      { value: '+50K', label: 'تقييم مُدار' },
-      { value: '99.9%', label: 'وقت التشغيل' },
-      { value: '24/7', label: 'دعم فني' },
-    ],
     storyTitle: 'قصتنا',
     storyP1: 'بدأت سيندا من إيمان عميق بأن كل تقييم يحمل فرصة حقيقية للنمو. في سوق يزداد فيه الاعتماد على التقييمات الرقمية، أدركنا أن الأنشطة التجارية تحتاج إلى أدوات ذكية وموثوقة لإدارة سمعتها.',
     storyP2: 'اليوم، سيندا تخدم مئات الأنشطة التجارية في المملكة العربية السعودية، من المتاجر الصغيرة إلى السلاسل الكبرى، مقدمةً حلولًا متكاملة تجمع بين الذكاء الاصطناعي والتحليلات المتقدمة.',
@@ -57,12 +51,6 @@ const T: Record<Lang, Record<string, any>> = {
     heroH1: 'Building the Future of Reputation Management',
     heroSub: 'SENDA is a Saudi platform empowering businesses to manage reviews and enhance their digital presence with intelligence and efficiency',
     heroBtn: 'Start Your Free Trial',
-    stats: [
-      { value: '500+', label: 'Businesses' },
-      { value: '50K+', label: 'Reviews Managed' },
-      { value: '99.9%', label: 'Uptime' },
-      { value: '24/7', label: 'Support' },
-    ],
     storyTitle: 'Our Story',
     storyP1: 'SENDA was born from a deep belief that every review holds a real opportunity for growth. In a market increasingly reliant on digital reviews, we realized businesses need smart, reliable tools to manage their reputation.',
     storyP2: 'Today, SENDA serves hundreds of businesses across Saudi Arabia, from small shops to large chains, providing integrated solutions that combine artificial intelligence with advanced analytics.',
@@ -130,17 +118,6 @@ export default function AboutPage() {
           </Link>
         </div>
 
-        {/* Stats bar */}
-        <div className="relative max-w-4xl mx-auto px-6 mt-16">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 bg-white/[0.04] backdrop-blur-sm border border-white/10 rounded-2xl p-6 md:p-8">
-            {t.stats.map((s: any, i: number) => (
-              <div key={i} className="text-center">
-                <div className="text-2xl md:text-3xl font-bold text-white mb-1">{s.value}</div>
-                <div className="text-xs text-slate-400 font-medium">{s.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
       </section>
 
       {/* ═══════════ OUR STORY ═══════════ */}
