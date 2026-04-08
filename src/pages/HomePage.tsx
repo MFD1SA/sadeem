@@ -253,24 +253,32 @@ export default function HomePage() {
       </section>
 
       {/* ═══════════════════ WHAT IS SENDA ═══════════════════ */}
-      <section id="senda-content" className="py-20 bg-white">
-        <div className="max-w-3xl mx-auto px-6 text-center">
-          <p className="text-xs font-semibold text-blue-900 tracking-widest uppercase mb-3">{t.whatLabel}</p>
-          <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 tracking-tight mb-4">{t.whatH2}</h2>
-          <p className="text-base text-slate-500 leading-relaxed">{t.whatDesc}</p>
-        </div>
-      </section>
+      <section id="senda-content" className="py-24 bg-white relative overflow-hidden">
+        {/* Subtle background decoration */}
+        <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent" />
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-50 rounded-full blur-[100px] opacity-60" />
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-50 rounded-full blur-[100px] opacity-40" />
 
-      {/* ═══════════════════ FEATURES ═══════════════════ */}
-      <section className="pb-20 bg-white">
-        <div className="max-w-[1200px] mx-auto px-6">
+        <div className="relative max-w-3xl mx-auto px-6 text-center mb-16">
+          <div className="inline-flex items-center gap-2 bg-[#0F1A2E]/5 rounded-full px-4 py-1.5 mb-6">
+            <Sparkles size={14} className="text-blue-900" />
+            <span className="text-xs font-semibold text-blue-900 tracking-wide">{t.whatLabel}</span>
+          </div>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 tracking-tight mb-5 leading-tight">{t.whatH2}</h2>
+          <p className="text-base md:text-lg text-slate-500 leading-relaxed max-w-2xl mx-auto">{t.whatDesc}</p>
+        </div>
+
+        {/* ═══════════════════ FEATURES ═══════════════════ */}
+        <div className="relative max-w-[1200px] mx-auto px-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {t.featureCards.map((f: any, i: number) => {
               const Icon = IconMap[f.icon] || Sparkles;
               return (
-                <div key={i} className="group p-6 rounded-2xl border border-slate-100 bg-white hover:shadow-md hover:border-slate-200 transition-all duration-300">
-                  <Icon size={22} className="text-blue-900 mb-4" />
-                  <h3 className="text-[15px] font-semibold text-slate-800 mb-2">{f.title}</h3>
+                <div key={i} className="group relative p-7 rounded-2xl border border-slate-100 bg-white hover:border-blue-100 hover:shadow-xl hover:shadow-blue-900/5 transition-all duration-500">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#0F1A2E] to-[#1a2d45] flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-500">
+                    <Icon size={20} className="text-blue-300" />
+                  </div>
+                  <h3 className="text-[15px] font-bold text-slate-900 mb-2.5">{f.title}</h3>
                   <p className="text-sm text-slate-500 leading-relaxed">{f.desc}</p>
                 </div>
               );
@@ -280,48 +288,79 @@ export default function HomePage() {
       </section>
 
       {/* ═══════════════════ HOW IT WORKS ═══════════════════ */}
-      <section className="py-20 bg-[#FAFBFC]">
-        <div className="max-w-[1200px] mx-auto px-6">
-          <div className="text-center mb-14">
-            <p className="text-xs font-semibold text-blue-900 tracking-widest uppercase mb-3">{t.howLabel}</p>
-            <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 tracking-tight">{t.howH2}</h2>
+      <section className="relative py-24 overflow-hidden" style={{ background: 'linear-gradient(160deg, #0B1120 0%, #162032 40%, #0F1A2E 100%)' }}>
+        {/* Decorative elements */}
+        <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-500/5 rounded-full blur-[120px]" />
+
+        <div className="relative max-w-[1200px] mx-auto px-6">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full px-4 py-1.5 mb-6">
+              <span className="text-xs font-semibold text-blue-300 tracking-wide">{t.howLabel}</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white tracking-tight">{t.howH2}</h2>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-5xl mx-auto">
-            {t.howSteps.map((s: any, i: number) => {
-              const Icon = IconMap[s.icon] || Sparkles;
-              return (
-                <div key={i} className="text-center group">
-                  <div className="w-14 h-14 rounded-2xl border border-slate-200 bg-white flex items-center justify-center mx-auto mb-5 group-hover:border-blue-200 group-hover:shadow-sm transition-all">
-                    <Icon size={22} className="text-blue-900" />
+
+          <div className="relative max-w-5xl mx-auto">
+            {/* Connecting line (desktop only) */}
+            <div className="hidden lg:block absolute top-[52px] left-[12%] right-[12%] h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+              {t.howSteps.map((s: any, i: number) => {
+                const Icon = IconMap[s.icon] || Sparkles;
+                return (
+                  <div key={i} className="text-center group relative">
+                    <div className="relative mx-auto mb-6">
+                      <div className="w-[104px] h-[104px] rounded-3xl bg-white/[0.03] border border-white/[0.08] flex items-center justify-center mx-auto group-hover:bg-white/[0.06] group-hover:border-white/15 transition-all duration-500">
+                        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500/20 to-blue-600/10 flex items-center justify-center">
+                          <Icon size={26} className="text-blue-400" />
+                        </div>
+                      </div>
+                      <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold shadow-lg shadow-blue-500/30">{s.num.replace('0', '')}</div>
+                    </div>
+                    <h3 className="text-base font-bold text-white mb-2">{s.title}</h3>
+                    <p className="text-sm text-slate-400 leading-relaxed max-w-[220px] mx-auto">{s.desc}</p>
                   </div>
-                  <div className="text-[11px] font-semibold text-blue-900 tracking-widest mb-2">{s.num}</div>
-                  <h3 className="text-[15px] font-semibold text-slate-800 mb-2">{s.title}</h3>
-                  <p className="text-sm text-slate-500 leading-relaxed">{s.desc}</p>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         </div>
       </section>
 
 
       {/* ═══════════════════ CTA ═══════════════════ */}
-      <section className="py-20 bg-white">
-        <div className="max-w-2xl mx-auto px-6 text-center">
-          <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 tracking-tight mb-4">{t.ctaSectionH2}</h2>
-          <p className="text-base text-slate-500 mb-8 leading-relaxed">{t.ctaSectionDesc}</p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link to="/login" className="bg-[#0F1A2E] hover:bg-[#162032] text-white font-medium px-8 py-3 rounded-lg text-sm transition-all shadow-sm inline-flex items-center gap-2">
-              {t.ctaSectionBtn}
-              {isRtl ? <ArrowLeft size={16} /> : <ArrowRight size={16} />}
-            </Link>
-            <Link to="/pricing" className="border border-slate-200 text-slate-600 hover:bg-slate-50 font-medium px-8 py-3 rounded-lg text-sm transition-all">
-              {isRtl ? 'اطلع على الباقات' : 'View Pricing'}
-            </Link>
-          </div>
-          <div className="mt-10 flex items-center justify-center gap-6 text-slate-400 text-xs font-medium">
-            <span className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-blue-800" />{isRtl ? 'بدون تعقيد' : 'No Setup Fee'}</span>
-            <span className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-blue-800" />{isRtl ? 'دعم فني 24/7' : '24/7 Support'}</span>
+      <section className="relative py-24 overflow-hidden bg-white">
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-50/80 to-white" />
+        <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent" />
+
+        <div className="relative max-w-4xl mx-auto px-6">
+          <div className="relative rounded-3xl overflow-hidden" style={{ background: 'linear-gradient(160deg, #0B1120 0%, #162032 40%, #0F1A2E 100%)' }}>
+            {/* Decorative elements inside card */}
+            <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-blue-500/10 rounded-full blur-[100px]" />
+            <svg className="absolute top-[10%] right-[5%] w-16 h-16 text-blue-400/10 animate-pulse" viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="28" stroke="currentColor" strokeWidth="1.5" strokeDasharray="4 6" /></svg>
+            <svg className="absolute bottom-[10%] left-[5%] w-12 h-12 text-blue-400/10" viewBox="0 0 48 48" fill="none"><rect x="6" y="6" width="36" height="36" rx="8" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 5" /></svg>
+
+            <div className="relative px-8 sm:px-12 md:px-16 py-16 md:py-20 text-center">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white tracking-tight mb-5 leading-tight">{t.ctaSectionH2}</h2>
+              <p className="text-base md:text-lg text-slate-400 mb-10 leading-relaxed max-w-xl mx-auto">{t.ctaSectionDesc}</p>
+
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10">
+                <Link to="/register" className="bg-blue-600 hover:bg-blue-500 text-white font-semibold px-8 py-3.5 rounded-xl text-sm transition-all shadow-lg shadow-blue-600/20 inline-flex items-center gap-2">
+                  {t.ctaSectionBtn}
+                  {isRtl ? <ArrowLeft size={16} /> : <ArrowRight size={16} />}
+                </Link>
+                <Link to="/pricing" className="border border-white/15 text-white/70 hover:text-white hover:border-white/30 hover:bg-white/5 font-medium px-8 py-3.5 rounded-xl text-sm transition-all">
+                  {isRtl ? 'اطلع على الباقات' : 'View Pricing'}
+                </Link>
+              </div>
+
+              <div className="flex items-center justify-center gap-6 text-slate-400 text-xs font-medium">
+                <span className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-blue-400" />{isRtl ? 'بدون تعقيد' : 'No Setup Fee'}</span>
+                <span className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-blue-400" />{isRtl ? 'دعم فني 24/7' : '24/7 Support'}</span>
+              </div>
+            </div>
           </div>
         </div>
       </section>

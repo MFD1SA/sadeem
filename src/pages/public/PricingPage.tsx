@@ -17,8 +17,8 @@ const T: Record<Lang, Record<string, any>> = {
     mo: 'ر.س/شهر',
     mostPopular: 'الأكثر طلبًا',
     contactSales: 'تواصل مع المبيعات',
-    ctaDefault: 'ابدأ مجانًا',
-    ctaHighlight: 'ابدأ مجانًا الآن',
+    ctaDefault: 'اشترك الآن',
+    ctaHighlight: 'اشترك الآن',
     plans: [
       { name: 'Orbit', nameAr: 'مدار', price: '99', features: ['1 فرع', '1 عضو فريق', '50 رد ذكي شهريًا', '100 رد قالب', 'ربط Google Business', 'الرد اليدوي', 'قوالب الردود', 'الإشعارات الفورية'] },
       { name: 'Nova', nameAr: 'نوفا', price: '199', popular: true, features: ['3 فروع', '3 أعضاء فريق', '300 رد ذكي شهريًا', '500 رد قالب', 'ربط Google Business', 'الرد الآلي بالذكاء الاصطناعي', 'الرد اليدوي', 'قوالب الردود', 'الإشعارات الفورية', 'إدارة المهام', 'إدارة الفروع', 'التحليلات المتقدمة', 'صفحة هبوط QR', 'تحليلات رموز QR'] },
@@ -57,8 +57,8 @@ const T: Record<Lang, Record<string, any>> = {
     mo: 'SAR/mo',
     mostPopular: 'Most Popular',
     contactSales: 'Contact Sales',
-    ctaDefault: 'Start Free',
-    ctaHighlight: 'Start Free Now',
+    ctaDefault: 'Subscribe Now',
+    ctaHighlight: 'Subscribe Now',
     plans: [
       { name: 'Orbit', nameAr: 'Orbit', price: '99', features: ['1 branch', '1 team member', '50 AI replies/mo', '100 template replies', 'Google Business link', 'Manual replies', 'Reply templates', 'Instant notifications'] },
       { name: 'Nova', nameAr: 'Nova', price: '199', popular: true, features: ['3 branches', '3 team members', '300 AI replies/mo', '500 template replies', 'Google Business link', 'AI auto-replies', 'Manual replies', 'Reply templates', 'Instant notifications', 'Task management', 'Branch management', 'Advanced analytics', 'QR landing page', 'QR analytics'] },
@@ -124,7 +124,7 @@ export default function PricingPage() {
       <section className="py-20 px-6">
         <div className="max-w-[1200px] mx-auto grid sm:grid-cols-2 lg:grid-cols-4 gap-5 items-stretch">
           {t.plans.map((plan: any, i: number) => (
-            <div key={i} className={`relative rounded-2xl p-7 border flex flex-col transition-all hover:shadow-lg ${plan.popular ? 'border-blue-200 shadow-md ring-1 ring-blue-100 bg-white' : 'border-slate-100 bg-white'}`}>
+            <div key={i} className={`relative rounded-2xl p-7 border flex flex-col transition-all hover:shadow-lg ${plan.popular ? 'border-blue-200 shadow-lg ring-1 ring-blue-100 bg-white' : 'border-slate-200 shadow-sm bg-white'}`}>
               {plan.popular && (
                 <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] font-bold text-white bg-[#0F1A2E] px-4 py-1 rounded-full">{t.mostPopular}</span>
               )}
@@ -151,7 +151,7 @@ export default function PricingPage() {
               </ul>
               <Link
                 to={plan.price ? '/register' : '/contact-us'}
-                className={`block text-center py-3 rounded-xl text-sm font-semibold transition-colors mt-auto ${plan.popular ? 'bg-[#0F1A2E] text-white hover:bg-[#162032]' : 'border border-slate-200 text-slate-700 hover:bg-slate-50'}`}
+                className={`block text-center py-3 rounded-xl text-sm font-semibold transition-colors mt-auto ${plan.popular ? 'bg-[#0F1A2E] text-white hover:bg-[#162032]' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200'}`}
               >
                 {plan.popular ? t.ctaHighlight : plan.price ? t.ctaDefault : t.contactSales}
               </Link>
