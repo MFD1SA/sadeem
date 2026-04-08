@@ -221,10 +221,6 @@ export default function HomePage() {
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[700px] h-[400px] rounded-full blur-[140px] pointer-events-none" style={{ background: 'rgba(20, 184, 166, 0.08)' }} />
         <div className="absolute bottom-0 left-0 w-[500px] h-[300px] rounded-full blur-[120px] pointer-events-none" style={{ background: 'rgba(20, 184, 166, 0.05)' }} />
 
-        {/* Floating doodle elements */}
-        <svg className="absolute top-[18%] right-[8%] w-16 h-16 text-blue-400/20 animate-pulse" viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="28" stroke="currentColor" strokeWidth="1.5" strokeDasharray="4 6" /></svg>
-        <svg className="absolute bottom-[25%] left-[10%] w-10 h-10 text-blue-400/15" viewBox="0 0 40 40" fill="none"><rect x="5" y="5" width="30" height="30" rx="6" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 5" /></svg>
-
         {/* ── Hero Grid: Text + Illustration side by side ── */}
         <div className="relative z-10 max-w-[1200px] mx-auto px-6 w-full grid lg:grid-cols-2 gap-10 lg:gap-14 items-center">
           {/* Text side */}
@@ -578,8 +574,6 @@ export default function HomePage() {
             {/* Decorative elements inside card */}
             <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-blue-500/10 rounded-full blur-[100px]" />
-            <svg className="absolute top-[10%] right-[5%] w-16 h-16 text-blue-400/10 animate-pulse" viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="28" stroke="currentColor" strokeWidth="1.5" strokeDasharray="4 6" /></svg>
-            <svg className="absolute bottom-[10%] left-[5%] w-12 h-12 text-blue-400/10" viewBox="0 0 48 48" fill="none"><rect x="6" y="6" width="36" height="36" rx="8" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 5" /></svg>
 
             <div className="relative px-8 sm:px-12 md:px-16 py-16 md:py-20 text-center">
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white tracking-tight mb-5 leading-tight">{t.ctaSectionH2}</h2>
