@@ -137,13 +137,13 @@ export default function PricingPage() {
 
       {/* Plan Cards */}
       <section className="pb-16 px-6">
-        <div className="max-w-6xl mx-auto grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="max-w-6xl mx-auto grid sm:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
           {t.plans.map((plan: any, i: number) => (
-            <div key={i} className={`relative rounded-2xl p-6 border transition-all ${plan.popular ? 'border-teal-300 shadow-lg shadow-teal-100/50 scale-[1.02]' : 'border-slate-100 hover:border-teal-200'}`}>
+            <div key={i} className={`relative rounded-2xl p-6 border flex flex-col transition-all ${plan.popular ? 'border-teal-300 shadow-lg shadow-teal-100/50' : 'border-slate-100 hover:border-teal-200'}`}>
               {plan.popular && (
                 <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[11px] font-bold text-white bg-teal-600 px-4 py-1 rounded-full">{t.mostPopular}</span>
               )}
-              <div className="text-center mb-5">
+              <div className="text-center mb-5 min-h-[100px]">
                 <p className="text-xs text-slate-400 mb-1">{plan.name}</p>
                 <h3 className="text-lg font-bold text-slate-900">{isAr ? plan.nameAr : plan.name}</h3>
                 {plan.price ? (
@@ -155,7 +155,7 @@ export default function PricingPage() {
                   <p className="text-sm text-teal-600 font-semibold mt-2">{t.contactSales}</p>
                 )}
               </div>
-              <ul className="space-y-2 mb-6">
+              <ul className="space-y-2 mb-6 flex-1">
                 {plan.features.map((f: string, j: number) => (
                   <li key={j} className="flex items-start gap-2 text-sm text-slate-600">
                     <CheckCircle2 size={15} className="text-teal-500 flex-shrink-0 mt-0.5" />
@@ -165,7 +165,7 @@ export default function PricingPage() {
               </ul>
               <Link
                 to={plan.price ? '/register' : '/contact-us'}
-                className={`block text-center py-2.5 rounded-xl text-sm font-semibold transition-colors ${plan.popular ? 'bg-teal-600 text-white hover:bg-teal-700' : 'border border-teal-200 text-teal-600 hover:bg-teal-50'}`}
+                className={`block text-center py-3 rounded-xl text-sm font-semibold transition-colors mt-auto ${plan.popular ? 'bg-teal-600 text-white hover:bg-teal-700' : 'border border-teal-200 text-teal-600 hover:bg-teal-50'}`}
               >
                 {plan.popular ? t.ctaHighlight : plan.price ? t.ctaDefault : t.contactSales}
               </Link>

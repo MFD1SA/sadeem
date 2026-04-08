@@ -453,7 +453,7 @@ export default function HomePage() {
             <p className="text-base text-slate-500 max-w-xl mx-auto">{t.pricingDesc}</p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-20">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-20 items-stretch">
             {t.plans.map((plan: any, i: number) => {
               const isPopular = plan.popular;
               return (
@@ -463,7 +463,8 @@ export default function HomePage() {
                       <span className="bg-teal-600 text-white px-4 py-1 rounded-full text-[10px] font-semibold tracking-wide">{t.pricingMostPopular}</span>
                     </div>
                   )}
-                  <div className="mb-6">
+                  {/* Fixed-height header block */}
+                  <div className="mb-6 min-h-[100px]">
                     <h3 className="text-xs font-semibold text-teal-600 tracking-widest uppercase mb-1">{plan.name}</h3>
                     <p className="text-sm text-slate-500 mb-3">{plan.nameAr}</p>
                     {plan.price ? (
@@ -476,18 +477,17 @@ export default function HomePage() {
                     )}
                   </div>
                   <div className="h-px bg-slate-100 mb-5" />
+                  {/* Features list fills remaining space */}
                   <ul className="space-y-2.5 mb-8 flex-1">
-                    {plan.features.slice(0, 8).map((f: string, fi: number) => (
+                    {plan.features.map((f: string, fi: number) => (
                       <li key={fi} className="flex items-start gap-2.5 text-sm text-slate-600">
                         <CheckCircle2 size={14} className="text-teal-500 mt-0.5 flex-shrink-0" />
                         <span>{f}</span>
                       </li>
                     ))}
-                    {plan.features.length > 8 && (
-                      <li className="text-xs text-teal-600 font-medium">+{plan.features.length - 8} {isRtl ? 'مميزات إضافية' : 'more features'}</li>
-                    )}
                   </ul>
-                  <button onClick={() => plan.price ? navigate('/login') : navigate('/contact-us')} className={`w-full py-2.5 rounded-lg text-sm font-medium transition-all ${isPopular ? 'bg-teal-600 hover:bg-teal-700 text-white shadow-sm' : 'border border-slate-200 text-slate-700 hover:bg-slate-50'}`}>
+                  {/* Button always at bottom */}
+                  <button onClick={() => plan.price ? navigate('/login') : navigate('/contact-us')} className={`w-full py-3 rounded-xl text-sm font-semibold transition-all mt-auto ${isPopular ? 'bg-teal-600 hover:bg-teal-700 text-white shadow-sm' : 'border border-slate-200 text-slate-700 hover:bg-slate-50'}`}>
                     {plan.price ? (isPopular ? t.pricingCtaHighlight : t.pricingCtaDefault) : t.pricingContactUs}
                   </button>
                 </div>

@@ -120,10 +120,10 @@ export function AppRouter() {
       <Route path="/privacy" element={<PrivacyPage />} />
       <Route path="/terms"   element={<TermsPage />} />
       <Route path="/features"            element={<PublicFeaturesPage />} />
-      <Route path="/reviews-management"  element={<ReviewsManagementPage />} />
-      <Route path="/ai-replies"          element={<AiRepliesPage />} />
-      <Route path="/analytics-page"      element={<AnalyticsMarketingPage />} />
-      <Route path="/branches-page"       element={<BranchesMarketingPage />} />
+      <Route path="/reviews-management"  element={<Navigate to="/features" replace />} />
+      <Route path="/ai-replies"          element={<Navigate to="/features" replace />} />
+      <Route path="/analytics-page"      element={<Navigate to="/features" replace />} />
+      <Route path="/branches-page"       element={<Navigate to="/features" replace />} />
 
       {/* Public pages */}
       <Route path="/about"      element={<AboutPage />} />
