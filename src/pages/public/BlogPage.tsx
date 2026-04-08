@@ -1,8 +1,9 @@
 // ============================================================================
-// SENDA — Blog Page (المدونة)
+// SENDA — Blog Page (المدونة) — Premium Design
 // ============================================================================
 import { useState } from 'react';
-import { Clock } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Clock, ArrowLeft, ArrowRight } from 'lucide-react';
 import PublicLayout from '@/layouts/PublicLayout';
 
 type Lang = 'ar' | 'en';
@@ -12,6 +13,7 @@ const T: Record<Lang, Record<string, any>> = {
     heroTag: 'المدونة',
     heroH1: 'أحدث المقالات والنصائح',
     heroSub: 'مقالات متخصصة في إدارة السمعة الرقمية والتقييمات والذكاء الاصطناعي',
+    heroBtn: 'ابدأ تجربتك المجانية',
     readMore: 'اقرأ المزيد',
     minRead: 'دقائق قراءة',
     articles: [
@@ -28,6 +30,7 @@ const T: Record<Lang, Record<string, any>> = {
     heroTag: 'Blog',
     heroH1: 'Latest Articles & Tips',
     heroSub: 'Expert articles on digital reputation management, reviews, and AI',
+    heroBtn: 'Start Your Free Trial',
     readMore: 'Read more',
     minRead: 'min read',
     articles: [
@@ -45,39 +48,52 @@ const T: Record<Lang, Record<string, any>> = {
 export default function BlogPage() {
   const [lang, setLang] = useState<Lang>('ar');
   const t = T[lang];
+  const isRtl = lang === 'ar';
 
   return (
     <PublicLayout lang={lang} onToggleLang={() => setLang(l => l === 'ar' ? 'en' : 'ar')}>
-      {/* Hero */}
-      <section className="py-20 px-6">
-        <div className="max-w-3xl mx-auto text-center">
-          <span className="inline-block text-xs font-semibold text-blue-900 bg-blue-50 px-4 py-1.5 rounded-full mb-4">{t.heroTag}</span>
-          <h1 className="text-3xl md:text-4xl font-bold text-slate-900 leading-tight mb-4">{t.heroH1}</h1>
-          <p className="text-base text-slate-500 leading-relaxed">{t.heroSub}</p>
+      {/* ═══════════ DARK HERO ═══════════ */}
+      <section className="relative overflow-hidden py-28 md:py-36" style={{ background: 'linear-gradient(160deg, #0B1120 0%, #162032 40%, #0F1A2E 100%)' }}>
+        <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
+        <svg className="absolute top-[15%] right-[8%] w-20 h-20 text-blue-400/10 animate-pulse" viewBox="0 0 80 80" fill="none"><circle cx="40" cy="40" r="35" stroke="currentColor" strokeWidth="1.5" strokeDasharray="4 6" /></svg>
+        <svg className="absolute bottom-[20%] left-[6%] w-14 h-14 text-blue-400/10" viewBox="0 0 56 56" fill="none"><rect x="8" y="8" width="40" height="40" rx="8" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 5" /></svg>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-500/5 rounded-full blur-[120px]" />
+
+        <div className="relative max-w-4xl mx-auto px-6 text-center">
+          <span className="inline-block text-xs font-semibold text-blue-300/80 bg-white/5 backdrop-blur-sm border border-white/10 px-5 py-2 rounded-full mb-6 tracking-wide">{t.heroTag}</span>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight mb-6">{t.heroH1}</h1>
+          <p className="text-base md:text-lg text-slate-400 leading-relaxed max-w-2xl mx-auto mb-10">{t.heroSub}</p>
+          <Link to="/register" className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold px-8 py-3.5 rounded-xl text-sm transition-all shadow-lg shadow-blue-600/20">
+            {t.heroBtn}
+            {isRtl ? <ArrowLeft size={16} /> : <ArrowRight size={16} />}
+          </Link>
         </div>
       </section>
 
-      {/* Articles Grid */}
-      <section className="pb-20 px-6">
+      {/* ═══════════ ARTICLES GRID ═══════════ */}
+      <section className="py-20 px-6">
         <div className="max-w-[1200px] mx-auto grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {t.articles.map((article: any, i: number) => (
-            <article key={i} className="group rounded-2xl border border-slate-100 bg-white hover:shadow-md hover:border-slate-200 overflow-hidden transition-all">
-              <div className="h-40 bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
-                <span className="text-xs font-semibold text-blue-900 bg-white px-3 py-1 rounded-full border border-blue-100">{article.category}</span>
+            <article key={i} className="group rounded-2xl border border-slate-100 bg-white hover:shadow-lg hover:border-slate-200 overflow-hidden transition-all">
+              <div className="h-44 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0F1A2E 0%, #1a2d45 50%, #162032 100%)' }}>
+                <div className="absolute inset-0 opacity-[0.06]" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px)', backgroundSize: '30px 30px' }} />
+                <div className="relative h-full flex items-center justify-center">
+                  <span className="text-xs font-semibold text-blue-300 bg-white/10 backdrop-blur-sm px-4 py-1.5 rounded-full border border-white/10">{article.category}</span>
+                </div>
               </div>
-              <div className="p-5">
+              <div className="p-6">
                 <div className="flex items-center gap-3 text-xs text-slate-400 mb-3">
                   <span>{article.date}</span>
                   <span className="flex items-center gap-1"><Clock size={12} /> {article.mins} {t.minRead}</span>
                 </div>
                 <h3 className="font-bold text-slate-900 mb-2 leading-snug">{article.title}</h3>
                 <p className="text-sm text-slate-500 leading-relaxed mb-4 line-clamp-3">{article.excerpt}</p>
-                <span className="text-sm font-medium text-blue-900 cursor-default">{t.readMore}</span>
+                <span className="text-sm font-semibold text-[#0F1A2E] cursor-default">{t.readMore} &rarr;</span>
               </div>
             </article>
           ))}
         </div>
-        <p className="text-center text-sm text-slate-400 mt-10">{t.comingSoon}</p>
+        <p className="text-center text-sm text-slate-400 mt-12">{t.comingSoon}</p>
       </section>
     </PublicLayout>
   );

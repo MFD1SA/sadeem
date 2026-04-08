@@ -2,7 +2,7 @@
 // SENDA — Contact Page (تواصل معنا)
 // ============================================================================
 import { useState, type FormEvent } from 'react';
-import { Send, Loader2, CheckCircle2, MapPin, Clock, MessageSquare } from 'lucide-react';
+import { Send, Loader2, CheckCircle2, MapPin, Clock, MessageSquare, ArrowDown } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import PublicLayout from '@/layouts/PublicLayout';
 
@@ -13,6 +13,7 @@ const T: Record<Lang, Record<string, any>> = {
     heroTag: 'تواصل معنا',
     heroH1: 'نحن هنا لمساعدتك',
     heroSub: 'أرسل لنا رسالتك وسنتواصل معك في أقرب وقت ممكن',
+    heroBtn: 'أرسل رسالتك الآن',
     nameLabel: 'الاسم الكامل',
     namePh: 'أدخل اسمك الكامل',
     emailLabel: 'البريد الإلكتروني',
@@ -35,6 +36,7 @@ const T: Record<Lang, Record<string, any>> = {
     heroTag: 'Contact Us',
     heroH1: 'We\'re Here to Help',
     heroSub: 'Send us your message and we\'ll get back to you as soon as possible',
+    heroBtn: 'Send Your Message',
     nameLabel: 'Full Name',
     namePh: 'Enter your full name',
     emailLabel: 'Email',
@@ -98,12 +100,16 @@ export default function ContactPage() {
         <div className="relative max-w-4xl mx-auto px-6 text-center">
           <span className="inline-block text-xs font-semibold text-blue-300/80 bg-white/5 backdrop-blur-sm border border-white/10 px-5 py-2 rounded-full mb-6 tracking-wide">{t.heroTag}</span>
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight mb-6">{t.heroH1}</h1>
-          <p className="text-base md:text-lg text-slate-400 leading-relaxed max-w-2xl mx-auto">{t.heroSub}</p>
+          <p className="text-base md:text-lg text-slate-400 leading-relaxed max-w-2xl mx-auto mb-10">{t.heroSub}</p>
+          <button onClick={() => document.getElementById('contact-form')?.scrollIntoView({ behavior: 'smooth' })} className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold px-8 py-3.5 rounded-xl text-sm transition-all shadow-lg shadow-blue-600/20">
+            {t.heroBtn}
+            <ArrowDown size={16} />
+          </button>
         </div>
       </section>
 
       {/* Contact Form + Info */}
-      <section className="pb-20 px-6">
+      <section id="contact-form" className="py-20 px-6">
         <div className="max-w-5xl mx-auto grid md:grid-cols-5 gap-10">
           {/* Form */}
           <div className="md:col-span-3">
