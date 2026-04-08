@@ -1,0 +1,134 @@
+// ============================================================================
+// SENDA — FAQ Page (الأسئلة الشائعة)
+// Light theme · Teal accent · Premium · Elegant
+// ============================================================================
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { ChevronDown, ChevronUp } from 'lucide-react';
+
+type Lang = 'ar' | 'en';
+
+const T: Record<Lang, Record<string, any>> = {
+  ar: {
+    dir: 'rtl',
+    langToggle: 'EN',
+    nav: ['من نحن', 'المميزات', 'الباقات', 'الأسئلة الشائعة', 'المدونة', 'تواصل معنا'],
+    navPaths: ['/about', '/features', '/pricing', '/faq', '/blog', '/contact-us'],
+    loginBtn: 'دخول',
+    heroTag: 'الأسئلة الشائعة',
+    heroH1: 'إجابات على أهم تساؤلاتك',
+    heroSub: 'لم تجد إجابتك؟ تواصل معنا مباشرة وسنسعد بمساعدتك',
+    faqs: [
+      { q: 'ما هي سيندا؟', a: 'سيندا هي منصة سعودية متكاملة لإدارة تقييمات Google Business، الردود الذكية بالذكاء الاصطناعي، تحليلات الأداء، وإدارة الفروع والفريق من مكان واحد.' },
+      { q: 'هل يمكنني تجربة المنصة مجانًا؟', a: 'نعم، جميع الخطط تتضمن فترة تجريبية مجانية بدون الحاجة لبطاقة ائتمان. يمكنك البدء فورًا واستكشاف جميع المميزات.' },
+      { q: 'كيف يعمل الرد الذكي بالذكاء الاصطناعي؟', a: 'يقوم الذكاء الاصطناعي بتحليل نص التقييم وصياغة رد احترافي يتناسب مع محتوى التقييم ونبرة علامتك التجارية تلقائيًا، مع إمكانية التعديل قبل النشر.' },
+      { q: 'هل أحتاج خبرة تقنية لاستخدام المنصة؟', a: 'لا، سيندا مصممة لتكون سهلة الاستخدام. كل ما تحتاجه هو ربط حساب Google Business الخاص بك والبدء في إدارة تقييماتك فورًا.' },
+      { q: 'هل يمكنني إدارة أكثر من فرع؟', a: 'نعم، خطط نوفا وجالكسي وإنفينيتي تدعم إدارة فروع متعددة من لوحة تحكم مركزية واحدة مع إمكانية المقارنة بين أداء الفروع.' },
+      { q: 'كيف يتم حماية بياناتي؟', a: 'نستخدم أعلى معايير الأمان بما في ذلك تشفير البيانات، حماية الجلسات، نظام صلاحيات متقدم، وسياسات أمان صارمة تضمن خصوصية بياناتك.' },
+      { q: 'ما هي طرق الدفع المتاحة؟', a: 'ندعم الدفع عبر البطاقات الائتمانية (فيزا وماستركارد) والتحويل البنكي، مع إصدار فواتير إلكترونية متوافقة مع ضريبة القيمة المضافة.' },
+      { q: 'هل يمكنني تغيير خطتي لاحقًا؟', a: 'نعم، يمكنك الترقية أو تغيير خطتك في أي وقت من لوحة التحكم. التغييرات تسري فورًا ويتم احتساب الفرق بشكل تناسبي.' },
+      { q: 'هل تدعم المنصة اللغة الإنجليزية؟', a: 'نعم، المنصة تدعم العربية والإنجليزية بالكامل ويمكنك التبديل بين اللغتين في أي وقت.' },
+      { q: 'كيف أتواصل مع الدعم الفني؟', a: 'يمكنك التواصل معنا عبر نموذج التواصل في الموقع أو من خلال نظام التذاكر داخل لوحة التحكم. فريق الدعم متاح على مدار الساعة للخطط المميزة.' },
+    ],
+    ctaTitle: 'لم تجد إجابتك؟',
+    ctaBtn: 'تواصل معنا',
+    footer: '© 2025 سيندا — جميع الحقوق محفوظة',
+  },
+  en: {
+    dir: 'ltr',
+    langToggle: 'ع',
+    nav: ['About', 'Features', 'Pricing', 'FAQ', 'Blog', 'Contact'],
+    navPaths: ['/about', '/features', '/pricing', '/faq', '/blog', '/contact-us'],
+    loginBtn: 'Login',
+    heroTag: 'FAQ',
+    heroH1: 'Answers to Your Most Common Questions',
+    heroSub: 'Can\'t find your answer? Contact us directly and we\'ll be happy to help',
+    faqs: [
+      { q: 'What is SENDA?', a: 'SENDA is a comprehensive Saudi platform for managing Google Business reviews, AI-powered smart replies, performance analytics, and branch & team management from one place.' },
+      { q: 'Can I try the platform for free?', a: 'Yes, all plans include a free trial without requiring a credit card. You can start immediately and explore all features.' },
+      { q: 'How does the AI smart reply work?', a: 'The AI analyzes the review text and crafts a professional response that matches the review content and your brand tone automatically, with the ability to edit before publishing.' },
+      { q: 'Do I need technical experience?', a: 'No, SENDA is designed to be user-friendly. All you need is to connect your Google Business account and start managing your reviews immediately.' },
+      { q: 'Can I manage multiple branches?', a: 'Yes, Nova, Galaxy, and Infinity plans support managing multiple branches from a single centralized dashboard with branch performance comparison.' },
+      { q: 'How is my data protected?', a: 'We use the highest security standards including data encryption, session protection, advanced permission systems, and strict security policies ensuring your data privacy.' },
+      { q: 'What payment methods are available?', a: 'We support credit card payments (Visa and Mastercard) and bank transfers, with electronic invoicing compliant with VAT regulations.' },
+      { q: 'Can I change my plan later?', a: 'Yes, you can upgrade or change your plan at any time from the dashboard. Changes take effect immediately with prorated billing.' },
+      { q: 'Does the platform support English?', a: 'Yes, the platform fully supports both Arabic and English and you can switch between languages at any time.' },
+      { q: 'How do I contact support?', a: 'You can reach us via the contact form on the website or through the ticket system in the dashboard. Support is available 24/7 for premium plans.' },
+    ],
+    ctaTitle: 'Can\'t find your answer?',
+    ctaBtn: 'Contact Us',
+    footer: '© 2025 SENDA — All rights reserved',
+  },
+};
+
+export default function FaqPage() {
+  const [lang, setLang] = useState<Lang>('ar');
+  const [openIdx, setOpenIdx] = useState<number | null>(0);
+  const t = T[lang];
+
+  return (
+    <div dir={t.dir} className="min-h-screen bg-white text-slate-800 font-[IBM_Plex_Sans_Arabic,sans-serif]">
+      {/* Header */}
+      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-slate-100">
+        <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
+          <Link to="/" className="flex items-center gap-2"><img src="/senda-logo.png" alt="SENDA" className="h-8" /></Link>
+          <nav className="hidden md:flex items-center gap-6 text-sm text-slate-600">
+            {t.nav.map((label: string, i: number) => (
+              <Link key={i} to={t.navPaths[i]} className="hover:text-teal-600 transition-colors">{label}</Link>
+            ))}
+          </nav>
+          <div className="flex items-center gap-3">
+            <button onClick={() => setLang(l => l === 'ar' ? 'en' : 'ar')} className="text-xs px-2 py-1 rounded border border-slate-200 text-slate-500 hover:text-teal-600">{t.langToggle}</button>
+            <Link to="/login" className="text-sm font-medium text-teal-600 hover:text-teal-700">{t.loginBtn}</Link>
+          </div>
+        </div>
+      </header>
+
+      {/* Hero */}
+      <section className="py-20 px-6">
+        <div className="max-w-3xl mx-auto text-center">
+          <span className="inline-block text-xs font-semibold text-teal-600 bg-teal-50 px-4 py-1.5 rounded-full mb-4">{t.heroTag}</span>
+          <h1 className="text-3xl md:text-4xl font-bold text-slate-900 leading-tight mb-4">{t.heroH1}</h1>
+          <p className="text-base text-slate-500 leading-relaxed">{t.heroSub}</p>
+        </div>
+      </section>
+
+      {/* FAQ Accordion */}
+      <section className="pb-20 px-6">
+        <div className="max-w-3xl mx-auto space-y-3">
+          {t.faqs.map((faq: any, i: number) => {
+            const isOpen = openIdx === i;
+            return (
+              <div key={i} className={`rounded-xl border transition-colors ${isOpen ? 'border-teal-200 bg-teal-50/30' : 'border-slate-100 bg-white'}`}>
+                <button
+                  onClick={() => setOpenIdx(isOpen ? null : i)}
+                  className="w-full flex items-center justify-between p-5 text-start"
+                >
+                  <span className="font-semibold text-slate-900 text-sm">{faq.q}</span>
+                  {isOpen ? <ChevronUp size={18} className="text-teal-600 flex-shrink-0" /> : <ChevronDown size={18} className="text-slate-400 flex-shrink-0" />}
+                </button>
+                {isOpen && (
+                  <div className="px-5 pb-5">
+                    <p className="text-sm text-slate-600 leading-relaxed">{faq.a}</p>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="py-16 px-6 bg-slate-50">
+        <div className="max-w-2xl mx-auto text-center">
+          <h2 className="text-2xl font-bold text-slate-900 mb-4">{t.ctaTitle}</h2>
+          <Link to="/contact-us" className="inline-block bg-teal-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-teal-700 transition-colors">
+            {t.ctaBtn}
+          </Link>
+        </div>
+      </section>
+
+      <footer className="border-t border-slate-100 py-8 text-center text-xs text-slate-400">{t.footer}</footer>
+    </div>
+  );
+}

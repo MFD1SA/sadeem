@@ -63,6 +63,14 @@ import AiRepliesPage         from '@/pages/marketing/AiRepliesPage';
 import AnalyticsMarketingPage from '@/pages/marketing/AnalyticsPage';
 import BranchesMarketingPage  from '@/pages/marketing/BranchesPage';
 
+// ── Public pages ───────────────────────────────────────────────────────────
+import AboutPage    from '@/pages/public/AboutPage';
+import PublicFeaturesPage from '@/pages/public/FeaturesPage';
+import PricingPage  from '@/pages/public/PricingPage';
+import FaqPage      from '@/pages/public/FaqPage';
+import BlogPage     from '@/pages/public/BlogPage';
+import ContactPage  from '@/pages/public/ContactPage';
+
 // ── Lazily loaded admin pages (infrequently visited) ────────────────────────
 import { AdminLayout } from '@/admin/layouts/AdminLayout';
 import AdminLogin from '@/admin/pages/AdminLogin';
@@ -116,6 +124,13 @@ export function AppRouter() {
       <Route path="/ai-replies"          element={<AiRepliesPage />} />
       <Route path="/analytics-page"      element={<AnalyticsMarketingPage />} />
       <Route path="/branches-page"       element={<BranchesMarketingPage />} />
+
+      {/* Public pages */}
+      <Route path="/about"      element={<AboutPage />} />
+      <Route path="/pricing"    element={<PricingPage />} />
+      <Route path="/faq"        element={<FaqPage />} />
+      <Route path="/blog"       element={<BlogPage />} />
+      <Route path="/contact-us" element={<ContactPage />} />
 
       <Route path="/r/:slug" element={<ReviewLanding />} />
       <Route path="/s/:city/:industry" element={<SeoLanding />} />

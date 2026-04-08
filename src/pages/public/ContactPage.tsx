@@ -1,0 +1,219 @@
+// ============================================================================
+// SENDA — Contact Page (تواصل معنا)
+// Light theme · Teal accent · Premium · Elegant
+// Uses the same Supabase edge function as HomePage contact form
+// ============================================================================
+import { useState, type FormEvent } from 'react';
+import { Link } from 'react-router-dom';
+import { Send, Loader2, CheckCircle2, MapPin, Clock, MessageSquare } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
+
+type Lang = 'ar' | 'en';
+
+const T: Record<Lang, Record<string, any>> = {
+  ar: {
+    dir: 'rtl',
+    langToggle: 'EN',
+    nav: ['من نحن', 'المميزات', 'الباقات', 'الأسئلة الشائعة', 'المدونة', 'تواصل معنا'],
+    navPaths: ['/about', '/features', '/pricing', '/faq', '/blog', '/contact-us'],
+    loginBtn: 'دخول',
+    heroTag: 'تواصل معنا',
+    heroH1: 'نحن هنا لمساعدتك',
+    heroSub: 'أرسل لنا رسالتك وسنتواصل معك في أقرب وقت ممكن',
+    nameLabel: 'الاسم الكامل',
+    namePh: 'أدخل اسمك الكامل',
+    emailLabel: 'البريد الإلكتروني',
+    emailPh: 'example@email.com',
+    msgLabel: 'رسالتك',
+    msgPh: 'اكتب رسالتك هنا...',
+    sendBtn: 'إرسال الرسالة',
+    sending: 'جارِ الإرسال...',
+    successTitle: 'تم إرسال رسالتك بنجاح',
+    successDesc: 'شكرًا لتواصلك معنا. سنعود إليك في أقرب وقت.',
+    sendAnother: 'إرسال رسالة أخرى',
+    errorMsg: 'حدث خطأ أثناء الإرسال. يرجى المحاولة مجددًا.',
+    infoCards: [
+      { title: 'موقعنا', desc: 'المملكة العربية السعودية', icon: 'MapPin' },
+      { title: 'ساعات العمل', desc: 'الأحد – الخميس، 9 ص – 6 م', icon: 'Clock' },
+      { title: 'الدعم الفني', desc: 'متاح عبر نظام التذاكر داخل المنصة', icon: 'MessageSquare' },
+    ],
+    footer: '© 2025 سيندا — جميع الحقوق محفوظة',
+  },
+  en: {
+    dir: 'ltr',
+    langToggle: 'ع',
+    nav: ['About', 'Features', 'Pricing', 'FAQ', 'Blog', 'Contact'],
+    navPaths: ['/about', '/features', '/pricing', '/faq', '/blog', '/contact-us'],
+    loginBtn: 'Login',
+    heroTag: 'Contact Us',
+    heroH1: 'We\'re Here to Help',
+    heroSub: 'Send us your message and we\'ll get back to you as soon as possible',
+    nameLabel: 'Full Name',
+    namePh: 'Enter your full name',
+    emailLabel: 'Email',
+    emailPh: 'example@email.com',
+    msgLabel: 'Your Message',
+    msgPh: 'Write your message here...',
+    sendBtn: 'Send Message',
+    sending: 'Sending...',
+    successTitle: 'Message sent successfully',
+    successDesc: 'Thank you for reaching out. We\'ll get back to you shortly.',
+    sendAnother: 'Send another message',
+    errorMsg: 'An error occurred. Please try again.',
+    infoCards: [
+      { title: 'Location', desc: 'Saudi Arabia', icon: 'MapPin' },
+      { title: 'Working Hours', desc: 'Sun – Thu, 9 AM – 6 PM', icon: 'Clock' },
+      { title: 'Technical Support', desc: 'Available via the in-platform ticket system', icon: 'MessageSquare' },
+    ],
+    footer: '© 2025 SENDA — All rights reserved',
+  },
+};
+
+const ICONS: Record<string, any> = { MapPin, Clock, MessageSquare };
+
+export default function ContactPage() {
+  const [lang, setLang] = useState<Lang>('ar');
+  const t = T[lang];
+
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    try {
+      const { error: fnErr } = await supabase.functions.invoke('send-contact', {
+        body: { name, email, message },
+      });
+      if (fnErr) throw fnErr;
+      setSent(true);
+      setName('');
+      setEmail('');
+      setMessage('');
+    } catch {
+      setError(t.errorMsg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div dir={t.dir} className="min-h-screen bg-white text-slate-800 font-[IBM_Plex_Sans_Arabic,sans-serif]">
+      {/* Header */}
+      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-slate-100">
+        <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
+          <Link to="/" className="flex items-center gap-2"><img src="/senda-logo.png" alt="SENDA" className="h-8" /></Link>
+          <nav className="hidden md:flex items-center gap-6 text-sm text-slate-600">
+            {t.nav.map((label: string, i: number) => (
+              <Link key={i} to={t.navPaths[i]} className="hover:text-teal-600 transition-colors">{label}</Link>
+            ))}
+          </nav>
+          <div className="flex items-center gap-3">
+            <button onClick={() => setLang(l => l === 'ar' ? 'en' : 'ar')} className="text-xs px-2 py-1 rounded border border-slate-200 text-slate-500 hover:text-teal-600">{t.langToggle}</button>
+            <Link to="/login" className="text-sm font-medium text-teal-600 hover:text-teal-700">{t.loginBtn}</Link>
+          </div>
+        </div>
+      </header>
+
+      {/* Hero */}
+      <section className="py-20 px-6">
+        <div className="max-w-3xl mx-auto text-center">
+          <span className="inline-block text-xs font-semibold text-teal-600 bg-teal-50 px-4 py-1.5 rounded-full mb-4">{t.heroTag}</span>
+          <h1 className="text-3xl md:text-4xl font-bold text-slate-900 leading-tight mb-4">{t.heroH1}</h1>
+          <p className="text-base text-slate-500 leading-relaxed">{t.heroSub}</p>
+        </div>
+      </section>
+
+      {/* Contact Form + Info */}
+      <section className="pb-20 px-6">
+        <div className="max-w-5xl mx-auto grid md:grid-cols-5 gap-10">
+          {/* Form */}
+          <div className="md:col-span-3">
+            {sent ? (
+              <div className="text-center py-16 rounded-2xl border border-teal-100 bg-teal-50/30">
+                <CheckCircle2 size={48} className="text-teal-500 mx-auto mb-4" />
+                <h3 className="text-xl font-bold text-slate-900 mb-2">{t.successTitle}</h3>
+                <p className="text-sm text-slate-500 mb-6">{t.successDesc}</p>
+                <button onClick={() => setSent(false)} className="text-sm font-medium text-teal-600 hover:text-teal-700">
+                  {t.sendAnother}
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-5 bg-white rounded-2xl border border-slate-100 p-8">
+                {error && (
+                  <div className="bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl p-3">{error}</div>
+                )}
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">{t.nameLabel}</label>
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={e => setName(e.target.value)}
+                    placeholder={t.namePh}
+                    required
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-teal-300 focus:ring-2 focus:ring-teal-100 transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">{t.emailLabel}</label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    placeholder={t.emailPh}
+                    required
+                    dir="ltr"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-teal-300 focus:ring-2 focus:ring-teal-100 transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">{t.msgLabel}</label>
+                  <textarea
+                    value={message}
+                    onChange={e => setMessage(e.target.value)}
+                    placeholder={t.msgPh}
+                    required
+                    rows={5}
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-teal-300 focus:ring-2 focus:ring-teal-100 transition-all resize-none"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full flex items-center justify-center gap-2 bg-teal-600 text-white py-3 rounded-xl text-sm font-semibold hover:bg-teal-700 disabled:opacity-50 transition-colors"
+                >
+                  {loading ? <><Loader2 size={16} className="animate-spin" /> {t.sending}</> : <><Send size={16} /> {t.sendBtn}</>}
+                </button>
+              </form>
+            )}
+          </div>
+
+          {/* Info Cards */}
+          <div className="md:col-span-2 space-y-4">
+            {t.infoCards.map((card: any, i: number) => {
+              const Icon = ICONS[card.icon] || MapPin;
+              return (
+                <div key={i} className="flex items-start gap-4 p-5 rounded-2xl border border-slate-100">
+                  <div className="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center flex-shrink-0">
+                    <Icon size={18} className="text-teal-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-slate-900 text-sm mb-1">{card.title}</h4>
+                    <p className="text-sm text-slate-500">{card.desc}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      <footer className="border-t border-slate-100 py-8 text-center text-xs text-slate-400">{t.footer}</footer>
+    </div>
+  );
+}

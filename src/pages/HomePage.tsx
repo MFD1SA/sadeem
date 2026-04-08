@@ -1,34 +1,18 @@
 // ============================================================================
-// SENDA — Public Marketing Homepage (Light Theme, Gold Accent)
-// Background: #F8F9FB · Cards: #FFFFFF · Text: #1A1A2E · Gold: #B8965A
-// Routing: دخول → /login  |  ابدأ مجانًا → /login
-// Contact form submits to Edge Function (destination email never exposed)
+// SENDA — Public Marketing Homepage
+// Light theme · Teal accent · Premium · Elegant · Clean
 // ============================================================================
 
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import {
   Brain, QrCode, BarChart3, Building2, Users, FileText,
   CheckCircle2, Send, Loader2, Menu, X,
   Sparkles, Shield, Clock, ArrowLeft, ArrowRight,
-  Star, LayoutDashboard,
+  Star, MessageSquare, BellRing, ListChecks, CreditCard,
+  Link2, RefreshCw, MessageCircle, ChevronDown, ChevronUp,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-
-// ─── Design tokens ────────────────────────────────────────────────────────────
-const C = {
-  bg: '#F8F9FB',
-  card: '#FFFFFF',
-  text: '#1A1A2E',
-  muted: '#6B7280',
-  gold: '#B8965A',
-  goldLight: '#D4AF6A',
-  dark: '#1A1A2E',
-  border: '#E8E8EC',
-  greenCheck: '#22C55E',
-  red: '#EF4444',
-};
-const GOLD_GRAD = 'linear-gradient(135deg, #B8965A, #D4AF6A)';
 
 // ─── Translations ─────────────────────────────────────────────────────────────
 type Lang = 'ar' | 'en';
@@ -37,106 +21,107 @@ const T: Record<Lang, Record<string, any>> = {
   ar: {
     dir: 'rtl',
     langToggle: 'EN',
-    nav: ['الرئيسية', 'المميزات', 'كيف يعمل', 'الأسعار', 'اتصل بنا'],
-    navIds: ['hero', 'features', 'how-it-works', 'pricing', 'contact'],
+    nav: ['من نحن', 'المميزات', 'الباقات', 'الأسئلة الشائعة', 'المدونة', 'تواصل معنا'],
+    navPaths: ['/about', '/features', '/pricing', '/faq', '/blog', '/contact-us'],
     loginBtn: 'دخول',
-    ctaBtn: 'ابدأ مجانًا',
-    heroH1: 'إدارة تقييمات جوجل بذكاء اصطناعي',
-    heroSub: 'منصة متكاملة للرد الذكي وجمع التقييمات وتحليل السمعة الرقمية لجميع فروعك',
+    ctaBtn: 'ابدأ الآن',
+    heroTag: 'منصة إدارة التقييمات الأولى في السعودية',
+    heroH1: 'من التقييمات يبدأ نموك',
+    heroSub: 'حل ذكي لإدارة الردود والتحليلات وبناء حضور أقوى لأعمالك',
     heroCtaPrimary: 'ابدأ تجربتك المجانية',
-    heroCtaSecondary: 'تعرف على المميزات',
-    dashPreviewTitle: 'لوحة تحكم سيندا',
-    dashSidebar: ['التقييمات', 'التحليلات', 'الفروع', 'الفريق', 'الإعدادات'],
-    dashStats: [
-      { label: 'إجمالي التقييمات', value: '1,284' },
-      { label: 'متوسط التقييم', value: '4.7' },
-      { label: 'ردود AI هذا الشهر', value: '186' },
-      { label: 'تقييمات جديدة', value: '24' },
-    ],
-    dashReviews: [
-      { initials: 'أ', stars: 5, text: 'خدمة رائعة وسريعة، أنصح بها بشدة', status: 'تم الرد' },
-      { initials: 'س', stars: 4, text: 'جيد جدًا، التوصيل كان ممتاز', status: 'بانتظار' },
-      { initials: 'خ', stars: 5, text: 'تجربة لا مثيل لها، شكرًا لكم', status: 'تم الرد' },
-    ],
-    featuresLabel: 'ماذا يقدم سيندا',
-    featuresH2: 'كل أدوات إدارة السمعة في منصة واحدة',
+    heroCtaSecondary: 'تعرّف على المميزات',
+    whatLabel: 'ماذا تقدم سيندا',
+    whatH2: 'كل أدوات إدارة السمعة في منصة واحدة',
+    whatDesc: 'سيندا تحوّل إدارة التقييمات والردود والفروع والتحليلات إلى قوة تدعم سمعة نشاطك وترفع ثقة عملائك',
     featureCards: [
-      { title: 'ردود بالذكاء الاصطناعي', desc: 'ردود مخصصة لكل تقييم تعكس هوية علامتك التجارية في ثوانٍ معدودة', icon: 'Brain' },
-      { title: 'جمع تقييمات بـ QR', desc: 'حوّل كل لقاء مع عميل إلى تقييم جوجل بمجرد مسح رمز بسيط', icon: 'QrCode' },
-      { title: 'تحليلات متقدمة', desc: 'بيانات حقيقية عن أداء سمعتك لاتخاذ قرارات أذكى وأسرع', icon: 'BarChart3' },
-      { title: 'إدارة متعددة الفروع', desc: 'أدر جميع فروعك ومواقعك من لوحة تحكم مركزية واحدة', icon: 'Building2' },
-      { title: 'إدارة الفريق', desc: 'وزّع المهام وراقب أداء الفريق مع صلاحيات مخصصة لكل عضو', icon: 'Users' },
-      { title: 'قوالب ردود احترافية', desc: 'مكتبة من القوالب الجاهزة يمكنك تخصيصها لتناسب نبرة علامتك', icon: 'FileText' },
+      { title: 'إدارة التقييمات', desc: 'تتبع وإدارة جميع تقييمات عملائك من مكان واحد مع إمكانية الفلترة والتنظيم', icon: 'BarChart3' },
+      { title: 'الردود الذكية', desc: 'ردود آلية ذكية باستخدام الذكاء الاصطناعي تتناسب مع كل تقييم وتعكس هوية علامتك', icon: 'Brain' },
+      { title: 'الرد اليدوي', desc: 'تحكم كامل في صياغة ردودك يدويًا بأسلوبك الخاص على كل تقييم', icon: 'MessageSquare' },
+      { title: 'قوالب الردود', desc: 'مكتبة من القوالب الجاهزة يمكنك تخصيصها لتناسب نبرة علامتك التجارية', icon: 'FileText' },
+      { title: 'التحليلات المتقدمة', desc: 'بيانات حقيقية عن أداء سمعتك واتجاهات التقييمات لاتخاذ قرارات أذكى', icon: 'BarChart3' },
+      { title: 'إدارة الفروع', desc: 'أدر جميع فروعك ومواقعك من لوحة تحكم مركزية واحدة بسهولة', icon: 'Building2' },
+      { title: 'الإشعارات الفورية', desc: 'تلقي إشعارات فورية بكل تقييم جديد حتى لا تفوتك أي فرصة للتحسين', icon: 'BellRing' },
+      { title: 'إدارة المهام', desc: 'وزّع المهام على فريقك وتابع تقدم العمل بتنظيم واحترافية', icon: 'ListChecks' },
+      { title: 'الفوترة والاشتراكات', desc: 'إدارة مرنة للاشتراكات والمدفوعات مع دعم كامل للضريبة', icon: 'CreditCard' },
+      { title: 'إدارة الفريق', desc: 'تعاون فعال مع فريق العمل مع صلاحيات مخصصة لكل عضو', icon: 'Users' },
+      { title: 'حلول QR', desc: 'حوّل كل لقاء مع عميل إلى تقييم جوجل بمجرد مسح رمز بسيط', icon: 'QrCode' },
     ],
-    benefitsLabel: 'المزايا',
-    benefitsH2: 'لماذا تختار سيندا؟',
-    benefits: [
-      { title: 'توفير الوقت', desc: 'وفّر ساعات أسبوعيًا بالرد التلقائي الذكي على جميع تقييماتك بدلًا من الصياغة اليدوية', icon: 'Clock' },
-      { title: 'زيادة التقييمات الإيجابية', desc: 'اجمع تقييمات أكثر من عملائك السعداء عبر أكواد QR الذكية الموزعة في فروعك', icon: 'Star' },
-      { title: 'قرارات مبنية على بيانات', desc: 'حلّل أداء كل فرع وموظف واتخذ قرارات محسوبة لتحسين تجربة العملاء', icon: 'BarChart3' },
-      { title: 'حماية سمعتك', desc: 'تنبيهات فورية للتقييمات السلبية مع ردود ذكية تحافظ على صورة علامتك التجارية', icon: 'Shield' },
-    ],
-    howLabel: 'كيف يعمل',
-    howH2: 'ثلاث خطوات لإدارة سمعتك',
+    howLabel: 'كيف تعمل المنصة',
+    howH2: 'أربع خطوات لإدارة سمعتك',
     howSteps: [
-      { num: '1', title: 'اربط حسابك', desc: 'اربط حساب جوجل للأعمال الخاص بك في دقائق وأضف فروعك' },
-      { num: '2', title: 'فعّل الذكاء الاصطناعي', desc: 'خصص نبرة الردود واضبط إعدادات الرد التلقائي حسب علامتك' },
-      { num: '3', title: 'راقب وحسّن', desc: 'تابع التقييمات والتحليلات وحسّن سمعتك الرقمية باستمرار' },
+      { num: '01', title: 'ربط النشاط', desc: 'اربط حساب Google Business الخاص بك في دقائق وأضف فروعك', icon: 'Link2' },
+      { num: '02', title: 'مزامنة التقييمات', desc: 'يتم سحب جميع تقييماتك تلقائيًا وعرضها في لوحة التحكم', icon: 'RefreshCw' },
+      { num: '03', title: 'إدارة الردود', desc: 'رد على التقييمات يدويًا أو بالذكاء الاصطناعي واستخدم القوالب', icon: 'MessageCircle' },
+      { num: '04', title: 'قياس الأداء', desc: 'تابع التحليلات وقارن أداء فروعك وحسّن تجربة عملائك', icon: 'BarChart3' },
     ],
     pricingLabel: 'الخطط والأسعار',
     pricingH2: 'ابدأ بالخطة المناسبة لعملك',
     pricingDesc: 'جميع الخطط تشمل فترة تجريبية مجانية — لا بطاقة ائتمان مطلوبة',
     pricingMo: 'ر.س/شهر',
     pricingMostPopular: 'الأكثر طلبًا',
-    pricingContactUs: 'تواصل معنا',
+    pricingContactUs: 'تواصل مع المبيعات',
     pricingCtaDefault: 'ابدأ مجانًا',
     pricingCtaHighlight: 'ابدأ مجانًا الآن',
     plans: [
-      { name: 'Orbit', nameAr: 'مدار', price: '99', features: ['1 فرع', '1 عضو', '50 رد AI شهريًا', '100 قالب', '1 كود QR'] },
-      { name: 'Nova', nameAr: 'نوفا', price: '199', popular: true, features: ['3 فروع', '3 أعضاء', '300 رد AI شهريًا', '500 قالب', '3 أكواد QR'] },
-      { name: 'Galaxy', nameAr: 'جالكسي', price: '399', features: ['10 فروع', '10 أعضاء', '1,500 رد AI شهريًا', 'قوالب غير محدودة', '10 أكواد QR'] },
-      { name: 'Infinity', nameAr: 'إنفينيتي', price: null, features: ['فروع غير محدودة', 'أعضاء غير محدودين', 'ردود AI غير محدودة', 'قوالب غير محدودة', 'أكواد QR غير محدودة'] },
+      { name: 'Orbit', nameAr: 'مدار', price: '99', features: ['1 فرع', '1 عضو فريق', '50 رد ذكي شهريًا', '100 رد قالب', 'ربط Google Business', 'الرد اليدوي', 'قوالب الردود', 'الإشعارات الفورية'] },
+      { name: 'Nova', nameAr: 'نوفا', price: '199', popular: true, features: ['3 فروع', '3 أعضاء فريق', '300 رد ذكي شهريًا', '500 رد قالب', 'ربط Google Business', 'الرد الآلي بالذكاء الاصطناعي', 'الرد اليدوي', 'قوالب الردود', 'الإشعارات الفورية', 'إدارة المهام', 'إدارة الفروع', 'التحليلات المتقدمة', 'صفحة هبوط QR', 'تحليلات رموز QR'] },
+      { name: 'Galaxy', nameAr: 'جالكسي', price: '399', features: ['10 فروع', '10 أعضاء فريق', '1,500 رد ذكي شهريًا', 'ردود قوالب غير محدودة', 'ربط Google Business', 'الرد الآلي بالذكاء الاصطناعي', 'الرد اليدوي', 'قوالب الردود', 'الإشعارات الفورية', 'إدارة المهام', 'إدارة الفريق', 'التحليلات المتقدمة', 'مقارنة الفروع', 'الدعم المميز 24/7', 'صفحة هبوط QR', 'تحليلات رموز QR'] },
+      { name: 'Infinity', nameAr: 'إنفينيتي', price: null, features: ['فروع غير محدودة', 'أعضاء غير محدودين', 'ردود ذكية غير محدودة', 'ردود قوالب غير محدودة', 'حلول مخصصة بلا حدود', 'دعم وتخصيص أعلى'] },
     ],
     compareTitle: 'مقارنة شاملة بين الخطط',
     compareFeatureCol: 'الميزة',
     compareRows: [
       { label: 'عدد الفروع', vals: ['1', '3', '10', 'غير محدود'] },
       { label: 'أعضاء الفريق', vals: ['1', '3', '10', 'غير محدود'] },
-      { label: 'ردود AI شهريًا', vals: ['50', '300', '1,500', 'غير محدود'] },
+      { label: 'ردود الذكاء الاصطناعي', vals: ['50', '300', '1,500', 'غير محدود'] },
       { label: 'ردود القوالب', vals: ['100', '500', 'غير محدود', 'غير محدود'] },
-      { label: 'أكواد QR', vals: ['1', '3', '10', 'غير محدود'] },
-      { label: 'QR لكل فرع', vals: ['x', 'check', 'check', 'check'] },
-      { label: 'صفحة QR مخصصة', vals: ['x', 'check', 'check', 'check'] },
-      { label: 'تحليلات QR', vals: ['x', 'check', 'check', 'check'] },
-      { label: 'تحليلات متقدمة', vals: ['x', 'check', 'check', 'check'] },
-      { label: 'مقارنة الفروع', vals: ['x', 'check', 'check', 'check'] },
-      { label: 'تقارير متقدمة', vals: ['x', 'x', 'check', 'check'] },
-      { label: 'إدارة الفريق', vals: ['x', 'check', 'check', 'check'] },
-      { label: 'المهام', vals: ['x', 'check', 'check', 'check'] },
-      { label: 'رفع الشعار', vals: ['x', 'check', 'check', 'check'] },
-      { label: 'وصول API', vals: ['x', 'x', 'x', 'check'] },
-      { label: 'دعم مميز', vals: ['x', 'x', 'check', 'check'] },
-      { label: 'رد تلقائي AI', vals: ['check', 'check', 'check', 'check'] },
+      { label: 'ربط Google Business', vals: ['check', 'check', 'check', 'check'] },
+      { label: 'الرد الآلي بالذكاء الاصطناعي', vals: ['check', 'check', 'check', 'check'] },
+      { label: 'الرد اليدوي', vals: ['check', 'check', 'check', 'check'] },
+      { label: 'قوالب الردود', vals: ['check', 'check', 'check', 'check'] },
+      { label: 'الإشعارات الفورية', vals: ['check', 'check', 'check', 'check'] },
+      { label: 'إدارة المهام', vals: ['x', 'check', 'check', 'check'] },
+      { label: 'إدارة الفروع', vals: ['x', 'check', 'check', 'check'] },
+      { label: 'إدارة الفريق', vals: ['x', 'x', 'check', 'check'] },
+      { label: 'التحليلات المتقدمة', vals: ['x', 'check', 'check', 'check'] },
+      { label: 'مقارنة الفروع', vals: ['x', 'x', 'check', 'check'] },
+      { label: 'الدعم المميز 24/7', vals: ['x', 'x', 'check', 'check'] },
+      { label: 'صفحة هبوط QR', vals: ['x', 'check', 'check', 'check'] },
+      { label: 'تحليلات رموز QR', vals: ['x', 'check', 'check', 'check'] },
+      { label: 'التخصيص', vals: ['x', 'x', 'x', 'check'] },
+      { label: 'الحلول الخاصة', vals: ['x', 'x', 'x', 'check'] },
     ],
-    ctaSectionH2: 'ابدأ بتحسين سمعتك الرقمية اليوم',
-    ctaSectionDesc: 'انضم إلى الأعمال التي تدير سمعتها بذكاء مع سيندا',
+    faqLabel: 'الأسئلة الشائعة',
+    faqH2: 'إجابات على أهم تساؤلاتك',
+    faqs: [
+      { q: 'ما هي سيندا؟', a: 'سيندا هي منصة سعودية متكاملة لإدارة تقييمات Google Business، الردود الذكية بالذكاء الاصطناعي، تحليلات الأداء، وإدارة الفروع والفريق من مكان واحد.' },
+      { q: 'هل يمكنني تجربة المنصة مجانًا؟', a: 'نعم، جميع الخطط تتضمن فترة تجريبية مجانية بدون الحاجة لبطاقة ائتمان. يمكنك البدء فورًا واستكشاف جميع المميزات.' },
+      { q: 'كيف يعمل الرد الذكي بالذكاء الاصطناعي؟', a: 'يقوم الذكاء الاصطناعي بتحليل نص التقييم وصياغة رد احترافي يتناسب مع محتوى التقييم ونبرة علامتك التجارية تلقائيًا، مع إمكانية التعديل قبل النشر.' },
+      { q: 'هل أحتاج خبرة تقنية لاستخدام المنصة؟', a: 'لا، سيندا مصممة لتكون سهلة الاستخدام. كل ما تحتاجه هو ربط حساب Google Business الخاص بك والبدء في إدارة تقييماتك فورًا.' },
+      { q: 'هل يمكنني إدارة أكثر من فرع؟', a: 'نعم، خطط نوفا وجالكسي وإنفينيتي تدعم إدارة فروع متعددة مع إمكانية المقارنة بين أدائها وتتبع كل فرع على حدة.' },
+      { q: 'كيف يتم حساب الضريبة؟', a: 'يتم إضافة ضريبة القيمة المضافة بنسبة 15% على جميع الخطط. الأسعار المعروضة هي قبل الضريبة، ويظهر الإجمالي الشامل عند الاشتراك.' },
+    ],
+    ctaSectionH2: 'حوّل نشاطك إلى مستوى جديد',
+    ctaSectionDesc: 'ابدأ تجربة مجانية وانطلق بثقة كاملة في إدارة سمعتك الرقمية',
     ctaSectionBtn: 'ابدأ تجربتك المجانية',
     contactLabel: 'تواصل معنا',
     contactH2: 'نحب أن نسمع منك',
-    contactDesc: 'سواء كان لديك سؤال، طلب تجربة، أو تريد معرفة المزيد — فريقنا هنا',
-    contactFields: { name: 'الاسم الكامل *', email: 'البريد الإلكتروني *', phone: 'رقم الهاتف', company: 'اسم الشركة', message: 'رسالتك *' },
+    contactDesc: 'سواء كان لديك سؤال، طلب تجربة، أو تريد معرفة المزيد — فريقنا جاهز لمساعدتك',
+    contactFields: { name: 'الاسم الكامل', email: 'البريد الإلكتروني', phone: 'رقم الهاتف', company: 'اسم الشركة', message: 'رسالتك' },
     contactPlaceholders: { name: 'الاسم الكامل', email: 'email@example.com', phone: '+966 5XXXXXXXX', company: 'اسم الشركة', message: 'اكتب رسالتك هنا...' },
     contactSubmit: 'إرسال الرسالة',
     contactSending: 'جاري الإرسال...',
-    contactSuccessTitle: 'تم إرسال رسالتك بنجاح!',
+    contactSuccessTitle: 'تم إرسال رسالتك بنجاح',
     contactSuccessDesc: 'سيتواصل معك فريقنا في أقرب وقت ممكن',
     contactSuccessRetry: 'إرسال رسالة أخرى',
     contactError: 'حدث خطأ أثناء الإرسال. يرجى المحاولة مرة أخرى.',
     footerTagline: 'منصة متكاملة لإدارة تقييمات جوجل وتحسين السمعة الرقمية',
     footerProduct: 'المنتج',
-    footerProductLinks: ['المميزات', 'الأسعار', 'كيف يعمل'],
+    footerProductLinks: ['المميزات', 'الباقات', 'من نحن'],
+    footerProductPaths: ['/features', '/pricing', '/about'],
     footerSupport: 'الدعم',
-    footerSupportLinks: ['مركز المساعدة', 'تواصل معنا'],
+    footerSupportLinks: ['الأسئلة الشائعة', 'تواصل معنا'],
+    footerSupportPaths: ['/faq', '/contact-us'],
     footerLegal: 'قانوني',
     footerLegalLinks: [
       { label: 'سياسة الخصوصية', path: '/privacy' },
@@ -147,65 +132,52 @@ const T: Record<Lang, Record<string, any>> = {
   en: {
     dir: 'ltr',
     langToggle: 'عربي',
-    nav: ['Home', 'Features', 'How it Works', 'Pricing', 'Contact'],
-    navIds: ['hero', 'features', 'how-it-works', 'pricing', 'contact'],
+    nav: ['About', 'Features', 'Pricing', 'FAQ', 'Blog', 'Contact'],
+    navPaths: ['/about', '/features', '/pricing', '/faq', '/blog', '/contact-us'],
     loginBtn: 'Login',
-    ctaBtn: 'Start Free',
-    heroH1: 'AI-Powered Google Review Management',
-    heroSub: 'A complete platform for smart replies, review collection, and reputation analytics across all your branches',
+    ctaBtn: 'Get Started',
+    heroTag: 'The Leading Review Management Platform in Saudi Arabia',
+    heroH1: 'Your Growth Starts From Reviews',
+    heroSub: 'Smart solution for managing responses, analytics, and building a stronger presence for your business',
     heroCtaPrimary: 'Start Your Free Trial',
     heroCtaSecondary: 'Explore Features',
-    dashPreviewTitle: 'SENDA Dashboard',
-    dashSidebar: ['Reviews', 'Analytics', 'Branches', 'Team', 'Settings'],
-    dashStats: [
-      { label: 'Total Reviews', value: '1,284' },
-      { label: 'Avg Rating', value: '4.7' },
-      { label: 'AI Replies This Month', value: '186' },
-      { label: 'New Reviews', value: '24' },
-    ],
-    dashReviews: [
-      { initials: 'A', stars: 5, text: 'Great service, highly recommend!', status: 'Replied' },
-      { initials: 'S', stars: 4, text: 'Very good, delivery was excellent', status: 'Pending' },
-      { initials: 'K', stars: 5, text: 'Outstanding experience, thank you', status: 'Replied' },
-    ],
-    featuresLabel: 'What SENDA Offers',
-    featuresH2: 'All Reputation Tools in One Platform',
+    whatLabel: 'What SENDA Offers',
+    whatH2: 'All Reputation Tools in One Platform',
+    whatDesc: 'SENDA transforms management of reviews, replies, branches, and analytics into a force that supports your business reputation and drives growth',
     featureCards: [
-      { title: 'AI-Powered Replies', desc: 'Custom replies for each review that reflect your brand identity in seconds', icon: 'Brain' },
-      { title: 'QR Review Collection', desc: 'Turn every customer interaction into a Google review with a simple scan', icon: 'QrCode' },
-      { title: 'Advanced Analytics', desc: 'Real data about your reputation performance for smarter decisions', icon: 'BarChart3' },
-      { title: 'Multi-Branch Management', desc: 'Manage all your branches from a single centralized dashboard', icon: 'Building2' },
-      { title: 'Team Management', desc: 'Assign tasks and monitor team performance with custom permissions', icon: 'Users' },
+      { title: 'Reviews Management', desc: 'Track and manage all your customer reviews from one place with filtering and organization', icon: 'BarChart3' },
+      { title: 'Smart Replies', desc: 'Intelligent automated replies using AI that suit each review and reflect your brand', icon: 'Brain' },
+      { title: 'Manual Reply', desc: 'Full control to craft your own replies manually for each review', icon: 'MessageSquare' },
       { title: 'Reply Templates', desc: 'A library of ready templates you can customize to match your brand tone', icon: 'FileText' },
-    ],
-    benefitsLabel: 'Benefits',
-    benefitsH2: 'Why Choose SENDA?',
-    benefits: [
-      { title: 'Save Time', desc: 'Save hours weekly with smart auto-replies on all your reviews instead of manual drafting', icon: 'Clock' },
-      { title: 'Increase Positive Reviews', desc: 'Collect more reviews from happy customers via smart QR codes across your branches', icon: 'Star' },
-      { title: 'Data-Driven Decisions', desc: 'Analyze every branch and team member performance for informed customer experience decisions', icon: 'BarChart3' },
-      { title: 'Protect Your Reputation', desc: 'Instant alerts for negative reviews with smart replies that preserve your brand image', icon: 'Shield' },
+      { title: 'Advanced Analytics', desc: 'Real data about your reputation performance and review trends for smarter decisions', icon: 'BarChart3' },
+      { title: 'Branch Management', desc: 'Manage all your branches from a single centralized dashboard easily', icon: 'Building2' },
+      { title: 'Instant Notifications', desc: 'Receive instant notifications for every new review so you never miss an opportunity', icon: 'BellRing' },
+      { title: 'Task Management', desc: 'Distribute tasks to your team and track work progress professionally', icon: 'ListChecks' },
+      { title: 'Billing & Subscriptions', desc: 'Flexible subscription and payment management with full VAT support', icon: 'CreditCard' },
+      { title: 'Team Management', desc: 'Effective collaboration with custom permissions for each team member', icon: 'Users' },
+      { title: 'QR Solutions', desc: 'Turn every customer interaction into a Google review with a simple scan', icon: 'QrCode' },
     ],
     howLabel: 'How It Works',
-    howH2: 'Three Steps to Manage Your Reputation',
+    howH2: 'Four Steps to Manage Your Reputation',
     howSteps: [
-      { num: '1', title: 'Connect Your Account', desc: 'Link your Google Business account in minutes and add your branches' },
-      { num: '2', title: 'Activate AI', desc: 'Customize reply tone and configure auto-reply settings for your brand' },
-      { num: '3', title: 'Monitor & Improve', desc: 'Track reviews and analytics to continuously improve your digital reputation' },
+      { num: '01', title: 'Connect Business', desc: 'Link your Google Business account in minutes and add your branches', icon: 'Link2' },
+      { num: '02', title: 'Sync Reviews', desc: 'All your reviews are pulled automatically and displayed in your dashboard', icon: 'RefreshCw' },
+      { num: '03', title: 'Manage Replies', desc: 'Reply to reviews manually or with AI and use templates', icon: 'MessageCircle' },
+      { num: '04', title: 'Measure Performance', desc: 'Track analytics, compare branches, and improve customer experience', icon: 'BarChart3' },
     ],
     pricingLabel: 'Plans & Pricing',
     pricingH2: 'Start with the Right Plan',
-    pricingDesc: 'All plans include a free trial - no credit card required',
+    pricingDesc: 'All plans include a free trial — no credit card required',
     pricingMo: 'SAR/mo',
     pricingMostPopular: 'Most Popular',
-    pricingContactUs: 'Contact Us',
+    pricingContactUs: 'Contact Sales',
     pricingCtaDefault: 'Start Free',
     pricingCtaHighlight: 'Start Free Now',
     plans: [
-      { name: 'Orbit', nameAr: 'Orbit', price: '99', features: ['1 Branch', '1 Member', '50 AI Replies/mo', '100 Templates', '1 QR Code'] },
-      { name: 'Nova', nameAr: 'Nova', price: '199', popular: true, features: ['3 Branches', '3 Members', '300 AI Replies/mo', '500 Templates', '3 QR Codes'] },
-      { name: 'Galaxy', nameAr: 'Galaxy', price: '399', features: ['10 Branches', '10 Members', '1,500 AI Replies/mo', 'Unlimited Templates', '10 QR Codes'] },
-      { name: 'Infinity', nameAr: 'Infinity', price: null, features: ['Unlimited Branches', 'Unlimited Members', 'Unlimited AI Replies', 'Unlimited Templates', 'Unlimited QR Codes'] },
+      { name: 'Orbit', nameAr: 'Orbit', price: '99', features: ['1 Branch', '1 Team Member', '50 AI Replies/mo', '100 Template Replies', 'Google Business', 'Manual Reply', 'Reply Templates', 'Instant Notifications'] },
+      { name: 'Nova', nameAr: 'Nova', price: '199', popular: true, features: ['3 Branches', '3 Team Members', '300 AI Replies/mo', '500 Template Replies', 'Google Business', 'AI Auto-Reply', 'Manual Reply', 'Reply Templates', 'Instant Notifications', 'Task Management', 'Branch Management', 'Advanced Analytics', 'QR Landing Page', 'QR Analytics'] },
+      { name: 'Galaxy', nameAr: 'Galaxy', price: '399', features: ['10 Branches', '10 Team Members', '1,500 AI Replies/mo', 'Unlimited Templates', 'Google Business', 'AI Auto-Reply', 'Manual Reply', 'Reply Templates', 'Instant Notifications', 'Task Management', 'Team Management', 'Advanced Analytics', 'Branch Comparison', 'Premium 24/7 Support', 'QR Landing Page', 'QR Analytics'] },
+      { name: 'Infinity', nameAr: 'Infinity', price: null, features: ['Unlimited Branches', 'Unlimited Members', 'Unlimited AI Replies', 'Unlimited Templates', 'Custom Solutions', 'Premium Support'] },
     ],
     compareTitle: 'Full Plan Comparison',
     compareFeatureCol: 'Feature',
@@ -214,39 +186,53 @@ const T: Record<Lang, Record<string, any>> = {
       { label: 'Team Members', vals: ['1', '3', '10', 'Unlimited'] },
       { label: 'AI Replies/mo', vals: ['50', '300', '1,500', 'Unlimited'] },
       { label: 'Template Replies', vals: ['100', '500', 'Unlimited', 'Unlimited'] },
-      { label: 'QR Codes', vals: ['1', '3', '10', 'Unlimited'] },
-      { label: 'QR per Branch', vals: ['x', 'check', 'check', 'check'] },
-      { label: 'Custom QR Page', vals: ['x', 'check', 'check', 'check'] },
-      { label: 'QR Analytics', vals: ['x', 'check', 'check', 'check'] },
+      { label: 'Google Business', vals: ['check', 'check', 'check', 'check'] },
+      { label: 'AI Auto-Reply', vals: ['check', 'check', 'check', 'check'] },
+      { label: 'Manual Reply', vals: ['check', 'check', 'check', 'check'] },
+      { label: 'Reply Templates', vals: ['check', 'check', 'check', 'check'] },
+      { label: 'Notifications', vals: ['check', 'check', 'check', 'check'] },
+      { label: 'Task Management', vals: ['x', 'check', 'check', 'check'] },
+      { label: 'Branch Management', vals: ['x', 'check', 'check', 'check'] },
+      { label: 'Team Management', vals: ['x', 'x', 'check', 'check'] },
       { label: 'Advanced Analytics', vals: ['x', 'check', 'check', 'check'] },
-      { label: 'Branch Comparison', vals: ['x', 'check', 'check', 'check'] },
-      { label: 'Advanced Reports', vals: ['x', 'x', 'check', 'check'] },
-      { label: 'Team Management', vals: ['x', 'check', 'check', 'check'] },
-      { label: 'Tasks', vals: ['x', 'check', 'check', 'check'] },
-      { label: 'Logo Upload', vals: ['x', 'check', 'check', 'check'] },
-      { label: 'API Access', vals: ['x', 'x', 'x', 'check'] },
-      { label: 'Premium Support', vals: ['x', 'x', 'check', 'check'] },
-      { label: 'Auto AI Reply', vals: ['check', 'check', 'check', 'check'] },
+      { label: 'Branch Comparison', vals: ['x', 'x', 'check', 'check'] },
+      { label: 'Premium 24/7 Support', vals: ['x', 'x', 'check', 'check'] },
+      { label: 'QR Landing Page', vals: ['x', 'check', 'check', 'check'] },
+      { label: 'QR Analytics', vals: ['x', 'check', 'check', 'check'] },
+      { label: 'Customization', vals: ['x', 'x', 'x', 'check'] },
+      { label: 'Custom Solutions', vals: ['x', 'x', 'x', 'check'] },
     ],
-    ctaSectionH2: 'Start Improving Your Digital Reputation Today',
-    ctaSectionDesc: 'Join businesses that manage their reputation smartly with SENDA',
+    faqLabel: 'FAQ',
+    faqH2: 'Answers to Your Most Important Questions',
+    faqs: [
+      { q: 'What is SENDA?', a: 'SENDA is a comprehensive Saudi platform for managing Google Business reviews, AI-powered smart replies, performance analytics, and branch and team management from one place.' },
+      { q: 'Can I try the platform for free?', a: 'Yes, all plans include a free trial without needing a credit card. You can start immediately and explore all features.' },
+      { q: 'How does AI smart reply work?', a: 'The AI analyzes the review text and crafts a professional reply that matches the review content and your brand tone automatically, with the option to edit before publishing.' },
+      { q: 'Do I need technical experience?', a: 'No, SENDA is designed to be easy to use. All you need is to link your Google Business account and start managing your reviews immediately.' },
+      { q: 'Can I manage multiple branches?', a: 'Yes, Nova, Galaxy, and Infinity plans support multi-branch management with the ability to compare performance and track each branch separately.' },
+      { q: 'How is VAT calculated?', a: 'VAT at 15% is added to all plans. Displayed prices are before tax, and the total including tax is shown at subscription.' },
+    ],
+    ctaSectionH2: 'Elevate Your Business to the Next Level',
+    ctaSectionDesc: 'Start your free trial and launch with full confidence in managing your digital reputation',
     ctaSectionBtn: 'Start Your Free Trial',
     contactLabel: 'Contact Us',
     contactH2: 'We\'d Love to Hear from You',
-    contactDesc: 'Whether you have a question, want a demo, or want to learn more - our team is here',
-    contactFields: { name: 'Full Name *', email: 'Email *', phone: 'Phone', company: 'Company', message: 'Your Message *' },
+    contactDesc: 'Whether you have a question, want a demo, or want to learn more — our team is here',
+    contactFields: { name: 'Full Name', email: 'Email', phone: 'Phone', company: 'Company', message: 'Your Message' },
     contactPlaceholders: { name: 'Full name', email: 'email@example.com', phone: '+966 5XXXXXXXX', company: 'Company name', message: 'Write your message here...' },
     contactSubmit: 'Send Message',
     contactSending: 'Sending...',
-    contactSuccessTitle: 'Message Sent Successfully!',
+    contactSuccessTitle: 'Message Sent Successfully',
     contactSuccessDesc: 'Our team will get back to you as soon as possible',
     contactSuccessRetry: 'Send Another Message',
     contactError: 'An error occurred. Please try again.',
     footerTagline: 'A complete platform for Google review management and digital reputation',
     footerProduct: 'Product',
-    footerProductLinks: ['Features', 'Pricing', 'How it Works'],
+    footerProductLinks: ['Features', 'Pricing', 'About'],
+    footerProductPaths: ['/features', '/pricing', '/about'],
     footerSupport: 'Support',
-    footerSupportLinks: ['Help Center', 'Contact Us'],
+    footerSupportLinks: ['FAQ', 'Contact Us'],
+    footerSupportPaths: ['/faq', '/contact-us'],
     footerLegal: 'Legal',
     footerLegalLinks: [
       { label: 'Privacy Policy', path: '/privacy' },
@@ -257,26 +243,9 @@ const T: Record<Lang, Record<string, any>> = {
 };
 
 // ─── Icon map ──────────────────────────────────────────────────────────────────
-const IconMap: Record<string, any> = { Brain, QrCode, BarChart3, Building2, Users, FileText, Clock, Star, Shield };
-
-// ─── Shared styles ────────────────────────────────────────────────────────────
-const sectionPadding: React.CSSProperties = { padding: '100px 24px', maxWidth: 1200, margin: '0 auto' };
-const sectionTitle = (): React.CSSProperties => ({
-  fontSize: 'clamp(28px, 4vw, 40px)', fontWeight: 600, color: C.text, marginBottom: 16,
-  textAlign: 'center', lineHeight: 1.3,
-});
-const sectionSub: React.CSSProperties = { fontSize: 17, color: C.muted, textAlign: 'center', maxWidth: 640, margin: '0 auto 56px', lineHeight: 1.7, fontWeight: 400 };
-const goldBtn: React.CSSProperties = {
-  background: GOLD_GRAD, color: '#fff', border: 'none', borderRadius: 10, padding: '14px 32px',
-  fontSize: 16, fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s', display: 'inline-flex', alignItems: 'center', gap: 8,
-};
-const outlineBtn: React.CSSProperties = {
-  background: 'transparent', color: C.gold, border: `2px solid ${C.gold}`, borderRadius: 10, padding: '12px 28px',
-  fontSize: 16, fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s', display: 'inline-flex', alignItems: 'center', gap: 8,
-};
-const cardStyle: React.CSSProperties = {
-  background: C.card, borderRadius: 16, border: `1px solid ${C.border}`, padding: 32,
-  boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03)', transition: 'all 0.25s',
+const IconMap: Record<string, any> = {
+  Brain, QrCode, BarChart3, Building2, Users, FileText, Clock, Star, Shield,
+  MessageSquare, BellRing, ListChecks, CreditCard, Link2, RefreshCw, MessageCircle,
 };
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -288,24 +257,21 @@ export default function HomePage() {
   const [form, setForm] = useState({ name: '', email: '', phone: '', company: '', message: '' });
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [formError, setFormError] = useState('');
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
   const t = T[lang];
+  const isRtl = lang === 'ar';
 
   useEffect(() => {
     document.title = lang === 'ar' ? 'سيندا — إدارة تقييمات جوجل بذكاء اصطناعي' : 'SENDA — AI Google Review Management';
     document.documentElement.dir = t.dir;
     document.documentElement.lang = lang;
-  }, [lang]);
+  }, [lang, t.dir]);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
-
-  const scrollTo = (id: string) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    setMobileOpen(false);
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -323,307 +289,97 @@ export default function HomePage() {
     }
   };
 
-  const dir = t.dir;
-  const isRtl = lang === 'ar';
-
-  // ─── Stars helper ───────────────────────────────────────────────────────────
-  const Stars = ({ count }: { count: number }) => (
-    <span style={{ display: 'inline-flex', gap: 2 }}>
-      {Array.from({ length: count }).map((_, i) => (
-        <Star key={i} size={12} fill={C.gold} color={C.gold} />
-      ))}
-    </span>
-  );
-
-  // ─── Check / X for comparison table ──────────────────────────────────────
   const CellVal = ({ v }: { v: string }) => {
-    if (v === 'check') return <span style={{ color: C.greenCheck, fontSize: 18, fontWeight: 700 }}>&#10003;</span>;
-    if (v === 'x') return <span style={{ color: '#D1D5DB', fontSize: 18, fontWeight: 700 }}>&#10005;</span>;
-    return <span style={{ fontSize: 14, fontWeight: 500, color: C.text }}>{v}</span>;
+    if (v === 'check') return <CheckCircle2 size={16} className="text-teal-500 mx-auto" />;
+    if (v === 'x') return <X size={16} className="text-slate-300 mx-auto" />;
+    return <span className="text-sm text-slate-700">{v}</span>;
   };
 
-  // ─── Logo component ─────────────────────────────────────────────────────────
-  // Logo helper — no wrapper needed (white-bg logo)
-  const LogoImg = ({ height = 32, invert = false }: { height?: number; invert?: boolean }) => (
-    <img src="/senda-logo.png" alt="SENDA" style={{ height, ...(invert ? { filter: 'brightness(0) invert(1)' } : {}) }} />
-  );
-
   return (
-    <div style={{ direction: dir, fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', background: C.bg, color: C.text, minHeight: '100vh', overflowX: 'hidden' }}>
+    <div dir={t.dir} className="min-h-screen bg-[#FAFBFC] text-slate-800" style={{ fontFamily: "'IBM Plex Sans Arabic', 'Inter', system-ui, sans-serif" }}>
 
       {/* ═══════════════════ NAVBAR ═══════════════════ */}
-      <nav style={{
-        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1000,
-        background: scrolled ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.8)',
-        backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-        borderBottom: scrolled ? `1px solid ${C.border}` : '1px solid transparent',
-        transition: 'all 0.3s',
-      }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 72 }}>
-          {/* Logo */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }} onClick={() => scrollTo('hero')}>
-            <LogoImg height={40} />
-            <span style={{ fontSize: 20, fontWeight: 600, color: C.text, letterSpacing: '-0.3px' }}>SENDA</span>
-          </div>
+      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-white/95 backdrop-blur-xl shadow-sm border-b border-slate-100' : 'bg-white/80 backdrop-blur-md border-b border-transparent'}`}>
+        <div className="max-w-[1200px] mx-auto px-6 flex items-center justify-between h-[68px]">
+          <Link to="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
+            <img src="/senda-logo.png" alt="SENDA" className="h-9" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+          </Link>
 
           {/* Desktop nav */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 32 }} className="nav-desktop">
+          <div className="hidden lg:flex items-center gap-7">
             {t.nav.map((label: string, i: number) => (
-              <button key={i} onClick={() => scrollTo(t.navIds[i])} style={{
-                background: 'none', border: 'none', color: C.muted, fontSize: 15, fontWeight: 400,
-                cursor: 'pointer', padding: '4px 0', transition: 'color 0.2s',
-              }}
-                onMouseOver={e => (e.currentTarget.style.color = C.gold)}
-                onMouseOut={e => (e.currentTarget.style.color = C.muted)}
-              >{label}</button>
+              <Link key={i} to={t.navPaths[i]} className="text-[13px] font-medium text-slate-500 hover:text-teal-600 transition-colors">{label}</Link>
             ))}
           </div>
 
-          {/* CTAs */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }} className="nav-ctas">
-            <button onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')} style={{
-              background: 'none', border: `1px solid ${C.border}`, borderRadius: 8, padding: '6px 14px',
-              fontSize: 13, fontWeight: 600, color: C.muted, cursor: 'pointer',
-            }}>{t.langToggle}</button>
-            <button onClick={() => navigate('/login')} style={{
-              background: 'none', border: 'none', color: C.text, fontSize: 15, fontWeight: 400, cursor: 'pointer', padding: '8px 16px',
-            }}>{t.loginBtn}</button>
-            <button onClick={() => navigate('/login')} style={{
-              ...goldBtn, padding: '10px 22px', fontSize: 14, borderRadius: 8,
-            }}>{t.ctaBtn}</button>
+          {/* Desktop CTAs */}
+          <div className="hidden lg:flex items-center gap-3">
+            <button onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')} className="px-3.5 py-1.5 text-xs font-medium text-slate-500 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">{t.langToggle}</button>
+            <Link to="/login" className="text-sm text-slate-600 hover:text-slate-900 transition-colors px-3 py-1.5">{t.loginBtn}</Link>
+            <Link to="/login" className="bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium px-5 py-2 rounded-lg transition-all shadow-sm">{t.ctaBtn}</Link>
           </div>
 
-          {/* Mobile hamburger */}
-          <button onClick={() => setMobileOpen(!mobileOpen)} style={{
-            display: 'none', background: 'none', border: 'none', color: C.text, cursor: 'pointer', padding: 8,
-          }} className="nav-mobile-toggle">
-            {mobileOpen ? <X size={24} /> : <Menu size={24} />}
+          {/* Mobile toggle */}
+          <button onClick={() => setMobileOpen(!mobileOpen)} className="lg:hidden p-2 text-slate-600">
+            {mobileOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
         </div>
 
         {/* Mobile menu */}
         {mobileOpen && (
-          <div style={{
-            position: 'absolute', top: 72, left: 0, right: 0, background: C.card,
-            borderBottom: `1px solid ${C.border}`, padding: '16px 24px', boxShadow: '0 8px 24px rgba(0,0,0,0.08)',
-          }}>
+          <div className="lg:hidden bg-white border-t border-slate-100 shadow-lg px-6 py-4">
             {t.nav.map((label: string, i: number) => (
-              <button key={i} onClick={() => scrollTo(t.navIds[i])} style={{
-                display: 'block', width: '100%', textAlign: isRtl ? 'right' : 'left', background: 'none',
-                border: 'none', color: C.text, fontSize: 16, fontWeight: 400, padding: '12px 0',
-                borderBottom: `1px solid ${C.border}`, cursor: 'pointer',
-              }}>{label}</button>
+              <Link key={i} to={t.navPaths[i]} onClick={() => setMobileOpen(false)} className="block py-3 text-sm text-slate-600 border-b border-slate-50">{label}</Link>
             ))}
-            <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
-              <button onClick={() => { setLang(lang === 'ar' ? 'en' : 'ar'); setMobileOpen(false); }} style={{
-                background: 'none', border: `1px solid ${C.border}`, borderRadius: 8, padding: '8px 16px',
-                fontSize: 14, color: C.muted, cursor: 'pointer', fontWeight: 600,
-              }}>{t.langToggle}</button>
-              <button onClick={() => { navigate('/login'); setMobileOpen(false); }} style={{
-                ...goldBtn, padding: '10px 20px', fontSize: 14, borderRadius: 8, flex: 1, justifyContent: 'center',
-              }}>{t.ctaBtn}</button>
+            <div className="flex gap-3 mt-4">
+              <button onClick={() => { setLang(lang === 'ar' ? 'en' : 'ar'); setMobileOpen(false); }} className="px-4 py-2 text-sm border border-slate-200 rounded-lg text-slate-500">{t.langToggle}</button>
+              <Link to="/login" onClick={() => setMobileOpen(false)} className="flex-1 bg-teal-600 text-white text-sm font-medium py-2 rounded-lg text-center">{t.ctaBtn}</Link>
             </div>
           </div>
         )}
       </nav>
 
       {/* ═══════════════════ HERO ═══════════════════ */}
-      <section id="hero" style={{ paddingTop: 140, paddingBottom: 80, background: `linear-gradient(180deg, #FFFFFF 0%, ${C.bg} 100%)` }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px' }}>
-          {/* Text center */}
-          <div style={{ textAlign: 'center', maxWidth: 720, margin: '0 auto', marginBottom: 56 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 32 }}>
-              <span style={{ fontSize: 40, fontWeight: 600, color: C.gold, letterSpacing: '-1px' }}>S</span>
-              <span style={{ fontSize: 28, fontWeight: 600, color: C.text, letterSpacing: '-0.5px' }}>SENDA</span>
-            </div>
-            <h1 style={{
-              fontSize: 'clamp(32px, 5vw, 52px)', fontWeight: 600, color: C.text, lineHeight: 1.2, marginBottom: 20, letterSpacing: '-0.5px',
-            }}>
-              {t.heroH1}
-            </h1>
-            <p style={{ fontSize: 18, color: C.muted, lineHeight: 1.7, marginBottom: 36, fontWeight: 400 }}>
-              {t.heroSub}
-            </p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, justifyContent: 'center' }}>
-              <button onClick={() => navigate('/login')} style={goldBtn}
-                onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(184,150,90,0.35)'; }}
-                onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
-              >
-                {t.heroCtaPrimary}
-                {isRtl ? <ArrowLeft size={18} /> : <ArrowRight size={18} />}
-              </button>
-              <button onClick={() => scrollTo('features')} style={outlineBtn}
-                onMouseOver={e => { e.currentTarget.style.background = C.gold; e.currentTarget.style.color = '#fff'; }}
-                onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = C.gold; }}
-              >
-                {t.heroCtaSecondary}
-              </button>
-            </div>
+      <section className="pt-36 pb-20 sm:pt-40 sm:pb-24 bg-gradient-to-b from-white via-slate-50/50 to-[#FAFBFC]">
+        <div className="max-w-[1200px] mx-auto px-6 text-center">
+          <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-teal-50 border border-teal-100 mb-8">
+            <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse" />
+            <span className="text-[11px] font-medium text-teal-700 tracking-wide">{t.heroTag}</span>
           </div>
-
-          {/* ── CSS-only Dashboard Mockup ── */}
-          <div style={{
-            maxWidth: 960, margin: '0 auto',
-            borderRadius: 16, overflow: 'hidden',
-            boxShadow: '0 25px 60px rgba(0,0,0,0.12), 0 8px 24px rgba(0,0,0,0.08)',
-            border: `1px solid ${C.border}`,
-            background: C.card,
-          }}>
-            {/* Browser chrome bar */}
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px',
-              background: '#F3F4F6', borderBottom: `1px solid ${C.border}`,
-            }}>
-              <span style={{ width: 12, height: 12, borderRadius: '50%', background: '#EF4444' }} />
-              <span style={{ width: 12, height: 12, borderRadius: '50%', background: '#F59E0B' }} />
-              <span style={{ width: 12, height: 12, borderRadius: '50%', background: '#22C55E' }} />
-              <div style={{
-                flex: 1, marginInlineStart: 12, background: '#fff', borderRadius: 6, padding: '5px 14px',
-                fontSize: 12, color: C.muted, border: `1px solid ${C.border}`,
-              }}>gandx.net/dashboard</div>
-            </div>
-
-            {/* App body: sidebar + main */}
-            <div style={{ display: 'flex', minHeight: 360 }}>
-              {/* Sidebar */}
-              <div className="dash-sidebar" style={{
-                width: 200, background: '#1A1A2E', padding: '20px 0', flexShrink: 0,
-                display: 'flex', flexDirection: 'column', gap: 2,
-              }}>
-                <div style={{ padding: '0 16px 16px', borderBottom: '1px solid rgba(255,255,255,0.08)', marginBottom: 8 }}>
-                  <span style={{ color: C.gold, fontSize: 16, fontWeight: 600, letterSpacing: '-0.3px' }}>SENDA</span>
-                </div>
-                {t.dashSidebar.map((item: string, i: number) => (
-                  <div key={i} style={{
-                    padding: '9px 16px', fontSize: 13, fontWeight: i === 0 ? 600 : 400,
-                    color: i === 0 ? C.gold : 'rgba(255,255,255,0.5)',
-                    background: i === 0 ? 'rgba(184,150,90,0.12)' : 'transparent',
-                    borderInlineStart: i === 0 ? `3px solid ${C.gold}` : '3px solid transparent',
-                  }}>{item}</div>
-                ))}
-              </div>
-
-              {/* Main content area */}
-              <div style={{ flex: 1, padding: 20, background: '#FAFBFC', overflow: 'hidden' }}>
-                {/* Topbar */}
-                <div style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20,
-                }}>
-                  <span style={{ fontSize: 16, fontWeight: 600, color: C.text }}>{t.dashPreviewTitle}</span>
-                  <LayoutDashboard size={18} color={C.gold} />
-                </div>
-
-                {/* Stats cards row */}
-                <div className="dash-stats-grid" style={{
-                  display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 20,
-                }}>
-                  {t.dashStats.map((s: any, i: number) => (
-                    <div key={i} style={{
-                      background: '#fff', borderRadius: 10, padding: '14px 12px',
-                      border: `1px solid ${C.border}`,
-                    }}>
-                      <div style={{ fontSize: 11, color: C.muted, fontWeight: 400, marginBottom: 4 }}>{s.label}</div>
-                      <div style={{ fontSize: 20, fontWeight: 600, color: C.text }}>{s.value}</div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Reviews list */}
-                <div style={{
-                  background: '#fff', borderRadius: 10, border: `1px solid ${C.border}`, overflow: 'hidden',
-                }}>
-                  <div style={{
-                    padding: '10px 14px', borderBottom: `1px solid ${C.border}`,
-                    fontSize: 13, fontWeight: 600, color: C.text,
-                  }}>
-                    {lang === 'ar' ? 'آخر التقييمات' : 'Recent Reviews'}
-                  </div>
-                  {t.dashReviews.map((r: any, i: number) => (
-                    <div key={i} style={{
-                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                      padding: '10px 14px',
-                      borderBottom: i < t.dashReviews.length - 1 ? `1px solid ${C.border}` : 'none',
-                      background: i % 2 === 1 ? '#FAFBFC' : '#fff',
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <div style={{
-                          width: 28, height: 28, borderRadius: '50%', background: GOLD_GRAD,
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          color: '#fff', fontSize: 12, fontWeight: 600, flexShrink: 0,
-                        }}>{r.initials}</div>
-                        <div>
-                          <Stars count={r.stars} />
-                          <div style={{ fontSize: 12, color: C.muted, fontWeight: 400, marginTop: 2 }}>{r.text}</div>
-                        </div>
-                      </div>
-                      <span style={{
-                        fontSize: 10, fontWeight: 600, padding: '3px 8px', borderRadius: 6,
-                        background: r.status === (lang === 'ar' ? 'تم الرد' : 'Replied') ? 'rgba(184,150,90,0.1)' : 'rgba(107,114,128,0.1)',
-                        color: r.status === (lang === 'ar' ? 'تم الرد' : 'Replied') ? C.gold : C.muted,
-                        whiteSpace: 'nowrap',
-                      }}>{r.status}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold text-slate-900 leading-tight tracking-tight mb-5 max-w-3xl mx-auto">{t.heroH1}</h1>
+          <p className="text-base sm:text-lg text-slate-500 leading-relaxed mb-10 max-w-xl mx-auto">{t.heroSub}</p>
+          <div className="flex flex-wrap gap-4 justify-center">
+            <Link to="/login" className="bg-teal-600 hover:bg-teal-700 text-white font-medium px-7 py-3 rounded-lg text-sm transition-all shadow-sm inline-flex items-center gap-2">
+              {t.heroCtaPrimary}
+              {isRtl ? <ArrowLeft size={16} /> : <ArrowRight size={16} />}
+            </Link>
+            <Link to="/features" className="border border-slate-200 text-slate-600 hover:bg-slate-50 font-medium px-7 py-3 rounded-lg text-sm transition-all inline-flex items-center gap-2">
+              {t.heroCtaSecondary}
+            </Link>
           </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════ WHAT IS SENDA ═══════════════════ */}
+      <section className="py-20 bg-white">
+        <div className="max-w-3xl mx-auto px-6 text-center">
+          <p className="text-xs font-semibold text-teal-600 tracking-widest uppercase mb-3">{t.whatLabel}</p>
+          <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 tracking-tight mb-4">{t.whatH2}</h2>
+          <p className="text-base text-slate-500 leading-relaxed">{t.whatDesc}</p>
         </div>
       </section>
 
       {/* ═══════════════════ FEATURES ═══════════════════ */}
-      <section id="features" style={{ background: C.bg }}>
-        <div style={sectionPadding}>
-          <p style={{ textAlign: 'center', fontSize: 14, fontWeight: 600, color: C.gold, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 12 }}>
-            {t.featuresLabel}
-          </p>
-          <h2 style={sectionTitle()}>{t.featuresH2}</h2>
-          <div style={{ height: 24 }} />
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 24 }}>
+      <section className="pb-20 bg-white">
+        <div className="max-w-[1200px] mx-auto px-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {t.featureCards.map((f: any, i: number) => {
               const Icon = IconMap[f.icon] || Sparkles;
               return (
-                <div key={i} style={{ ...cardStyle, cursor: 'default' }}
-                  onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(0,0,0,0.08)'; }}
-                  onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = cardStyle.boxShadow as string; }}
-                >
-                  <div style={{
-                    width: 48, height: 48, borderRadius: 12, background: 'rgba(184,150,90,0.1)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20,
-                  }}>
-                    <Icon size={24} color={C.gold} />
-                  </div>
-                  <h3 style={{ fontSize: 18, fontWeight: 600, color: C.text, marginBottom: 10 }}>{f.title}</h3>
-                  <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.7, margin: 0, fontWeight: 400 }}>{f.desc}</p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════════ BENEFITS ═══════════════════ */}
-      <section style={{ background: '#FFFFFF' }}>
-        <div style={sectionPadding}>
-          <p style={{ textAlign: 'center', fontSize: 14, fontWeight: 600, color: C.gold, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 12 }}>
-            {t.benefitsLabel}
-          </p>
-          <h2 style={sectionTitle()}>{t.benefitsH2}</h2>
-          <div style={{ height: 24 }} />
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 32 }}>
-            {t.benefits.map((b: any, i: number) => {
-              const Icon = IconMap[b.icon] || Sparkles;
-              return (
-                <div key={i} style={{ textAlign: 'center', padding: '24px 16px' }}>
-                  <div style={{
-                    width: 64, height: 64, borderRadius: '50%', background: GOLD_GRAD,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px',
-                    boxShadow: '0 4px 16px rgba(184,150,90,0.3)',
-                  }}>
-                    <Icon size={28} color="#fff" />
-                  </div>
-                  <h3 style={{ fontSize: 18, fontWeight: 600, color: C.text, marginBottom: 10 }}>{b.title}</h3>
-                  <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.7, margin: 0, fontWeight: 400 }}>{b.desc}</p>
+                <div key={i} className="group p-6 rounded-2xl border border-slate-100 bg-white hover:shadow-md hover:border-slate-200 transition-all duration-300">
+                  <Icon size={22} className="text-teal-600 mb-4" />
+                  <h3 className="text-[15px] font-semibold text-slate-800 mb-2">{f.title}</h3>
+                  <p className="text-sm text-slate-500 leading-relaxed">{f.desc}</p>
                 </div>
               );
             })}
@@ -632,92 +388,74 @@ export default function HomePage() {
       </section>
 
       {/* ═══════════════════ HOW IT WORKS ═══════════════════ */}
-      <section id="how-it-works" style={{ background: C.bg }}>
-        <div style={sectionPadding}>
-          <p style={{ textAlign: 'center', fontSize: 14, fontWeight: 600, color: C.gold, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 12 }}>
-            {t.howLabel}
-          </p>
-          <h2 style={sectionTitle()}>{t.howH2}</h2>
-          <div style={{ height: 24 }} />
-          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 40 }}>
-            {t.howSteps.map((s: any, i: number) => (
-              <div key={i} style={{ flex: '1 1 280px', maxWidth: 340, textAlign: 'center' }}>
-                <div style={{
-                  width: 64, height: 64, borderRadius: '50%', background: i === 1 ? GOLD_GRAD : C.card,
-                  border: i !== 1 ? `2px solid ${C.gold}` : 'none',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px',
-                  fontSize: 24, fontWeight: 600, color: i === 1 ? '#fff' : C.gold,
-                  boxShadow: i === 1 ? '0 4px 16px rgba(184,150,90,0.3)' : '0 2px 8px rgba(0,0,0,0.04)',
-                }}>
-                  {s.num}
+      <section className="py-20 bg-[#FAFBFC]">
+        <div className="max-w-[1200px] mx-auto px-6">
+          <div className="text-center mb-14">
+            <p className="text-xs font-semibold text-teal-600 tracking-widest uppercase mb-3">{t.howLabel}</p>
+            <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 tracking-tight">{t.howH2}</h2>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-5xl mx-auto">
+            {t.howSteps.map((s: any, i: number) => {
+              const Icon = IconMap[s.icon] || Sparkles;
+              return (
+                <div key={i} className="text-center group">
+                  <div className="w-14 h-14 rounded-2xl border border-slate-200 bg-white flex items-center justify-center mx-auto mb-5 group-hover:border-teal-200 group-hover:shadow-sm transition-all">
+                    <Icon size={22} className="text-teal-600" />
+                  </div>
+                  <div className="text-[11px] font-semibold text-teal-600 tracking-widest mb-2">{s.num}</div>
+                  <h3 className="text-[15px] font-semibold text-slate-800 mb-2">{s.title}</h3>
+                  <p className="text-sm text-slate-500 leading-relaxed">{s.desc}</p>
                 </div>
-                <h3 style={{ fontSize: 18, fontWeight: 600, color: C.text, marginBottom: 10 }}>{s.title}</h3>
-                <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.7, margin: 0, fontWeight: 400 }}>{s.desc}</p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
 
       {/* ═══════════════════ PRICING ═══════════════════ */}
-      <section id="pricing" style={{ background: '#FFFFFF' }}>
-        <div style={sectionPadding}>
-          <p style={{ textAlign: 'center', fontSize: 14, fontWeight: 600, color: C.gold, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 12 }}>
-            {t.pricingLabel}
-          </p>
-          <h2 style={sectionTitle()}>{t.pricingH2}</h2>
-          <p style={sectionSub}>{t.pricingDesc}</p>
+      <section id="pricing" className="py-20 bg-white">
+        <div className="max-w-[1200px] mx-auto px-6">
+          <div className="text-center mb-14">
+            <p className="text-xs font-semibold text-teal-600 tracking-widest uppercase mb-3">{t.pricingLabel}</p>
+            <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 tracking-tight mb-3">{t.pricingH2}</h2>
+            <p className="text-base text-slate-500 max-w-xl mx-auto">{t.pricingDesc}</p>
+          </div>
 
-          {/* Plan cards */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 24, marginBottom: 80 }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-20">
             {t.plans.map((plan: any, i: number) => {
               const isPopular = plan.popular;
               return (
-                <div key={i} style={{
-                  ...cardStyle,
-                  border: isPopular ? `2px solid ${C.gold}` : `1px solid ${C.border}`,
-                  position: 'relative',
-                  transform: isPopular ? 'scale(1.03)' : 'none',
-                  boxShadow: isPopular ? '0 8px 32px rgba(184,150,90,0.15)' : cardStyle.boxShadow as string,
-                }}
-                  onMouseOver={e => { e.currentTarget.style.transform = isPopular ? 'scale(1.05)' : 'translateY(-4px)'; }}
-                  onMouseOut={e => { e.currentTarget.style.transform = isPopular ? 'scale(1.03)' : 'none'; }}
-                >
+                <div key={i} className={`relative rounded-2xl p-7 flex flex-col border transition-all duration-300 hover:shadow-lg ${isPopular ? 'border-teal-200 bg-white shadow-md ring-1 ring-teal-100' : plan.price === null ? 'border-slate-200 bg-slate-50' : 'border-slate-100 bg-white'}`}>
                   {isPopular && (
-                    <div style={{
-                      position: 'absolute', top: -14, left: '50%', transform: 'translateX(-50%)',
-                      background: GOLD_GRAD, color: '#fff', fontSize: 12, fontWeight: 600,
-                      padding: '5px 18px', borderRadius: 20, whiteSpace: 'nowrap',
-                    }}>{t.pricingMostPopular}</div>
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                      <span className="bg-teal-600 text-white px-4 py-1 rounded-full text-[10px] font-semibold tracking-wide">{t.pricingMostPopular}</span>
+                    </div>
                   )}
-                  <div style={{ textAlign: 'center', marginBottom: 24 }}>
-                    <h3 style={{ fontSize: 22, fontWeight: 600, color: C.text, marginBottom: 4 }}>{plan.name}</h3>
-                    <p style={{ fontSize: 14, color: C.gold, fontWeight: 600, marginBottom: 16 }}>{plan.nameAr}</p>
+                  <div className="mb-6">
+                    <h3 className="text-xs font-semibold text-teal-600 tracking-widest uppercase mb-1">{plan.name}</h3>
+                    <p className="text-sm text-slate-500 mb-3">{plan.nameAr}</p>
                     {plan.price ? (
-                      <div>
-                        <span style={{ fontSize: 42, fontWeight: 600, color: C.text }}>{plan.price}</span>
-                        <span style={{ fontSize: 15, color: C.muted, marginInlineStart: 4, fontWeight: 400 }}>{t.pricingMo}</span>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-3xl font-semibold text-slate-900">{plan.price}</span>
+                        <span className="text-sm text-slate-400">{t.pricingMo}</span>
                       </div>
                     ) : (
-                      <div style={{ fontSize: 24, fontWeight: 600, color: C.gold, padding: '10px 0' }}>{t.pricingContactUs}</div>
+                      <div className="text-xl font-semibold text-teal-600">{t.pricingContactUs}</div>
                     )}
                   </div>
-                  <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 28px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-                    {plan.features.map((f: string, fi: number) => (
-                      <li key={fi} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 14, color: C.text, fontWeight: 400 }}>
-                        <CheckCircle2 size={16} color={C.greenCheck} style={{ flexShrink: 0 }} />
-                        {f}
+                  <div className="h-px bg-slate-100 mb-5" />
+                  <ul className="space-y-2.5 mb-8 flex-1">
+                    {plan.features.slice(0, 8).map((f: string, fi: number) => (
+                      <li key={fi} className="flex items-start gap-2.5 text-sm text-slate-600">
+                        <CheckCircle2 size={14} className="text-teal-500 mt-0.5 flex-shrink-0" />
+                        <span>{f}</span>
                       </li>
                     ))}
+                    {plan.features.length > 8 && (
+                      <li className="text-xs text-teal-600 font-medium">+{plan.features.length - 8} {isRtl ? 'مميزات إضافية' : 'more features'}</li>
+                    )}
                   </ul>
-                  <button onClick={() => plan.price ? navigate('/login') : scrollTo('contact')} style={{
-                    ...(isPopular ? goldBtn : outlineBtn),
-                    width: '100%', justifyContent: 'center', borderRadius: 10,
-                    padding: '12px 0',
-                  }}
-                    onMouseOver={e => { if (!isPopular) { e.currentTarget.style.background = C.gold; e.currentTarget.style.color = '#fff'; } }}
-                    onMouseOut={e => { if (!isPopular) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = C.gold; } }}
-                  >
+                  <button onClick={() => plan.price ? navigate('/login') : navigate('/contact-us')} className={`w-full py-2.5 rounded-lg text-sm font-medium transition-all ${isPopular ? 'bg-teal-600 hover:bg-teal-700 text-white shadow-sm' : 'border border-slate-200 text-slate-700 hover:bg-slate-50'}`}>
                     {plan.price ? (isPopular ? t.pricingCtaHighlight : t.pricingCtaDefault) : t.pricingContactUs}
                   </button>
                 </div>
@@ -725,52 +463,27 @@ export default function HomePage() {
             })}
           </div>
 
-          {/* ── Comparison table ── */}
-          <h3 style={{ fontSize: 24, fontWeight: 600, color: C.text, textAlign: 'center', marginBottom: 32 }}>{t.compareTitle}</h3>
-          <div style={{ overflowX: 'auto', borderRadius: 16, border: `1px solid ${C.border}`, background: C.card }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 700, fontSize: 14 }}>
+          {/* Comparison table */}
+          <h3 className="text-xl font-semibold text-slate-900 text-center mb-8">{t.compareTitle}</h3>
+          <div className="overflow-x-auto rounded-xl border border-slate-100 bg-white">
+            <table className="w-full border-collapse min-w-[700px] text-sm">
               <thead>
-                <tr style={{ background: '#F3F4F6', position: 'sticky', top: 0, zIndex: 2 }}>
-                  <th style={{
-                    padding: '14px 20px', textAlign: isRtl ? 'right' : 'left', fontWeight: 600, color: C.text,
-                    borderBottom: `2px solid ${C.border}`, background: '#F3F4F6',
-                  }}>
-                    {t.compareFeatureCol}
-                  </th>
+                <tr className="bg-slate-50">
+                  <th className={`py-3.5 px-5 font-semibold text-slate-700 border-b border-slate-100 ${isRtl ? 'text-right' : 'text-left'}`}>{t.compareFeatureCol}</th>
                   {t.plans.map((p: any, i: number) => (
-                    <th key={i} style={{
-                      padding: '14px 16px', textAlign: 'center', fontWeight: 600,
-                      borderBottom: `2px solid ${C.border}`,
-                      color: p.popular ? C.gold : C.text,
-                      background: p.popular ? 'rgba(184,150,90,0.06)' : '#F3F4F6',
-                      position: 'relative',
-                    }}>
+                    <th key={i} className={`py-3.5 px-4 text-center font-semibold border-b border-slate-100 ${p.popular ? 'text-teal-700 bg-teal-50/50' : 'text-slate-700'}`}>
                       <div>{p.name}</div>
-                      <div style={{ fontSize: 12, fontWeight: 400, color: C.muted, marginTop: 2 }}>
-                        {p.price ? `${p.price} ${t.pricingMo}` : t.pricingContactUs}
-                      </div>
-                      {p.popular && (
-                        <div style={{
-                          position: 'absolute', top: -1, left: 0, right: 0, height: 3,
-                          background: GOLD_GRAD, borderRadius: '0 0 3px 3px',
-                        }} />
-                      )}
+                      <div className="text-xs font-normal text-slate-400 mt-0.5">{p.price ? `${p.price} ${t.pricingMo}` : t.pricingContactUs}</div>
                     </th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {t.compareRows.map((row: any, ri: number) => (
-                  <tr key={ri} style={{
-                    borderBottom: ri < t.compareRows.length - 1 ? `1px solid ${C.border}` : 'none',
-                    background: ri % 2 === 0 ? '#fff' : '#FAFBFC',
-                  }}>
-                    <td style={{ padding: '12px 20px', fontWeight: 500, color: C.text }}>{row.label}</td>
+                  <tr key={ri} className={`border-b border-slate-50 ${ri % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'}`}>
+                    <td className={`py-3 px-5 font-medium text-slate-700 ${isRtl ? 'text-right' : 'text-left'}`}>{row.label}</td>
                     {row.vals.map((v: string, vi: number) => (
-                      <td key={vi} style={{
-                        padding: '12px 16px', textAlign: 'center',
-                        background: t.plans[vi]?.popular ? (ri % 2 === 0 ? 'rgba(184,150,90,0.03)' : 'rgba(184,150,90,0.06)') : undefined,
-                      }}><CellVal v={v} /></td>
+                      <td key={vi} className={`py-3 px-4 text-center ${t.plans[vi]?.popular ? 'bg-teal-50/30' : ''}`}><CellVal v={v} /></td>
                     ))}
                   </tr>
                 ))}
@@ -780,132 +493,97 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ═══════════════════ CTA SECTION ═══════════════════ */}
-      <section style={{ background: C.dark }}>
-        <div style={{ maxWidth: 800, margin: '0 auto', padding: '80px 24px', textAlign: 'center' }}>
-          <h2 style={{ fontSize: 'clamp(24px, 4vw, 36px)', fontWeight: 600, color: '#fff', marginBottom: 16, lineHeight: 1.3 }}>
-            {t.ctaSectionH2}
-          </h2>
-          <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.6)', marginBottom: 36, lineHeight: 1.7, fontWeight: 400 }}>
-            {t.ctaSectionDesc}
-          </p>
-          <button onClick={() => navigate('/login')} style={{
-            ...goldBtn, padding: '16px 40px', fontSize: 17, borderRadius: 12,
-          }}
-            onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(184,150,90,0.35)'; }}
-            onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
-          >
-            {t.ctaSectionBtn}
-            {isRtl ? <ArrowLeft size={18} /> : <ArrowRight size={18} />}
-          </button>
+      {/* ═══════════════════ FAQ ═══════════════════ */}
+      <section className="py-20 bg-[#FAFBFC]">
+        <div className="max-w-3xl mx-auto px-6">
+          <div className="text-center mb-14">
+            <p className="text-xs font-semibold text-teal-600 tracking-widest uppercase mb-3">{t.faqLabel}</p>
+            <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 tracking-tight">{t.faqH2}</h2>
+          </div>
+          <div className="space-y-3">
+            {t.faqs.map((faq: any, i: number) => (
+              <div key={i} className="bg-white rounded-xl border border-slate-100 overflow-hidden transition-all">
+                <button onClick={() => setOpenFaq(openFaq === i ? null : i)} className="w-full flex items-center justify-between px-6 py-4 text-start">
+                  <span className="text-sm font-medium text-slate-800">{faq.q}</span>
+                  {openFaq === i ? <ChevronUp size={16} className="text-slate-400 flex-shrink-0" /> : <ChevronDown size={16} className="text-slate-400 flex-shrink-0" />}
+                </button>
+                {openFaq === i && (
+                  <div className="px-6 pb-5">
+                    <p className="text-sm text-slate-500 leading-relaxed">{faq.a}</p>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════ CTA ═══════════════════ */}
+      <section className="py-20 bg-white">
+        <div className="max-w-2xl mx-auto px-6 text-center">
+          <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 tracking-tight mb-4">{t.ctaSectionH2}</h2>
+          <p className="text-base text-slate-500 mb-8 leading-relaxed">{t.ctaSectionDesc}</p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Link to="/login" className="bg-teal-600 hover:bg-teal-700 text-white font-medium px-8 py-3 rounded-lg text-sm transition-all shadow-sm inline-flex items-center gap-2">
+              {t.ctaSectionBtn}
+              {isRtl ? <ArrowLeft size={16} /> : <ArrowRight size={16} />}
+            </Link>
+            <Link to="/pricing" className="border border-slate-200 text-slate-600 hover:bg-slate-50 font-medium px-8 py-3 rounded-lg text-sm transition-all">
+              {isRtl ? 'اطلع على الباقات' : 'View Pricing'}
+            </Link>
+          </div>
+          <div className="mt-10 flex items-center justify-center gap-6 text-slate-400 text-xs font-medium">
+            <span className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-teal-500" />{isRtl ? 'بدون تعقيد' : 'No Setup Fee'}</span>
+            <span className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-teal-500" />{isRtl ? 'دعم فني 24/7' : '24/7 Support'}</span>
+          </div>
         </div>
       </section>
 
       {/* ═══════════════════ CONTACT ═══════════════════ */}
-      <section id="contact" style={{ background: '#FFFFFF' }}>
-        <div style={sectionPadding}>
-          <p style={{ textAlign: 'center', fontSize: 14, fontWeight: 600, color: C.gold, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 12 }}>
-            {t.contactLabel}
-          </p>
-          <h2 style={sectionTitle()}>{t.contactH2}</h2>
-          <p style={sectionSub}>{t.contactDesc}</p>
-
-          <div style={{ maxWidth: 600, margin: '0 auto' }}>
+      <section id="contact" className="py-20 bg-[#FAFBFC]">
+        <div className="max-w-[1200px] mx-auto px-6">
+          <div className="text-center mb-12">
+            <p className="text-xs font-semibold text-teal-600 tracking-widest uppercase mb-3">{t.contactLabel}</p>
+            <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 tracking-tight mb-3">{t.contactH2}</h2>
+            <p className="text-base text-slate-500 max-w-xl mx-auto">{t.contactDesc}</p>
+          </div>
+          <div className="max-w-xl mx-auto">
             {status === 'success' ? (
-              <div style={{ ...cardStyle, textAlign: 'center', padding: 48 }}>
-                <div style={{
-                  width: 64, height: 64, borderRadius: '50%', background: 'rgba(34,197,94,0.1)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px',
-                }}>
-                  <CheckCircle2 size={32} color={C.greenCheck} />
-                </div>
-                <h3 style={{ fontSize: 22, fontWeight: 600, color: C.text, marginBottom: 8 }}>{t.contactSuccessTitle}</h3>
-                <p style={{ fontSize: 16, color: C.muted, marginBottom: 24, fontWeight: 400 }}>{t.contactSuccessDesc}</p>
-                <button onClick={() => setStatus('idle')} style={outlineBtn}>{t.contactSuccessRetry}</button>
+              <div className="bg-white rounded-2xl border border-slate-100 p-12 text-center shadow-sm">
+                <CheckCircle2 size={40} className="text-teal-500 mx-auto mb-5" />
+                <h3 className="text-lg font-semibold text-slate-900 mb-2">{t.contactSuccessTitle}</h3>
+                <p className="text-sm text-slate-500 mb-6">{t.contactSuccessDesc}</p>
+                <button onClick={() => setStatus('idle')} className="border border-slate-200 text-slate-700 hover:bg-slate-50 font-medium px-6 py-2 rounded-lg text-sm transition-all">{t.contactSuccessRetry}</button>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} style={{ ...cardStyle, padding: 36, display: 'flex', flexDirection: 'column', gap: 20 }}>
-                <div className="form-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+              <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-slate-100 p-8 shadow-sm space-y-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label style={{ display: 'block', fontSize: 14, fontWeight: 600, color: C.text, marginBottom: 6 }}>{t.contactFields.name}</label>
-                    <input required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
-                      placeholder={t.contactPlaceholders.name}
-                      style={{
-                        width: '100%', padding: '12px 14px', borderRadius: 10, border: `1px solid ${C.border}`,
-                        fontSize: 15, color: C.text, background: C.bg, outline: 'none', boxSizing: 'border-box',
-                        direction: dir, fontWeight: 400,
-                      }}
-                      onFocus={e => e.currentTarget.style.borderColor = C.gold}
-                      onBlur={e => e.currentTarget.style.borderColor = C.border}
-                    />
+                    <label className="block text-xs font-medium text-slate-500 mb-1.5">{t.contactFields.name}</label>
+                    <input required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder={t.contactPlaceholders.name} className="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm text-slate-800 bg-slate-50/50 focus:border-teal-300 focus:ring-1 focus:ring-teal-100 outline-none transition-all" />
                   </div>
                   <div>
-                    <label style={{ display: 'block', fontSize: 14, fontWeight: 600, color: C.text, marginBottom: 6 }}>{t.contactFields.email}</label>
-                    <input required type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })}
-                      placeholder={t.contactPlaceholders.email}
-                      style={{
-                        width: '100%', padding: '12px 14px', borderRadius: 10, border: `1px solid ${C.border}`,
-                        fontSize: 15, color: C.text, background: C.bg, outline: 'none', boxSizing: 'border-box',
-                        direction: 'ltr', fontWeight: 400,
-                      }}
-                      onFocus={e => e.currentTarget.style.borderColor = C.gold}
-                      onBlur={e => e.currentTarget.style.borderColor = C.border}
-                    />
+                    <label className="block text-xs font-medium text-slate-500 mb-1.5">{t.contactFields.email}</label>
+                    <input required type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder={t.contactPlaceholders.email} dir="ltr" className="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm text-slate-800 bg-slate-50/50 focus:border-teal-300 focus:ring-1 focus:ring-teal-100 outline-none transition-all" />
                   </div>
                 </div>
-                <div className="form-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label style={{ display: 'block', fontSize: 14, fontWeight: 600, color: C.text, marginBottom: 6 }}>{t.contactFields.phone}</label>
-                    <input value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })}
-                      placeholder={t.contactPlaceholders.phone}
-                      style={{
-                        width: '100%', padding: '12px 14px', borderRadius: 10, border: `1px solid ${C.border}`,
-                        fontSize: 15, color: C.text, background: C.bg, outline: 'none', boxSizing: 'border-box',
-                        direction: 'ltr', fontWeight: 400,
-                      }}
-                      onFocus={e => e.currentTarget.style.borderColor = C.gold}
-                      onBlur={e => e.currentTarget.style.borderColor = C.border}
-                    />
+                    <label className="block text-xs font-medium text-slate-500 mb-1.5">{t.contactFields.phone}</label>
+                    <input value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} placeholder={t.contactPlaceholders.phone} dir="ltr" className="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm text-slate-800 bg-slate-50/50 focus:border-teal-300 focus:ring-1 focus:ring-teal-100 outline-none transition-all" />
                   </div>
                   <div>
-                    <label style={{ display: 'block', fontSize: 14, fontWeight: 600, color: C.text, marginBottom: 6 }}>{t.contactFields.company}</label>
-                    <input value={form.company} onChange={e => setForm({ ...form, company: e.target.value })}
-                      placeholder={t.contactPlaceholders.company}
-                      style={{
-                        width: '100%', padding: '12px 14px', borderRadius: 10, border: `1px solid ${C.border}`,
-                        fontSize: 15, color: C.text, background: C.bg, outline: 'none', boxSizing: 'border-box',
-                        direction: dir, fontWeight: 400,
-                      }}
-                      onFocus={e => e.currentTarget.style.borderColor = C.gold}
-                      onBlur={e => e.currentTarget.style.borderColor = C.border}
-                    />
+                    <label className="block text-xs font-medium text-slate-500 mb-1.5">{t.contactFields.company}</label>
+                    <input value={form.company} onChange={e => setForm({ ...form, company: e.target.value })} placeholder={t.contactPlaceholders.company} className="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm text-slate-800 bg-slate-50/50 focus:border-teal-300 focus:ring-1 focus:ring-teal-100 outline-none transition-all" />
                   </div>
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: 14, fontWeight: 600, color: C.text, marginBottom: 6 }}>{t.contactFields.message}</label>
-                  <textarea required rows={4} value={form.message} onChange={e => setForm({ ...form, message: e.target.value })}
-                    placeholder={t.contactPlaceholders.message}
-                    style={{
-                      width: '100%', padding: '12px 14px', borderRadius: 10, border: `1px solid ${C.border}`,
-                      fontSize: 15, color: C.text, background: C.bg, outline: 'none', resize: 'vertical',
-                      fontFamily: 'inherit', boxSizing: 'border-box', direction: dir, fontWeight: 400,
-                    }}
-                    onFocus={e => e.currentTarget.style.borderColor = C.gold}
-                    onBlur={e => e.currentTarget.style.borderColor = C.border}
-                  />
+                  <label className="block text-xs font-medium text-slate-500 mb-1.5">{t.contactFields.message}</label>
+                  <textarea required rows={4} value={form.message} onChange={e => setForm({ ...form, message: e.target.value })} placeholder={t.contactPlaceholders.message} className="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm text-slate-800 bg-slate-50/50 focus:border-teal-300 focus:ring-1 focus:ring-teal-100 outline-none transition-all resize-vertical font-[inherit]" />
                 </div>
-                {formError && (
-                  <p style={{ color: C.red, fontSize: 14, margin: 0 }}>{formError}</p>
-                )}
-                <button type="submit" disabled={status === 'loading'} style={{
-                  ...goldBtn, width: '100%', justifyContent: 'center', padding: '14px 0', borderRadius: 10,
-                  opacity: status === 'loading' ? 0.7 : 1,
-                }}>
-                  {status === 'loading' ? (
-                    <><Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> {t.contactSending}</>
-                  ) : (
-                    <><Send size={18} /> {t.contactSubmit}</>
-                  )}
+                {formError && <p className="text-red-500 text-sm">{formError}</p>}
+                <button type="submit" disabled={status === 'loading'} className="w-full bg-teal-600 hover:bg-teal-700 text-white font-medium py-3 rounded-lg text-sm transition-all shadow-sm disabled:opacity-60 flex items-center justify-center gap-2">
+                  {status === 'loading' ? <><Loader2 size={16} className="animate-spin" /> {t.contactSending}</> : <><Send size={16} /> {t.contactSubmit}</>}
                 </button>
               </form>
             )}
@@ -914,146 +592,48 @@ export default function HomePage() {
       </section>
 
       {/* ═══════════════════ FOOTER ═══════════════════ */}
-      <footer style={{ background: C.dark, color: '#fff' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '60px 24px 0' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 40, marginBottom: 48 }}>
-            {/* Brand col */}
-            <div style={{ minWidth: 200 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-                <LogoImg height={36} invert />
-                <span style={{ fontSize: 18, fontWeight: 600 }}>SENDA</span>
-              </div>
-              <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)', lineHeight: 1.7, maxWidth: 280, fontWeight: 400 }}>{t.footerTagline}</p>
-              {/* Social */}
-              <div style={{ display: 'flex', gap: 12, marginTop: 20 }}>
-                {/* Twitter/X */}
-                <a href="https://x.com/sabortech" target="_blank" rel="noopener noreferrer" style={{
-                  width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.1)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.2s',
-                }}
-                  onMouseOver={e => e.currentTarget.style.background = 'rgba(184,150,90,0.3)'}
-                  onMouseOut={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
-                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                  </svg>
-                </a>
-                {/* LinkedIn */}
-                <a href="https://linkedin.com/company/sabortech" target="_blank" rel="noopener noreferrer" style={{
-                  width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.1)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.2s',
-                }}
-                  onMouseOver={e => e.currentTarget.style.background = 'rgba(184,150,90,0.3)'}
-                  onMouseOut={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
-                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-                  </svg>
-                </a>
-              </div>
-            </div>
-
-            {/* Product col */}
+      <footer className="bg-slate-900 text-white">
+        <div className="max-w-[1200px] mx-auto px-6 pt-14 pb-0">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
             <div>
-              <h4 style={{ fontSize: 14, fontWeight: 600, marginBottom: 18, color: 'rgba(255,255,255,0.9)' }}>{t.footerProduct}</h4>
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div className="flex items-center gap-2.5 mb-4">
+                <img src="/senda-logo.png" alt="SENDA" className="h-8 brightness-0 invert" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+              </div>
+              <p className="text-sm text-slate-400 leading-relaxed max-w-[260px]">{t.footerTagline}</p>
+            </div>
+            <div>
+              <h4 className="text-sm font-semibold text-slate-200 mb-4">{t.footerProduct}</h4>
+              <ul className="space-y-2.5">
                 {t.footerProductLinks.map((link: string, i: number) => (
-                  <li key={i}>
-                    <button onClick={() => scrollTo(['features', 'pricing', 'how-it-works'][i])} style={{
-                      background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', fontSize: 14, cursor: 'pointer', padding: 0, fontWeight: 400,
-                    }}
-                      onMouseOver={e => e.currentTarget.style.color = C.gold}
-                      onMouseOut={e => e.currentTarget.style.color = 'rgba(255,255,255,0.5)'}
-                    >{link}</button>
-                  </li>
+                  <li key={i}><Link to={t.footerProductPaths[i]} className="text-sm text-slate-400 hover:text-teal-400 transition-colors">{link}</Link></li>
                 ))}
               </ul>
             </div>
-
-            {/* Support col */}
             <div>
-              <h4 style={{ fontSize: 14, fontWeight: 600, marginBottom: 18, color: 'rgba(255,255,255,0.9)' }}>{t.footerSupport}</h4>
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <h4 className="text-sm font-semibold text-slate-200 mb-4">{t.footerSupport}</h4>
+              <ul className="space-y-2.5">
                 {t.footerSupportLinks.map((link: string, i: number) => (
-                  <li key={i}>
-                    <button onClick={() => i === 1 ? scrollTo('contact') : undefined} style={{
-                      background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', fontSize: 14, cursor: 'pointer', padding: 0, fontWeight: 400,
-                    }}
-                      onMouseOver={e => e.currentTarget.style.color = C.gold}
-                      onMouseOut={e => e.currentTarget.style.color = 'rgba(255,255,255,0.5)'}
-                    >{link}</button>
-                  </li>
+                  <li key={i}><Link to={t.footerSupportPaths[i]} className="text-sm text-slate-400 hover:text-teal-400 transition-colors">{link}</Link></li>
                 ))}
               </ul>
             </div>
-
-            {/* Legal col */}
             <div>
-              <h4 style={{ fontSize: 14, fontWeight: 600, marginBottom: 18, color: 'rgba(255,255,255,0.9)' }}>{t.footerLegal}</h4>
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <h4 className="text-sm font-semibold text-slate-200 mb-4">{t.footerLegal}</h4>
+              <ul className="space-y-2.5">
                 {t.footerLegalLinks.map((link: any, i: number) => (
-                  <li key={i}>
-                    <button onClick={() => navigate(link.path)} style={{
-                      background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', fontSize: 14, cursor: 'pointer', padding: 0, fontWeight: 400,
-                    }}
-                      onMouseOver={e => e.currentTarget.style.color = C.gold}
-                      onMouseOut={e => e.currentTarget.style.color = 'rgba(255,255,255,0.5)'}
-                    >{link.label}</button>
-                  </li>
+                  <li key={i}><Link to={link.path} className="text-sm text-slate-400 hover:text-teal-400 transition-colors">{link.label}</Link></li>
                 ))}
               </ul>
             </div>
           </div>
-
-          {/* Bottom bar */}
-          <div style={{
-            borderTop: '1px solid rgba(255,255,255,0.1)', padding: '24px 0',
-            display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12,
-          }}>
-            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', margin: 0, fontWeight: 400 }}>{t.copyright}</p>
-            <div style={{ display: 'flex', gap: 20 }}>
-              {t.footerLegalLinks.map((link: any, i: number) => (
-                <button key={i} onClick={() => navigate(link.path)} style={{
-                  background: 'none', border: 'none', color: 'rgba(255,255,255,0.35)', fontSize: 12, cursor: 'pointer', padding: 0, fontWeight: 400,
-                }}
-                  onMouseOver={e => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}
-                  onMouseOut={e => e.currentTarget.style.color = 'rgba(255,255,255,0.35)'}
-                >{link.label}</button>
-              ))}
-            </div>
+          <div className="border-t border-slate-800 py-6 text-center">
+            <p className="text-xs text-slate-500">{t.copyright}</p>
           </div>
         </div>
       </footer>
 
-      {/* ═══════════════════ GLOBAL STYLES ═══════════════════ */}
-      <style>{`
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-        * { box-sizing: border-box; margin: 0; }
-
-        ::placeholder { color: ${C.muted}; opacity: 0.6; }
-
-        /* Desktop nav visibility */
-        .nav-desktop { display: flex !important; }
-        .nav-ctas { display: flex !important; }
-        .nav-mobile-toggle { display: none !important; }
-
-        /* Mobile responsive */
-        @media (max-width: 768px) {
-          .nav-desktop { display: none !important; }
-          .nav-ctas { display: none !important; }
-          .nav-mobile-toggle { display: flex !important; }
-          .dash-sidebar { display: none !important; }
-          .dash-stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
-          .form-grid-2 { grid-template-columns: 1fr !important; }
-        }
-
-        /* Smooth scroll */
-        html { scroll-behavior: smooth; scroll-padding-top: 80px; }
-
-        /* Selection color */
-        ::selection { background: rgba(184, 150, 90, 0.2); }
-      `}</style>
+      {/* Scroll padding for anchor links */}
+      <style>{`html { scroll-behavior: smooth; scroll-padding-top: 80px; } ::selection { background: rgba(13, 148, 136, 0.15); }`}</style>
     </div>
   );
 }

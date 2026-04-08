@@ -1,6 +1,6 @@
 // ============================================================================
 // SENDA — Professional Login / Sign-Up / Forgot-Password Page
-// Split-panel design: branding panel (left/top) + form panel (right/bottom).
+// Centered card design with logo above · Teal accent · Light theme
 // Logo is configurable from Admin → Settings → Branding.
 // ============================================================================
 import { useState, useEffect, useRef, type ChangeEvent, type FormEvent } from 'react';
@@ -9,7 +9,7 @@ import { authService } from '@/services/auth';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { getBranding, type BrandingConfig } from '@/services/branding';
-import { CheckCircle2, Star, BarChart3, MessageSquare, GitBranch, ArrowRight } from 'lucide-react';
+import { CheckCircle2, ArrowRight } from 'lucide-react';
 
 // ── Password strength helper ────────────────────────────────────────────────
 function calcPasswordStrength(pw: string): number {
@@ -63,14 +63,6 @@ function translateError(msg: string, isAr: boolean): string {
 const _sp = new URLSearchParams(window.location.search);
 const isOAuthCallback = _sp.has('code') || _sp.has('error') || _sp.has('token_hash');
 
-// Feature bullets on branding panel
-const FEATURES = [
-  { icon: Star,          ar: 'ربط Google Business Profile', en: 'Google Business Profile integration' },
-  { icon: MessageSquare, ar: 'ردود تلقائية بالذكاء الاصطناعي', en: 'AI-powered auto-replies' },
-  { icon: BarChart3,     ar: 'تحليلات متقدمة وتقارير ذكية', en: 'Advanced analytics & smart reports' },
-  { icon: GitBranch,     ar: 'إدارة جميع فروعك من مكان واحد', en: 'Manage all branches in one place' },
-];
-
 export default function Login({ defaultSignup = false }: { defaultSignup?: boolean }) {
   const { t, lang } = useLanguage();
   const isAr = lang === 'ar';
@@ -109,32 +101,22 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
     supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'email' })
       .then(({ error: e }) => {
         if (e) window.location.href = '/login?error=confirmation_failed';
-        // If success, AuthProvider will detect the session and
-        // RedirectIfAuthenticated will redirect to /dashboard.
       });
   }, []);
 
-  // OAuth callback: AuthProvider handles SIGNED_IN event and hydrates auth state.
-  // RedirectIfAuthenticated guard will automatically redirect to /dashboard
-  // once isAuthenticated becomes true. No manual redirect needed here.
-
-  // ── OAuth callback loading screen (minimal) ────────────────────────────────
+  // ── OAuth callback loading screen ──────────────────────────────────────────
   if (isOAuthCallback) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#F8F9FB' }}>
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <div className="text-center flex flex-col items-center">
-          <div className="w-8 h-8 rounded-full border-2 border-gray-200 animate-spin mb-4" style={{ borderTopColor: '#B8965A' }} />
-          <p className="text-sm text-[#6B7280]">
-            {t.auth.signingIn}
-          </p>
+          <div className="w-8 h-8 rounded-full border-2 border-slate-200 animate-spin mb-4 border-t-teal-600" />
+          <p className="text-sm text-slate-500">{t.auth.signingIn}</p>
         </div>
       </div>
     );
   }
 
   // ── Shared values ──────────────────────────────────────────────────────────
-  const logoIconUrl  = branding?.logo_icon_url || '';
-  const logoFullUrl  = branding?.logo_full_url || '';
   const platformNameAr = branding?.platform_name_ar || 'سيندا';
   const platformNameEn = branding?.platform_name_en || 'SENDA';
   const tagline = branding?.tagline || t.auth.platformDesc;
@@ -170,9 +152,6 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
         setSuccess(t.auth.accountCreated);
       } else {
         await authService.login(email, password);
-        // Keep loading=true — AuthProvider will detect SIGNED_IN event,
-        // hydrate auth, and RedirectIfAuthenticated guard will redirect
-        // to /dashboard automatically. No full page reload needed.
       }
     } catch (err: unknown) {
       setLoading(false);
@@ -215,88 +194,39 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
   const pwColors    = ['', 'bg-red-500', 'bg-amber-500', 'bg-emerald-500'];
   const pwTextColors = ['', 'text-red-600', 'text-amber-600', 'text-emerald-600'];
 
-  // ── Shared header for branding panel ──────────────────────────────────────
-  const BrandingPanel = (
-    <div
-      className="hidden lg:flex lg:w-[45%] flex-col justify-between p-10 relative overflow-hidden"
-      style={{ background: '#1A1A2E' }}
-    >
-      <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full pointer-events-none" style={{ background: 'rgba(184,150,90,0.08)' }} />
-      <div className="absolute -bottom-32 -left-16 w-80 h-80 rounded-full pointer-events-none" style={{ background: 'rgba(184,150,90,0.05)' }} />
-
-      {/* Logo */}
-      <div className="relative z-10 flex items-center gap-3">
-        <img
-          src="/senda-logo.png"
-          alt="SENDA"
-          style={{ height: 36, width: 'auto', opacity: 0.92, filter: 'brightness(0) invert(1)' }}
-          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-        />
-      </div>
-
-      {/* Body */}
-      <div className="relative z-10">
-        <h1 className="text-3xl font-bold text-white leading-snug mb-3">
-          {t.auth.aiReviewManagement}
-        </h1>
-        <p className="text-base mb-8 leading-relaxed" style={{ color: 'rgba(255,255,255,0.75)' }}>{tagline}</p>
-        <div className="space-y-3">
-          {FEATURES.map(({ icon: Icon, ar, en }) => (
-            <div key={ar} className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(184,150,90,0.2)' }}>
-                <Icon size={15} style={{ color: '#D4AF6A' }} />
-              </div>
-              <span className="text-sm" style={{ color: 'rgba(255,255,255,0.88)' }}>{isAr ? ar : en}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="relative z-10 text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
-        {t.auth.copyright}
-      </div>
-    </div>
-  );
-
-  // ── Mobile logo ────────────────────────────────────────────────────────────
-  const MobileLogo = (
-    <div className="flex flex-col items-center mb-8 lg:hidden">
-      <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-3 shadow-lg" style={{ background: 'linear-gradient(135deg, #B8965A, #D4AF6A)' }}>
-        {logoIconUrl
-          ? <img src={logoIconUrl} alt="logo" className="w-9 h-9 object-contain" />
-          : <span className="text-white text-2xl font-bold">س</span>}
-      </div>
-      <h2 className="text-xl font-bold text-[#1A1A2E]">{platformNameAr}</h2>
-      <p className="text-xs text-[#6B7280] mt-1 text-center">{tagline}</p>
+  // ── Logo block (above card) ────────────────────────────────────────────────
+  const LogoBlock = (
+    <div className="flex flex-col items-center mb-8">
+      <img
+        src="/senda-logo.png"
+        alt="SENDA"
+        className="h-12 mb-3"
+        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+      />
+      <p className="text-xs text-slate-400 text-center max-w-[260px]">{tagline}</p>
     </div>
   );
 
   // ── FORGOT PASSWORD form ───────────────────────────────────────────────────
   if (isForgotPw) {
     return (
-      <div className="min-h-screen flex" dir={isAr ? 'rtl' : 'ltr'}>
-        {BrandingPanel}
-        <div className="flex-1 flex flex-col items-center justify-center p-6 sm:p-10" style={{ background: '#F8F9FB' }}>
-          <div className="w-full max-w-sm">
-            {MobileLogo}
+      <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50" dir={isAr ? 'rtl' : 'ltr'}>
+        <div className="w-full max-w-sm">
+          {LogoBlock}
 
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-7">
             {/* Back link */}
             <button
               onClick={resetToLogin}
-              className="flex items-center gap-1.5 text-xs mb-6 transition-colors"
-              style={{ color: '#B8965A' }}
+              className="flex items-center gap-1.5 text-xs mb-5 text-teal-600 hover:text-teal-700 transition-colors"
             >
               <ArrowRight size={13} className={isAr ? '' : 'rotate-180'} />
               {t.auth.backToSignIn}
             </button>
 
-            <div className="mb-6">
-              <h2 className="text-xl font-bold text-[#1A1A2E]">
-                {t.auth.resetYourPassword}
-              </h2>
-              <p className="text-sm text-[#6B7280] mt-1">
-                {t.auth.resetYourPasswordDesc}
-              </p>
+            <div className="mb-5">
+              <h2 className="text-lg font-bold text-slate-900">{t.auth.resetYourPassword}</h2>
+              <p className="text-sm text-slate-500 mt-1">{t.auth.resetYourPasswordDesc}</p>
             </div>
 
             {error && (
@@ -312,11 +242,9 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
             {!success && (
               <form onSubmit={handleForgotPassword} className="space-y-3">
                 <div>
-                  <label className="block text-xs font-medium text-[#4B5563] mb-1.5">
-                    {t.auth.email}
-                  </label>
+                  <label className="block text-xs font-medium text-slate-600 mb-1.5">{t.auth.email}</label>
                   <input
-                    className="form-input"
+                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-teal-300 focus:ring-2 focus:ring-teal-100 transition-all"
                     type="email"
                     value={email}
                     autoComplete="email"
@@ -329,12 +257,9 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full justify-center py-2.5 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-50"
-                  style={{ background: 'linear-gradient(135deg, #B8965A, #D4AF6A)' }}
+                  className="w-full py-2.5 rounded-xl text-sm font-semibold text-white bg-teal-600 hover:bg-teal-700 disabled:opacity-50 transition-colors"
                 >
-                  {loading
-                    ? t.auth.sending
-                    : t.auth.sendResetLink}
+                  {loading ? t.auth.sending : t.auth.sendResetLink}
                 </button>
               </form>
             )}
@@ -342,8 +267,7 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
             {success && (
               <button
                 onClick={resetToLogin}
-                className="w-full justify-center py-2.5 mt-2 rounded-xl text-sm font-semibold text-white transition-all"
-                style={{ background: 'linear-gradient(135deg, #B8965A, #D4AF6A)' }}
+                className="w-full py-2.5 mt-2 rounded-xl text-sm font-semibold text-white bg-teal-600 hover:bg-teal-700 transition-colors"
               >
                 {t.auth.backToSignIn}
               </button>
@@ -356,19 +280,17 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
 
   // ── LOGIN / SIGN-UP form ───────────────────────────────────────────────────
   return (
-    <div className="min-h-screen flex" dir={isAr ? 'rtl' : 'ltr'}>
-      {BrandingPanel}
+    <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50" dir={isAr ? 'rtl' : 'ltr'}>
+      <div className="w-full max-w-sm">
+        {LogoBlock}
 
-      <div className="flex-1 flex flex-col items-center justify-center p-6 sm:p-10" style={{ background: '#F8F9FB' }}>
-        <div className="w-full max-w-sm">
-          {MobileLogo}
-
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-7">
           {/* Heading */}
-          <div className="mb-6">
-            <h2 className="text-xl font-bold text-[#1A1A2E]">
+          <div className="mb-5">
+            <h2 className="text-lg font-bold text-slate-900">
               {isSignUp ? t.auth.createNewAccount : t.auth.welcomeBack}
             </h2>
-            <p className="text-sm text-[#6B7280] mt-1">
+            <p className="text-sm text-slate-500 mt-1">
               {isSignUp ? t.auth.signUpToGetStarted : t.auth.signInToContinue}
             </p>
           </div>
@@ -387,8 +309,7 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
           {/* Google login */}
           <button
             onClick={handleGoogleLogin}
-            className="w-full flex items-center justify-center gap-3 py-2.5 px-4 rounded-xl border bg-white text-[#1A1A2E] text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm mb-4"
-            style={{ borderColor: '#E8E8EC' }}
+            className="w-full flex items-center justify-center gap-3 py-2.5 px-4 rounded-xl border border-slate-200 bg-white text-slate-800 text-sm font-medium hover:bg-slate-50 transition-colors shadow-sm mb-4"
           >
             <svg width="18" height="18" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
@@ -401,20 +322,18 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
 
           {/* Divider */}
           <div className="flex items-center gap-3 mb-4">
-            <div className="flex-1 border-t border-[#E8E8EC]" />
-            <span className="text-xs text-[#6B7280]">{t.auth.or}</span>
-            <div className="flex-1 border-t border-[#E8E8EC]" />
+            <div className="flex-1 border-t border-slate-200" />
+            <span className="text-xs text-slate-400">{t.auth.or}</span>
+            <div className="flex-1 border-t border-slate-200" />
           </div>
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-3" autoComplete="on">
             {isSignUp && (
               <div>
-                <label className="block text-xs font-medium text-[#4B5563] mb-1.5">
-                  {t.auth.fullName}
-                </label>
+                <label className="block text-xs font-medium text-slate-600 mb-1.5">{t.auth.fullName}</label>
                 <input
-                  className="form-input"
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-teal-300 focus:ring-2 focus:ring-teal-100 transition-all"
                   type="text"
                   value={fullName}
                   autoComplete="name"
@@ -426,11 +345,9 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
             )}
 
             <div>
-              <label className="block text-xs font-medium text-[#4B5563] mb-1.5">
-                {t.auth.email}
-              </label>
+              <label className="block text-xs font-medium text-slate-600 mb-1.5">{t.auth.email}</label>
               <input
-                className={`form-input ${emailTouched && email && !isValidEmail(email) ? 'border-red-400 focus:ring-red-300' : ''}`}
+                className={`w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none transition-all ${emailTouched && email && !isValidEmail(email) ? 'border-red-400 focus:ring-red-100' : 'border-slate-200 focus:border-teal-300 focus:ring-2 focus:ring-teal-100'}`}
                 type="email"
                 value={email}
                 autoComplete="email"
@@ -441,31 +358,25 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
                 required
               />
               {emailTouched && email && !isValidEmail(email) && (
-                <p className="text-[11px] text-red-500 mt-1">
-                  {t.auth.invalidEmailFormat}
-                </p>
+                <p className="text-[11px] text-red-500 mt-1">{t.auth.invalidEmailFormat}</p>
               )}
             </div>
 
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-xs font-medium text-[#4B5563]">
-                  {t.auth.password}
-                </label>
-                {/* Forgot password link — only on login form */}
+                <label className="block text-xs font-medium text-slate-600">{t.auth.password}</label>
                 {!isSignUp && (
                   <button
                     type="button"
                     onClick={() => { setIsForgotPw(true); setError(''); setSuccess(''); }}
-                    className="text-[11px] hover:underline transition-colors"
-                    style={{ color: '#B8965A' }}
+                    className="text-[11px] text-teal-600 hover:underline transition-colors"
                   >
                     {t.auth.forgotPasswordQuestion}
                   </button>
                 )}
               </div>
               <input
-                className="form-input"
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-teal-300 focus:ring-2 focus:ring-teal-100 transition-all"
                 type="password"
                 value={password}
                 autoComplete={isSignUp ? 'new-password' : 'current-password'}
@@ -475,7 +386,6 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
                 required
                 minLength={6}
               />
-              {/* Password strength — signup only */}
               {isSignUp && password.length > 0 && (
                 <div className="mt-1.5">
                   <div className="flex gap-1 mb-1">
@@ -492,17 +402,14 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
                 </div>
               )}
               {isSignUp && (
-                <p className="text-[11px] text-[#6B7280] mt-1">
-                  {t.auth.passwordRecommendation}
-                </p>
+                <p className="text-[11px] text-slate-400 mt-1">{t.auth.passwordRecommendation}</p>
               )}
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full justify-center py-2.5 mt-1 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-50"
-              style={{ background: 'linear-gradient(135deg, #B8965A, #D4AF6A)' }}
+              className="w-full py-2.5 mt-1 rounded-xl text-sm font-semibold text-white bg-teal-600 hover:bg-teal-700 disabled:opacity-50 transition-colors"
             >
               {loading
                 ? t.auth.processing
@@ -514,20 +421,19 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
 
           {/* Toggle login/signup */}
           <div className="text-center mt-5">
-            <span className="text-xs text-[#6B7280]">
+            <span className="text-xs text-slate-500">
               {isSignUp ? t.auth.hasAccount : t.auth.noAccount}
             </span>
             {' '}
             <button
-              className="text-xs font-medium hover:underline transition-colors"
-              style={{ color: '#B8965A' }}
+              className="text-xs font-medium text-teal-600 hover:underline transition-colors"
               onClick={() => { setIsSignUp(v => !v); setError(''); setSuccess(''); setPwStrength(0); setEmailTouched(false); setPassword(''); setEmail(''); setFullName(''); }}
             >
               {isSignUp ? t.auth.signInInstead : t.auth.signUpInstead}
             </button>
           </div>
 
-          <p className="text-center text-[11px] text-[#6B7280] mt-6 leading-relaxed">
+          <p className="text-center text-[11px] text-slate-400 mt-5 leading-relaxed">
             {t.auth.googleButtonNote}
           </p>
         </div>

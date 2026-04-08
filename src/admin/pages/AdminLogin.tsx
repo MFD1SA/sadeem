@@ -1,5 +1,6 @@
 // ============================================================================
-// SENDA Admin — Login Page (Enterprise Upgrade)
+// SENDA Admin — Login Page
+// Centered card · Logo above · Teal accent · Light theme
 // ============================================================================
 
 import { useState, type FormEvent, useEffect } from 'react';
@@ -8,7 +9,7 @@ import { AdminAuthProvider, useAdminAuth } from '../contexts/AdminAuthContext';
 import { RedirectIfAdminAuthenticated } from '../guards';
 import { ADMIN_ROUTES } from '../utils/constants';
 import { adminSettingsService, type BrandingSettings } from '../services/adminSettings.service';
-import { ShieldCheck, Eye, EyeOff, Fingerprint } from 'lucide-react';
+import { ShieldCheck, Eye, EyeOff } from 'lucide-react';
 
 function AdminLoginForm() {
   const { login, isLoading, error } = useAdminAuth();
@@ -47,44 +48,28 @@ function AdminLoginForm() {
   const displayError = localError || error;
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" dir="rtl" style={{ background: '#F8F9FB' }}>
-      {/* Background effects */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, rgba(184,150,90,0.04) 0%, transparent 50%, rgba(184,150,90,0.03) 100%)' }} />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] rounded-full blur-[120px]" style={{ background: 'rgba(184,150,90,0.06)' }} />
-      </div>
-
-      <div className="relative w-full max-w-[380px]">
-        {/* Brand block — uses branding from DB when available */}
-        <div className="text-center mb-10">
-          <div className="relative inline-flex mb-5">
-            {branding?.logo_full_url ? (
-              <img src={branding.logo_full_url} alt={branding.platform_name_ar} className="h-14 max-w-[200px] object-contain" />
-            ) : branding?.logo_icon_url ? (
-              <img src={branding.logo_icon_url} alt={branding.platform_name_ar} className="w-16 h-16 rounded-2xl object-contain" />
-            ) : (
-              <>
-                <div className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-xl" style={{ background: 'linear-gradient(135deg, #B8965A, #D4AF6A)', boxShadow: '0 10px 25px rgba(184,150,90,0.2)' }}>
-                  <ShieldCheck size={30} className="text-white" />
-                </div>
-                <div className="absolute -bottom-1 -left-1 w-5 h-5 rounded-md flex items-center justify-center shadow-lg" style={{ background: '#1A1A2E' }}>
-                  <Fingerprint size={11} className="text-white" />
-                </div>
-              </>
-            )}
-          </div>
-          <h1 className="text-[22px] font-bold mb-2 tracking-tight" style={{ color: '#1A1A2E' }}>
-            {branding?.platform_name_ar || 'سيندا'} <span style={{ color: '#B8965A' }} className="font-light">|</span> <span className="font-medium text-lg" style={{ color: '#4B5563' }}>لوحة الإدارة</span>
+    <div className="min-h-screen flex items-center justify-center p-4 bg-slate-50" dir="rtl">
+      <div className="w-full max-w-[380px]">
+        {/* Logo + Brand */}
+        <div className="text-center mb-8">
+          <img
+            src="/senda-logo.png"
+            alt="SENDA"
+            className="h-12 mx-auto mb-4"
+            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+          />
+          <h1 className="text-xl font-bold text-slate-900 mb-1">
+            {branding?.platform_name_ar || 'سيندا'} <span className="text-teal-600 font-light">|</span> <span className="font-medium text-base text-slate-500">لوحة الإدارة</span>
           </h1>
-          <p className="text-[13px] leading-relaxed max-w-[280px] mx-auto" style={{ color: '#6B7280' }}>
+          <p className="text-xs text-slate-400 leading-relaxed max-w-[280px] mx-auto">
             {branding?.tagline || 'مركز التحكم المركزي لإدارة المنصة والمشتركين والعمليات'}
           </p>
         </div>
 
         {/* Login card */}
-        <div className="bg-white rounded-2xl overflow-hidden" style={{ border: '1px solid #E8E8EC', boxShadow: '0 4px 24px rgba(0,0,0,0.06)' }}>
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
           {/* Card header accent */}
-          <div className="h-[2px]" style={{ background: 'linear-gradient(to right, transparent, #B8965A, transparent)' }} />
+          <div className="h-[2px] bg-gradient-to-r from-transparent via-teal-500 to-transparent" />
 
           <div className="p-6">
             {displayError && (
@@ -96,13 +81,12 @@ function AdminLoginForm() {
 
             <form onSubmit={handleSubmit}>
               <div className="mb-4">
-                <label className="block text-xs font-medium mb-2" style={{ color: '#4B5563' }}>البريد الإلكتروني</label>
+                <label className="block text-xs font-medium mb-2 text-slate-600">البريد الإلكتروني</label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="admin-form-input text-[13px]"
-                  style={{ background: '#F8F9FB', border: '1px solid #E8E8EC', color: '#1A1A2E' }}
+                  className="w-full px-4 py-2.5 rounded-xl text-sm bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-teal-300 focus:ring-2 focus:ring-teal-100 transition-all"
                   placeholder="أدخل بريدك الإلكتروني"
                   required
                   autoComplete="email"
@@ -111,14 +95,13 @@ function AdminLoginForm() {
               </div>
 
               <div className="mb-7">
-                <label className="block text-xs font-medium mb-2" style={{ color: '#4B5563' }}>كلمة المرور</label>
+                <label className="block text-xs font-medium mb-2 text-slate-600">كلمة المرور</label>
                 <div className="relative">
                   <input
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="admin-form-input pl-10 text-[13px]"
-                    style={{ background: '#F8F9FB', border: '1px solid #E8E8EC', color: '#1A1A2E' }}
+                    className="w-full px-4 py-2.5 pl-10 rounded-xl text-sm bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-teal-300 focus:ring-2 focus:ring-teal-100 transition-all"
                     placeholder="أدخل كلمة المرور"
                     required
                     minLength={6}
@@ -127,8 +110,7 @@ function AdminLoginForm() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 transition-colors"
-                    style={{ color: '#6B7280' }}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
                     tabIndex={-1}
                   >
                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -139,8 +121,7 @@ function AdminLoginForm() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-3 rounded-xl text-sm font-semibold text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
-                style={{ background: 'linear-gradient(135deg, #B8965A, #D4AF6A)', boxShadow: '0 4px 15px rgba(184,150,90,0.2)' }}
+                className="w-full py-3 rounded-xl text-sm font-semibold text-white bg-teal-600 hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors active:scale-[0.98]"
               >
                 {isLoading ? (
                   <span className="flex items-center justify-center gap-2">
@@ -157,12 +138,8 @@ function AdminLoginForm() {
 
         {/* Footer */}
         <div className="text-center mt-8">
-          <p className="text-[11px] leading-relaxed" style={{ color: '#6B7280' }}>
-            الوصول مقيّد للمشرفين المعتمدين فقط
-          </p>
-          <p className="text-[10px] mt-1" style={{ color: '#9CA3AF' }}>
-            سيندا — منصة إدارة التقييمات بالذكاء الاصطناعي
-          </p>
+          <p className="text-[11px] text-slate-400 leading-relaxed">الوصول مقيّد للمشرفين المعتمدين فقط</p>
+          <p className="text-[10px] text-slate-300 mt-1">سيندا — منصة إدارة التقييمات بالذكاء الاصطناعي</p>
         </div>
       </div>
     </div>
