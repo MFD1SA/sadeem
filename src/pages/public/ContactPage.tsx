@@ -88,12 +88,17 @@ export default function ContactPage() {
 
   return (
     <PublicLayout lang={lang} onToggleLang={() => setLang(l => l === 'ar' ? 'en' : 'ar')}>
-      {/* Hero */}
-      <section className="py-20 px-6">
-        <div className="max-w-3xl mx-auto text-center">
-          <span className="inline-block text-xs font-semibold text-blue-900 bg-blue-50 px-4 py-1.5 rounded-full mb-4">{t.heroTag}</span>
-          <h1 className="text-3xl md:text-4xl font-bold text-slate-900 leading-tight mb-4">{t.heroH1}</h1>
-          <p className="text-base text-slate-500 leading-relaxed">{t.heroSub}</p>
+      {/* ═══════════ DARK HERO ═══════════ */}
+      <section className="relative overflow-hidden py-28 md:py-36" style={{ background: 'linear-gradient(160deg, #0B1120 0%, #162032 40%, #0F1A2E 100%)' }}>
+        <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
+        <svg className="absolute top-[15%] right-[8%] w-20 h-20 text-blue-400/10 animate-pulse" viewBox="0 0 80 80" fill="none"><circle cx="40" cy="40" r="35" stroke="currentColor" strokeWidth="1.5" strokeDasharray="4 6" /></svg>
+        <svg className="absolute bottom-[20%] left-[6%] w-14 h-14 text-blue-400/10" viewBox="0 0 56 56" fill="none"><rect x="8" y="8" width="40" height="40" rx="8" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 5" /></svg>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-500/5 rounded-full blur-[120px]" />
+
+        <div className="relative max-w-4xl mx-auto px-6 text-center">
+          <span className="inline-block text-xs font-semibold text-blue-300/80 bg-white/5 backdrop-blur-sm border border-white/10 px-5 py-2 rounded-full mb-6 tracking-wide">{t.heroTag}</span>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight mb-6">{t.heroH1}</h1>
+          <p className="text-base md:text-lg text-slate-400 leading-relaxed max-w-2xl mx-auto">{t.heroSub}</p>
         </div>
       </section>
 
@@ -137,8 +142,8 @@ export default function ContactPage() {
               const Icon = ICONS[card.icon] || MapPin;
               return (
                 <div key={i} className="flex items-start gap-4 p-5 rounded-2xl border border-slate-100 bg-white">
-                  <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
-                    <Icon size={18} className="text-blue-900" />
+                  <div className="w-10 h-10 rounded-xl bg-[#0F1A2E] flex items-center justify-center flex-shrink-0">
+                    <Icon size={18} className="text-blue-300" />
                   </div>
                   <div>
                     <h4 className="font-semibold text-slate-900 text-sm mb-1">{card.title}</h4>
