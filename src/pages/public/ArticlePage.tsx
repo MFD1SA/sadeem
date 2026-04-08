@@ -62,7 +62,7 @@ export default function ArticlePage() {
       </section>
 
       {/* Article Content */}
-      <section className="py-16 px-6">
+      <section className="py-16 px-6 bg-[#FAFBFC]">
         <div className="max-w-3xl mx-auto">
           <div className="prose-senda space-y-5">
             {content.map((block, i) => {
@@ -82,7 +82,7 @@ export default function ArticlePage() {
           <div className="relative text-center px-8 py-14 md:py-18">
             <h2 className="text-xl md:text-2xl font-bold text-white mb-3">{t.ctaTitle}</h2>
             <p className="text-sm text-slate-400 mb-7">{t.ctaDesc}</p>
-            <Link to="/register" className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold px-8 py-3.5 rounded-xl text-sm transition-all shadow-lg shadow-blue-600/20">
+            <Link to="/register" className="inline-flex items-center gap-2 bg-white text-[#0F1A2E] hover:bg-white/90 font-semibold px-8 py-3.5 rounded-xl text-sm transition-all shadow-lg">
               {t.ctaBtn}
               {isRtl ? <ArrowLeft size={16} /> : <ArrowRight size={16} />}
             </Link>
@@ -98,10 +98,7 @@ export default function ArticlePage() {
             {related.map((rel) => (
               <Link key={rel.slug} to={`/blog/${rel.slug}`} className="group rounded-xl border border-slate-100 bg-white hover:shadow-md hover:border-slate-200 overflow-hidden transition-all">
                 <div className="h-28 relative overflow-hidden" style={{ background: rel.gradient }}>
-                  <div className="absolute inset-0 opacity-[0.06]" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
-                  <div className="relative h-full flex items-center justify-center">
-                    <span className="text-2xl">{rel.icon}</span>
-                  </div>
+                  <img src={rel.image} alt={lang === 'ar' ? rel.title.ar : rel.title.en} className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
                 </div>
                 <div className="p-4">
                   <h4 className="font-semibold text-slate-900 text-sm leading-snug mb-2 line-clamp-2">{lang === 'ar' ? rel.title.ar : rel.title.en}</h4>

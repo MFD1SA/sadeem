@@ -11,6 +11,7 @@ export interface BlogArticle {
   excerpt: { ar: string; en: string };
   gradient: string;
   icon: string;
+  image: string;
   content: { ar: string[]; en: string[] };
 }
 
@@ -30,6 +31,7 @@ export const BLOG_ARTICLES: BlogArticle[] = [
     },
     gradient: 'linear-gradient(135deg, #1e3a5f 0%, #2d5a87 50%, #1a4068 100%)',
     icon: '⭐',
+    image: '/blog/negative-reviews-growth.jpg',
     content: {
       ar: [
         '## لماذا التقييمات السلبية ليست نهاية العالم',
@@ -94,6 +96,7 @@ export const BLOG_ARTICLES: BlogArticle[] = [
     },
     gradient: 'linear-gradient(135deg, #1a2744 0%, #2a3d66 50%, #1e2f55 100%)',
     icon: '🤖',
+    image: '/blog/ai-smart-replies.jpg',
     content: {
       ar: [
         '## ثورة الذكاء الاصطناعي في إدارة التقييمات',
@@ -148,6 +151,7 @@ export const BLOG_ARTICLES: BlogArticle[] = [
     },
     gradient: 'linear-gradient(135deg, #1a3350 0%, #2a4a6e 50%, #1d3755 100%)',
     icon: '💡',
+    image: '/blog/google-ratings.jpg',
     content: {
       ar: [
         '## لماذا تقييمات Google Business مهمة لنشاطك',
@@ -218,6 +222,7 @@ export const BLOG_ARTICLES: BlogArticle[] = [
     },
     gradient: 'linear-gradient(135deg, #162a40 0%, #264060 50%, #1b3048 100%)',
     icon: '🏢',
+    image: '/blog/branch-management.jpg',
     content: {
       ar: [
         '## التحدي: إدارة سمعة متعددة الفروع',
@@ -270,6 +275,7 @@ export const BLOG_ARTICLES: BlogArticle[] = [
     },
     gradient: 'linear-gradient(135deg, #1a2940 0%, #2c4462 50%, #1e3348 100%)',
     icon: '📊',
+    image: '/blog/review-analytics.jpg',
     content: {
       ar: [
         '## من التقييمات إلى الرؤى الاستراتيجية',
@@ -326,6 +332,7 @@ export const BLOG_ARTICLES: BlogArticle[] = [
     },
     gradient: 'linear-gradient(135deg, #152540 0%, #234060 50%, #1a3050 100%)',
     icon: '📱',
+    image: '/blog/qr-code-solutions.jpg',
     content: {
       ar: [
         '## لماذا رموز QR هي مستقبل جمع التقييمات',

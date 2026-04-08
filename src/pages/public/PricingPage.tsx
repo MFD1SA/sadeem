@@ -107,14 +107,12 @@ export default function PricingPage() {
       {/* ═══════════ DARK HERO ═══════════ */}
       <section className="relative overflow-hidden pt-36 md:pt-44 pb-20 md:pb-28" style={{ background: 'linear-gradient(160deg, #0B1120 0%, #162032 40%, #0F1A2E 100%)' }}>
         <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
-        <svg className="absolute top-[15%] right-[8%] w-20 h-20 text-blue-400/10 animate-pulse" viewBox="0 0 80 80" fill="none"><circle cx="40" cy="40" r="35" stroke="currentColor" strokeWidth="1.5" strokeDasharray="4 6" /></svg>
-        <svg className="absolute bottom-[20%] left-[6%] w-14 h-14 text-blue-400/10" viewBox="0 0 56 56" fill="none"><rect x="8" y="8" width="40" height="40" rx="8" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 5" /></svg>
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-500/5 rounded-full blur-[120px]" />
 
         <div className="relative max-w-4xl mx-auto px-6 text-center">
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight mb-6">{t.heroH1}</h1>
           <p className="text-base md:text-lg text-slate-400 leading-relaxed max-w-2xl mx-auto mb-10">{t.heroSub}</p>
-          <Link to="/register" className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold px-8 py-3.5 rounded-xl text-sm transition-all shadow-lg shadow-blue-600/20">
+          <Link to="/register" className="inline-flex items-center gap-2 bg-[#0F1A2E] hover:bg-[#1a2d45] text-white font-semibold px-8 py-3.5 rounded-xl text-sm transition-all shadow-lg shadow-black/10">
             {t.heroBtn}
             {isRtl ? <ArrowLeft size={16} /> : <ArrowRight size={16} />}
           </Link>
@@ -122,10 +120,10 @@ export default function PricingPage() {
       </section>
 
       {/* ═══════════ PLAN CARDS ═══════════ */}
-      <section className="py-20 px-6">
+      <section className="py-20 px-6 bg-[#FAFBFC]">
         <div className="max-w-[1200px] mx-auto grid sm:grid-cols-2 lg:grid-cols-4 gap-5 items-stretch">
           {t.plans.map((plan: any, i: number) => (
-            <div key={i} className={`relative rounded-2xl p-7 border flex flex-col transition-all hover:shadow-lg ${plan.popular ? 'border-blue-200 shadow-lg ring-1 ring-blue-100 bg-white' : 'border-slate-200 shadow-sm bg-white'}`}>
+            <div key={i} className={`relative rounded-2xl p-7 border flex flex-col transition-all hover:shadow-lg ${plan.popular ? 'border-[#0F1A2E]/20 shadow-xl ring-1 ring-[#0F1A2E]/10 bg-white scale-[1.02]' : 'border-slate-200 shadow-sm bg-white'}`}>
               {plan.popular && (
                 <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] font-bold text-white bg-[#0F1A2E] px-4 py-1 rounded-full">{t.mostPopular}</span>
               )}
@@ -161,7 +159,7 @@ export default function PricingPage() {
       </section>
 
       {/* ═══════════ COMPARISON TABLE ═══════════ */}
-      <section className="py-16 px-6 bg-white">
+      <section className="py-16 px-6 bg-white/80">
         <div className="max-w-5xl mx-auto">
           <h2 className="text-2xl font-bold text-slate-900 text-center mb-8">{t.compareTitle}</h2>
           <div className="overflow-x-auto rounded-xl border border-slate-100">
@@ -169,7 +167,7 @@ export default function PricingPage() {
               <thead>
                 <tr className="bg-slate-50">
                   <th className={`py-3.5 px-5 font-semibold text-slate-700 border-b border-slate-100 ${isAr ? 'text-right' : 'text-left'}`}>{t.compareFeatureCol}</th>
-                  {t.plans.map((p: any, i: number) => <th key={i} className={`py-3.5 px-4 font-semibold text-center border-b border-slate-100 ${p.popular ? 'text-blue-900 bg-blue-50/50' : 'text-slate-700'}`}>{isAr ? p.nameAr : p.name}</th>)}
+                  {t.plans.map((p: any, i: number) => <th key={i} className={`py-3.5 px-4 font-semibold text-center border-b border-slate-100 ${p.popular ? 'text-[#0F1A2E] bg-slate-50' : 'text-slate-700'}`}>{isAr ? p.nameAr : p.name}</th>)}
                 </tr>
               </thead>
               <tbody>
@@ -177,7 +175,7 @@ export default function PricingPage() {
                   <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'}>
                     <td className={`py-3 px-5 font-medium text-slate-700 ${isAr ? 'text-right' : 'text-left'}`}>{row.label}</td>
                     {row.vals.map((v: string, j: number) => (
-                      <td key={j} className={`py-3 px-4 text-center ${t.plans[j]?.popular ? 'bg-blue-50/30' : ''}`}>
+                      <td key={j} className={`py-3 px-4 text-center ${t.plans[j]?.popular ? 'bg-slate-50/50' : ''}`}>
                         {v === 'check' ? <CheckCircle2 size={16} className="text-blue-800 mx-auto" />
                           : v === 'x' ? <XIcon size={16} className="text-slate-300 mx-auto" />
                           : <span className="text-slate-700 font-medium">{v}</span>}

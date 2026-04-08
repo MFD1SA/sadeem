@@ -91,7 +91,7 @@ export default function PublicLayout({ children, lang, onToggleLang }: PublicLay
           <div className="hidden lg:flex items-center gap-3">
             <button onClick={onToggleLang} className={`px-3.5 py-1.5 text-xs font-medium rounded-lg transition-colors ${scrolled ? 'text-slate-500 border border-slate-200 hover:bg-slate-50' : 'text-white/70 border border-white/20 hover:bg-white/10'}`}>{t.langToggle}</button>
             <Link to="/login" className={`text-sm transition-colors px-3 py-1.5 ${scrolled ? 'text-slate-600 hover:text-slate-900' : 'text-white/80 hover:text-white'}`}>{t.loginBtn}</Link>
-            <Link to="/login" className="bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium px-5 py-2 rounded-lg transition-all shadow-sm">{t.ctaBtn}</Link>
+            <Link to="/login" className="bg-[#0F1A2E] hover:bg-[#1a2d45] text-white text-sm font-medium px-5 py-2 rounded-lg transition-all shadow-sm">{t.ctaBtn}</Link>
           </div>
 
           {/* Mobile toggle */}

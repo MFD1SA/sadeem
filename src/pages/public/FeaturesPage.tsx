@@ -78,14 +78,12 @@ export default function FeaturesPage() {
       {/* ═══════════ DARK HERO ═══════════ */}
       <section className="relative overflow-hidden pt-36 md:pt-44 pb-20 md:pb-28" style={{ background: 'linear-gradient(160deg, #0B1120 0%, #162032 40%, #0F1A2E 100%)' }}>
         <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
-        <svg className="absolute top-[15%] right-[8%] w-20 h-20 text-blue-400/10 animate-pulse" viewBox="0 0 80 80" fill="none"><circle cx="40" cy="40" r="35" stroke="currentColor" strokeWidth="1.5" strokeDasharray="4 6" /></svg>
-        <svg className="absolute bottom-[20%] left-[6%] w-14 h-14 text-blue-400/10" viewBox="0 0 56 56" fill="none"><rect x="8" y="8" width="40" height="40" rx="8" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 5" /></svg>
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-500/5 rounded-full blur-[120px]" />
 
         <div className="relative max-w-4xl mx-auto px-6 text-center">
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight mb-6">{t.heroH1}</h1>
           <p className="text-base md:text-lg text-slate-400 leading-relaxed max-w-2xl mx-auto mb-10">{t.heroSub}</p>
-          <Link to="/register" className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold px-8 py-3.5 rounded-xl text-sm transition-all shadow-lg shadow-blue-600/20">
+          <Link to="/register" className="inline-flex items-center gap-2 bg-[#0F1A2E] hover:bg-[#1a2d45] text-white font-semibold px-8 py-3.5 rounded-xl text-sm transition-all shadow-lg shadow-black/10">
             {t.heroBtn}
             {isRtl ? <ArrowLeft size={16} /> : <ArrowRight size={16} />}
           </Link>
@@ -93,7 +91,7 @@ export default function FeaturesPage() {
       </section>
 
       {/* ═══════════ FEATURES GRID ═══════════ */}
-      <section className="py-20 px-6">
+      <section className="py-20 px-6 bg-[#FAFBFC]">
         <div className="max-w-[1200px] mx-auto grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {t.features.map((f: any, i: number) => {
             const Icon = ICONS[f.icon] || Star;
@@ -118,7 +116,7 @@ export default function FeaturesPage() {
             <h2 className="text-2xl md:text-3xl font-bold text-white mb-3">{t.ctaTitle}</h2>
             <p className="text-sm text-slate-400 mb-8">{t.ctaDesc}</p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link to="/register" className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold px-8 py-3.5 rounded-xl text-sm transition-all shadow-lg shadow-blue-600/20">
+              <Link to="/register" className="inline-flex items-center gap-2 bg-white text-[#0F1A2E] hover:bg-white/90 font-semibold px-8 py-3.5 rounded-xl text-sm transition-all shadow-lg">
                 {t.ctaBtn}
                 {isRtl ? <ArrowLeft size={16} /> : <ArrowRight size={16} />}
               </Link>
