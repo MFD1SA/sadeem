@@ -357,12 +357,6 @@ export default function HomePage() {
         <svg className="absolute top-[30%] left-[15%] w-6 h-6 text-white/10" viewBox="0 0 24 24" fill="currentColor"><polygon points="12,2 15,9 22,9 16,14 18,22 12,17 6,22 8,14 2,9 9,9" /></svg>
 
         <div className="relative z-10 max-w-[900px] mx-auto px-6 text-center">
-          {/* Tag */}
-          <div className="inline-flex items-center gap-2.5 px-5 py-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm mb-10">
-            <span className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse" />
-            <span className="text-[11px] font-medium text-white/60 tracking-wide">{t.heroTag}</span>
-          </div>
-
           {/* Main headline — two lines with animated wave SVG between */}
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-[1.15] tracking-tight mb-6">
             {t.heroH1Line1}

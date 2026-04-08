@@ -119,7 +119,7 @@ export function AppRouter() {
       <Route path="/story"   element={<Navigate to="/" replace />} />
       <Route path="/privacy" element={<PrivacyPage />} />
       <Route path="/terms"   element={<TermsPage />} />
-      <Route path="/features"            element={<FeaturesPage />} />
+      <Route path="/features"            element={<PublicFeaturesPage />} />
       <Route path="/reviews-management"  element={<ReviewsManagementPage />} />
       <Route path="/ai-replies"          element={<AiRepliesPage />} />
       <Route path="/analytics-page"      element={<AnalyticsMarketingPage />} />
