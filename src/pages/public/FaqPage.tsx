@@ -1,20 +1,15 @@
 // ============================================================================
 // SENDA — FAQ Page (الأسئلة الشائعة)
-// Light theme · Teal accent · Premium · Elegant
 // ============================================================================
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import PublicLayout from '@/layouts/PublicLayout';
 
 type Lang = 'ar' | 'en';
 
 const T: Record<Lang, Record<string, any>> = {
   ar: {
-    dir: 'rtl',
-    langToggle: 'EN',
-    nav: ['من نحن', 'المميزات', 'الباقات', 'الأسئلة الشائعة', 'المدونة', 'تواصل معنا'],
-    navPaths: ['/about', '/features', '/pricing', '/faq', '/blog', '/contact-us'],
-    loginBtn: 'دخول',
     heroTag: 'الأسئلة الشائعة',
     heroH1: 'إجابات على أهم تساؤلاتك',
     heroSub: 'لم تجد إجابتك؟ تواصل معنا مباشرة وسنسعد بمساعدتك',
@@ -32,14 +27,8 @@ const T: Record<Lang, Record<string, any>> = {
     ],
     ctaTitle: 'لم تجد إجابتك؟',
     ctaBtn: 'تواصل معنا',
-    footer: '© 2025 سيندا — جميع الحقوق محفوظة',
   },
   en: {
-    dir: 'ltr',
-    langToggle: 'ع',
-    nav: ['About', 'Features', 'Pricing', 'FAQ', 'Blog', 'Contact'],
-    navPaths: ['/about', '/features', '/pricing', '/faq', '/blog', '/contact-us'],
-    loginBtn: 'Login',
     heroTag: 'FAQ',
     heroH1: 'Answers to Your Most Common Questions',
     heroSub: 'Can\'t find your answer? Contact us directly and we\'ll be happy to help',
@@ -57,7 +46,6 @@ const T: Record<Lang, Record<string, any>> = {
     ],
     ctaTitle: 'Can\'t find your answer?',
     ctaBtn: 'Contact Us',
-    footer: '© 2025 SENDA — All rights reserved',
   },
 };
 
@@ -67,23 +55,7 @@ export default function FaqPage() {
   const t = T[lang];
 
   return (
-    <div dir={t.dir} className="min-h-screen bg-white text-slate-800 font-[IBM_Plex_Sans_Arabic,sans-serif]">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-slate-100">
-        <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
-          <Link to="/" className="flex items-center gap-2"><img src="/senda-logo.png" alt="SENDA" className="h-8" /></Link>
-          <nav className="hidden md:flex items-center gap-6 text-sm text-slate-600">
-            {t.nav.map((label: string, i: number) => (
-              <Link key={i} to={t.navPaths[i]} className="hover:text-teal-600 transition-colors">{label}</Link>
-            ))}
-          </nav>
-          <div className="flex items-center gap-3">
-            <button onClick={() => setLang(l => l === 'ar' ? 'en' : 'ar')} className="text-xs px-2 py-1 rounded border border-slate-200 text-slate-500 hover:text-teal-600">{t.langToggle}</button>
-            <Link to="/login" className="text-sm font-medium text-teal-600 hover:text-teal-700">{t.loginBtn}</Link>
-          </div>
-        </div>
-      </header>
-
+    <PublicLayout lang={lang} onToggleLang={() => setLang(l => l === 'ar' ? 'en' : 'ar')}>
       {/* Hero */}
       <section className="py-20 px-6">
         <div className="max-w-3xl mx-auto text-center">
@@ -100,18 +72,11 @@ export default function FaqPage() {
             const isOpen = openIdx === i;
             return (
               <div key={i} className={`rounded-xl border transition-colors ${isOpen ? 'border-teal-200 bg-teal-50/30' : 'border-slate-100 bg-white'}`}>
-                <button
-                  onClick={() => setOpenIdx(isOpen ? null : i)}
-                  className="w-full flex items-center justify-between p-5 text-start"
-                >
+                <button onClick={() => setOpenIdx(isOpen ? null : i)} className="w-full flex items-center justify-between p-5 text-start">
                   <span className="font-semibold text-slate-900 text-sm">{faq.q}</span>
                   {isOpen ? <ChevronUp size={18} className="text-teal-600 flex-shrink-0" /> : <ChevronDown size={18} className="text-slate-400 flex-shrink-0" />}
                 </button>
-                {isOpen && (
-                  <div className="px-5 pb-5">
-                    <p className="text-sm text-slate-600 leading-relaxed">{faq.a}</p>
-                  </div>
-                )}
+                {isOpen && <div className="px-5 pb-5"><p className="text-sm text-slate-600 leading-relaxed">{faq.a}</p></div>}
               </div>
             );
           })}
@@ -119,16 +84,12 @@ export default function FaqPage() {
       </section>
 
       {/* CTA */}
-      <section className="py-16 px-6 bg-slate-50">
+      <section className="py-16 px-6 bg-white">
         <div className="max-w-2xl mx-auto text-center">
           <h2 className="text-2xl font-bold text-slate-900 mb-4">{t.ctaTitle}</h2>
-          <Link to="/contact-us" className="inline-block bg-teal-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-teal-700 transition-colors">
-            {t.ctaBtn}
-          </Link>
+          <Link to="/contact-us" className="inline-block bg-teal-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-teal-700 transition-colors">{t.ctaBtn}</Link>
         </div>
       </section>
-
-      <footer className="border-t border-slate-100 py-8 text-center text-xs text-slate-400">{t.footer}</footer>
-    </div>
+    </PublicLayout>
   );
 }

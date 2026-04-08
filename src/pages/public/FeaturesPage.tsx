@@ -1,6 +1,5 @@
 // ============================================================================
 // SENDA — Features Page (المميزات)
-// Light theme · Teal accent · Premium · Elegant
 // ============================================================================
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -8,6 +7,7 @@ import {
   Brain, QrCode, BarChart3, Building2, Users, FileText,
   MessageSquare, BellRing, ListChecks, CreditCard, Star, Shield,
 } from 'lucide-react';
+import PublicLayout from '@/layouts/PublicLayout';
 
 type Lang = 'ar' | 'en';
 
@@ -15,11 +15,6 @@ const ICONS: Record<string, any> = { Brain, QrCode, BarChart3, Building2, Users,
 
 const T: Record<Lang, Record<string, any>> = {
   ar: {
-    dir: 'rtl',
-    langToggle: 'EN',
-    nav: ['من نحن', 'المميزات', 'الباقات', 'الأسئلة الشائعة', 'المدونة', 'تواصل معنا'],
-    navPaths: ['/about', '/features', '/pricing', '/faq', '/blog', '/contact-us'],
-    loginBtn: 'دخول',
     heroTag: 'المميزات',
     heroH1: 'كل ما تحتاجه لإدارة سمعتك الرقمية',
     heroSub: 'مجموعة متكاملة من الأدوات الذكية المصممة لتبسيط إدارة التقييمات وتعزيز حضورك الرقمي',
@@ -40,14 +35,8 @@ const T: Record<Lang, Record<string, any>> = {
     ctaTitle: 'جرّب جميع المميزات مجانًا',
     ctaDesc: 'ابدأ فترتك التجريبية المجانية الآن بدون بطاقة ائتمان',
     ctaBtn: 'ابدأ مجانًا',
-    footer: '© 2025 سيندا — جميع الحقوق محفوظة',
   },
   en: {
-    dir: 'ltr',
-    langToggle: 'ع',
-    nav: ['About', 'Features', 'Pricing', 'FAQ', 'Blog', 'Contact'],
-    navPaths: ['/about', '/features', '/pricing', '/faq', '/blog', '/contact-us'],
-    loginBtn: 'Login',
     heroTag: 'Features',
     heroH1: 'Everything You Need to Manage Your Reputation',
     heroSub: 'A comprehensive suite of smart tools designed to simplify review management and enhance your digital presence',
@@ -68,7 +57,6 @@ const T: Record<Lang, Record<string, any>> = {
     ctaTitle: 'Try All Features for Free',
     ctaDesc: 'Start your free trial now — no credit card required',
     ctaBtn: 'Start Free',
-    footer: '© 2025 SENDA — All rights reserved',
   },
 };
 
@@ -77,23 +65,7 @@ export default function FeaturesPage() {
   const t = T[lang];
 
   return (
-    <div dir={t.dir} className="min-h-screen bg-white text-slate-800 font-[IBM_Plex_Sans_Arabic,sans-serif]">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-slate-100">
-        <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
-          <Link to="/" className="flex items-center gap-2"><img src="/senda-logo.png" alt="SENDA" className="h-8" /></Link>
-          <nav className="hidden md:flex items-center gap-6 text-sm text-slate-600">
-            {t.nav.map((label: string, i: number) => (
-              <Link key={i} to={t.navPaths[i]} className="hover:text-teal-600 transition-colors">{label}</Link>
-            ))}
-          </nav>
-          <div className="flex items-center gap-3">
-            <button onClick={() => setLang(l => l === 'ar' ? 'en' : 'ar')} className="text-xs px-2 py-1 rounded border border-slate-200 text-slate-500 hover:text-teal-600">{t.langToggle}</button>
-            <Link to="/login" className="text-sm font-medium text-teal-600 hover:text-teal-700">{t.loginBtn}</Link>
-          </div>
-        </div>
-      </header>
-
+    <PublicLayout lang={lang} onToggleLang={() => setLang(l => l === 'ar' ? 'en' : 'ar')}>
       {/* Hero */}
       <section className="py-20 px-6">
         <div className="max-w-3xl mx-auto text-center">
@@ -105,14 +77,12 @@ export default function FeaturesPage() {
 
       {/* Features Grid */}
       <section className="pb-20 px-6">
-        <div className="max-w-6xl mx-auto grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="max-w-[1200px] mx-auto grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {t.features.map((f: any, i: number) => {
             const Icon = ICONS[f.icon] || Star;
             return (
-              <div key={i} className="group p-6 rounded-2xl border border-slate-100 hover:border-teal-200 hover:shadow-sm transition-all">
-                <div className="w-11 h-11 rounded-xl bg-teal-50 flex items-center justify-center mb-4 group-hover:bg-teal-100 transition-colors">
-                  <Icon size={20} className="text-teal-600" />
-                </div>
+              <div key={i} className="group p-6 rounded-2xl border border-slate-100 bg-white hover:shadow-md hover:border-slate-200 transition-all">
+                <Icon size={22} className="text-teal-600 mb-4" />
                 <h3 className="font-bold text-slate-900 mb-2">{f.title}</h3>
                 <p className="text-sm text-slate-500 leading-relaxed">{f.desc}</p>
               </div>
@@ -122,7 +92,7 @@ export default function FeaturesPage() {
       </section>
 
       {/* CTA */}
-      <section className="py-16 px-6 bg-slate-50">
+      <section className="py-16 px-6 bg-white">
         <div className="max-w-2xl mx-auto text-center">
           <h2 className="text-2xl font-bold text-slate-900 mb-2">{t.ctaTitle}</h2>
           <p className="text-sm text-slate-500 mb-6">{t.ctaDesc}</p>
@@ -131,8 +101,6 @@ export default function FeaturesPage() {
           </Link>
         </div>
       </section>
-
-      <footer className="border-t border-slate-100 py-8 text-center text-xs text-slate-400">{t.footer}</footer>
-    </div>
+    </PublicLayout>
   );
 }

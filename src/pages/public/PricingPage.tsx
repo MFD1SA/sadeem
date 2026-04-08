@@ -1,20 +1,15 @@
 // ============================================================================
 // SENDA — Pricing Page (الباقات)
-// Light theme · Teal accent · Premium · Elegant
 // ============================================================================
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { CheckCircle2, X as XIcon } from 'lucide-react';
+import PublicLayout from '@/layouts/PublicLayout';
 
 type Lang = 'ar' | 'en';
 
 const T: Record<Lang, Record<string, any>> = {
   ar: {
-    dir: 'rtl',
-    langToggle: 'EN',
-    nav: ['من نحن', 'المميزات', 'الباقات', 'الأسئلة الشائعة', 'المدونة', 'تواصل معنا'],
-    navPaths: ['/about', '/features', '/pricing', '/faq', '/blog', '/contact-us'],
-    loginBtn: 'دخول',
     heroTag: 'الخطط والأسعار',
     heroH1: 'ابدأ بالخطة المناسبة لعملك',
     heroSub: 'جميع الخطط تشمل فترة تجريبية مجانية — لا بطاقة ائتمان مطلوبة',
@@ -52,14 +47,8 @@ const T: Record<Lang, Record<string, any>> = {
       { label: 'التخصيص', vals: ['x', 'x', 'x', 'check'] },
       { label: 'الحلول الخاصة', vals: ['x', 'x', 'x', 'check'] },
     ],
-    footer: '© 2025 سيندا — جميع الحقوق محفوظة',
   },
   en: {
-    dir: 'ltr',
-    langToggle: 'ع',
-    nav: ['About', 'Features', 'Pricing', 'FAQ', 'Blog', 'Contact'],
-    navPaths: ['/about', '/features', '/pricing', '/faq', '/blog', '/contact-us'],
-    loginBtn: 'Login',
     heroTag: 'Plans & Pricing',
     heroH1: 'Start with the Right Plan for Your Business',
     heroSub: 'All plans include a free trial — no credit card required',
@@ -97,7 +86,6 @@ const T: Record<Lang, Record<string, any>> = {
       { label: 'Customization', vals: ['x', 'x', 'x', 'check'] },
       { label: 'Custom Solutions', vals: ['x', 'x', 'x', 'check'] },
     ],
-    footer: '© 2025 SENDA — All rights reserved',
   },
 };
 
@@ -109,23 +97,7 @@ export default function PricingPage() {
   const isAr = lang === 'ar';
 
   return (
-    <div dir={t.dir} className="min-h-screen bg-white text-slate-800 font-[IBM_Plex_Sans_Arabic,sans-serif]">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-slate-100">
-        <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
-          <Link to="/" className="flex items-center gap-2"><img src="/senda-logo.png" alt="SENDA" className="h-8" /></Link>
-          <nav className="hidden md:flex items-center gap-6 text-sm text-slate-600">
-            {t.nav.map((label: string, i: number) => (
-              <Link key={i} to={t.navPaths[i]} className="hover:text-teal-600 transition-colors">{label}</Link>
-            ))}
-          </nav>
-          <div className="flex items-center gap-3">
-            <button onClick={() => setLang(l => l === 'ar' ? 'en' : 'ar')} className="text-xs px-2 py-1 rounded border border-slate-200 text-slate-500 hover:text-teal-600">{t.langToggle}</button>
-            <Link to="/login" className="text-sm font-medium text-teal-600 hover:text-teal-700">{t.loginBtn}</Link>
-          </div>
-        </div>
-      </header>
-
+    <PublicLayout lang={lang} onToggleLang={() => setLang(l => l === 'ar' ? 'en' : 'ar')}>
       {/* Hero */}
       <section className="py-20 px-6">
         <div className="max-w-3xl mx-auto text-center">
@@ -137,35 +109,36 @@ export default function PricingPage() {
 
       {/* Plan Cards */}
       <section className="pb-16 px-6">
-        <div className="max-w-6xl mx-auto grid sm:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
+        <div className="max-w-[1200px] mx-auto grid sm:grid-cols-2 lg:grid-cols-4 gap-5 items-stretch">
           {t.plans.map((plan: any, i: number) => (
-            <div key={i} className={`relative rounded-2xl p-6 border flex flex-col transition-all ${plan.popular ? 'border-teal-300 shadow-lg shadow-teal-100/50' : 'border-slate-100 hover:border-teal-200'}`}>
+            <div key={i} className={`relative rounded-2xl p-7 border flex flex-col transition-all hover:shadow-lg ${plan.popular ? 'border-teal-200 shadow-md ring-1 ring-teal-100 bg-white' : 'border-slate-100 bg-white'}`}>
               {plan.popular && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[11px] font-bold text-white bg-teal-600 px-4 py-1 rounded-full">{t.mostPopular}</span>
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] font-bold text-white bg-teal-600 px-4 py-1 rounded-full">{t.mostPopular}</span>
               )}
-              <div className="text-center mb-5 min-h-[100px]">
+              <div className="text-center mb-6 min-h-[100px]">
                 <p className="text-xs text-slate-400 mb-1">{plan.name}</p>
                 <h3 className="text-lg font-bold text-slate-900">{isAr ? plan.nameAr : plan.name}</h3>
                 {plan.price ? (
                   <div className="mt-2">
                     <span className="text-3xl font-extrabold text-slate-900">{plan.price}</span>
-                    <span className="text-sm text-slate-400 mr-1 ml-1">{t.mo}</span>
+                    <span className="text-sm text-slate-400 mx-1">{t.mo}</span>
                   </div>
                 ) : (
                   <p className="text-sm text-teal-600 font-semibold mt-2">{t.contactSales}</p>
                 )}
               </div>
-              <ul className="space-y-2 mb-6 flex-1">
+              <div className="h-px bg-slate-100 mb-5" />
+              <ul className="space-y-2.5 mb-8 flex-1">
                 {plan.features.map((f: string, j: number) => (
-                  <li key={j} className="flex items-start gap-2 text-sm text-slate-600">
-                    <CheckCircle2 size={15} className="text-teal-500 flex-shrink-0 mt-0.5" />
+                  <li key={j} className="flex items-start gap-2.5 text-sm text-slate-600">
+                    <CheckCircle2 size={14} className="text-teal-500 flex-shrink-0 mt-0.5" />
                     <span>{f}</span>
                   </li>
                 ))}
               </ul>
               <Link
                 to={plan.price ? '/register' : '/contact-us'}
-                className={`block text-center py-3 rounded-xl text-sm font-semibold transition-colors mt-auto ${plan.popular ? 'bg-teal-600 text-white hover:bg-teal-700' : 'border border-teal-200 text-teal-600 hover:bg-teal-50'}`}
+                className={`block text-center py-3 rounded-xl text-sm font-semibold transition-colors mt-auto ${plan.popular ? 'bg-teal-600 text-white hover:bg-teal-700' : 'border border-slate-200 text-slate-700 hover:bg-slate-50'}`}
               >
                 {plan.popular ? t.ctaHighlight : plan.price ? t.ctaDefault : t.contactSales}
               </Link>
@@ -175,23 +148,23 @@ export default function PricingPage() {
       </section>
 
       {/* Comparison Table */}
-      <section className="py-16 px-6 bg-slate-50">
+      <section className="py-16 px-6 bg-white">
         <div className="max-w-5xl mx-auto">
           <h2 className="text-2xl font-bold text-slate-900 text-center mb-8">{t.compareTitle}</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm border-collapse">
+          <div className="overflow-x-auto rounded-xl border border-slate-100">
+            <table className="w-full text-sm border-collapse min-w-[700px]">
               <thead>
-                <tr className="border-b-2 border-slate-200">
-                  <th className="text-start py-3 px-4 font-semibold text-slate-600">{t.compareFeatureCol}</th>
-                  {PLAN_NAMES.map(n => <th key={n} className="py-3 px-4 font-semibold text-slate-700 text-center">{n}</th>)}
+                <tr className="bg-slate-50">
+                  <th className={`py-3.5 px-5 font-semibold text-slate-700 border-b border-slate-100 ${isAr ? 'text-right' : 'text-left'}`}>{t.compareFeatureCol}</th>
+                  {PLAN_NAMES.map((n, i) => <th key={n} className={`py-3.5 px-4 font-semibold text-center border-b border-slate-100 ${t.plans[i]?.popular ? 'text-teal-700 bg-teal-50/50' : 'text-slate-700'}`}>{n}</th>)}
                 </tr>
               </thead>
               <tbody>
                 {t.compareRows.map((row: any, i: number) => (
-                  <tr key={i} className={i % 2 === 0 ? 'bg-white' : ''}>
-                    <td className="py-3 px-4 text-slate-700 font-medium">{row.label}</td>
+                  <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'}>
+                    <td className={`py-3 px-5 font-medium text-slate-700 ${isAr ? 'text-right' : 'text-left'}`}>{row.label}</td>
                     {row.vals.map((v: string, j: number) => (
-                      <td key={j} className="py-3 px-4 text-center">
+                      <td key={j} className={`py-3 px-4 text-center ${t.plans[j]?.popular ? 'bg-teal-50/30' : ''}`}>
                         {v === 'check' ? <CheckCircle2 size={16} className="text-teal-500 mx-auto" />
                           : v === 'x' ? <XIcon size={16} className="text-slate-300 mx-auto" />
                           : <span className="text-slate-700 font-medium">{v}</span>}
@@ -204,8 +177,6 @@ export default function PricingPage() {
           </div>
         </div>
       </section>
-
-      <footer className="border-t border-slate-100 py-8 text-center text-xs text-slate-400">{t.footer}</footer>
-    </div>
+    </PublicLayout>
   );
 }
