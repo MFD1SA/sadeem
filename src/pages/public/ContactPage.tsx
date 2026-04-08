@@ -1,7 +1,7 @@
 // ============================================================================
 // SENDA — Contact Page (تواصل معنا)
 // ============================================================================
-import { useState, type FormEvent } from 'react';
+import { useState, useEffect, type FormEvent } from 'react';
 import { Send, Loader2, CheckCircle2, MapPin, Clock, MessageSquare, ArrowDown } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import PublicLayout from '@/layouts/PublicLayout';
@@ -62,6 +62,8 @@ const ICONS: Record<string, any> = { MapPin, Clock, MessageSquare };
 export default function ContactPage() {
   const [lang, setLang] = useState<Lang>('ar');
   const t = T[lang];
+
+  useEffect(() => { document.title = lang === 'ar' ? 'سيندا | SENDA — تواصل معنا' : 'SENDA | سيندا — Contact Us'; }, [lang]);
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');

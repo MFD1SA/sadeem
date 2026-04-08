@@ -76,7 +76,7 @@ const fmt = (v: number, unlimitedLabel: string) =>
 export default function Billing() {
   const { subscription, plan: currentPlan, trial } = usePlan();
   const { lang, t } = useLanguage();
-  useEffect(() => { document.title = lang === 'ar' ? 'سيندا — الفوترة' : 'SENDA — Billing'; }, [lang]);
+  useEffect(() => { document.title = lang === 'ar' ? 'سيندا | SENDA — الفوترة' : 'SENDA | سيندا — Billing'; }, [lang]);
   const isAr = lang === 'ar';
 
   const [plans, setPlans] = useState<DbPlan[]>([]);

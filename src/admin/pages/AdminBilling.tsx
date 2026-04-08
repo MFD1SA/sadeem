@@ -31,7 +31,7 @@ const INV_STATUS: Record<string, { ar: string; color: string }> = {
 export default function AdminBilling() {
   const { hasPermission } = useAdminAuth();
 
-  useEffect(() => { document.title = 'سيندا — الفوترة'; }, []);
+  useEffect(() => { document.title = 'سيندا | SENDA — الفوترة'; }, []);
 
   const [overview, setOverview] = useState<BillingOverview | null>(null);
   const [invoices, setInvoices] = useState<InvoiceListItem[]>([]);

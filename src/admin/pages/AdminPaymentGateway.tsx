@@ -17,7 +17,7 @@ const EVT_STATUS: Record<string, { ar: string; color: string }> = {
 };
 
 export default function AdminPaymentGateway() {
-  useEffect(() => { document.title = 'سيندا — بوابة الدفع'; }, []);
+  useEffect(() => { document.title = 'سيندا | SENDA — بوابة الدفع'; }, []);
 
   const [overview, setOverview] = useState<GatewayOverview | null>(null);
   const [events, setEvents] = useState<PaymentEventItem[]>([]);

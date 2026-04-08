@@ -1,7 +1,7 @@
 // ============================================================================
 // SENDA — Terms of Service (شروط الاستخدام)
 // ============================================================================
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import PublicLayout from '@/layouts/PublicLayout';
 
 type Lang = 'ar' | 'en';
@@ -42,6 +42,8 @@ const T: Record<Lang, Record<string, any>> = {
 export default function TermsPage() {
   const [lang, setLang] = useState<Lang>('ar');
   const t = T[lang];
+
+  useEffect(() => { document.title = lang === 'ar' ? 'سيندا | SENDA — شروط الاستخدام' : 'SENDA | سيندا — Terms of Service'; }, [lang]);
 
   return (
     <PublicLayout lang={lang} onToggleLang={() => setLang(l => l === 'ar' ? 'en' : 'ar')}>

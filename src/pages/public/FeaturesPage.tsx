@@ -1,7 +1,7 @@
 // ============================================================================
 // SENDA — Features Page (المميزات) — Premium Design
 // ============================================================================
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Brain, QrCode, BarChart3, Building2, Users, FileText,
@@ -69,6 +69,8 @@ export default function FeaturesPage() {
   const [lang, setLang] = useState<Lang>('ar');
   const t = T[lang];
   const isRtl = lang === 'ar';
+
+  useEffect(() => { document.title = lang === 'ar' ? 'سيندا | SENDA — المميزات' : 'SENDA | سيندا — Features'; }, [lang]);
 
   return (
     <PublicLayout lang={lang} onToggleLang={() => setLang(l => l === 'ar' ? 'en' : 'ar')}>

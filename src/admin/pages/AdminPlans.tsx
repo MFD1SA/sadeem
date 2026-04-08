@@ -9,7 +9,7 @@ import { adminSupabase } from '../services/adminSupabase';
 import type { DbPlan, DbPlanLimits } from '@/services/plans';
 
 export default function AdminPlans() {
-  useEffect(() => { document.title = 'سيندا — الباقات'; }, []);
+  useEffect(() => { document.title = 'سيندا | SENDA — الباقات'; }, []);
 
   const [plans, setPlans] = useState<DbPlan[]>([]);
   const [limits, setLimits] = useState<Record<string, DbPlanLimits>>({});

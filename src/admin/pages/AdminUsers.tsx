@@ -21,7 +21,7 @@ import { AdminSelect } from '../components/AdminSelect';
 export default function AdminUsers() {
   const { user: currentUser, hasPermission } = useAdminAuth();
 
-  useEffect(() => { document.title = 'سيندا — إدارة المستخدمين'; }, []);
+  useEffect(() => { document.title = 'سيندا | SENDA — إدارة المستخدمين'; }, []);
 
   const [users, setUsers] = useState<AdminUserWithRole[]>([]);
   const [roles, setRoles] = useState<AdminRole[]>([]);

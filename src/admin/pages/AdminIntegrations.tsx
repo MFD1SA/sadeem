@@ -50,7 +50,7 @@ const EMPTY_FORM: {
 };
 
 export default function AdminIntegrations() {
-  useEffect(() => { document.title = 'سيندا — التكاملات'; }, []);
+  useEffect(() => { document.title = 'سيندا | SENDA — التكاملات'; }, []);
 
   const [integrations, setIntegrations] = useState<AdminIntegration[]>([]);
   const [loading, setLoading] = useState(true);

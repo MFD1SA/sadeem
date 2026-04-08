@@ -22,7 +22,7 @@ export default function AdminDashboard() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    document.title = 'سيندا — لوحة الإدارة';
+    document.title = 'سيندا | SENDA — لوحة الإدارة';
     loadStats();
   }, []);
 

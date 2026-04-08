@@ -28,7 +28,7 @@ export default function AdminTickets() {
   const { hasPermission } = useAdminAuth();
   const canManage = hasPermission(PERMISSIONS.SUPPORT_MANAGE);
 
-  useEffect(() => { document.title = 'سيندا — تذاكر الدعم'; }, []);
+  useEffect(() => { document.title = 'سيندا | SENDA — تذاكر الدعم'; }, []);
 
   const [tickets, setTickets] = useState<TicketItem[]>([]);
   const [total, setTotal] = useState(0);

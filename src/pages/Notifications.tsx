@@ -12,7 +12,7 @@ const PAGE_SIZE = 20;
 
 export default function Notifications() {
   const { t, lang } = useLanguage();
-  useEffect(() => { document.title = lang === 'ar' ? 'سيندا — الإشعارات' : 'SENDA — Notifications'; }, [lang]);
+  useEffect(() => { document.title = lang === 'ar' ? 'سيندا | SENDA — الإشعارات' : 'SENDA | سيندا — Notifications'; }, [lang]);
   const { organization } = useAuth();
   const [items, setItems] = useState<DbNotification[]>([]);
   const [loading, setLoading] = useState(true);

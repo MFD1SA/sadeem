@@ -44,7 +44,7 @@ const PRIORITY_CONFIG = {
 
 export default function Support() {
   const { lang, t } = useLanguage();
-  useEffect(() => { document.title = lang === 'ar' ? 'سيندا — الدعم' : 'SENDA — Support'; }, [lang]);
+  useEffect(() => { document.title = lang === 'ar' ? 'سيندا | SENDA — الدعم' : 'SENDA | سيندا — Support'; }, [lang]);
   const { organization, user, profile } = useAuth();
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);

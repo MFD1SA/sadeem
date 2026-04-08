@@ -12,7 +12,7 @@ import { Palette, Shield, Globe, Bell, Server, Save, Upload, Check, Search, Cred
 import { AdminSelect } from '../components/AdminSelect';
 
 export default function AdminSettings() {
-  useEffect(() => { document.title = 'سيندا — الإعدادات'; }, []);
+  useEffect(() => { document.title = 'سيندا | SENDA — الإعدادات'; }, []);
 
   const [activeSection, setActiveSection] = useState('branding');
   const [msg, setMsg] = useState<{ text: string; type: 'success' | 'error' } | null>(null);

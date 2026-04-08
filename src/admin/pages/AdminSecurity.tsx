@@ -11,7 +11,7 @@ import { Lock, Shield, Eye, EyeOff, Save, Smartphone, X, CheckCircle, AlertTrian
 export default function AdminSecurity() {
   const { user, changePassword, refreshUser } = useAdminAuth();
 
-  useEffect(() => { document.title = 'سيندا — الأمان'; }, []);
+  useEffect(() => { document.title = 'سيندا | SENDA — الأمان'; }, []);
 
   // Password state
   const [currentPassword, setCurrentPassword] = useState('');

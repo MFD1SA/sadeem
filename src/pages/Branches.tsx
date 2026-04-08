@@ -15,7 +15,7 @@ let _cache: DbBranch[] | null = null;
 
 export default function Branches() {
   const { t, lang } = useLanguage();
-  useEffect(() => { document.title = lang === 'ar' ? 'سيندا — الفروع' : 'SENDA — Branches'; }, [lang]);
+  useEffect(() => { document.title = lang === 'ar' ? 'سيندا | SENDA — الفروع' : 'SENDA | سيندا — Branches'; }, [lang]);
   const { organization, isLoading: authLoading } = useAuth();
   const {
     canAdd: canAddBranch,

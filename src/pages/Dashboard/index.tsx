@@ -21,7 +21,7 @@ export default function Dashboard() {
   const { organization, profile, isLoading: authLoading } = useAuth();
 
   useEffect(() => {
-    document.title = lang === 'ar' ? 'سيندا — لوحة التحكم' : 'SENDA — Dashboard';
+    document.title = lang === 'ar' ? 'سيندا | SENDA — لوحة التحكم' : 'SENDA | سيندا — Dashboard';
   }, [lang]);
   const { subscription, trial } = usePlan();
 

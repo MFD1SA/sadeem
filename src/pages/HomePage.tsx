@@ -144,7 +144,7 @@ export default function HomePage() {
   const isRtl = lang === 'ar';
 
   useEffect(() => {
-    document.title = lang === 'ar' ? 'سيندا — إدارة تقييمات جوجل بذكاء اصطناعي' : 'SENDA — AI Google Review Management';
+    document.title = lang === 'ar' ? 'سيندا | SENDA' : 'SENDA | سيندا';
     document.documentElement.dir = t.dir;
     document.documentElement.lang = lang;
   }, [lang, t.dir]);

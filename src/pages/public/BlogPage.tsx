@@ -1,7 +1,7 @@
 // ============================================================================
 // SENDA — Blog Page (المدونة) — Premium Design
 // ============================================================================
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Clock, ArrowLeft, ArrowRight } from 'lucide-react';
 import PublicLayout from '@/layouts/PublicLayout';
@@ -49,6 +49,8 @@ export default function BlogPage() {
   const [lang, setLang] = useState<Lang>('ar');
   const t = T[lang];
   const isRtl = lang === 'ar';
+
+  useEffect(() => { document.title = lang === 'ar' ? 'سيندا | SENDA — المدونة' : 'SENDA | سيندا — Blog'; }, [lang]);
 
   return (
     <PublicLayout lang={lang} onToggleLang={() => setLang(l => l === 'ar' ? 'en' : 'ar')}>

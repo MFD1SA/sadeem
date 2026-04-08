@@ -11,7 +11,7 @@ export default function AdminProfile() {
   const { user, updateProfile, refreshUser } = useAdminAuth();
   const fileRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => { document.title = 'سيندا — الملف الشخصي'; }, []);
+  useEffect(() => { document.title = 'سيندا | SENDA — الملف الشخصي'; }, []);
 
   const [nameAr, setNameAr] = useState(user?.full_name_ar || '');
   const [nameEn, setNameEn] = useState(user?.full_name_en || '');

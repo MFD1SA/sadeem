@@ -32,7 +32,7 @@ export default function AdminRoles() {
   const { hasPermission, user: currentUser } = useAdminAuth();
   const canEdit = hasPermission(PERMISSIONS.ROLES_UPDATE);
 
-  useEffect(() => { document.title = 'سيندا — الأدوار والصلاحيات'; }, []);
+  useEffect(() => { document.title = 'سيندا | SENDA — الأدوار والصلاحيات'; }, []);
 
   const [roles, setRoles] = useState<AdminRole[]>([]);
   const [userCounts, setUserCounts] = useState<Record<string, number>>({});

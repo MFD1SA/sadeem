@@ -96,7 +96,7 @@ function StepConnector({ done }: { done: boolean }) {
 
 export default function Integrations() {
   const { t, lang } = useLanguage();
-  useEffect(() => { document.title = lang === 'ar' ? 'سيندا — التكاملات' : 'SENDA — Integrations'; }, [lang]);
+  useEffect(() => { document.title = lang === 'ar' ? 'سيندا | SENDA — التكاملات' : 'SENDA | سيندا — Integrations'; }, [lang]);
   const { organization } = useAuth();
 
   const [hasGoogleToken, setHasGoogleToken] = useState(false);

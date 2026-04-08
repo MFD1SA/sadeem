@@ -1,7 +1,7 @@
 // ============================================================================
 // SENDA — FAQ Page (الأسئلة الشائعة) — Premium Design
 // ============================================================================
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronDown, ChevronUp, ArrowLeft, ArrowRight } from 'lucide-react';
 import PublicLayout from '@/layouts/PublicLayout';
@@ -58,6 +58,8 @@ export default function FaqPage() {
   const [openIdx, setOpenIdx] = useState<number | null>(0);
   const t = T[lang];
   const isRtl = lang === 'ar';
+
+  useEffect(() => { document.title = lang === 'ar' ? 'سيندا | SENDA — الأسئلة الشائعة' : 'SENDA | سيندا — FAQ'; }, [lang]);
 
   return (
     <PublicLayout lang={lang} onToggleLang={() => setLang(l => l === 'ar' ? 'en' : 'ar')}>

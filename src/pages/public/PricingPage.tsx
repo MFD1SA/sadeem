@@ -1,7 +1,7 @@
 // ============================================================================
 // SENDA — Pricing Page (الباقات) — Premium Design
 // ============================================================================
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { CheckCircle2, X as XIcon, ArrowLeft, ArrowRight } from 'lucide-react';
 import PublicLayout from '@/layouts/PublicLayout';
@@ -98,6 +98,8 @@ export default function PricingPage() {
   const t = T[lang];
   const isAr = lang === 'ar';
   const isRtl = lang === 'ar';
+
+  useEffect(() => { document.title = lang === 'ar' ? 'سيندا | SENDA — الباقات' : 'SENDA | سيندا — Pricing'; }, [lang]);
 
   return (
     <PublicLayout lang={lang} onToggleLang={() => setLang(l => l === 'ar' ? 'en' : 'ar')}>

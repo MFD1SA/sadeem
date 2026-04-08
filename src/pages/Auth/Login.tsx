@@ -9,7 +9,8 @@ import { authService } from '@/services/auth';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { getBranding, type BrandingConfig } from '@/services/branding';
-import { CheckCircle2, ArrowRight } from 'lucide-react';
+import { CheckCircle2, ArrowRight, Home } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 // ── Password strength helper ────────────────────────────────────────────────
 function calcPasswordStrength(pw: string): number {
@@ -82,7 +83,7 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
 
   // Load admin branding + set page title
   useEffect(() => {
-    document.title = isAr ? 'سيندا — تسجيل الدخول' : 'SENDA — Sign In';
+    document.title = isAr ? 'سيندا | SENDA — تسجيل الدخول' : 'SENDA | سيندا — Sign In';
     getBranding().then(setBranding).catch(() => {});
   }, [isAr]);
 
@@ -200,10 +201,9 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
       <img
         src="/senda-logo.png"
         alt="SENDA"
-        className="h-12 mb-3"
+        className="h-12 mb-4"
         onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
       />
-      <p className="text-xs text-slate-400 text-center max-w-[260px]">{tagline}</p>
     </div>
   );
 
@@ -273,6 +273,15 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
               </button>
             )}
           </div>
+
+        {/* Footer: Home link + Version */}
+        <div className="flex flex-col items-center gap-3 mt-6">
+          <Link to="/" className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-600 transition-colors">
+            <Home size={13} />
+            {isAr ? 'العودة للرئيسية' : 'Back to Home'}
+          </Link>
+          <p className="text-[10px] text-slate-300">v0.1.0</p>
+        </div>
         </div>
       </div>
     );
@@ -433,9 +442,15 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
             </button>
           </div>
 
-          <p className="text-center text-[11px] text-slate-400 mt-5 leading-relaxed">
-            {t.auth.googleButtonNote}
-          </p>
+        </div>
+
+        {/* Footer: Home link + Version */}
+        <div className="flex flex-col items-center gap-3 mt-6">
+          <Link to="/" className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-600 transition-colors">
+            <Home size={13} />
+            {isAr ? 'العودة للرئيسية' : 'Back to Home'}
+          </Link>
+          <p className="text-[10px] text-slate-300">v0.1.0</p>
         </div>
       </div>
     </div>

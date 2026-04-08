@@ -15,7 +15,7 @@ let _cache: DbReplyDraft[] | null = null;
 
 export default function ResponsesInbox() {
   const { t, lang } = useLanguage();
-  useEffect(() => { document.title = lang === 'ar' ? 'سيندا — الردود' : 'SENDA — Replies'; }, [lang]);
+  useEffect(() => { document.title = lang === 'ar' ? 'سيندا | SENDA — الردود' : 'SENDA | سيندا — Replies'; }, [lang]);
   const { organization, user, isLoading: authLoading } = useAuth();
 
   const [drafts, setDrafts] = useState<DbReplyDraft[]>(_cache ?? []);

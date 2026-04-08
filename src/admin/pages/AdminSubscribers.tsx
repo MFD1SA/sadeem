@@ -44,7 +44,7 @@ const SUB_STATUS: Record<string, { ar: string; color: string }> = {
 export default function AdminSubscribers() {
   const { hasPermission } = useAdminAuth();
 
-  useEffect(() => { document.title = 'سيندا — المشتركين'; }, []);
+  useEffect(() => { document.title = 'سيندا | SENDA — المشتركين'; }, []);
 
   const [items, setItems] = useState<SubscriberListItem[]>([]);
   const [total, setTotal] = useState(0);

@@ -10,7 +10,7 @@ import { Shield, Camera, Building2, UserCircle2, Globe2, Save, Upload, ImageIcon
 
 export default function Settings() {
   const { t, lang, setLanguage } = useLanguage();
-  useEffect(() => { document.title = lang === 'ar' ? 'سيندا — الإعدادات' : 'SENDA — Settings'; }, [lang]);
+  useEffect(() => { document.title = lang === 'ar' ? 'سيندا | SENDA — الإعدادات' : 'SENDA | سيندا — Settings'; }, [lang]);
   const {
     organization,
     profile,

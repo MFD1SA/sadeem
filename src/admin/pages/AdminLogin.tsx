@@ -4,12 +4,12 @@
 // ============================================================================
 
 import { useState, type FormEvent, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { AdminAuthProvider, useAdminAuth } from '../contexts/AdminAuthContext';
 import { RedirectIfAdminAuthenticated } from '../guards';
 import { ADMIN_ROUTES } from '../utils/constants';
 import { adminSettingsService, type BrandingSettings } from '../services/adminSettings.service';
-import { ShieldCheck, Eye, EyeOff } from 'lucide-react';
+import { ShieldCheck, Eye, EyeOff, Home } from 'lucide-react';
 
 function AdminLoginForm() {
   const { login, isLoading, error } = useAdminAuth();
@@ -23,7 +23,7 @@ function AdminLoginForm() {
   const [branding, setBranding] = useState<BrandingSettings | null>(null);
 
   useEffect(() => {
-    document.title = 'سيندا — مركز الإدارة والتحكم';
+    document.title = 'سيندا | SENDA — مركز الإدارة والتحكم';
     adminSettingsService.getBranding().then(setBranding).catch(() => {});
   }, []);
 
@@ -137,9 +137,13 @@ function AdminLoginForm() {
         </div>
 
         {/* Footer */}
-        <div className="text-center mt-8">
-          <p className="text-[11px] text-slate-400 leading-relaxed">الوصول مقيّد للمشرفين المعتمدين فقط</p>
-          <p className="text-[10px] text-slate-300 mt-1">سيندا — منصة إدارة التقييمات بالذكاء الاصطناعي</p>
+        <div className="flex flex-col items-center gap-3 mt-6">
+          <p className="text-[11px] text-slate-400">الوصول مقيّد للمشرفين المعتمدين فقط</p>
+          <Link to="/" className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-600 transition-colors">
+            <Home size={13} />
+            العودة للرئيسية
+          </Link>
+          <p className="text-[10px] text-slate-300">v0.1.0</p>
         </div>
       </div>
     </div>

@@ -22,7 +22,7 @@ interface ReviewInsights {
 
 export default function Insights() {
   const { lang, t } = useLanguage();
-  useEffect(() => { document.title = lang === 'ar' ? 'سيندا — الرؤى' : 'SENDA — Insights'; }, [lang]);
+  useEffect(() => { document.title = lang === 'ar' ? 'سيندا | SENDA — الرؤى' : 'SENDA | سيندا — Insights'; }, [lang]);
   const { organization } = useAuth();
   const [seo, setSeo] = useState<SeoScore | null>(null);
   const [competitors, setCompetitors] = useState<CompetitorReport | null>(null);
