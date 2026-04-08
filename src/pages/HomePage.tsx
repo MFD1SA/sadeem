@@ -213,7 +213,7 @@ export default function HomePage() {
       </nav>
 
       {/* ═══════════════════ HERO — Dark immersive ═══════════════════ */}
-      <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden" style={{ background: 'linear-gradient(160deg, #0B1120 0%, #162032 40%, #0F1A2E 100%)' }}>
+      <section className="relative min-h-screen flex items-center overflow-hidden pt-24 pb-20 lg:pt-0 lg:pb-0" style={{ background: 'linear-gradient(160deg, #0B1120 0%, #162032 40%, #0F1A2E 100%)' }}>
         {/* Decorative grid overlay */}
         <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
         {/* Glow effects */}
@@ -223,88 +223,89 @@ export default function HomePage() {
         {/* Floating doodle elements */}
         <svg className="absolute top-[18%] right-[8%] w-16 h-16 text-blue-400/20 animate-pulse" viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="28" stroke="currentColor" strokeWidth="1.5" strokeDasharray="4 6" /></svg>
         <svg className="absolute bottom-[25%] left-[10%] w-10 h-10 text-blue-400/15" viewBox="0 0 40 40" fill="none"><rect x="5" y="5" width="30" height="30" rx="6" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 5" /></svg>
-        <svg className="absolute top-[30%] left-[15%] w-6 h-6 text-white/10" viewBox="0 0 24 24" fill="currentColor"><polygon points="12,2 15,9 22,9 16,14 18,22 12,17 6,22 8,14 2,9 9,9" /></svg>
 
-        <div className="relative z-10 max-w-[900px] mx-auto px-6 text-center">
-          {/* Main headline — two lines with animated wave SVG between */}
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-[1.15] tracking-tight mb-6">
-            {t.heroH1Line1}
-            {/* Animated wave connector */}
-            <span className="inline-block mx-3 align-middle">
-              <svg width="80" height="32" viewBox="0 0 80 32" fill="none" className="inline-block">
-                <path d="M4 16C12 4 20 28 28 16C36 4 44 28 52 16C60 4 68 28 76 16" stroke="url(#waveGrad)" strokeWidth="3" strokeLinecap="round" className="animate-[dash_3s_ease-in-out_infinite]" strokeDasharray="120" strokeDashoffset="0" />
-                <defs><linearGradient id="waveGrad" x1="4" y1="16" x2="76" y2="16"><stop offset="0%" stopColor="#14B8A6" /><stop offset="100%" stopColor="#2DD4BF" /></linearGradient></defs>
-              </svg>
-            </span>
-            {t.heroH1Line2}
-          </h1>
+        {/* ── Hero Grid: Text + Illustration side by side ── */}
+        <div className="relative z-10 max-w-[1200px] mx-auto px-6 w-full grid lg:grid-cols-2 gap-10 lg:gap-14 items-center">
+          {/* Text side */}
+          <div className={`${isRtl ? 'lg:order-1' : 'lg:order-1'}`}>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-[1.15] tracking-tight mb-6">
+              {t.heroH1Line1}
+              <span className="inline-block mx-2 sm:mx-3 align-middle">
+                <svg width="60" height="24" viewBox="0 0 80 32" fill="none" className="inline-block sm:w-[80px] sm:h-[32px]">
+                  <path d="M4 16C12 4 20 28 28 16C36 4 44 28 52 16C60 4 68 28 76 16" stroke="url(#waveGrad)" strokeWidth="3" strokeLinecap="round" className="animate-[dash_3s_ease-in-out_infinite]" strokeDasharray="120" strokeDashoffset="0" />
+                  <defs><linearGradient id="waveGrad" x1="4" y1="16" x2="76" y2="16"><stop offset="0%" stopColor="#14B8A6" /><stop offset="100%" stopColor="#2DD4BF" /></linearGradient></defs>
+                </svg>
+              </span>
+              {t.heroH1Line2}
+            </h1>
 
-          <p className="text-base sm:text-lg text-white/50 leading-relaxed mb-10 max-w-xl mx-auto">{t.heroSub}</p>
+            <p className="text-sm sm:text-base lg:text-lg text-white/50 leading-relaxed mb-8 max-w-lg">{t.heroSub}</p>
 
-          <div className="flex flex-wrap gap-4 justify-center">
-            <Link to="/register" className="bg-blue-600 hover:bg-blue-500 text-white font-semibold px-8 py-3.5 rounded-xl text-sm transition-all shadow-lg shadow-[#0F1A2E]/20 inline-flex items-center gap-2">
-              {t.heroCtaPrimary}
-              {isRtl ? <ArrowLeft size={16} /> : <ArrowRight size={16} />}
-            </Link>
-            <Link to="/features" className="border border-white/15 text-white/70 hover:text-white hover:border-white/30 hover:bg-white/5 font-medium px-8 py-3.5 rounded-xl text-sm transition-all inline-flex items-center gap-2">
-              {t.heroCtaSecondary}
-            </Link>
-          </div>
-        </div>
-
-        {/* ── Hero Illustration — Floating Dashboard ── */}
-        <div className="relative z-10 mt-14 max-w-[780px] mx-auto px-6 hidden sm:block">
-          <div style={{ perspective: '1200px' }}>
-            <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-sm overflow-hidden shadow-2xl shadow-black/30" style={{ transform: 'rotateX(6deg)' }}>
-              <div className="h-7 bg-white/[0.05] border-b border-white/[0.06] flex items-center px-3 gap-1.5">
-                <div className="w-2 h-2 rounded-full bg-red-400/50" /><div className="w-2 h-2 rounded-full bg-yellow-400/50" /><div className="w-2 h-2 rounded-full bg-green-400/50" />
-                <div className="flex-1 mx-8"><div className="h-3 rounded bg-white/[0.05] max-w-[180px] mx-auto" /></div>
-              </div>
-              <div className="p-4 sm:p-5">
-                <div className="grid grid-cols-4 gap-3 mb-4">
-                  <div className="rounded-lg bg-white/[0.04] border border-white/[0.06] p-3">
-                    <div className="text-[9px] text-blue-300/60 mb-1">{isRtl ? 'إجمالي التقييمات' : 'Total Reviews'}</div>
-                    <div className="text-xl font-bold text-white/90">2,847</div>
-                    <div className="text-[9px] text-emerald-400/70 mt-0.5">↑ 12.5%</div>
-                  </div>
-                  <div className="rounded-lg bg-white/[0.04] border border-white/[0.06] p-3">
-                    <div className="text-[9px] text-blue-300/60 mb-1">{isRtl ? 'متوسط التقييم' : 'Avg Rating'}</div>
-                    <div className="text-xl font-bold text-white/90">4.8 <span className="text-yellow-400 text-xs">★</span></div>
-                    <div className="text-[9px] text-emerald-400/70 mt-0.5">{isRtl ? 'ممتاز' : 'Excellent'}</div>
-                  </div>
-                  <div className="rounded-lg bg-white/[0.04] border border-white/[0.06] p-3">
-                    <div className="text-[9px] text-blue-300/60 mb-1">{isRtl ? 'معدل الاستجابة' : 'Response Rate'}</div>
-                    <div className="text-xl font-bold text-white/90">98%</div>
-                    <div className="text-[9px] text-emerald-400/70 mt-0.5">↑ 3.2%</div>
-                  </div>
-                  <div className="rounded-lg bg-white/[0.04] border border-white/[0.06] p-3">
-                    <div className="text-[9px] text-blue-300/60 mb-1">{isRtl ? 'الفروع النشطة' : 'Active Branches'}</div>
-                    <div className="text-xl font-bold text-white/90">12</div>
-                    <div className="text-[9px] text-blue-300/50 mt-0.5">{isRtl ? 'متصل' : 'Online'}</div>
-                  </div>
-                </div>
-                <div className="rounded-lg bg-white/[0.03] border border-white/[0.05] p-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="text-[9px] text-blue-300/50">{isRtl ? 'نمو التقييمات الإيجابية' : 'Positive Reviews Growth'}</div>
-                    <div className="text-[9px] text-emerald-400/60">{isRtl ? 'آخر 6 أشهر' : 'Last 6 months'}</div>
-                  </div>
-                  <svg className="w-full h-[50px]" viewBox="0 0 400 50" fill="none" preserveAspectRatio="none">
-                    <defs><linearGradient id="heroChartG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="rgba(59,130,246,0.25)" /><stop offset="100%" stopColor="rgba(59,130,246,0)" /></linearGradient></defs>
-                    <path d="M0,42 C30,38 60,35 100,30 C140,25 180,32 220,24 C260,16 300,18 340,10 L400,6 L400,50 L0,50 Z" fill="url(#heroChartG)" />
-                    <path d="M0,42 C30,38 60,35 100,30 C140,25 180,32 220,24 C260,16 300,18 340,10 L400,6" stroke="rgba(59,130,246,0.5)" strokeWidth="2" fill="none" />
-                    <circle cx="400" cy="6" r="3" fill="#3b82f6" className="animate-pulse" />
-                  </svg>
-                </div>
-              </div>
+            <div className="flex flex-wrap gap-3 sm:gap-4">
+              <Link to="/register" className="bg-blue-600 hover:bg-blue-500 text-white font-semibold px-6 sm:px-8 py-3 sm:py-3.5 rounded-xl text-sm transition-all shadow-lg shadow-[#0F1A2E]/20 inline-flex items-center gap-2">
+                {t.heroCtaPrimary}
+                {isRtl ? <ArrowLeft size={16} /> : <ArrowRight size={16} />}
+              </Link>
+              <Link to="/features" className="border border-white/15 text-white/70 hover:text-white hover:border-white/30 hover:bg-white/5 font-medium px-6 sm:px-8 py-3 sm:py-3.5 rounded-xl text-sm transition-all inline-flex items-center gap-2">
+                {t.heroCtaSecondary}
+              </Link>
             </div>
           </div>
-          <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-[70%] h-6 bg-blue-500/8 rounded-full blur-xl" />
+
+          {/* Illustration side */}
+          <div className={`${isRtl ? 'lg:order-2' : 'lg:order-2'}`}>
+            <div className="relative">
+              <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-sm overflow-hidden shadow-2xl shadow-black/30">
+                <div className="h-7 bg-white/[0.05] border-b border-white/[0.06] flex items-center px-3 gap-1.5">
+                  <div className="w-2 h-2 rounded-full bg-red-400/50" /><div className="w-2 h-2 rounded-full bg-yellow-400/50" /><div className="w-2 h-2 rounded-full bg-green-400/50" />
+                  <div className="flex-1 mx-6"><div className="h-3 rounded bg-white/[0.05] max-w-[140px] mx-auto" /></div>
+                </div>
+                <div className="p-3 sm:p-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-3">
+                    <div className="rounded-lg bg-white/[0.04] border border-white/[0.06] p-2.5 sm:p-3">
+                      <div className="text-[8px] sm:text-[9px] text-blue-300/60 mb-0.5">{isRtl ? 'إجمالي التقييمات' : 'Total Reviews'}</div>
+                      <div className="text-base sm:text-xl font-bold text-white/90">2,847</div>
+                      <div className="text-[8px] sm:text-[9px] text-emerald-400/70">↑ 12.5%</div>
+                    </div>
+                    <div className="rounded-lg bg-white/[0.04] border border-white/[0.06] p-2.5 sm:p-3">
+                      <div className="text-[8px] sm:text-[9px] text-blue-300/60 mb-0.5">{isRtl ? 'متوسط التقييم' : 'Avg Rating'}</div>
+                      <div className="text-base sm:text-xl font-bold text-white/90">4.8 <span className="text-yellow-400 text-[10px] sm:text-xs">★</span></div>
+                      <div className="text-[8px] sm:text-[9px] text-emerald-400/70">{isRtl ? 'ممتاز' : 'Excellent'}</div>
+                    </div>
+                    <div className="rounded-lg bg-white/[0.04] border border-white/[0.06] p-2.5 sm:p-3">
+                      <div className="text-[8px] sm:text-[9px] text-blue-300/60 mb-0.5">{isRtl ? 'معدل الاستجابة' : 'Response Rate'}</div>
+                      <div className="text-base sm:text-xl font-bold text-white/90">98%</div>
+                      <div className="text-[8px] sm:text-[9px] text-emerald-400/70">↑ 3.2%</div>
+                    </div>
+                    <div className="rounded-lg bg-white/[0.04] border border-white/[0.06] p-2.5 sm:p-3">
+                      <div className="text-[8px] sm:text-[9px] text-blue-300/60 mb-0.5">{isRtl ? 'الفروع النشطة' : 'Active Branches'}</div>
+                      <div className="text-base sm:text-xl font-bold text-white/90">12</div>
+                      <div className="text-[8px] sm:text-[9px] text-blue-300/50">{isRtl ? 'متصل' : 'Online'}</div>
+                    </div>
+                  </div>
+                  <div className="rounded-lg bg-white/[0.03] border border-white/[0.05] p-2.5 sm:p-3">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <div className="text-[8px] sm:text-[9px] text-blue-300/50">{isRtl ? 'نمو التقييمات الإيجابية' : 'Positive Reviews Growth'}</div>
+                      <div className="text-[8px] sm:text-[9px] text-emerald-400/60">{isRtl ? 'آخر 6 أشهر' : 'Last 6 months'}</div>
+                    </div>
+                    <svg className="w-full h-[40px] sm:h-[50px]" viewBox="0 0 400 50" fill="none" preserveAspectRatio="none">
+                      <defs><linearGradient id="heroChartG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="rgba(59,130,246,0.25)" /><stop offset="100%" stopColor="rgba(59,130,246,0)" /></linearGradient></defs>
+                      <path d="M0,42 C30,38 60,35 100,30 C140,25 180,32 220,24 C260,16 300,18 340,10 L400,6 L400,50 L0,50 Z" fill="url(#heroChartG)" />
+                      <path d="M0,42 C30,38 60,35 100,30 C140,25 180,32 220,24 C260,16 300,18 340,10 L400,6" stroke="rgba(59,130,246,0.5)" strokeWidth="2" fill="none" />
+                      <circle cx="400" cy="6" r="3" fill="#3b82f6" className="animate-pulse" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+              <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-[70%] h-6 bg-blue-500/8 rounded-full blur-xl" />
+            </div>
+          </div>
         </div>
 
         {/* Scroll down indicator — glass vertical pill */}
         <button
           onClick={() => document.getElementById('senda-content')?.scrollIntoView({ behavior: 'smooth' })}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 group cursor-pointer"
+          className="absolute bottom-6 left-1/2 -translate-x-1/2 flex-col items-center gap-2 group cursor-pointer hidden lg:flex"
         >
           <span className="text-[10px] text-white/30 tracking-widest uppercase group-hover:text-white/50 transition-colors">{t.scrollDown}</span>
           <div className="w-7 h-12 rounded-full border border-white/20 bg-white/5 backdrop-blur-md flex flex-col items-center justify-start pt-2 group-hover:border-white/30 group-hover:bg-white/10 transition-all">
@@ -314,14 +315,14 @@ export default function HomePage() {
       </section>
 
       {/* ═══════════════════ SHOWCASE — 4 Alternating Blocks ═══════════════════ */}
-      <section id="senda-content" className="py-20 bg-white">
-        <div className="max-w-[1100px] mx-auto px-6 space-y-24">
+      <section id="senda-content" className="py-0">
 
-          {/* ── Block 1: Image Right / Text Left ── */}
-          <div className="grid md:grid-cols-2 gap-12 items-center">
+          {/* ── Block 1 ── */}
+          <div className="bg-gradient-to-br from-blue-50/80 via-white to-sky-50/50 py-16 sm:py-20 px-6">
+          <div className="max-w-[1100px] mx-auto grid md:grid-cols-2 gap-8 md:gap-12 items-center">
             <div className={`${isRtl ? 'md:order-2' : ''}`}>
-              <h3 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-4 leading-tight">{t.showcaseBlocks[0].title}</h3>
-              <p className="text-base text-slate-500 leading-relaxed">{t.showcaseBlocks[0].desc}</p>
+              <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 mb-4 leading-tight">{t.showcaseBlocks[0].title}</h3>
+              <p className="text-sm sm:text-base text-slate-500 leading-relaxed">{t.showcaseBlocks[0].desc}</p>
             </div>
             <div className={`${isRtl ? 'md:order-1' : ''}`}>
               {/* Dashboard Mockup */}
@@ -359,12 +360,14 @@ export default function HomePage() {
               </div>
             </div>
           </div>
+          </div>
 
-          {/* ── Block 2: Text Right / Image Left ── */}
-          <div className="grid md:grid-cols-2 gap-12 items-center">
+          {/* ── Block 2 ── */}
+          <div className="bg-gradient-to-br from-slate-50 via-white to-slate-50/80 py-16 sm:py-20 px-6">
+          <div className="max-w-[1100px] mx-auto grid md:grid-cols-2 gap-8 md:gap-12 items-center">
             <div className={`${isRtl ? '' : 'md:order-2'}`}>
-              <h3 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-4 leading-tight">{t.showcaseBlocks[1].title}</h3>
-              <p className="text-base text-slate-500 leading-relaxed">{t.showcaseBlocks[1].desc}</p>
+              <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 mb-4 leading-tight">{t.showcaseBlocks[1].title}</h3>
+              <p className="text-sm sm:text-base text-slate-500 leading-relaxed">{t.showcaseBlocks[1].desc}</p>
             </div>
             <div className={`${isRtl ? '' : 'md:order-1'}`}>
               {/* Review & Reply Mockup */}
@@ -401,12 +404,14 @@ export default function HomePage() {
               </div>
             </div>
           </div>
+          </div>
 
-          {/* ── Block 3: Image Right / Text Left ── */}
-          <div className="grid md:grid-cols-2 gap-12 items-center">
+          {/* ── Block 3 ── */}
+          <div className="bg-gradient-to-br from-amber-50/40 via-white to-orange-50/30 py-16 sm:py-20 px-6">
+          <div className="max-w-[1100px] mx-auto grid md:grid-cols-2 gap-8 md:gap-12 items-center">
             <div className={`${isRtl ? 'md:order-2' : ''}`}>
-              <h3 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-4 leading-tight">{t.showcaseBlocks[2].title}</h3>
-              <p className="text-base text-slate-500 leading-relaxed">{t.showcaseBlocks[2].desc}</p>
+              <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 mb-4 leading-tight">{t.showcaseBlocks[2].title}</h3>
+              <p className="text-sm sm:text-base text-slate-500 leading-relaxed">{t.showcaseBlocks[2].desc}</p>
             </div>
             <div className={`${isRtl ? 'md:order-1' : ''}`}>
               {/* Interaction Scene — Customer + Business Reply */}
@@ -439,12 +444,14 @@ export default function HomePage() {
               </div>
             </div>
           </div>
+          </div>
 
-          {/* ── Block 4: Text Right / Image Left ── */}
-          <div className="grid md:grid-cols-2 gap-12 items-center">
+          {/* ── Block 4 ── */}
+          <div className="bg-gradient-to-br from-emerald-50/50 via-white to-teal-50/30 py-16 sm:py-20 px-6">
+          <div className="max-w-[1100px] mx-auto grid md:grid-cols-2 gap-8 md:gap-12 items-center">
             <div className={`${isRtl ? '' : 'md:order-2'}`}>
-              <h3 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-4 leading-tight">{t.showcaseBlocks[3].title}</h3>
-              <p className="text-base text-slate-500 leading-relaxed">{t.showcaseBlocks[3].desc}</p>
+              <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 mb-4 leading-tight">{t.showcaseBlocks[3].title}</h3>
+              <p className="text-sm sm:text-base text-slate-500 leading-relaxed">{t.showcaseBlocks[3].desc}</p>
             </div>
             <div className={`${isRtl ? '' : 'md:order-1'}`}>
               {/* Before/After Rating Improvement */}
@@ -479,8 +486,8 @@ export default function HomePage() {
               </div>
             </div>
           </div>
+          </div>
 
-        </div>
       </section>
 
       {/* ═══════════════════ WHAT IS SENDA ═══════════════════ */}
