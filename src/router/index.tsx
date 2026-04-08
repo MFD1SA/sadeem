@@ -69,6 +69,7 @@ import PublicFeaturesPage from '@/pages/public/FeaturesPage';
 import PricingPage  from '@/pages/public/PricingPage';
 import FaqPage      from '@/pages/public/FaqPage';
 import BlogPage     from '@/pages/public/BlogPage';
+import ArticlePage  from '@/pages/public/ArticlePage';
 import ContactPage  from '@/pages/public/ContactPage';
 
 // ── Lazily loaded admin pages (infrequently visited) ────────────────────────
@@ -129,7 +130,8 @@ export function AppRouter() {
       <Route path="/about"      element={<AboutPage />} />
       <Route path="/pricing"    element={<PricingPage />} />
       <Route path="/faq"        element={<FaqPage />} />
-      <Route path="/blog"       element={<BlogPage />} />
+      <Route path="/blog"        element={<BlogPage />} />
+      <Route path="/blog/:slug"  element={<ArticlePage />} />
       <Route path="/contact-us" element={<ContactPage />} />
 
       <Route path="/r/:slug" element={<ReviewLanding />} />

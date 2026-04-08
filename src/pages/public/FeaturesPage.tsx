@@ -98,7 +98,7 @@ export default function FeaturesPage() {
           {t.features.map((f: any, i: number) => {
             const Icon = ICONS[f.icon] || Star;
             return (
-              <div key={i} className="group p-7 rounded-2xl border border-slate-100 bg-white hover:shadow-lg hover:border-slate-200 transition-all">
+              <div key={i} className="group p-7 rounded-2xl border border-slate-100 bg-white hover:border-blue-200 hover:shadow-[0_0_30px_rgba(59,130,246,0.12)] transition-all cursor-pointer">
                 <div className="w-12 h-12 rounded-xl bg-[#0F1A2E] flex items-center justify-center mb-5 group-hover:scale-105 transition-transform">
                   <Icon size={22} className="text-blue-300" />
                 </div>

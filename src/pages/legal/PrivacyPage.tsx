@@ -63,7 +63,10 @@ export default function PrivacyPage() {
       <section className="pb-20 px-6">
         <div className="max-w-3xl mx-auto space-y-6">
           {t.sections.map((s: any, i: number) => (
-            <div key={i} className="rounded-2xl border border-slate-100 bg-white p-7">
+            <div key={i} className="rounded-2xl border border-slate-100 bg-white p-7 hover:shadow-sm transition-shadow">
+              <div className="flex items-start gap-4">
+                <span className="flex-shrink-0 w-8 h-8 rounded-lg bg-[#0F1A2E] flex items-center justify-center text-xs font-bold text-blue-300">{i + 1}</span>
+                <div className="flex-1">
               <h2 className="text-lg font-bold text-slate-900 mb-3">{s.title}</h2>
               {s.content && <p className="text-sm text-slate-500 leading-relaxed mb-3">{s.content}</p>}
               {s.list && (
@@ -76,6 +79,8 @@ export default function PrivacyPage() {
                   ))}
                 </ul>
               )}
+                </div>
+              </div>
             </div>
           ))}
         </div>

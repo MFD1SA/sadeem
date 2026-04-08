@@ -12,9 +12,9 @@ type Lang = 'ar' | 'en';
 const T: Record<Lang, Record<string, any>> = {
   ar: {
     heroTag: 'تواصل معنا',
-    heroH1: 'نحن هنا لمساعدتك',
+    heroH1: 'تواصل معنا بكل ثقة',
     heroSub: 'شاركنا استفسارك أو طلبك، وسنعود إليك في أقرب وقت بخدمة تليق باهتمامك',
-    heroBtn: 'أرسل رسالتك الآن',
+    heroBtn: 'ابدأ المحادثة',
     nameLabel: 'الاسم الكامل',
     namePh: 'أدخل اسمك الكامل',
     emailLabel: 'البريد الإلكتروني',
@@ -24,7 +24,7 @@ const T: Record<Lang, Record<string, any>> = {
     sendBtn: 'إرسال الرسالة',
     sending: 'جارِ الإرسال...',
     successTitle: 'تم إرسال رسالتك بنجاح',
-    successDesc: 'شكرًا لتواصلك معنا. سنعود إليك في أقرب وقت.',
+    successDesc: 'نقدّر تواصلك معنا. سيعود إليك أحد أعضاء فريقنا في أقرب وقت بخدمة تليق باهتمامك.',
     sendAnother: 'إرسال رسالة أخرى',
     errorMsg: 'حدث خطأ أثناء الإرسال. يرجى المحاولة مجددًا.',
     infoCards: [
