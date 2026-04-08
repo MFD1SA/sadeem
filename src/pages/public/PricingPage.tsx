@@ -129,7 +129,6 @@ export default function PricingPage() {
                 <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] font-bold text-white bg-[#0F1A2E] px-4 py-1 rounded-full">{t.mostPopular}</span>
               )}
               <div className="text-center mb-6 min-h-[100px]">
-                <p className="text-xs text-slate-400 mb-1">{plan.name}</p>
                 <h3 className="text-lg font-bold text-slate-900">{isAr ? plan.nameAr : plan.name}</h3>
                 {plan.price ? (
                   <div className="mt-2">
@@ -169,7 +168,7 @@ export default function PricingPage() {
               <thead>
                 <tr className="bg-slate-50">
                   <th className={`py-3.5 px-5 font-semibold text-slate-700 border-b border-slate-100 ${isAr ? 'text-right' : 'text-left'}`}>{t.compareFeatureCol}</th>
-                  {PLAN_NAMES.map((n, i) => <th key={n} className={`py-3.5 px-4 font-semibold text-center border-b border-slate-100 ${t.plans[i]?.popular ? 'text-blue-900 bg-blue-50/50' : 'text-slate-700'}`}>{n}</th>)}
+                  {t.plans.map((p: any, i: number) => <th key={i} className={`py-3.5 px-4 font-semibold text-center border-b border-slate-100 ${p.popular ? 'text-blue-900 bg-blue-50/50' : 'text-slate-700'}`}>{isAr ? p.nameAr : p.name}</th>)}
                 </tr>
               </thead>
               <tbody>
