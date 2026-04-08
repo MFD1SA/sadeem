@@ -224,7 +224,7 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
               {t.auth.backToSignIn}
             </button>
 
-            <div className="mb-5">
+            <div className="mb-5 text-center">
               <h2 className="text-lg font-bold text-slate-900">{t.auth.resetYourPassword}</h2>
               <p className="text-sm text-slate-500 mt-1">{t.auth.resetYourPasswordDesc}</p>
             </div>
@@ -295,7 +295,7 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
 
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-7">
           {/* Heading */}
-          <div className="mb-5">
+          <div className="mb-5 text-center">
             <h2 className="text-lg font-bold text-slate-900">
               {isSignUp ? t.auth.createNewAccount : t.auth.welcomeBack}
             </h2>
