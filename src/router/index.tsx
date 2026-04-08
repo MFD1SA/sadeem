@@ -55,22 +55,22 @@ import ReviewLanding  from '@/pages/ReviewLanding';
 import SeoLanding     from '@/pages/SeoLanding';
 import HomePage       from '@/pages/HomePage';
 // StoryPage removed — /story now redirects to /
-import PrivacyPage    from '@/pages/legal/PrivacyPage';
-import TermsPage      from '@/pages/legal/TermsPage';
-import FeaturesPage          from '@/pages/marketing/FeaturesPage';
-import ReviewsManagementPage from '@/pages/marketing/ReviewsManagementPage';
-import AiRepliesPage         from '@/pages/marketing/AiRepliesPage';
-import AnalyticsMarketingPage from '@/pages/marketing/AnalyticsPage';
-import BranchesMarketingPage  from '@/pages/marketing/BranchesPage';
+const PrivacyPage    = lazyWithRetry(() => import('@/pages/legal/PrivacyPage'));
+const TermsPage      = lazyWithRetry(() => import('@/pages/legal/TermsPage'));
+const FeaturesPage          = lazyWithRetry(() => import('@/pages/marketing/FeaturesPage'));
+const ReviewsManagementPage = lazyWithRetry(() => import('@/pages/marketing/ReviewsManagementPage'));
+const AiRepliesPage         = lazyWithRetry(() => import('@/pages/marketing/AiRepliesPage'));
+const AnalyticsMarketingPage = lazyWithRetry(() => import('@/pages/marketing/AnalyticsPage'));
+const BranchesMarketingPage  = lazyWithRetry(() => import('@/pages/marketing/BranchesPage'));
 
-// ── Public pages ───────────────────────────────────────────────────────────
-import AboutPage    from '@/pages/public/AboutPage';
-import PublicFeaturesPage from '@/pages/public/FeaturesPage';
-import PricingPage  from '@/pages/public/PricingPage';
-import FaqPage      from '@/pages/public/FaqPage';
-import BlogPage     from '@/pages/public/BlogPage';
-import ArticlePage  from '@/pages/public/ArticlePage';
-import ContactPage  from '@/pages/public/ContactPage';
+// ── Public pages (lazy — each page loads only when visited) ────────────────
+const AboutPage           = lazyWithRetry(() => import('@/pages/public/AboutPage'));
+const PublicFeaturesPage  = lazyWithRetry(() => import('@/pages/public/FeaturesPage'));
+const PricingPage         = lazyWithRetry(() => import('@/pages/public/PricingPage'));
+const FaqPage             = lazyWithRetry(() => import('@/pages/public/FaqPage'));
+const BlogPage            = lazyWithRetry(() => import('@/pages/public/BlogPage'));
+const ArticlePage         = lazyWithRetry(() => import('@/pages/public/ArticlePage'));
+const ContactPage         = lazyWithRetry(() => import('@/pages/public/ContactPage'));
 
 // ── Lazily loaded admin pages (infrequently visited) ────────────────────────
 import { AdminLayout } from '@/admin/layouts/AdminLayout';
@@ -118,21 +118,21 @@ export function AppRouter() {
 
       <Route path="/" element={<HomePage />} />
       <Route path="/story"   element={<Navigate to="/" replace />} />
-      <Route path="/privacy" element={<PrivacyPage />} />
-      <Route path="/terms"   element={<TermsPage />} />
-      <Route path="/features"            element={<PublicFeaturesPage />} />
+      <Route path="/privacy" element={<Suspense fallback={<PageLoader />}><PrivacyPage /></Suspense>} />
+      <Route path="/terms"   element={<Suspense fallback={<PageLoader />}><TermsPage /></Suspense>} />
+      <Route path="/features"            element={<Suspense fallback={<PageLoader />}><PublicFeaturesPage /></Suspense>} />
       <Route path="/reviews-management"  element={<Navigate to="/features" replace />} />
       <Route path="/ai-replies"          element={<Navigate to="/features" replace />} />
       <Route path="/analytics-page"      element={<Navigate to="/features" replace />} />
       <Route path="/branches-page"       element={<Navigate to="/features" replace />} />
 
       {/* Public pages */}
-      <Route path="/about"      element={<AboutPage />} />
-      <Route path="/pricing"    element={<PricingPage />} />
-      <Route path="/faq"        element={<FaqPage />} />
-      <Route path="/blog"        element={<BlogPage />} />
-      <Route path="/blog/:slug"  element={<ArticlePage />} />
-      <Route path="/contact-us" element={<ContactPage />} />
+      <Route path="/about"      element={<Suspense fallback={<PageLoader />}><AboutPage /></Suspense>} />
+      <Route path="/pricing"    element={<Suspense fallback={<PageLoader />}><PricingPage /></Suspense>} />
+      <Route path="/faq"        element={<Suspense fallback={<PageLoader />}><FaqPage /></Suspense>} />
+      <Route path="/blog"        element={<Suspense fallback={<PageLoader />}><BlogPage /></Suspense>} />
+      <Route path="/blog/:slug"  element={<Suspense fallback={<PageLoader />}><ArticlePage /></Suspense>} />
+      <Route path="/contact-us" element={<Suspense fallback={<PageLoader />}><ContactPage /></Suspense>} />
 
       <Route path="/r/:slug" element={<ReviewLanding />} />
       <Route path="/s/:city/:industry" element={<SeoLanding />} />
