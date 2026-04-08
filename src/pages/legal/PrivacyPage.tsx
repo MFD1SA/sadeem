@@ -46,7 +46,7 @@ export default function PrivacyPage() {
       {/* Hero */}
       <section className="py-20 px-6">
         <div className="max-w-3xl mx-auto text-center">
-          <span className="inline-block text-xs font-semibold text-blue-600 bg-blue-50 px-4 py-1.5 rounded-full mb-4">{t.heroTag}</span>
+          <span className="inline-block text-xs font-semibold text-blue-900 bg-blue-50 px-4 py-1.5 rounded-full mb-4">{t.heroTag}</span>
           <h1 className="text-3xl md:text-4xl font-bold text-slate-900 leading-tight mb-4">{t.heroH1}</h1>
           <p className="text-base text-slate-500 leading-relaxed">{t.heroSub}</p>
         </div>
@@ -63,7 +63,7 @@ export default function PrivacyPage() {
                 <ul className="space-y-2 text-sm text-slate-500 leading-relaxed">
                   {s.list.map((item: string, j: number) => (
                     <li key={j} className="flex items-start gap-2.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-2 flex-shrink-0" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-blue-800 mt-2 flex-shrink-0" />
                       <span>{item}</span>
                     </li>
                   ))}

@@ -169,7 +169,7 @@ export default function HomePage() {
           {/* Desktop nav */}
           <div className="hidden lg:flex items-center gap-7">
             {t.nav.map((label: string, i: number) => (
-              <Link key={i} to={t.navPaths[i]} className={`text-[13px] font-medium transition-colors ${scrolled ? 'text-slate-500 hover:text-blue-600' : 'text-white/70 hover:text-white'}`}>{label}</Link>
+              <Link key={i} to={t.navPaths[i]} className={`text-[13px] font-medium transition-colors ${scrolled ? 'text-slate-500 hover:text-blue-900' : 'text-white/70 hover:text-white'}`}>{label}</Link>
             ))}
           </div>
 
@@ -177,7 +177,7 @@ export default function HomePage() {
           <div className="hidden lg:flex items-center gap-3">
             <button onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')} className={`px-3.5 py-1.5 text-xs font-medium rounded-lg transition-colors ${scrolled ? 'text-slate-500 border border-slate-200 hover:bg-slate-50' : 'text-white/70 border border-white/20 hover:bg-white/10'}`}>{t.langToggle}</button>
             <Link to="/login" className={`text-sm transition-colors px-3 py-1.5 ${scrolled ? 'text-slate-600 hover:text-slate-900' : 'text-white/80 hover:text-white'}`}>{t.loginBtn}</Link>
-            <Link to="/login" className="bg-blue-500 hover:bg-blue-400 text-white text-sm font-medium px-5 py-2 rounded-lg transition-all shadow-sm">{t.ctaBtn}</Link>
+            <Link to="/login" className="bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium px-5 py-2 rounded-lg transition-all shadow-sm">{t.ctaBtn}</Link>
           </div>
 
           {/* Mobile toggle */}
@@ -194,7 +194,7 @@ export default function HomePage() {
             ))}
             <div className="flex gap-3 mt-4">
               <button onClick={() => { setLang(lang === 'ar' ? 'en' : 'ar'); setMobileOpen(false); }} className="px-4 py-2 text-sm border border-slate-200 rounded-lg text-slate-500">{t.langToggle}</button>
-              <Link to="/login" onClick={() => setMobileOpen(false)} className="flex-1 bg-blue-600 text-white text-sm font-medium py-2 rounded-lg text-center">{t.ctaBtn}</Link>
+              <Link to="/login" onClick={() => setMobileOpen(false)} className="flex-1 bg-[#0F1A2E] text-white text-sm font-medium py-2 rounded-lg text-center">{t.ctaBtn}</Link>
             </div>
           </div>
         )}
@@ -230,7 +230,7 @@ export default function HomePage() {
           <p className="text-base sm:text-lg text-white/50 leading-relaxed mb-10 max-w-xl mx-auto">{t.heroSub}</p>
 
           <div className="flex flex-wrap gap-4 justify-center">
-            <Link to="/register" className="bg-blue-500 hover:bg-blue-400 text-white font-semibold px-8 py-3.5 rounded-xl text-sm transition-all shadow-lg shadow-blue-500/20 inline-flex items-center gap-2">
+            <Link to="/register" className="bg-blue-600 hover:bg-blue-500 text-white font-semibold px-8 py-3.5 rounded-xl text-sm transition-all shadow-lg shadow-[#0F1A2E]/20 inline-flex items-center gap-2">
               {t.heroCtaPrimary}
               {isRtl ? <ArrowLeft size={16} /> : <ArrowRight size={16} />}
             </Link>
@@ -252,7 +252,7 @@ export default function HomePage() {
       {/* ═══════════════════ WHAT IS SENDA ═══════════════════ */}
       <section className="py-20 bg-white">
         <div className="max-w-3xl mx-auto px-6 text-center">
-          <p className="text-xs font-semibold text-blue-600 tracking-widest uppercase mb-3">{t.whatLabel}</p>
+          <p className="text-xs font-semibold text-blue-900 tracking-widest uppercase mb-3">{t.whatLabel}</p>
           <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 tracking-tight mb-4">{t.whatH2}</h2>
           <p className="text-base text-slate-500 leading-relaxed">{t.whatDesc}</p>
         </div>
@@ -266,7 +266,7 @@ export default function HomePage() {
               const Icon = IconMap[f.icon] || Sparkles;
               return (
                 <div key={i} className="group p-6 rounded-2xl border border-slate-100 bg-white hover:shadow-md hover:border-slate-200 transition-all duration-300">
-                  <Icon size={22} className="text-blue-600 mb-4" />
+                  <Icon size={22} className="text-blue-900 mb-4" />
                   <h3 className="text-[15px] font-semibold text-slate-800 mb-2">{f.title}</h3>
                   <p className="text-sm text-slate-500 leading-relaxed">{f.desc}</p>
                 </div>
@@ -280,7 +280,7 @@ export default function HomePage() {
       <section className="py-20 bg-[#FAFBFC]">
         <div className="max-w-[1200px] mx-auto px-6">
           <div className="text-center mb-14">
-            <p className="text-xs font-semibold text-blue-600 tracking-widest uppercase mb-3">{t.howLabel}</p>
+            <p className="text-xs font-semibold text-blue-900 tracking-widest uppercase mb-3">{t.howLabel}</p>
             <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 tracking-tight">{t.howH2}</h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-5xl mx-auto">
@@ -289,9 +289,9 @@ export default function HomePage() {
               return (
                 <div key={i} className="text-center group">
                   <div className="w-14 h-14 rounded-2xl border border-slate-200 bg-white flex items-center justify-center mx-auto mb-5 group-hover:border-blue-200 group-hover:shadow-sm transition-all">
-                    <Icon size={22} className="text-blue-600" />
+                    <Icon size={22} className="text-blue-900" />
                   </div>
-                  <div className="text-[11px] font-semibold text-blue-600 tracking-widest mb-2">{s.num}</div>
+                  <div className="text-[11px] font-semibold text-blue-900 tracking-widest mb-2">{s.num}</div>
                   <h3 className="text-[15px] font-semibold text-slate-800 mb-2">{s.title}</h3>
                   <p className="text-sm text-slate-500 leading-relaxed">{s.desc}</p>
                 </div>
@@ -308,7 +308,7 @@ export default function HomePage() {
           <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 tracking-tight mb-4">{t.ctaSectionH2}</h2>
           <p className="text-base text-slate-500 mb-8 leading-relaxed">{t.ctaSectionDesc}</p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link to="/login" className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-8 py-3 rounded-lg text-sm transition-all shadow-sm inline-flex items-center gap-2">
+            <Link to="/login" className="bg-[#0F1A2E] hover:bg-[#162032] text-white font-medium px-8 py-3 rounded-lg text-sm transition-all shadow-sm inline-flex items-center gap-2">
               {t.ctaSectionBtn}
               {isRtl ? <ArrowLeft size={16} /> : <ArrowRight size={16} />}
             </Link>
@@ -317,8 +317,8 @@ export default function HomePage() {
             </Link>
           </div>
           <div className="mt-10 flex items-center justify-center gap-6 text-slate-400 text-xs font-medium">
-            <span className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-blue-500" />{isRtl ? 'بدون تعقيد' : 'No Setup Fee'}</span>
-            <span className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-blue-500" />{isRtl ? 'دعم فني 24/7' : '24/7 Support'}</span>
+            <span className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-blue-800" />{isRtl ? 'بدون تعقيد' : 'No Setup Fee'}</span>
+            <span className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-blue-800" />{isRtl ? 'دعم فني 24/7' : '24/7 Support'}</span>
           </div>
         </div>
       </section>

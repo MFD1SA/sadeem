@@ -136,10 +136,10 @@ export default function AdminPlans() {
   };
 
   const planColors: Record<string, string> = {
-    orbit: 'from-blue-500/20 to-cyan-500/20 border-blue-500/30',
+    orbit: 'from-blue-900/20 to-cyan-500/20 border-blue-900/30',
     nova: 'from-purple-500/20 to-pink-500/20 border-purple-500/30',
     galaxy: 'from-amber-500/20 to-orange-500/20 border-amber-500/30',
-    infinity: 'from-emerald-500/20 to-blue-500/20 border-emerald-500/30',
+    infinity: 'from-emerald-500/20 to-blue-900/20 border-emerald-500/30',
   };
 
   if (loading) return (
@@ -159,7 +159,7 @@ export default function AdminPlans() {
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
       {/* Header */}
       <div className="flex items-center gap-4 mb-8">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 flex items-center justify-center">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-900/20 flex items-center justify-center">
           <Package size={20} className="text-cyan-600" />
         </div>
         <div>

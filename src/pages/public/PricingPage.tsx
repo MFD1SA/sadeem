@@ -101,7 +101,7 @@ export default function PricingPage() {
       {/* Hero */}
       <section className="py-20 px-6">
         <div className="max-w-3xl mx-auto text-center">
-          <span className="inline-block text-xs font-semibold text-blue-600 bg-blue-50 px-4 py-1.5 rounded-full mb-4">{t.heroTag}</span>
+          <span className="inline-block text-xs font-semibold text-blue-900 bg-blue-50 px-4 py-1.5 rounded-full mb-4">{t.heroTag}</span>
           <h1 className="text-3xl md:text-4xl font-bold text-slate-900 leading-tight mb-4">{t.heroH1}</h1>
           <p className="text-base text-slate-500 leading-relaxed">{t.heroSub}</p>
         </div>
@@ -113,7 +113,7 @@ export default function PricingPage() {
           {t.plans.map((plan: any, i: number) => (
             <div key={i} className={`relative rounded-2xl p-7 border flex flex-col transition-all hover:shadow-lg ${plan.popular ? 'border-blue-200 shadow-md ring-1 ring-blue-100 bg-white' : 'border-slate-100 bg-white'}`}>
               {plan.popular && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] font-bold text-white bg-blue-600 px-4 py-1 rounded-full">{t.mostPopular}</span>
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] font-bold text-white bg-[#0F1A2E] px-4 py-1 rounded-full">{t.mostPopular}</span>
               )}
               <div className="text-center mb-6 min-h-[100px]">
                 <p className="text-xs text-slate-400 mb-1">{plan.name}</p>
@@ -124,21 +124,21 @@ export default function PricingPage() {
                     <span className="text-sm text-slate-400 mx-1">{t.mo}</span>
                   </div>
                 ) : (
-                  <p className="text-sm text-blue-600 font-semibold mt-2">{t.contactSales}</p>
+                  <p className="text-sm text-blue-900 font-semibold mt-2">{t.contactSales}</p>
                 )}
               </div>
               <div className="h-px bg-slate-100 mb-5" />
               <ul className="space-y-2.5 mb-8 flex-1">
                 {plan.features.map((f: string, j: number) => (
                   <li key={j} className="flex items-start gap-2.5 text-sm text-slate-600">
-                    <CheckCircle2 size={14} className="text-blue-500 flex-shrink-0 mt-0.5" />
+                    <CheckCircle2 size={14} className="text-blue-800 flex-shrink-0 mt-0.5" />
                     <span>{f}</span>
                   </li>
                 ))}
               </ul>
               <Link
                 to={plan.price ? '/register' : '/contact-us'}
-                className={`block text-center py-3 rounded-xl text-sm font-semibold transition-colors mt-auto ${plan.popular ? 'bg-blue-600 text-white hover:bg-blue-700' : 'border border-slate-200 text-slate-700 hover:bg-slate-50'}`}
+                className={`block text-center py-3 rounded-xl text-sm font-semibold transition-colors mt-auto ${plan.popular ? 'bg-[#0F1A2E] text-white hover:bg-[#162032]' : 'border border-slate-200 text-slate-700 hover:bg-slate-50'}`}
               >
                 {plan.popular ? t.ctaHighlight : plan.price ? t.ctaDefault : t.contactSales}
               </Link>
@@ -156,7 +156,7 @@ export default function PricingPage() {
               <thead>
                 <tr className="bg-slate-50">
                   <th className={`py-3.5 px-5 font-semibold text-slate-700 border-b border-slate-100 ${isAr ? 'text-right' : 'text-left'}`}>{t.compareFeatureCol}</th>
-                  {PLAN_NAMES.map((n, i) => <th key={n} className={`py-3.5 px-4 font-semibold text-center border-b border-slate-100 ${t.plans[i]?.popular ? 'text-blue-700 bg-blue-50/50' : 'text-slate-700'}`}>{n}</th>)}
+                  {PLAN_NAMES.map((n, i) => <th key={n} className={`py-3.5 px-4 font-semibold text-center border-b border-slate-100 ${t.plans[i]?.popular ? 'text-blue-900 bg-blue-50/50' : 'text-slate-700'}`}>{n}</th>)}
                 </tr>
               </thead>
               <tbody>
@@ -165,7 +165,7 @@ export default function PricingPage() {
                     <td className={`py-3 px-5 font-medium text-slate-700 ${isAr ? 'text-right' : 'text-left'}`}>{row.label}</td>
                     {row.vals.map((v: string, j: number) => (
                       <td key={j} className={`py-3 px-4 text-center ${t.plans[j]?.popular ? 'bg-blue-50/30' : ''}`}>
-                        {v === 'check' ? <CheckCircle2 size={16} className="text-blue-500 mx-auto" />
+                        {v === 'check' ? <CheckCircle2 size={16} className="text-blue-800 mx-auto" />
                           : v === 'x' ? <XIcon size={16} className="text-slate-300 mx-auto" />
                           : <span className="text-slate-700 font-medium">{v}</span>}
                       </td>

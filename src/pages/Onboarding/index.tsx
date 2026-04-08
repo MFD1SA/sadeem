@@ -138,7 +138,7 @@ export default function Onboarding() {
     <div className="min-h-screen bg-[#0a0e1a] flex flex-col items-center justify-start sm:justify-center px-4 py-8 pb-24 sm:pb-8">
       {/* Logo */}
       <div className="flex items-center gap-3 mb-8">
-        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
+        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-500 to-[#0F1A2E] flex items-center justify-center">
           <Layers size={18} className="text-white" />
         </div>
         <span className="text-xl font-bold text-white">سيندا</span>
@@ -149,7 +149,7 @@ export default function Onboarding() {
         <div className="flex items-center justify-between relative">
           <div className="absolute top-4 left-0 right-0 h-0.5 bg-white/10" />
           <div
-            className="absolute top-4 right-0 h-0.5 bg-gradient-to-l from-cyan-500 to-blue-500 transition-all duration-500"
+            className="absolute top-4 right-0 h-0.5 bg-gradient-to-l from-cyan-500 to-[#0F1A2E] transition-all duration-500"
             style={{ width: `${((step - 1) / (STEPS.length - 1)) * 100}%` }}
           />
           {STEPS.map((s) => {
@@ -370,7 +370,7 @@ export default function Onboarding() {
             <button
               onClick={() => setStep(s => s + 1)}
               disabled={!canGoNext()}
-              className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-cyan-500 to-[#0F1A2E] text-white rounded-xl text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed"
             >
               {step === 3 ? 'تخطي' : 'التالي'} <ChevronLeft size={16} />
             </button>
@@ -378,7 +378,7 @@ export default function Onboarding() {
             <button
               onClick={handleFinish}
               disabled={saving}
-              className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-blue-600 text-white rounded-xl text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+              className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-[#0F1A2E] text-white rounded-xl text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
             >
               {saving ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle size={16} />}
               ابدأ الآن
@@ -401,7 +401,7 @@ export default function Onboarding() {
           <button
             onClick={() => setStep(s => s + 1)}
             disabled={!canGoNext()}
-            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-cyan-500 to-[#0F1A2E] text-white rounded-xl text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed"
           >
             {step === 3 ? 'تخطي' : 'التالي'} <ChevronLeft size={16} />
           </button>
@@ -409,7 +409,7 @@ export default function Onboarding() {
           <button
             onClick={handleFinish}
             disabled={saving}
-            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-blue-600 text-white rounded-xl text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-[#0F1A2E] text-white rounded-xl text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
           >
             {saving ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle size={16} />}
             ابدأ الآن

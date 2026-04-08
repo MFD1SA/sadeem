@@ -91,7 +91,7 @@ export default function ContactPage() {
       {/* Hero */}
       <section className="py-20 px-6">
         <div className="max-w-3xl mx-auto text-center">
-          <span className="inline-block text-xs font-semibold text-blue-600 bg-blue-50 px-4 py-1.5 rounded-full mb-4">{t.heroTag}</span>
+          <span className="inline-block text-xs font-semibold text-blue-900 bg-blue-50 px-4 py-1.5 rounded-full mb-4">{t.heroTag}</span>
           <h1 className="text-3xl md:text-4xl font-bold text-slate-900 leading-tight mb-4">{t.heroH1}</h1>
           <p className="text-base text-slate-500 leading-relaxed">{t.heroSub}</p>
         </div>
@@ -104,10 +104,10 @@ export default function ContactPage() {
           <div className="md:col-span-3">
             {sent ? (
               <div className="text-center py-16 rounded-2xl border border-blue-100 bg-blue-50/30">
-                <CheckCircle2 size={48} className="text-blue-500 mx-auto mb-4" />
+                <CheckCircle2 size={48} className="text-blue-800 mx-auto mb-4" />
                 <h3 className="text-xl font-bold text-slate-900 mb-2">{t.successTitle}</h3>
                 <p className="text-sm text-slate-500 mb-6">{t.successDesc}</p>
-                <button onClick={() => setSent(false)} className="text-sm font-medium text-blue-600 hover:text-blue-700">{t.sendAnother}</button>
+                <button onClick={() => setSent(false)} className="text-sm font-medium text-blue-900 hover:text-blue-900">{t.sendAnother}</button>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-5 bg-white rounded-2xl border border-slate-100 p-8">
@@ -124,7 +124,7 @@ export default function ContactPage() {
                   <label className="block text-sm font-medium text-slate-700 mb-1.5">{t.msgLabel}</label>
                   <textarea value={message} onChange={e => setMessage(e.target.value)} placeholder={t.msgPh} required rows={5} className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all resize-none" />
                 </div>
-                <button type="submit" disabled={loading} className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-3 rounded-xl text-sm font-semibold hover:bg-blue-700 disabled:opacity-50 transition-colors">
+                <button type="submit" disabled={loading} className="w-full flex items-center justify-center gap-2 bg-[#0F1A2E] text-white py-3 rounded-xl text-sm font-semibold hover:bg-[#162032] disabled:opacity-50 transition-colors">
                   {loading ? <><Loader2 size={16} className="animate-spin" /> {t.sending}</> : <><Send size={16} /> {t.sendBtn}</>}
                 </button>
               </form>
@@ -138,7 +138,7 @@ export default function ContactPage() {
               return (
                 <div key={i} className="flex items-start gap-4 p-5 rounded-2xl border border-slate-100 bg-white">
                   <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
-                    <Icon size={18} className="text-blue-600" />
+                    <Icon size={18} className="text-blue-900" />
                   </div>
                   <div>
                     <h4 className="font-semibold text-slate-900 text-sm mb-1">{card.title}</h4>

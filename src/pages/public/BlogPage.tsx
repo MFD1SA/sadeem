@@ -51,7 +51,7 @@ export default function BlogPage() {
       {/* Hero */}
       <section className="py-20 px-6">
         <div className="max-w-3xl mx-auto text-center">
-          <span className="inline-block text-xs font-semibold text-blue-600 bg-blue-50 px-4 py-1.5 rounded-full mb-4">{t.heroTag}</span>
+          <span className="inline-block text-xs font-semibold text-blue-900 bg-blue-50 px-4 py-1.5 rounded-full mb-4">{t.heroTag}</span>
           <h1 className="text-3xl md:text-4xl font-bold text-slate-900 leading-tight mb-4">{t.heroH1}</h1>
           <p className="text-base text-slate-500 leading-relaxed">{t.heroSub}</p>
         </div>
@@ -63,7 +63,7 @@ export default function BlogPage() {
           {t.articles.map((article: any, i: number) => (
             <article key={i} className="group rounded-2xl border border-slate-100 bg-white hover:shadow-md hover:border-slate-200 overflow-hidden transition-all">
               <div className="h-40 bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
-                <span className="text-xs font-semibold text-blue-600 bg-white px-3 py-1 rounded-full border border-blue-100">{article.category}</span>
+                <span className="text-xs font-semibold text-blue-900 bg-white px-3 py-1 rounded-full border border-blue-100">{article.category}</span>
               </div>
               <div className="p-5">
                 <div className="flex items-center gap-3 text-xs text-slate-400 mb-3">
@@ -72,7 +72,7 @@ export default function BlogPage() {
                 </div>
                 <h3 className="font-bold text-slate-900 mb-2 leading-snug">{article.title}</h3>
                 <p className="text-sm text-slate-500 leading-relaxed mb-4 line-clamp-3">{article.excerpt}</p>
-                <span className="text-sm font-medium text-blue-600 cursor-default">{t.readMore}</span>
+                <span className="text-sm font-medium text-blue-900 cursor-default">{t.readMore}</span>
               </div>
             </article>
           ))}

@@ -69,7 +69,7 @@ export default function FeaturesPage() {
       {/* Hero */}
       <section className="py-20 px-6">
         <div className="max-w-3xl mx-auto text-center">
-          <span className="inline-block text-xs font-semibold text-blue-600 bg-blue-50 px-4 py-1.5 rounded-full mb-4">{t.heroTag}</span>
+          <span className="inline-block text-xs font-semibold text-blue-900 bg-blue-50 px-4 py-1.5 rounded-full mb-4">{t.heroTag}</span>
           <h1 className="text-3xl md:text-4xl font-bold text-slate-900 leading-tight mb-4">{t.heroH1}</h1>
           <p className="text-base text-slate-500 leading-relaxed max-w-xl mx-auto">{t.heroSub}</p>
         </div>
@@ -82,7 +82,7 @@ export default function FeaturesPage() {
             const Icon = ICONS[f.icon] || Star;
             return (
               <div key={i} className="group p-6 rounded-2xl border border-slate-100 bg-white hover:shadow-md hover:border-slate-200 transition-all">
-                <Icon size={22} className="text-blue-600 mb-4" />
+                <Icon size={22} className="text-blue-900 mb-4" />
                 <h3 className="font-bold text-slate-900 mb-2">{f.title}</h3>
                 <p className="text-sm text-slate-500 leading-relaxed">{f.desc}</p>
               </div>
@@ -96,7 +96,7 @@ export default function FeaturesPage() {
         <div className="max-w-2xl mx-auto text-center">
           <h2 className="text-2xl font-bold text-slate-900 mb-2">{t.ctaTitle}</h2>
           <p className="text-sm text-slate-500 mb-6">{t.ctaDesc}</p>
-          <Link to="/register" className="inline-block bg-blue-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors">
+          <Link to="/register" className="inline-block bg-[#0F1A2E] text-white px-8 py-3 rounded-xl font-semibold hover:bg-[#162032] transition-colors">
             {t.ctaBtn}
           </Link>
         </div>

@@ -59,7 +59,7 @@ export default function FaqPage() {
       {/* Hero */}
       <section className="py-20 px-6">
         <div className="max-w-3xl mx-auto text-center">
-          <span className="inline-block text-xs font-semibold text-blue-600 bg-blue-50 px-4 py-1.5 rounded-full mb-4">{t.heroTag}</span>
+          <span className="inline-block text-xs font-semibold text-blue-900 bg-blue-50 px-4 py-1.5 rounded-full mb-4">{t.heroTag}</span>
           <h1 className="text-3xl md:text-4xl font-bold text-slate-900 leading-tight mb-4">{t.heroH1}</h1>
           <p className="text-base text-slate-500 leading-relaxed">{t.heroSub}</p>
         </div>
@@ -74,7 +74,7 @@ export default function FaqPage() {
               <div key={i} className={`rounded-xl border transition-colors ${isOpen ? 'border-blue-200 bg-blue-50/30' : 'border-slate-100 bg-white'}`}>
                 <button onClick={() => setOpenIdx(isOpen ? null : i)} className="w-full flex items-center justify-between p-5 text-start">
                   <span className="font-semibold text-slate-900 text-sm">{faq.q}</span>
-                  {isOpen ? <ChevronUp size={18} className="text-blue-600 flex-shrink-0" /> : <ChevronDown size={18} className="text-slate-400 flex-shrink-0" />}
+                  {isOpen ? <ChevronUp size={18} className="text-blue-900 flex-shrink-0" /> : <ChevronDown size={18} className="text-slate-400 flex-shrink-0" />}
                 </button>
                 {isOpen && <div className="px-5 pb-5"><p className="text-sm text-slate-600 leading-relaxed">{faq.a}</p></div>}
               </div>
@@ -87,7 +87,7 @@ export default function FaqPage() {
       <section className="py-16 px-6 bg-white">
         <div className="max-w-2xl mx-auto text-center">
           <h2 className="text-2xl font-bold text-slate-900 mb-4">{t.ctaTitle}</h2>
-          <Link to="/contact-us" className="inline-block bg-blue-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors">{t.ctaBtn}</Link>
+          <Link to="/contact-us" className="inline-block bg-[#0F1A2E] text-white px-8 py-3 rounded-xl font-semibold hover:bg-[#162032] transition-colors">{t.ctaBtn}</Link>
         </div>
       </section>
     </PublicLayout>

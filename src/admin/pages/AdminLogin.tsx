@@ -59,7 +59,7 @@ function AdminLoginForm() {
             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
           />
           <h1 className="text-xl font-bold text-slate-900 mb-1">
-            {branding?.platform_name_ar || 'سيندا'} <span className="text-blue-600 font-light">|</span> <span className="font-medium text-base text-slate-500">لوحة الإدارة</span>
+            {branding?.platform_name_ar || 'سيندا'} <span className="text-blue-900 font-light">|</span> <span className="font-medium text-base text-slate-500">لوحة الإدارة</span>
           </h1>
           <p className="text-xs text-slate-400 leading-relaxed max-w-[280px] mx-auto">
             {branding?.tagline || 'مركز التحكم المركزي لإدارة المنصة والمشتركين والعمليات'}
@@ -69,7 +69,7 @@ function AdminLoginForm() {
         {/* Login card */}
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
           {/* Card header accent */}
-          <div className="h-[2px] bg-gradient-to-r from-transparent via-blue-500 to-transparent" />
+          <div className="h-[2px] bg-gradient-to-r from-transparent via-blue-900 to-transparent" />
 
           <div className="p-6">
             {displayError && (
@@ -121,7 +121,7 @@ function AdminLoginForm() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-3 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors active:scale-[0.98]"
+                className="w-full py-3 rounded-xl text-sm font-semibold text-white bg-[#0F1A2E] hover:bg-[#162032] disabled:opacity-50 disabled:cursor-not-allowed transition-colors active:scale-[0.98]"
               >
                 {isLoading ? (
                   <span className="flex items-center justify-center gap-2">
