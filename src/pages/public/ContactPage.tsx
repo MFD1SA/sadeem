@@ -13,7 +13,7 @@ const T: Record<Lang, Record<string, any>> = {
   ar: {
     heroTag: 'تواصل معنا',
     heroH1: 'نحن هنا لمساعدتك',
-    heroSub: 'أرسل لنا رسالتك وسنتواصل معك في أقرب وقت ممكن',
+    heroSub: 'شاركنا استفسارك أو طلبك، وسنعود إليك في أقرب وقت بخدمة تليق باهتمامك',
     heroBtn: 'أرسل رسالتك الآن',
     nameLabel: 'الاسم الكامل',
     namePh: 'أدخل اسمك الكامل',
@@ -30,7 +30,7 @@ const T: Record<Lang, Record<string, any>> = {
     infoCards: [
       { title: 'موقعنا', desc: 'المملكة العربية السعودية', icon: 'MapPin' },
       { title: 'ساعات العمل', desc: 'الأحد – الخميس، 9 ص – 6 م', icon: 'Clock' },
-      { title: 'الدعم الفني', desc: 'متاح عبر نظام التذاكر داخل المنصة', icon: 'MessageSquare' },
+      { title: 'الدعم الفني', desc: 'متاح عبر نظام التذاكر داخل لوحة التحكم', icon: 'MessageSquare' },
     ],
   },
   en: {

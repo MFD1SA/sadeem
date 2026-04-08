@@ -59,8 +59,8 @@ export default function SeoLanding() {
     : 'AI-Powered Google Review Management — SENDA';
 
   const descAr = cityInfo && indInfo
-    ? `منصة SENDA تساعد ${indInfo.ar} في ${cityInfo.ar} على الرد تلقائياً على تقييمات Google وتحسين تقييمهم بالذكاء الاصطناعي. جرّب مجاناً.`
-    : 'منصة SENDA لإدارة وتحسين تقييمات Google بالذكاء الاصطناعي. ردود تلقائية، تحليلات، وحماية للسمعة.';
+    ? `SENDA يساعد ${indInfo.ar} في ${cityInfo.ar} على الرد تلقائياً على تقييمات Google وتحسين تقييمهم بالذكاء الاصطناعي. جرّب مجاناً.`
+    : 'SENDA لإدارة وتحسين تقييمات Google بالذكاء الاصطناعي. ردود تلقائية، تحليلات، وحماية للسمعة.';
 
   useEffect(() => {
     document.title = titleAr;
@@ -105,7 +105,7 @@ export default function SeoLanding() {
           </h1>
           <p className="text-white/75 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed mb-8">
             {cityInfo && indInfo
-              ? `منصة SENDA تساعد ${indInfo.ar} في ${cityInfo.ar} على الرد تلقائياً على تقييمات Google، تحسين التقييم، وحماية السمعة — كل ذلك بالذكاء الاصطناعي.`
+              ? `SENDA يساعد ${indInfo.ar} في ${cityInfo.ar} على الرد تلقائياً على تقييمات Google، تحسين التقييم، وحماية السمعة — كل ذلك بالذكاء الاصطناعي.`
               : 'رد تلقائي، تحليلات متقدمة، وحماية سمعة كاملة — لمئات الأنشطة التجارية في المملكة العربية السعودية.'}
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -145,7 +145,7 @@ export default function SeoLanding() {
       <section id="features" className="max-w-5xl mx-auto px-4 py-16">
         <h2 className="text-2xl font-bold text-gray-900 text-center mb-3">
           {cityInfo && indInfo
-            ? `لماذا يختار ${indInfo.ar} في ${cityInfo.ar} منصة SENDA؟`
+            ? `لماذا يختار ${indInfo.ar} في ${cityInfo.ar} SENDA؟`
             : 'لماذا تختار SENDA؟'}
         </h2>
         <p className="text-center text-gray-500 text-sm mb-10 max-w-xl mx-auto">
@@ -186,7 +186,7 @@ export default function SeoLanding() {
 
       {/* Footer */}
       <footer className="border-t border-gray-100 py-6 text-center text-xs text-gray-400">
-        <p>© {new Date().getFullYear()} SENDA — منصة إدارة التقييمات بالذكاء الاصطناعي للمملكة العربية السعودية</p>
+        <p>© {new Date().getFullYear()} SENDA — نظام إدارة التقييمات بالذكاء الاصطناعي للمملكة العربية السعودية</p>
         {cityInfo && indInfo && (
           <p className="mt-1">
             خدماتنا متاحة لـ{indInfo.ar} في {cityInfo.ar} وجميع أنحاء المملكة العربية السعودية

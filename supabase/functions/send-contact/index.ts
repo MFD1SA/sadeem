@@ -198,7 +198,7 @@ function buildEmailHtml(p: { name: string; email: string; phone?: string | null;
   <div class="card">
     <div class="header">
       <h1>رسالة جديدة من نموذج التواصل</h1>
-      <p>سيندا — منصة إدارة تقييمات جوجل</p>
+      <p>سيندا — نظام إدارة تقييمات جوجل</p>
     </div>
     <div class="body">
       <div class="field"><div class="label">الاسم</div><div class="value">${esc(p.name)}</div></div>
@@ -238,10 +238,10 @@ function buildThankYouHtml(name: string) {
     <div class="body">
       <p>مرحباً ${esc(name)}،</p>
       <p>تم استلام رسالتك بنجاح. سيقوم فريقنا بالرد عليك في أقرب وقت ممكن.</p>
-      <p>نقدّر اهتمامك بسيندا — منصة إدارة تقييمات جوجل الذكية.</p>
+      <p>نقدّر اهتمامك بسيندا — نظام إدارة تقييمات جوجل الذكي.</p>
       <p>مع تحيات فريق سيندا</p>
     </div>
-    <div class="footer">سيندا — منصة إدارة تقييمات جوجل</div>
+    <div class="footer">سيندا — نظام إدارة تقييمات جوجل</div>
   </div>
 </body>
 </html>`;

@@ -13,7 +13,7 @@ const T: Record<Lang, Record<string, any>> = {
   ar: {
     heroTag: 'من نحن',
     heroH1: 'نبني مستقبل إدارة السمعة الرقمية',
-    heroSub: 'سيندا منصة سعودية تمكّن الأنشطة التجارية من إدارة تقييماتها وتحسين حضورها الرقمي بذكاء وكفاءة',
+    heroSub: 'سيندا حل سعودي ذكي يساعد الأنشطة التجارية على تعزيز حضورها الرقمي وإدارة سمعتها بكفاءة واحترافية',
     heroBtn: 'ابدأ تجربتك المجانية',
     storyTitle: 'قصتنا',
     storyP1: 'بدأت سيندا من إيمان عميق بأن كل تقييم يحمل فرصة حقيقية للنمو. في سوق يزداد فيه الاعتماد على التقييمات الرقمية، أدركنا أن الأنشطة التجارية تحتاج إلى أدوات ذكية وموثوقة لإدارة سمعتها.',
@@ -22,7 +22,7 @@ const T: Record<Lang, Record<string, any>> = {
     missionTitle: 'تمكين كل نشاط تجاري من بناء سمعة رقمية قوية',
     missionDesc: 'نؤمن بأن كل تقييم هو فرصة للنمو. سيندا تساعدك على تحويل آراء العملاء إلى محرّك حقيقي لتطوير أعمالك وبناء ثقة دائمة مع جمهورك.',
     visionLabel: 'رؤيتنا',
-    visionTitle: 'أن نكون المنصة الأولى لإدارة التقييمات في المنطقة',
+    visionTitle: 'أن نكون الخيار الأول لإدارة التقييمات في المنطقة',
     visionDesc: 'نطمح لأن تكون سيندا الخيار الأول لكل نشاط تجاري يسعى لإدارة سمعته الرقمية باحترافية، من المتاجر الصغيرة إلى السلاسل الكبرى.',
     valuesTitle: 'قيمنا الأساسية',
     valuesDesc: 'المبادئ التي توجّه كل قرار نتخذه وكل ميزة نبنيها',
@@ -35,7 +35,7 @@ const T: Record<Lang, Record<string, any>> = {
     whyTitle: 'لماذا تختار سيندا؟',
     whyDesc: 'مميزات تجعلنا الخيار الأمثل لإدارة سمعتك الرقمية',
     whyItems: [
-      'منصة سعودية مصممة للسوق المحلي والعربي',
+      'حل سعودي مصمم للسوق المحلي والعربي',
       'ذكاء اصطناعي متقدم يفهم اللغة العربية',
       'دعم فني متخصص على مدار الساعة',
       'تكامل سلس مع Google Business Profile',
@@ -50,7 +50,7 @@ const T: Record<Lang, Record<string, any>> = {
   en: {
     heroTag: 'About Us',
     heroH1: 'Building the Future of Reputation Management',
-    heroSub: 'SENDA is a Saudi platform empowering businesses to manage reviews and enhance their digital presence with intelligence and efficiency',
+    heroSub: 'SENDA is a smart Saudi solution empowering businesses to manage reviews and enhance their digital presence with intelligence and efficiency',
     heroBtn: 'Start Your Free Trial',
     storyTitle: 'Our Story',
     storyP1: 'SENDA was born from a deep belief that every review holds a real opportunity for growth. In a market increasingly reliant on digital reviews, we realized businesses need smart, reliable tools to manage their reputation.',
@@ -72,7 +72,7 @@ const T: Record<Lang, Record<string, any>> = {
     whyTitle: 'Why Choose SENDA?',
     whyDesc: 'Features that make us the ideal choice for managing your digital reputation',
     whyItems: [
-      'Saudi platform designed for the local and Arab market',
+      'Saudi solution designed for the local and Arab market',
       'Advanced AI that understands Arabic language',
       'Dedicated 24/7 technical support',
       'Seamless Google Business Profile integration',

@@ -497,7 +497,7 @@ export default function StoryPage() {
                 <img src="/senda-logo.png" alt="SENDA" style={{ height: 28, width: 'auto', opacity: 0.9 }} />
               </button>
               <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.7, maxWidth: 220, margin: '0 0 20px' }}>
-                منصة متكاملة لإدارة تقييمات جوجل وتحسين السمعة الرقمية للأعمال العربية
+                حلك المتكامل لإدارة تقييمات جوجل وتحسين السمعة الرقمية للأعمال العربية
               </p>
               <div style={{ display: 'flex', gap: 10 }}>
                 <button onClick={() => navigate('/register')}

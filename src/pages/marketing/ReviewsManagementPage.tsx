@@ -139,7 +139,7 @@ export default function ReviewsManagementPage() {
             <h2 style={{ fontSize: 22, fontWeight: 700, color: C.text }}>تكامل مع Google Business Profile</h2>
           </div>
           <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.8, marginBottom: 20 }}>
-            يتصل سيندا مباشرة بحسابك على Google Business Profile لسحب التقييمات تلقائياً والرد عليها من داخل المنصة. لا حاجة للتنقل بين عدة منصات — كل شيء في مكان واحد.
+            يتصل سيندا مباشرة بحسابك على Google Business Profile لسحب التقييمات تلقائياً والرد عليها من لوحة التحكم. لا حاجة للتنقل بين عدة أدوات — كل شيء في مكان واحد.
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {['سحب تلقائي لجميع التقييمات الجديدة', 'الرد المباشر من داخل سيندا', 'مزامنة فورية مع Google', 'دعم حسابات متعددة'].map((t, i) => (
