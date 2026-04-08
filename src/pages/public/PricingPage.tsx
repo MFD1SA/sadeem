@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { CheckCircle2, X as XIcon, ArrowLeft, ArrowRight } from 'lucide-react';
 import PublicLayout from '@/layouts/PublicLayout';
+import { getSavedLang, saveLang } from '@/lib/lang';
 
 type Lang = 'ar' | 'en';
 
@@ -94,7 +95,7 @@ const T: Record<Lang, Record<string, any>> = {
 const PLAN_NAMES = ['Orbit', 'Nova', 'Galaxy', 'Infinity'];
 
 export default function PricingPage() {
-  const [lang, setLang] = useState<Lang>('ar');
+  const [lang, setLang] = useState<Lang>(getSavedLang);
   const t = T[lang];
   const isAr = lang === 'ar';
   const isRtl = lang === 'ar';
@@ -102,7 +103,7 @@ export default function PricingPage() {
   useEffect(() => { document.title = lang === 'ar' ? 'سيندا | SENDA — الباقات' : 'SENDA | سيندا — Pricing'; }, [lang]);
 
   return (
-    <PublicLayout lang={lang} onToggleLang={() => setLang(l => l === 'ar' ? 'en' : 'ar')}>
+    <PublicLayout lang={lang} onToggleLang={() => setLang(l => { const next = l === 'ar' ? 'en' : 'ar'; saveLang(next); return next; })}>
       {/* ═══════════ DARK HERO ═══════════ */}
       <section className="relative overflow-hidden pt-36 md:pt-44 pb-20 md:pb-28" style={{ background: 'linear-gradient(160deg, #0B1120 0%, #162032 40%, #0F1A2E 100%)' }}>
         <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px)', backgroundSize: '60px 60px' }} />

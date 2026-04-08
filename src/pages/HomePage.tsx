@@ -12,6 +12,7 @@ import {
   Star, MessageSquare, BellRing, ListChecks, CreditCard,
   Link2, RefreshCw, MessageCircle,
 } from 'lucide-react';
+import { getSavedLang, saveLang } from '@/lib/lang';
 
 // ─── Translations ─────────────────────────────────────────────────────────────
 type Lang = 'ar' | 'en';
@@ -149,7 +150,7 @@ const IconMap: Record<string, any> = {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function HomePage() {
-  const [lang, setLang] = useState<Lang>('ar');
+  const [lang, setLang] = useState<Lang>(getSavedLang);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const t = T[lang];
@@ -187,7 +188,7 @@ export default function HomePage() {
 
           {/* Desktop CTAs */}
           <div className="hidden lg:flex items-center gap-3">
-            <button onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')} className={`px-3.5 py-1.5 text-xs font-medium rounded-lg transition-colors ${scrolled ? 'text-slate-500 border border-slate-200 hover:bg-slate-50' : 'text-white/70 border border-white/20 hover:bg-white/10'}`}>{t.langToggle}</button>
+            <button onClick={() => { const next = lang === 'ar' ? 'en' : 'ar'; saveLang(next); setLang(next); }} className={`px-3.5 py-1.5 text-xs font-medium rounded-lg transition-colors ${scrolled ? 'text-slate-500 border border-slate-200 hover:bg-slate-50' : 'text-white/70 border border-white/20 hover:bg-white/10'}`}>{t.langToggle}</button>
             <Link to="/login" className={`text-sm transition-colors px-3 py-1.5 ${scrolled ? 'text-slate-600 hover:text-slate-900' : 'text-white/80 hover:text-white'}`}>{t.loginBtn}</Link>
             <Link to="/login" className="bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium px-5 py-2 rounded-lg transition-all shadow-sm">{t.ctaBtn}</Link>
           </div>
@@ -205,7 +206,7 @@ export default function HomePage() {
               <Link key={i} to={t.navPaths[i]} onClick={() => setMobileOpen(false)} className="block py-3 text-sm text-slate-600 border-b border-slate-50">{label}</Link>
             ))}
             <div className="flex gap-3 mt-4">
-              <button onClick={() => { setLang(lang === 'ar' ? 'en' : 'ar'); setMobileOpen(false); }} className="px-4 py-2 text-sm border border-slate-200 rounded-lg text-slate-500">{t.langToggle}</button>
+              <button onClick={() => { const next = lang === 'ar' ? 'en' : 'ar'; saveLang(next); setLang(next); setMobileOpen(false); }} className="px-4 py-2 text-sm border border-slate-200 rounded-lg text-slate-500">{t.langToggle}</button>
               <Link to="/login" onClick={() => setMobileOpen(false)} className="flex-1 bg-[#0F1A2E] text-white text-sm font-medium py-2 rounded-lg text-center">{t.ctaBtn}</Link>
             </div>
           </div>
@@ -315,10 +316,10 @@ export default function HomePage() {
       </section>
 
       {/* ═══════════════════ SHOWCASE — 4 Alternating Blocks ═══════════════════ */}
-      <section id="senda-content" className="py-0">
+      <section id="senda-content" className="py-0 [&>div]:border-t-0">
 
           {/* ── Block 1 ── */}
-          <div className="bg-gradient-to-br from-blue-50/80 via-white to-sky-50/50 py-16 sm:py-20 px-6">
+          <div className="bg-gradient-to-br from-blue-50 to-sky-50/80 py-14 sm:py-18 px-6">
           <div className="max-w-[1100px] mx-auto grid md:grid-cols-2 gap-8 md:gap-12 items-center">
             <div className={`${isRtl ? 'md:order-2' : ''}`}>
               <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 mb-4 leading-tight">{t.showcaseBlocks[0].title}</h3>
@@ -363,7 +364,7 @@ export default function HomePage() {
           </div>
 
           {/* ── Block 2 ── */}
-          <div className="bg-gradient-to-br from-slate-50 via-white to-slate-50/80 py-16 sm:py-20 px-6">
+          <div className="bg-slate-50 py-14 sm:py-18 px-6">
           <div className="max-w-[1100px] mx-auto grid md:grid-cols-2 gap-8 md:gap-12 items-center">
             <div className={`${isRtl ? '' : 'md:order-2'}`}>
               <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 mb-4 leading-tight">{t.showcaseBlocks[1].title}</h3>
@@ -407,7 +408,7 @@ export default function HomePage() {
           </div>
 
           {/* ── Block 3 ── */}
-          <div className="bg-gradient-to-br from-amber-50/40 via-white to-orange-50/30 py-16 sm:py-20 px-6">
+          <div className="bg-gradient-to-br from-amber-50/60 to-orange-50/40 py-14 sm:py-18 px-6">
           <div className="max-w-[1100px] mx-auto grid md:grid-cols-2 gap-8 md:gap-12 items-center">
             <div className={`${isRtl ? 'md:order-2' : ''}`}>
               <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 mb-4 leading-tight">{t.showcaseBlocks[2].title}</h3>
@@ -447,7 +448,7 @@ export default function HomePage() {
           </div>
 
           {/* ── Block 4 ── */}
-          <div className="bg-gradient-to-br from-emerald-50/50 via-white to-teal-50/30 py-16 sm:py-20 px-6">
+          <div className="bg-gradient-to-br from-emerald-50/60 to-teal-50/40 py-14 sm:py-18 px-6">
           <div className="max-w-[1100px] mx-auto grid md:grid-cols-2 gap-8 md:gap-12 items-center">
             <div className={`${isRtl ? '' : 'md:order-2'}`}>
               <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 mb-4 leading-tight">{t.showcaseBlocks[3].title}</h3>
@@ -512,7 +513,7 @@ export default function HomePage() {
             {t.featureCards.map((f: any, i: number) => {
               const Icon = IconMap[f.icon] || Sparkles;
               return (
-                <div key={i} className="group relative p-7 rounded-2xl border border-slate-100 bg-white hover:border-blue-100 hover:shadow-xl hover:shadow-blue-900/5 transition-all duration-500">
+                <div key={i} className="group relative p-7 rounded-2xl border border-slate-100 bg-white hover:border-blue-200 hover:shadow-[0_0_30px_rgba(59,130,246,0.15)] hover:bg-blue-50/30 transition-all duration-500 cursor-pointer">
                   <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#0F1A2E] to-[#1a2d45] flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-500">
                     <Icon size={20} className="text-blue-300" />
                   </div>

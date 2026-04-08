@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Target, Eye, Gem, Users, Rocket, ShieldCheck, CheckCircle2, ArrowLeft, ArrowRight } from 'lucide-react';
 import PublicLayout from '@/layouts/PublicLayout';
+import { getSavedLang, saveLang } from '@/lib/lang';
 
 type Lang = 'ar' | 'en';
 
@@ -88,14 +89,14 @@ const T: Record<Lang, Record<string, any>> = {
 const ICONS: Record<string, any> = { Rocket, ShieldCheck, Gem, Users };
 
 export default function AboutPage() {
-  const [lang, setLang] = useState<Lang>('ar');
+  const [lang, setLang] = useState<Lang>(getSavedLang);
   const t = T[lang];
   const isRtl = lang === 'ar';
 
   useEffect(() => { document.title = lang === 'ar' ? 'سيندا | SENDA — من نحن' : 'SENDA | سيندا — About'; }, [lang]);
 
   return (
-    <PublicLayout lang={lang} onToggleLang={() => setLang(l => l === 'ar' ? 'en' : 'ar')}>
+    <PublicLayout lang={lang} onToggleLang={() => setLang(l => { const next = l === 'ar' ? 'en' : 'ar'; saveLang(next); return next; })}>
 
       {/* ═══════════ DARK HERO ═══════════ */}
       <section className="relative overflow-hidden pt-36 md:pt-44 pb-20 md:pb-28" style={{ background: 'linear-gradient(160deg, #0B1120 0%, #162032 40%, #0F1A2E 100%)' }}>
