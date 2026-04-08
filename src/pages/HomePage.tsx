@@ -20,8 +20,8 @@ const T: Record<Lang, Record<string, any>> = {
   ar: {
     dir: 'rtl',
     langToggle: 'EN',
-    nav: ['من نحن', 'المميزات', 'الباقات', 'الأسئلة الشائعة', 'المدونة', 'تواصل معنا'],
-    navPaths: ['/about', '/features', '/pricing', '/faq', '/blog', '/contact-us'],
+    nav: ['الرئيسية', 'من نحن', 'المميزات', 'الباقات', 'الأسئلة الشائعة', 'المدونة', 'تواصل معنا'],
+    navPaths: ['/', '/about', '/features', '/pricing', '/faq', '/blog', '/contact-us'],
     loginBtn: 'دخول',
     ctaBtn: 'ابدأ الآن',
     heroTag: 'منصة إدارة التقييمات الأولى في السعودية',
@@ -75,8 +75,8 @@ const T: Record<Lang, Record<string, any>> = {
   en: {
     dir: 'ltr',
     langToggle: 'عربي',
-    nav: ['About', 'Features', 'Pricing', 'FAQ', 'Blog', 'Contact'],
-    navPaths: ['/about', '/features', '/pricing', '/faq', '/blog', '/contact-us'],
+    nav: ['Home', 'About', 'Features', 'Pricing', 'FAQ', 'Blog', 'Contact'],
+    navPaths: ['/', '/about', '/features', '/pricing', '/faq', '/blog', '/contact-us'],
     loginBtn: 'Login',
     ctaBtn: 'Get Started',
     heroTag: 'The Leading Review Management Platform in Saudi Arabia',
