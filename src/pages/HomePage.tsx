@@ -316,7 +316,7 @@ export default function HomePage() {
                           <Icon size={26} className="text-blue-400" />
                         </div>
                       </div>
-                      <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold shadow-lg shadow-blue-500/30">{s.num.replace('0', '')}</div>
+                      {/* step number removed per request */}
                     </div>
                     <h3 className="text-base font-bold text-white mb-2">{s.title}</h3>
                     <p className="text-sm text-slate-400 leading-relaxed max-w-[220px] mx-auto">{s.desc}</p>
