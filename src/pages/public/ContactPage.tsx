@@ -91,7 +91,7 @@ export default function ContactPage() {
       {/* Hero */}
       <section className="py-20 px-6">
         <div className="max-w-3xl mx-auto text-center">
-          <span className="inline-block text-xs font-semibold text-teal-600 bg-teal-50 px-4 py-1.5 rounded-full mb-4">{t.heroTag}</span>
+          <span className="inline-block text-xs font-semibold text-blue-600 bg-blue-50 px-4 py-1.5 rounded-full mb-4">{t.heroTag}</span>
           <h1 className="text-3xl md:text-4xl font-bold text-slate-900 leading-tight mb-4">{t.heroH1}</h1>
           <p className="text-base text-slate-500 leading-relaxed">{t.heroSub}</p>
         </div>
@@ -103,28 +103,28 @@ export default function ContactPage() {
           {/* Form */}
           <div className="md:col-span-3">
             {sent ? (
-              <div className="text-center py-16 rounded-2xl border border-teal-100 bg-teal-50/30">
-                <CheckCircle2 size={48} className="text-teal-500 mx-auto mb-4" />
+              <div className="text-center py-16 rounded-2xl border border-blue-100 bg-blue-50/30">
+                <CheckCircle2 size={48} className="text-blue-500 mx-auto mb-4" />
                 <h3 className="text-xl font-bold text-slate-900 mb-2">{t.successTitle}</h3>
                 <p className="text-sm text-slate-500 mb-6">{t.successDesc}</p>
-                <button onClick={() => setSent(false)} className="text-sm font-medium text-teal-600 hover:text-teal-700">{t.sendAnother}</button>
+                <button onClick={() => setSent(false)} className="text-sm font-medium text-blue-600 hover:text-blue-700">{t.sendAnother}</button>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-5 bg-white rounded-2xl border border-slate-100 p-8">
                 {error && <div className="bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl p-3">{error}</div>}
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1.5">{t.nameLabel}</label>
-                  <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder={t.namePh} required className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-teal-300 focus:ring-2 focus:ring-teal-100 transition-all" />
+                  <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder={t.namePh} required className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1.5">{t.emailLabel}</label>
-                  <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder={t.emailPh} required dir="ltr" className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-teal-300 focus:ring-2 focus:ring-teal-100 transition-all" />
+                  <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder={t.emailPh} required dir="ltr" className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1.5">{t.msgLabel}</label>
-                  <textarea value={message} onChange={e => setMessage(e.target.value)} placeholder={t.msgPh} required rows={5} className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-teal-300 focus:ring-2 focus:ring-teal-100 transition-all resize-none" />
+                  <textarea value={message} onChange={e => setMessage(e.target.value)} placeholder={t.msgPh} required rows={5} className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all resize-none" />
                 </div>
-                <button type="submit" disabled={loading} className="w-full flex items-center justify-center gap-2 bg-teal-600 text-white py-3 rounded-xl text-sm font-semibold hover:bg-teal-700 disabled:opacity-50 transition-colors">
+                <button type="submit" disabled={loading} className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-3 rounded-xl text-sm font-semibold hover:bg-blue-700 disabled:opacity-50 transition-colors">
                   {loading ? <><Loader2 size={16} className="animate-spin" /> {t.sending}</> : <><Send size={16} /> {t.sendBtn}</>}
                 </button>
               </form>
@@ -137,8 +137,8 @@ export default function ContactPage() {
               const Icon = ICONS[card.icon] || MapPin;
               return (
                 <div key={i} className="flex items-start gap-4 p-5 rounded-2xl border border-slate-100 bg-white">
-                  <div className="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center flex-shrink-0">
-                    <Icon size={18} className="text-teal-600" />
+                  <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
+                    <Icon size={18} className="text-blue-600" />
                   </div>
                   <div>
                     <h4 className="font-semibold text-slate-900 text-sm mb-1">{card.title}</h4>

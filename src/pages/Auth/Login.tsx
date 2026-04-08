@@ -109,7 +109,7 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <div className="text-center flex flex-col items-center">
-          <div className="w-8 h-8 rounded-full border-2 border-slate-200 animate-spin mb-4 border-t-teal-600" />
+          <div className="w-8 h-8 rounded-full border-2 border-slate-200 animate-spin mb-4 border-t-blue-600" />
           <p className="text-sm text-slate-500">{t.auth.signingIn}</p>
         </div>
       </div>
@@ -218,7 +218,7 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
             {/* Back link */}
             <button
               onClick={resetToLogin}
-              className="flex items-center gap-1.5 text-xs mb-5 text-teal-600 hover:text-teal-700 transition-colors"
+              className="flex items-center gap-1.5 text-xs mb-5 text-blue-600 hover:text-blue-700 transition-colors"
             >
               <ArrowRight size={13} className={isAr ? '' : 'rotate-180'} />
               {t.auth.backToSignIn}
@@ -244,7 +244,7 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
                 <div>
                   <label className="block text-xs font-medium text-slate-600 mb-1.5">{t.auth.email}</label>
                   <input
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-teal-300 focus:ring-2 focus:ring-teal-100 transition-all"
+                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all"
                     type="email"
                     value={email}
                     autoComplete="email"
@@ -257,7 +257,7 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-2.5 rounded-xl text-sm font-semibold text-white bg-teal-600 hover:bg-teal-700 disabled:opacity-50 transition-colors"
+                  className="w-full py-2.5 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 transition-colors"
                 >
                   {loading ? t.auth.sending : t.auth.sendResetLink}
                 </button>
@@ -267,7 +267,7 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
             {success && (
               <button
                 onClick={resetToLogin}
-                className="w-full py-2.5 mt-2 rounded-xl text-sm font-semibold text-white bg-teal-600 hover:bg-teal-700 transition-colors"
+                className="w-full py-2.5 mt-2 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors"
               >
                 {t.auth.backToSignIn}
               </button>
@@ -333,7 +333,7 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
               <div>
                 <label className="block text-xs font-medium text-slate-600 mb-1.5">{t.auth.fullName}</label>
                 <input
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-teal-300 focus:ring-2 focus:ring-teal-100 transition-all"
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all"
                   type="text"
                   value={fullName}
                   autoComplete="name"
@@ -347,7 +347,7 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
             <div>
               <label className="block text-xs font-medium text-slate-600 mb-1.5">{t.auth.email}</label>
               <input
-                className={`w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none transition-all ${emailTouched && email && !isValidEmail(email) ? 'border-red-400 focus:ring-red-100' : 'border-slate-200 focus:border-teal-300 focus:ring-2 focus:ring-teal-100'}`}
+                className={`w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none transition-all ${emailTouched && email && !isValidEmail(email) ? 'border-red-400 focus:ring-red-100' : 'border-slate-200 focus:border-blue-300 focus:ring-2 focus:ring-blue-100'}`}
                 type="email"
                 value={email}
                 autoComplete="email"
@@ -369,14 +369,14 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
                   <button
                     type="button"
                     onClick={() => { setIsForgotPw(true); setError(''); setSuccess(''); }}
-                    className="text-[11px] text-teal-600 hover:underline transition-colors"
+                    className="text-[11px] text-blue-600 hover:underline transition-colors"
                   >
                     {t.auth.forgotPasswordQuestion}
                   </button>
                 )}
               </div>
               <input
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-teal-300 focus:ring-2 focus:ring-teal-100 transition-all"
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all"
                 type="password"
                 value={password}
                 autoComplete={isSignUp ? 'new-password' : 'current-password'}
@@ -409,7 +409,7 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2.5 mt-1 rounded-xl text-sm font-semibold text-white bg-teal-600 hover:bg-teal-700 disabled:opacity-50 transition-colors"
+              className="w-full py-2.5 mt-1 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 transition-colors"
             >
               {loading
                 ? t.auth.processing
@@ -426,7 +426,7 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
             </span>
             {' '}
             <button
-              className="text-xs font-medium text-teal-600 hover:underline transition-colors"
+              className="text-xs font-medium text-blue-600 hover:underline transition-colors"
               onClick={() => { setIsSignUp(v => !v); setError(''); setSuccess(''); setPwStrength(0); setEmailTouched(false); setPassword(''); setEmail(''); setFullName(''); }}
             >
               {isSignUp ? t.auth.signInInstead : t.auth.signUpInstead}

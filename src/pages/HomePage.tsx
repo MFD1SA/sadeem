@@ -294,7 +294,7 @@ export default function HomePage() {
   };
 
   const CellVal = ({ v }: { v: string }) => {
-    if (v === 'check') return <CheckCircle2 size={16} className="text-teal-500 mx-auto" />;
+    if (v === 'check') return <CheckCircle2 size={16} className="text-blue-500 mx-auto" />;
     if (v === 'x') return <X size={16} className="text-slate-300 mx-auto" />;
     return <span className="text-sm text-slate-700">{v}</span>;
   };
@@ -312,7 +312,7 @@ export default function HomePage() {
           {/* Desktop nav */}
           <div className="hidden lg:flex items-center gap-7">
             {t.nav.map((label: string, i: number) => (
-              <Link key={i} to={t.navPaths[i]} className={`text-[13px] font-medium transition-colors ${scrolled ? 'text-slate-500 hover:text-teal-600' : 'text-white/70 hover:text-white'}`}>{label}</Link>
+              <Link key={i} to={t.navPaths[i]} className={`text-[13px] font-medium transition-colors ${scrolled ? 'text-slate-500 hover:text-blue-600' : 'text-white/70 hover:text-white'}`}>{label}</Link>
             ))}
           </div>
 
@@ -320,7 +320,7 @@ export default function HomePage() {
           <div className="hidden lg:flex items-center gap-3">
             <button onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')} className={`px-3.5 py-1.5 text-xs font-medium rounded-lg transition-colors ${scrolled ? 'text-slate-500 border border-slate-200 hover:bg-slate-50' : 'text-white/70 border border-white/20 hover:bg-white/10'}`}>{t.langToggle}</button>
             <Link to="/login" className={`text-sm transition-colors px-3 py-1.5 ${scrolled ? 'text-slate-600 hover:text-slate-900' : 'text-white/80 hover:text-white'}`}>{t.loginBtn}</Link>
-            <Link to="/login" className="bg-teal-500 hover:bg-teal-400 text-white text-sm font-medium px-5 py-2 rounded-lg transition-all shadow-sm">{t.ctaBtn}</Link>
+            <Link to="/login" className="bg-blue-500 hover:bg-blue-400 text-white text-sm font-medium px-5 py-2 rounded-lg transition-all shadow-sm">{t.ctaBtn}</Link>
           </div>
 
           {/* Mobile toggle */}
@@ -337,7 +337,7 @@ export default function HomePage() {
             ))}
             <div className="flex gap-3 mt-4">
               <button onClick={() => { setLang(lang === 'ar' ? 'en' : 'ar'); setMobileOpen(false); }} className="px-4 py-2 text-sm border border-slate-200 rounded-lg text-slate-500">{t.langToggle}</button>
-              <Link to="/login" onClick={() => setMobileOpen(false)} className="flex-1 bg-teal-600 text-white text-sm font-medium py-2 rounded-lg text-center">{t.ctaBtn}</Link>
+              <Link to="/login" onClick={() => setMobileOpen(false)} className="flex-1 bg-blue-600 text-white text-sm font-medium py-2 rounded-lg text-center">{t.ctaBtn}</Link>
             </div>
           </div>
         )}
@@ -352,8 +352,8 @@ export default function HomePage() {
         <div className="absolute bottom-0 left-0 w-[500px] h-[300px] rounded-full blur-[120px] pointer-events-none" style={{ background: 'rgba(20, 184, 166, 0.05)' }} />
 
         {/* Floating doodle elements */}
-        <svg className="absolute top-[18%] right-[8%] w-16 h-16 text-teal-400/20 animate-pulse" viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="28" stroke="currentColor" strokeWidth="1.5" strokeDasharray="4 6" /></svg>
-        <svg className="absolute bottom-[25%] left-[10%] w-10 h-10 text-teal-400/15" viewBox="0 0 40 40" fill="none"><rect x="5" y="5" width="30" height="30" rx="6" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 5" /></svg>
+        <svg className="absolute top-[18%] right-[8%] w-16 h-16 text-blue-400/20 animate-pulse" viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="28" stroke="currentColor" strokeWidth="1.5" strokeDasharray="4 6" /></svg>
+        <svg className="absolute bottom-[25%] left-[10%] w-10 h-10 text-blue-400/15" viewBox="0 0 40 40" fill="none"><rect x="5" y="5" width="30" height="30" rx="6" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 5" /></svg>
         <svg className="absolute top-[30%] left-[15%] w-6 h-6 text-white/10" viewBox="0 0 24 24" fill="currentColor"><polygon points="12,2 15,9 22,9 16,14 18,22 12,17 6,22 8,14 2,9 9,9" /></svg>
 
         <div className="relative z-10 max-w-[900px] mx-auto px-6 text-center">
@@ -373,7 +373,7 @@ export default function HomePage() {
           <p className="text-base sm:text-lg text-white/50 leading-relaxed mb-10 max-w-xl mx-auto">{t.heroSub}</p>
 
           <div className="flex flex-wrap gap-4 justify-center">
-            <Link to="/register" className="bg-teal-500 hover:bg-teal-400 text-white font-semibold px-8 py-3.5 rounded-xl text-sm transition-all shadow-lg shadow-teal-500/20 inline-flex items-center gap-2">
+            <Link to="/register" className="bg-blue-500 hover:bg-blue-400 text-white font-semibold px-8 py-3.5 rounded-xl text-sm transition-all shadow-lg shadow-blue-500/20 inline-flex items-center gap-2">
               {t.heroCtaPrimary}
               {isRtl ? <ArrowLeft size={16} /> : <ArrowRight size={16} />}
             </Link>
@@ -395,7 +395,7 @@ export default function HomePage() {
       {/* ═══════════════════ WHAT IS SENDA ═══════════════════ */}
       <section className="py-20 bg-white">
         <div className="max-w-3xl mx-auto px-6 text-center">
-          <p className="text-xs font-semibold text-teal-600 tracking-widest uppercase mb-3">{t.whatLabel}</p>
+          <p className="text-xs font-semibold text-blue-600 tracking-widest uppercase mb-3">{t.whatLabel}</p>
           <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 tracking-tight mb-4">{t.whatH2}</h2>
           <p className="text-base text-slate-500 leading-relaxed">{t.whatDesc}</p>
         </div>
@@ -409,7 +409,7 @@ export default function HomePage() {
               const Icon = IconMap[f.icon] || Sparkles;
               return (
                 <div key={i} className="group p-6 rounded-2xl border border-slate-100 bg-white hover:shadow-md hover:border-slate-200 transition-all duration-300">
-                  <Icon size={22} className="text-teal-600 mb-4" />
+                  <Icon size={22} className="text-blue-600 mb-4" />
                   <h3 className="text-[15px] font-semibold text-slate-800 mb-2">{f.title}</h3>
                   <p className="text-sm text-slate-500 leading-relaxed">{f.desc}</p>
                 </div>
@@ -423,7 +423,7 @@ export default function HomePage() {
       <section className="py-20 bg-[#FAFBFC]">
         <div className="max-w-[1200px] mx-auto px-6">
           <div className="text-center mb-14">
-            <p className="text-xs font-semibold text-teal-600 tracking-widest uppercase mb-3">{t.howLabel}</p>
+            <p className="text-xs font-semibold text-blue-600 tracking-widest uppercase mb-3">{t.howLabel}</p>
             <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 tracking-tight">{t.howH2}</h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-5xl mx-auto">
@@ -431,10 +431,10 @@ export default function HomePage() {
               const Icon = IconMap[s.icon] || Sparkles;
               return (
                 <div key={i} className="text-center group">
-                  <div className="w-14 h-14 rounded-2xl border border-slate-200 bg-white flex items-center justify-center mx-auto mb-5 group-hover:border-teal-200 group-hover:shadow-sm transition-all">
-                    <Icon size={22} className="text-teal-600" />
+                  <div className="w-14 h-14 rounded-2xl border border-slate-200 bg-white flex items-center justify-center mx-auto mb-5 group-hover:border-blue-200 group-hover:shadow-sm transition-all">
+                    <Icon size={22} className="text-blue-600" />
                   </div>
-                  <div className="text-[11px] font-semibold text-teal-600 tracking-widest mb-2">{s.num}</div>
+                  <div className="text-[11px] font-semibold text-blue-600 tracking-widest mb-2">{s.num}</div>
                   <h3 className="text-[15px] font-semibold text-slate-800 mb-2">{s.title}</h3>
                   <p className="text-sm text-slate-500 leading-relaxed">{s.desc}</p>
                 </div>
@@ -448,7 +448,7 @@ export default function HomePage() {
       <section id="pricing" className="py-20 bg-white">
         <div className="max-w-[1200px] mx-auto px-6">
           <div className="text-center mb-14">
-            <p className="text-xs font-semibold text-teal-600 tracking-widest uppercase mb-3">{t.pricingLabel}</p>
+            <p className="text-xs font-semibold text-blue-600 tracking-widest uppercase mb-3">{t.pricingLabel}</p>
             <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 tracking-tight mb-3">{t.pricingH2}</h2>
             <p className="text-base text-slate-500 max-w-xl mx-auto">{t.pricingDesc}</p>
           </div>
@@ -457,15 +457,15 @@ export default function HomePage() {
             {t.plans.map((plan: any, i: number) => {
               const isPopular = plan.popular;
               return (
-                <div key={i} className={`relative rounded-2xl p-7 flex flex-col border transition-all duration-300 hover:shadow-lg ${isPopular ? 'border-teal-200 bg-white shadow-md ring-1 ring-teal-100' : plan.price === null ? 'border-slate-200 bg-slate-50' : 'border-slate-100 bg-white'}`}>
+                <div key={i} className={`relative rounded-2xl p-7 flex flex-col border transition-all duration-300 hover:shadow-lg ${isPopular ? 'border-blue-200 bg-white shadow-md ring-1 ring-blue-100' : plan.price === null ? 'border-slate-200 bg-slate-50' : 'border-slate-100 bg-white'}`}>
                   {isPopular && (
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                      <span className="bg-teal-600 text-white px-4 py-1 rounded-full text-[10px] font-semibold tracking-wide">{t.pricingMostPopular}</span>
+                      <span className="bg-blue-600 text-white px-4 py-1 rounded-full text-[10px] font-semibold tracking-wide">{t.pricingMostPopular}</span>
                     </div>
                   )}
                   {/* Fixed-height header block */}
                   <div className="mb-6 min-h-[100px]">
-                    <h3 className="text-xs font-semibold text-teal-600 tracking-widest uppercase mb-1">{plan.name}</h3>
+                    <h3 className="text-xs font-semibold text-blue-600 tracking-widest uppercase mb-1">{plan.name}</h3>
                     <p className="text-sm text-slate-500 mb-3">{plan.nameAr}</p>
                     {plan.price ? (
                       <div className="flex items-baseline gap-1">
@@ -473,7 +473,7 @@ export default function HomePage() {
                         <span className="text-sm text-slate-400">{t.pricingMo}</span>
                       </div>
                     ) : (
-                      <div className="text-xl font-semibold text-teal-600">{t.pricingContactUs}</div>
+                      <div className="text-xl font-semibold text-blue-600">{t.pricingContactUs}</div>
                     )}
                   </div>
                   <div className="h-px bg-slate-100 mb-5" />
@@ -481,13 +481,13 @@ export default function HomePage() {
                   <ul className="space-y-2.5 mb-8 flex-1">
                     {plan.features.map((f: string, fi: number) => (
                       <li key={fi} className="flex items-start gap-2.5 text-sm text-slate-600">
-                        <CheckCircle2 size={14} className="text-teal-500 mt-0.5 flex-shrink-0" />
+                        <CheckCircle2 size={14} className="text-blue-500 mt-0.5 flex-shrink-0" />
                         <span>{f}</span>
                       </li>
                     ))}
                   </ul>
                   {/* Button always at bottom */}
-                  <button onClick={() => plan.price ? navigate('/login') : navigate('/contact-us')} className={`w-full py-3 rounded-xl text-sm font-semibold transition-all mt-auto ${isPopular ? 'bg-teal-600 hover:bg-teal-700 text-white shadow-sm' : 'border border-slate-200 text-slate-700 hover:bg-slate-50'}`}>
+                  <button onClick={() => plan.price ? navigate('/login') : navigate('/contact-us')} className={`w-full py-3 rounded-xl text-sm font-semibold transition-all mt-auto ${isPopular ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm' : 'border border-slate-200 text-slate-700 hover:bg-slate-50'}`}>
                     {plan.price ? (isPopular ? t.pricingCtaHighlight : t.pricingCtaDefault) : t.pricingContactUs}
                   </button>
                 </div>
@@ -503,7 +503,7 @@ export default function HomePage() {
                 <tr className="bg-slate-50">
                   <th className={`py-3.5 px-5 font-semibold text-slate-700 border-b border-slate-100 ${isRtl ? 'text-right' : 'text-left'}`}>{t.compareFeatureCol}</th>
                   {t.plans.map((p: any, i: number) => (
-                    <th key={i} className={`py-3.5 px-4 text-center font-semibold border-b border-slate-100 ${p.popular ? 'text-teal-700 bg-teal-50/50' : 'text-slate-700'}`}>
+                    <th key={i} className={`py-3.5 px-4 text-center font-semibold border-b border-slate-100 ${p.popular ? 'text-blue-700 bg-blue-50/50' : 'text-slate-700'}`}>
                       <div>{p.name}</div>
                       <div className="text-xs font-normal text-slate-400 mt-0.5">{p.price ? `${p.price} ${t.pricingMo}` : t.pricingContactUs}</div>
                     </th>
@@ -515,7 +515,7 @@ export default function HomePage() {
                   <tr key={ri} className={`border-b border-slate-50 ${ri % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'}`}>
                     <td className={`py-3 px-5 font-medium text-slate-700 ${isRtl ? 'text-right' : 'text-left'}`}>{row.label}</td>
                     {row.vals.map((v: string, vi: number) => (
-                      <td key={vi} className={`py-3 px-4 text-center ${t.plans[vi]?.popular ? 'bg-teal-50/30' : ''}`}><CellVal v={v} /></td>
+                      <td key={vi} className={`py-3 px-4 text-center ${t.plans[vi]?.popular ? 'bg-blue-50/30' : ''}`}><CellVal v={v} /></td>
                     ))}
                   </tr>
                 ))}
@@ -529,7 +529,7 @@ export default function HomePage() {
       <section className="py-20 bg-[#FAFBFC]">
         <div className="max-w-3xl mx-auto px-6">
           <div className="text-center mb-14">
-            <p className="text-xs font-semibold text-teal-600 tracking-widest uppercase mb-3">{t.faqLabel}</p>
+            <p className="text-xs font-semibold text-blue-600 tracking-widest uppercase mb-3">{t.faqLabel}</p>
             <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 tracking-tight">{t.faqH2}</h2>
           </div>
           <div className="space-y-3">
@@ -556,7 +556,7 @@ export default function HomePage() {
           <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 tracking-tight mb-4">{t.ctaSectionH2}</h2>
           <p className="text-base text-slate-500 mb-8 leading-relaxed">{t.ctaSectionDesc}</p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link to="/login" className="bg-teal-600 hover:bg-teal-700 text-white font-medium px-8 py-3 rounded-lg text-sm transition-all shadow-sm inline-flex items-center gap-2">
+            <Link to="/login" className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-8 py-3 rounded-lg text-sm transition-all shadow-sm inline-flex items-center gap-2">
               {t.ctaSectionBtn}
               {isRtl ? <ArrowLeft size={16} /> : <ArrowRight size={16} />}
             </Link>
@@ -565,8 +565,8 @@ export default function HomePage() {
             </Link>
           </div>
           <div className="mt-10 flex items-center justify-center gap-6 text-slate-400 text-xs font-medium">
-            <span className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-teal-500" />{isRtl ? 'بدون تعقيد' : 'No Setup Fee'}</span>
-            <span className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-teal-500" />{isRtl ? 'دعم فني 24/7' : '24/7 Support'}</span>
+            <span className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-blue-500" />{isRtl ? 'بدون تعقيد' : 'No Setup Fee'}</span>
+            <span className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-blue-500" />{isRtl ? 'دعم فني 24/7' : '24/7 Support'}</span>
           </div>
         </div>
       </section>
@@ -575,14 +575,14 @@ export default function HomePage() {
       <section id="contact" className="py-20 bg-[#FAFBFC]">
         <div className="max-w-[1200px] mx-auto px-6">
           <div className="text-center mb-12">
-            <p className="text-xs font-semibold text-teal-600 tracking-widest uppercase mb-3">{t.contactLabel}</p>
+            <p className="text-xs font-semibold text-blue-600 tracking-widest uppercase mb-3">{t.contactLabel}</p>
             <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 tracking-tight mb-3">{t.contactH2}</h2>
             <p className="text-base text-slate-500 max-w-xl mx-auto">{t.contactDesc}</p>
           </div>
           <div className="max-w-xl mx-auto">
             {status === 'success' ? (
               <div className="bg-white rounded-2xl border border-slate-100 p-12 text-center shadow-sm">
-                <CheckCircle2 size={40} className="text-teal-500 mx-auto mb-5" />
+                <CheckCircle2 size={40} className="text-blue-500 mx-auto mb-5" />
                 <h3 className="text-lg font-semibold text-slate-900 mb-2">{t.contactSuccessTitle}</h3>
                 <p className="text-sm text-slate-500 mb-6">{t.contactSuccessDesc}</p>
                 <button onClick={() => setStatus('idle')} className="border border-slate-200 text-slate-700 hover:bg-slate-50 font-medium px-6 py-2 rounded-lg text-sm transition-all">{t.contactSuccessRetry}</button>
@@ -592,29 +592,29 @@ export default function HomePage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-medium text-slate-500 mb-1.5">{t.contactFields.name}</label>
-                    <input required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder={t.contactPlaceholders.name} className="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm text-slate-800 bg-slate-50/50 focus:border-teal-300 focus:ring-1 focus:ring-teal-100 outline-none transition-all" />
+                    <input required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder={t.contactPlaceholders.name} className="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm text-slate-800 bg-slate-50/50 focus:border-blue-300 focus:ring-1 focus:ring-blue-100 outline-none transition-all" />
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-slate-500 mb-1.5">{t.contactFields.email}</label>
-                    <input required type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder={t.contactPlaceholders.email} dir="ltr" className="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm text-slate-800 bg-slate-50/50 focus:border-teal-300 focus:ring-1 focus:ring-teal-100 outline-none transition-all" />
+                    <input required type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder={t.contactPlaceholders.email} dir="ltr" className="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm text-slate-800 bg-slate-50/50 focus:border-blue-300 focus:ring-1 focus:ring-blue-100 outline-none transition-all" />
                   </div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-medium text-slate-500 mb-1.5">{t.contactFields.phone}</label>
-                    <input value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} placeholder={t.contactPlaceholders.phone} dir="ltr" className="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm text-slate-800 bg-slate-50/50 focus:border-teal-300 focus:ring-1 focus:ring-teal-100 outline-none transition-all" />
+                    <input value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} placeholder={t.contactPlaceholders.phone} dir="ltr" className="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm text-slate-800 bg-slate-50/50 focus:border-blue-300 focus:ring-1 focus:ring-blue-100 outline-none transition-all" />
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-slate-500 mb-1.5">{t.contactFields.company}</label>
-                    <input value={form.company} onChange={e => setForm({ ...form, company: e.target.value })} placeholder={t.contactPlaceholders.company} className="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm text-slate-800 bg-slate-50/50 focus:border-teal-300 focus:ring-1 focus:ring-teal-100 outline-none transition-all" />
+                    <input value={form.company} onChange={e => setForm({ ...form, company: e.target.value })} placeholder={t.contactPlaceholders.company} className="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm text-slate-800 bg-slate-50/50 focus:border-blue-300 focus:ring-1 focus:ring-blue-100 outline-none transition-all" />
                   </div>
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-slate-500 mb-1.5">{t.contactFields.message}</label>
-                  <textarea required rows={4} value={form.message} onChange={e => setForm({ ...form, message: e.target.value })} placeholder={t.contactPlaceholders.message} className="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm text-slate-800 bg-slate-50/50 focus:border-teal-300 focus:ring-1 focus:ring-teal-100 outline-none transition-all resize-vertical font-[inherit]" />
+                  <textarea required rows={4} value={form.message} onChange={e => setForm({ ...form, message: e.target.value })} placeholder={t.contactPlaceholders.message} className="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm text-slate-800 bg-slate-50/50 focus:border-blue-300 focus:ring-1 focus:ring-blue-100 outline-none transition-all resize-vertical font-[inherit]" />
                 </div>
                 {formError && <p className="text-red-500 text-sm">{formError}</p>}
-                <button type="submit" disabled={status === 'loading'} className="w-full bg-teal-600 hover:bg-teal-700 text-white font-medium py-3 rounded-lg text-sm transition-all shadow-sm disabled:opacity-60 flex items-center justify-center gap-2">
+                <button type="submit" disabled={status === 'loading'} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg text-sm transition-all shadow-sm disabled:opacity-60 flex items-center justify-center gap-2">
                   {status === 'loading' ? <><Loader2 size={16} className="animate-spin" /> {t.contactSending}</> : <><Send size={16} /> {t.contactSubmit}</>}
                 </button>
               </form>
@@ -637,7 +637,7 @@ export default function HomePage() {
               <h4 className="text-sm font-semibold text-slate-200 mb-4">{t.footerProduct}</h4>
               <ul className="space-y-2.5">
                 {t.footerProductLinks.map((link: string, i: number) => (
-                  <li key={i}><Link to={t.footerProductPaths[i]} className="text-sm text-slate-400 hover:text-teal-400 transition-colors">{link}</Link></li>
+                  <li key={i}><Link to={t.footerProductPaths[i]} className="text-sm text-slate-400 hover:text-blue-400 transition-colors">{link}</Link></li>
                 ))}
               </ul>
             </div>
@@ -645,7 +645,7 @@ export default function HomePage() {
               <h4 className="text-sm font-semibold text-slate-200 mb-4">{t.footerSupport}</h4>
               <ul className="space-y-2.5">
                 {t.footerSupportLinks.map((link: string, i: number) => (
-                  <li key={i}><Link to={t.footerSupportPaths[i]} className="text-sm text-slate-400 hover:text-teal-400 transition-colors">{link}</Link></li>
+                  <li key={i}><Link to={t.footerSupportPaths[i]} className="text-sm text-slate-400 hover:text-blue-400 transition-colors">{link}</Link></li>
                 ))}
               </ul>
             </div>
@@ -653,7 +653,7 @@ export default function HomePage() {
               <h4 className="text-sm font-semibold text-slate-200 mb-4">{t.footerLegal}</h4>
               <ul className="space-y-2.5">
                 {t.footerLegalLinks.map((link: any, i: number) => (
-                  <li key={i}><Link to={link.path} className="text-sm text-slate-400 hover:text-teal-400 transition-colors">{link.label}</Link></li>
+                  <li key={i}><Link to={link.path} className="text-sm text-slate-400 hover:text-blue-400 transition-colors">{link.label}</Link></li>
                 ))}
               </ul>
             </div>

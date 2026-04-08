@@ -1,91 +1,80 @@
-// SENDA — شروط الاستخدام
-import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Star } from 'lucide-react';
+// ============================================================================
+// SENDA — Terms of Service (شروط الاستخدام)
+// ============================================================================
+import { useState } from 'react';
+import PublicLayout from '@/layouts/PublicLayout';
 
-const C = { bg: '#0F1117', card: '#151922', border: '#242A36', text: '#F3F4F6', muted: '#A7AFBD', brand: '#C9D8E6', cyan: '#06B6D4' };
-const GRAD = 'linear-gradient(135deg, #06B6D4, #8B5CF6)';
+type Lang = 'ar' | 'en';
 
-function LegalLayout({ title, subtitle, children }: { title: string; subtitle: string; children: React.ReactNode }) {
-  const navigate = useNavigate();
-  return (
-    <div dir="rtl" style={{ background: C.bg, color: C.text, minHeight: '100vh' }}>
-      <div style={{ background: 'rgba(15,17,23,0.96)', backdropFilter: 'blur(18px)', borderBottom: `1px solid ${C.border}`, position: 'sticky', top: 0, zIndex: 50 }}>
-        <div className="max-w-4xl mx-auto px-4 sm:px-6" style={{ height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <button onClick={() => navigate('/')} className="flex items-center gap-2" style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.muted, fontSize: 14 }}
-            onMouseOver={e => (e.currentTarget.style.color = C.text)} onMouseOut={e => (e.currentTarget.style.color = C.muted)}>
-            <ArrowRight size={16} />الرئيسية
-          </button>
-          <div className="flex items-center gap-2">
-            <div style={{ width: 28, height: 28, borderRadius: 7, background: GRAD, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Star size={13} style={{ color: 'white' }} /></div>
-            <span style={{ fontSize: 16, fontWeight: 600, color: C.text }}>SENDA | سيندا</span>
-          </div>
-          <div style={{ width: 80 }} />
-        </div>
-      </div>
-      <div className="max-w-3xl mx-auto px-4 sm:px-6" style={{ padding: '64px 16px 96px' }}>
-        <div style={{ marginBottom: 48 }}>
-          <div style={{ fontSize: 12, color: C.cyan, marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.1em' }}>قانوني</div>
-          <h1 style={{ fontSize: 'clamp(24px, 4vw, 40px)', fontWeight: 600, color: C.text, marginBottom: 10 }}>{title}</h1>
-          <p style={{ fontSize: 14, color: C.muted }}>{subtitle}</p>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>{children}</div>
-      </div>
-      <div style={{ background: '#0A0D14', borderTop: `1px solid ${C.border}`, padding: '20px 0', textAlign: 'center' }}>
-        <p style={{ fontSize: 12, color: C.muted, margin: 0 }}>© 2026 سيندا. جميع الحقوق محفوظة.</p>
-      </div>
-    </div>
-  );
-}
-
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 18, padding: '28px 28px' }}>
-      <h2 style={{ fontSize: 17, fontWeight: 600, color: C.text, marginBottom: 14, marginTop: 0 }}>{title}</h2>
-      <div style={{ fontSize: 14, color: C.muted, lineHeight: 1.85, fontWeight: 400 }}>{children}</div>
-    </div>
-  );
-}
+const T: Record<Lang, Record<string, any>> = {
+  ar: {
+    heroTag: 'قانوني',
+    heroH1: 'شروط الاستخدام',
+    heroSub: 'آخر تحديث: مارس 2026 — تسري على جميع مستخدمي منصة سيندا',
+    sections: [
+      { title: 'قبول الشروط', content: 'باستخدامك لمنصة سيندا، فإنك توافق على الالتزام بهذه الشروط. إذا كنت لا توافق على أي من هذه الشروط، يرجى التوقف عن استخدام المنصة.' },
+      { title: 'وصف الخدمة', content: 'سيندا منصة SaaS متخصصة في إدارة تقييمات جوجل، وتشمل الخدمات: الرد التلقائي بالذكاء الاصطناعي، إنشاء رموز QR لجمع التقييمات، تقارير الأداء، وإدارة الفريق والفروع.' },
+      { title: 'التزامات المستخدم', list: ['تقديم معلومات صحيحة ودقيقة عند التسجيل', 'عدم استخدام المنصة لأي نشاط مخالف للقانون أو السياسات', 'عدم محاولة اختراق أو التدخل في أنظمة المنصة', 'المسؤولية الكاملة عن محتوى الردود التي تنشرها عبر المنصة', 'الحفاظ على سرية بيانات تسجيل الدخول'] },
+      { title: 'الاشتراكات والدفع', content: 'تُدار الاشتراكات على أساس شهري أو سنوي. يحق للمستخدم إلغاء اشتراكه في أي وقت. تُحتسب الرسوم مقدمًا ولا تُرد في حال الإلغاء خلال الفترة الحالية إلا وفق سياسة الاسترداد المعمول بها.' },
+      { title: 'الملكية الفكرية', content: 'جميع حقوق الملكية الفكرية لمنصة سيندا — بما يشمل الكود والتصاميم والمحتوى — محفوظة لسيندا. يُمنح المستخدم رخصة استخدام محدودة وغير قابلة للتحويل.' },
+      { title: 'حدود المسؤولية', content: 'لا تتحمل سيندا مسؤولية أي أضرار غير مباشرة تنجم عن استخدام أو عدم إمكانية استخدام الخدمة. نسعى للحفاظ على مستوى خدمة بنسبة 99.9% لعملاء خطة Galaxy وInfinity.' },
+      { title: 'تعديل الشروط', content: 'نحتفظ بالحق في تعديل هذه الشروط في أي وقت. سيتم إشعار المستخدمين بأي تغييرات جوهرية عبر البريد الإلكتروني أو داخل المنصة قبل 30 يومًا من سريانها.' },
+      { title: 'القانون الحاكم', content: 'تخضع هذه الشروط لقوانين المملكة العربية السعودية. أي نزاع يُحكم وفق الأنظمة السعودية المعمول بها.' },
+    ],
+  },
+  en: {
+    heroTag: 'Legal',
+    heroH1: 'Terms of Service',
+    heroSub: 'Last updated: March 2026 — applies to all SENDA platform users',
+    sections: [
+      { title: 'Acceptance of Terms', content: 'By using the SENDA platform, you agree to comply with these terms. If you do not agree to any of these terms, please stop using the platform.' },
+      { title: 'Service Description', content: 'SENDA is a SaaS platform specialized in Google review management, including services such as AI auto-replies, QR code creation for collecting reviews, performance reports, and team and branch management.' },
+      { title: 'User Obligations', list: ['Provide accurate and truthful information during registration', 'Do not use the platform for any activity that violates laws or policies', 'Do not attempt to hack or interfere with platform systems', 'Full responsibility for the content of responses published through the platform', 'Maintain the confidentiality of login credentials'] },
+      { title: 'Subscriptions & Payment', content: 'Subscriptions are managed on a monthly or annual basis. Users may cancel their subscription at any time. Fees are charged in advance and are non-refundable for the current period except as per the applicable refund policy.' },
+      { title: 'Intellectual Property', content: 'All intellectual property rights of the SENDA platform — including code, designs, and content — are reserved for SENDA. Users are granted a limited, non-transferable license to use the platform.' },
+      { title: 'Limitation of Liability', content: 'SENDA is not responsible for any indirect damages resulting from the use or inability to use the service. We strive to maintain a 99.9% service level for Galaxy and Infinity plan customers.' },
+      { title: 'Modification of Terms', content: 'We reserve the right to modify these terms at any time. Users will be notified of any material changes via email or within the platform 30 days before they take effect.' },
+      { title: 'Governing Law', content: 'These terms are governed by the laws of the Kingdom of Saudi Arabia. Any dispute shall be resolved in accordance with applicable Saudi regulations.' },
+    ],
+  },
+};
 
 export default function TermsPage() {
+  const [lang, setLang] = useState<Lang>('ar');
+  const t = T[lang];
+
   return (
-    <LegalLayout title="شروط الاستخدام" subtitle="آخر تحديث: مارس 2026 — تسري على جميع مستخدمي منصة سيندا">
-      <Section title="قبول الشروط">
-        <p style={{ margin: 0 }}>باستخدامك لمنصة سيندا، فإنك توافق على الالتزام بهذه الشروط. إذا كنت لا توافق على أي من هذه الشروط، يرجى التوقف عن استخدام المنصة.</p>
-      </Section>
+    <PublicLayout lang={lang} onToggleLang={() => setLang(l => l === 'ar' ? 'en' : 'ar')}>
+      {/* Hero */}
+      <section className="py-20 px-6">
+        <div className="max-w-3xl mx-auto text-center">
+          <span className="inline-block text-xs font-semibold text-blue-600 bg-blue-50 px-4 py-1.5 rounded-full mb-4">{t.heroTag}</span>
+          <h1 className="text-3xl md:text-4xl font-bold text-slate-900 leading-tight mb-4">{t.heroH1}</h1>
+          <p className="text-base text-slate-500 leading-relaxed">{t.heroSub}</p>
+        </div>
+      </section>
 
-      <Section title="وصف الخدمة">
-        <p style={{ margin: 0 }}>سيندا منصة SaaS متخصصة في إدارة تقييمات جوجل، وتشمل الخدمات: الرد التلقائي بالذكاء الاصطناعي، إنشاء رموز QR لجمع التقييمات، تقارير الأداء، وإدارة الفريق والفروع.</p>
-      </Section>
-
-      <Section title="التزامات المستخدم">
-        <ul style={{ margin: 0, paddingRight: 20, display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <li>تقديم معلومات صحيحة ودقيقة عند التسجيل</li>
-          <li>عدم استخدام المنصة لأي نشاط مخالف للقانون أو السياسات</li>
-          <li>عدم محاولة اختراق أو التدخل في أنظمة المنصة</li>
-          <li>المسؤولية الكاملة عن محتوى الردود التي تنشرها عبر المنصة</li>
-          <li>الحفاظ على سرية بيانات تسجيل الدخول</li>
-        </ul>
-      </Section>
-
-      <Section title="الاشتراكات والدفع">
-        <p style={{ margin: '0 0 12px' }}>تُدار الاشتراكات على أساس شهري أو سنوي. يحق للمستخدم إلغاء اشتراكه في أي وقت. تُحتسب الرسوم مقدمًا ولا تُرد في حال الإلغاء خلال الفترة الحالية إلا وفق سياسة الاسترداد المعمول بها.</p>
-      </Section>
-
-      <Section title="الملكية الفكرية">
-        <p style={{ margin: 0 }}>جميع حقوق الملكية الفكرية لمنصة سيندا — بما يشمل الكود والتصاميم والمحتوى — محفوظة لسيندا. يُمنح المستخدم رخصة استخدام محدودة وغير قابلة للتحويل.</p>
-      </Section>
-
-      <Section title="حدود المسؤولية">
-        <p style={{ margin: 0 }}>لا تتحمل سيندا مسؤولية أي أضرار غير مباشرة تنجم عن استخدام أو عدم إمكانية استخدام الخدمة. نسعى للحفاظ على مستوى خدمة بنسبة 99.9% لعملاء خطة Galaxy وInfinity.</p>
-      </Section>
-
-      <Section title="تعديل الشروط">
-        <p style={{ margin: 0 }}>نحتفظ بالحق في تعديل هذه الشروط في أي وقت. سيتم إشعار المستخدمين بأي تغييرات جوهرية عبر البريد الإلكتروني أو داخل المنصة قبل 30 يومًا من سريانها.</p>
-      </Section>
-
-      <Section title="القانون الحاكم">
-        <p style={{ margin: 0 }}>تخضع هذه الشروط لقوانين المملكة العربية السعودية. أي نزاع يُحكم وفق الأنظمة السعودية المعمول بها.</p>
-      </Section>
-    </LegalLayout>
+      {/* Sections */}
+      <section className="pb-20 px-6">
+        <div className="max-w-3xl mx-auto space-y-6">
+          {t.sections.map((s: any, i: number) => (
+            <div key={i} className="rounded-2xl border border-slate-100 bg-white p-7">
+              <h2 className="text-lg font-bold text-slate-900 mb-3">{s.title}</h2>
+              {s.content && <p className="text-sm text-slate-500 leading-relaxed mb-3">{s.content}</p>}
+              {s.list && (
+                <ul className="space-y-2 text-sm text-slate-500 leading-relaxed">
+                  {s.list.map((item: string, j: number) => (
+                    <li key={j} className="flex items-start gap-2.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-2 flex-shrink-0" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          ))}
+        </div>
+      </section>
+    </PublicLayout>
   );
 }

@@ -83,7 +83,7 @@ export default function PublicLayout({ children, lang, onToggleLang }: PublicLay
           {/* Desktop nav */}
           <div className="hidden lg:flex items-center gap-7">
             {t.nav.map((label: string, i: number) => (
-              <Link key={i} to={t.navPaths[i]} className="text-[13px] font-medium text-slate-500 hover:text-teal-600 transition-colors">{label}</Link>
+              <Link key={i} to={t.navPaths[i]} className="text-[13px] font-medium text-slate-500 hover:text-blue-600 transition-colors">{label}</Link>
             ))}
           </div>
 
@@ -91,7 +91,7 @@ export default function PublicLayout({ children, lang, onToggleLang }: PublicLay
           <div className="hidden lg:flex items-center gap-3">
             <button onClick={onToggleLang} className="px-3.5 py-1.5 text-xs font-medium text-slate-500 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">{t.langToggle}</button>
             <Link to="/login" className="text-sm text-slate-600 hover:text-slate-900 transition-colors px-3 py-1.5">{t.loginBtn}</Link>
-            <Link to="/login" className="bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium px-5 py-2 rounded-lg transition-all shadow-sm">{t.ctaBtn}</Link>
+            <Link to="/login" className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-5 py-2 rounded-lg transition-all shadow-sm">{t.ctaBtn}</Link>
           </div>
 
           {/* Mobile toggle */}
@@ -108,7 +108,7 @@ export default function PublicLayout({ children, lang, onToggleLang }: PublicLay
             ))}
             <div className="flex gap-3 mt-4">
               <button onClick={() => { onToggleLang(); setMobileOpen(false); }} className="px-4 py-2 text-sm border border-slate-200 rounded-lg text-slate-500">{t.langToggle}</button>
-              <Link to="/login" onClick={() => setMobileOpen(false)} className="flex-1 bg-teal-600 text-white text-sm font-medium py-2 rounded-lg text-center">{t.ctaBtn}</Link>
+              <Link to="/login" onClick={() => setMobileOpen(false)} className="flex-1 bg-blue-600 text-white text-sm font-medium py-2 rounded-lg text-center">{t.ctaBtn}</Link>
             </div>
           </div>
         )}
@@ -133,7 +133,7 @@ export default function PublicLayout({ children, lang, onToggleLang }: PublicLay
               <h4 className="text-sm font-semibold text-slate-200 mb-4">{t.footerProduct}</h4>
               <ul className="space-y-2.5">
                 {t.footerProductLinks.map((link: string, i: number) => (
-                  <li key={i}><Link to={t.footerProductPaths[i]} className="text-sm text-slate-400 hover:text-teal-400 transition-colors">{link}</Link></li>
+                  <li key={i}><Link to={t.footerProductPaths[i]} className="text-sm text-slate-400 hover:text-blue-400 transition-colors">{link}</Link></li>
                 ))}
               </ul>
             </div>
@@ -141,7 +141,7 @@ export default function PublicLayout({ children, lang, onToggleLang }: PublicLay
               <h4 className="text-sm font-semibold text-slate-200 mb-4">{t.footerSupport}</h4>
               <ul className="space-y-2.5">
                 {t.footerSupportLinks.map((link: string, i: number) => (
-                  <li key={i}><Link to={t.footerSupportPaths[i]} className="text-sm text-slate-400 hover:text-teal-400 transition-colors">{link}</Link></li>
+                  <li key={i}><Link to={t.footerSupportPaths[i]} className="text-sm text-slate-400 hover:text-blue-400 transition-colors">{link}</Link></li>
                 ))}
               </ul>
             </div>
@@ -149,7 +149,7 @@ export default function PublicLayout({ children, lang, onToggleLang }: PublicLay
               <h4 className="text-sm font-semibold text-slate-200 mb-4">{t.footerLegal}</h4>
               <ul className="space-y-2.5">
                 {t.footerLegalLinks.map((link: any, i: number) => (
-                  <li key={i}><Link to={link.path} className="text-sm text-slate-400 hover:text-teal-400 transition-colors">{link.label}</Link></li>
+                  <li key={i}><Link to={link.path} className="text-sm text-slate-400 hover:text-blue-400 transition-colors">{link.label}</Link></li>
                 ))}
               </ul>
             </div>

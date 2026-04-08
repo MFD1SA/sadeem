@@ -139,7 +139,7 @@ export default function AdminPlans() {
     orbit: 'from-blue-500/20 to-cyan-500/20 border-blue-500/30',
     nova: 'from-purple-500/20 to-pink-500/20 border-purple-500/30',
     galaxy: 'from-amber-500/20 to-orange-500/20 border-amber-500/30',
-    infinity: 'from-emerald-500/20 to-teal-500/20 border-emerald-500/30',
+    infinity: 'from-emerald-500/20 to-blue-500/20 border-emerald-500/30',
   };
 
   if (loading) return (

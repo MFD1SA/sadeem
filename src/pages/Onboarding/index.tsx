@@ -378,7 +378,7 @@ export default function Onboarding() {
             <button
               onClick={handleFinish}
               disabled={saving}
-              className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+              className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-blue-600 text-white rounded-xl text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
             >
               {saving ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle size={16} />}
               ابدأ الآن
@@ -409,7 +409,7 @@ export default function Onboarding() {
           <button
             onClick={handleFinish}
             disabled={saving}
-            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-blue-600 text-white rounded-xl text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
           >
             {saving ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle size={16} />}
             ابدأ الآن
