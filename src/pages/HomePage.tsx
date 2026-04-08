@@ -4,15 +4,14 @@
 // ============================================================================
 
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import {
   Brain, QrCode, BarChart3, Building2, Users, FileText,
-  CheckCircle2, Send, Loader2, Menu, X,
+  CheckCircle2, Menu, X,
   Sparkles, Shield, Clock, ArrowLeft, ArrowRight,
   Star, MessageSquare, BellRing, ListChecks, CreditCard,
-  Link2, RefreshCw, MessageCircle, ChevronDown, ChevronUp,
+  Link2, RefreshCw, MessageCircle,
 } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
 
 // ─── Translations ─────────────────────────────────────────────────────────────
 type Lang = 'ar' | 'en';
@@ -56,67 +55,9 @@ const T: Record<Lang, Record<string, any>> = {
       { num: '03', title: 'إدارة الردود', desc: 'رد على التقييمات يدويًا أو بالذكاء الاصطناعي واستخدم القوالب', icon: 'MessageCircle' },
       { num: '04', title: 'قياس الأداء', desc: 'تابع التحليلات وقارن أداء فروعك وحسّن تجربة عملائك', icon: 'BarChart3' },
     ],
-    pricingLabel: 'الخطط والأسعار',
-    pricingH2: 'ابدأ بالخطة المناسبة لعملك',
-    pricingDesc: 'جميع الخطط تشمل فترة تجريبية مجانية — لا بطاقة ائتمان مطلوبة',
-    pricingMo: 'ر.س/شهر',
-    pricingMostPopular: 'الأكثر طلبًا',
-    pricingContactUs: 'تواصل مع المبيعات',
-    pricingCtaDefault: 'ابدأ مجانًا',
-    pricingCtaHighlight: 'ابدأ مجانًا الآن',
-    plans: [
-      { name: 'Orbit', nameAr: 'مدار', price: '99', features: ['1 فرع', '1 عضو فريق', '50 رد ذكي شهريًا', '100 رد قالب', 'ربط Google Business', 'الرد اليدوي', 'قوالب الردود', 'الإشعارات الفورية'] },
-      { name: 'Nova', nameAr: 'نوفا', price: '199', popular: true, features: ['3 فروع', '3 أعضاء فريق', '300 رد ذكي شهريًا', '500 رد قالب', 'ربط Google Business', 'الرد الآلي بالذكاء الاصطناعي', 'الرد اليدوي', 'قوالب الردود', 'الإشعارات الفورية', 'إدارة المهام', 'إدارة الفروع', 'التحليلات المتقدمة', 'صفحة هبوط QR', 'تحليلات رموز QR'] },
-      { name: 'Galaxy', nameAr: 'جالكسي', price: '399', features: ['10 فروع', '10 أعضاء فريق', '1,500 رد ذكي شهريًا', 'ردود قوالب غير محدودة', 'ربط Google Business', 'الرد الآلي بالذكاء الاصطناعي', 'الرد اليدوي', 'قوالب الردود', 'الإشعارات الفورية', 'إدارة المهام', 'إدارة الفريق', 'التحليلات المتقدمة', 'مقارنة الفروع', 'الدعم المميز 24/7', 'صفحة هبوط QR', 'تحليلات رموز QR'] },
-      { name: 'Infinity', nameAr: 'إنفينيتي', price: null, features: ['فروع غير محدودة', 'أعضاء غير محدودين', 'ردود ذكية غير محدودة', 'ردود قوالب غير محدودة', 'حلول مخصصة بلا حدود', 'دعم وتخصيص أعلى'] },
-    ],
-    compareTitle: 'مقارنة شاملة بين الخطط',
-    compareFeatureCol: 'الميزة',
-    compareRows: [
-      { label: 'عدد الفروع', vals: ['1', '3', '10', 'غير محدود'] },
-      { label: 'أعضاء الفريق', vals: ['1', '3', '10', 'غير محدود'] },
-      { label: 'ردود الذكاء الاصطناعي', vals: ['50', '300', '1,500', 'غير محدود'] },
-      { label: 'ردود القوالب', vals: ['100', '500', 'غير محدود', 'غير محدود'] },
-      { label: 'ربط Google Business', vals: ['check', 'check', 'check', 'check'] },
-      { label: 'الرد الآلي بالذكاء الاصطناعي', vals: ['check', 'check', 'check', 'check'] },
-      { label: 'الرد اليدوي', vals: ['check', 'check', 'check', 'check'] },
-      { label: 'قوالب الردود', vals: ['check', 'check', 'check', 'check'] },
-      { label: 'الإشعارات الفورية', vals: ['check', 'check', 'check', 'check'] },
-      { label: 'إدارة المهام', vals: ['x', 'check', 'check', 'check'] },
-      { label: 'إدارة الفروع', vals: ['x', 'check', 'check', 'check'] },
-      { label: 'إدارة الفريق', vals: ['x', 'x', 'check', 'check'] },
-      { label: 'التحليلات المتقدمة', vals: ['x', 'check', 'check', 'check'] },
-      { label: 'مقارنة الفروع', vals: ['x', 'x', 'check', 'check'] },
-      { label: 'الدعم المميز 24/7', vals: ['x', 'x', 'check', 'check'] },
-      { label: 'صفحة هبوط QR', vals: ['x', 'check', 'check', 'check'] },
-      { label: 'تحليلات رموز QR', vals: ['x', 'check', 'check', 'check'] },
-      { label: 'التخصيص', vals: ['x', 'x', 'x', 'check'] },
-      { label: 'الحلول الخاصة', vals: ['x', 'x', 'x', 'check'] },
-    ],
-    faqLabel: 'الأسئلة الشائعة',
-    faqH2: 'إجابات على أهم تساؤلاتك',
-    faqs: [
-      { q: 'ما هي سيندا؟', a: 'سيندا هي منصة سعودية متكاملة لإدارة تقييمات Google Business، الردود الذكية بالذكاء الاصطناعي، تحليلات الأداء، وإدارة الفروع والفريق من مكان واحد.' },
-      { q: 'هل يمكنني تجربة المنصة مجانًا؟', a: 'نعم، جميع الخطط تتضمن فترة تجريبية مجانية بدون الحاجة لبطاقة ائتمان. يمكنك البدء فورًا واستكشاف جميع المميزات.' },
-      { q: 'كيف يعمل الرد الذكي بالذكاء الاصطناعي؟', a: 'يقوم الذكاء الاصطناعي بتحليل نص التقييم وصياغة رد احترافي يتناسب مع محتوى التقييم ونبرة علامتك التجارية تلقائيًا، مع إمكانية التعديل قبل النشر.' },
-      { q: 'هل أحتاج خبرة تقنية لاستخدام المنصة؟', a: 'لا، سيندا مصممة لتكون سهلة الاستخدام. كل ما تحتاجه هو ربط حساب Google Business الخاص بك والبدء في إدارة تقييماتك فورًا.' },
-      { q: 'هل يمكنني إدارة أكثر من فرع؟', a: 'نعم، خطط نوفا وجالكسي وإنفينيتي تدعم إدارة فروع متعددة مع إمكانية المقارنة بين أدائها وتتبع كل فرع على حدة.' },
-      { q: 'كيف يتم حساب الضريبة؟', a: 'يتم إضافة ضريبة القيمة المضافة بنسبة 15% على جميع الخطط. الأسعار المعروضة هي قبل الضريبة، ويظهر الإجمالي الشامل عند الاشتراك.' },
-    ],
     ctaSectionH2: 'حوّل نشاطك إلى مستوى جديد',
     ctaSectionDesc: 'ابدأ تجربة مجانية وانطلق بثقة كاملة في إدارة سمعتك الرقمية',
     ctaSectionBtn: 'ابدأ تجربتك المجانية',
-    contactLabel: 'تواصل معنا',
-    contactH2: 'نحب أن نسمع منك',
-    contactDesc: 'سواء كان لديك سؤال، طلب تجربة، أو تريد معرفة المزيد — فريقنا جاهز لمساعدتك',
-    contactFields: { name: 'الاسم الكامل', email: 'البريد الإلكتروني', phone: 'رقم الهاتف', company: 'اسم الشركة', message: 'رسالتك' },
-    contactPlaceholders: { name: 'الاسم الكامل', email: 'email@example.com', phone: '+966 5XXXXXXXX', company: 'اسم الشركة', message: 'اكتب رسالتك هنا...' },
-    contactSubmit: 'إرسال الرسالة',
-    contactSending: 'جاري الإرسال...',
-    contactSuccessTitle: 'تم إرسال رسالتك بنجاح',
-    contactSuccessDesc: 'سيتواصل معك فريقنا في أقرب وقت ممكن',
-    contactSuccessRetry: 'إرسال رسالة أخرى',
-    contactError: 'حدث خطأ أثناء الإرسال. يرجى المحاولة مرة أخرى.',
     footerTagline: 'منصة متكاملة لإدارة تقييمات جوجل وتحسين السمعة الرقمية',
     footerProduct: 'المنتج',
     footerProductLinks: ['المميزات', 'الباقات', 'من نحن'],
@@ -169,67 +110,9 @@ const T: Record<Lang, Record<string, any>> = {
       { num: '03', title: 'Manage Replies', desc: 'Reply to reviews manually or with AI and use templates', icon: 'MessageCircle' },
       { num: '04', title: 'Measure Performance', desc: 'Track analytics, compare branches, and improve customer experience', icon: 'BarChart3' },
     ],
-    pricingLabel: 'Plans & Pricing',
-    pricingH2: 'Start with the Right Plan',
-    pricingDesc: 'All plans include a free trial — no credit card required',
-    pricingMo: 'SAR/mo',
-    pricingMostPopular: 'Most Popular',
-    pricingContactUs: 'Contact Sales',
-    pricingCtaDefault: 'Start Free',
-    pricingCtaHighlight: 'Start Free Now',
-    plans: [
-      { name: 'Orbit', nameAr: 'Orbit', price: '99', features: ['1 Branch', '1 Team Member', '50 AI Replies/mo', '100 Template Replies', 'Google Business', 'Manual Reply', 'Reply Templates', 'Instant Notifications'] },
-      { name: 'Nova', nameAr: 'Nova', price: '199', popular: true, features: ['3 Branches', '3 Team Members', '300 AI Replies/mo', '500 Template Replies', 'Google Business', 'AI Auto-Reply', 'Manual Reply', 'Reply Templates', 'Instant Notifications', 'Task Management', 'Branch Management', 'Advanced Analytics', 'QR Landing Page', 'QR Analytics'] },
-      { name: 'Galaxy', nameAr: 'Galaxy', price: '399', features: ['10 Branches', '10 Team Members', '1,500 AI Replies/mo', 'Unlimited Templates', 'Google Business', 'AI Auto-Reply', 'Manual Reply', 'Reply Templates', 'Instant Notifications', 'Task Management', 'Team Management', 'Advanced Analytics', 'Branch Comparison', 'Premium 24/7 Support', 'QR Landing Page', 'QR Analytics'] },
-      { name: 'Infinity', nameAr: 'Infinity', price: null, features: ['Unlimited Branches', 'Unlimited Members', 'Unlimited AI Replies', 'Unlimited Templates', 'Custom Solutions', 'Premium Support'] },
-    ],
-    compareTitle: 'Full Plan Comparison',
-    compareFeatureCol: 'Feature',
-    compareRows: [
-      { label: 'Branches', vals: ['1', '3', '10', 'Unlimited'] },
-      { label: 'Team Members', vals: ['1', '3', '10', 'Unlimited'] },
-      { label: 'AI Replies/mo', vals: ['50', '300', '1,500', 'Unlimited'] },
-      { label: 'Template Replies', vals: ['100', '500', 'Unlimited', 'Unlimited'] },
-      { label: 'Google Business', vals: ['check', 'check', 'check', 'check'] },
-      { label: 'AI Auto-Reply', vals: ['check', 'check', 'check', 'check'] },
-      { label: 'Manual Reply', vals: ['check', 'check', 'check', 'check'] },
-      { label: 'Reply Templates', vals: ['check', 'check', 'check', 'check'] },
-      { label: 'Notifications', vals: ['check', 'check', 'check', 'check'] },
-      { label: 'Task Management', vals: ['x', 'check', 'check', 'check'] },
-      { label: 'Branch Management', vals: ['x', 'check', 'check', 'check'] },
-      { label: 'Team Management', vals: ['x', 'x', 'check', 'check'] },
-      { label: 'Advanced Analytics', vals: ['x', 'check', 'check', 'check'] },
-      { label: 'Branch Comparison', vals: ['x', 'x', 'check', 'check'] },
-      { label: 'Premium 24/7 Support', vals: ['x', 'x', 'check', 'check'] },
-      { label: 'QR Landing Page', vals: ['x', 'check', 'check', 'check'] },
-      { label: 'QR Analytics', vals: ['x', 'check', 'check', 'check'] },
-      { label: 'Customization', vals: ['x', 'x', 'x', 'check'] },
-      { label: 'Custom Solutions', vals: ['x', 'x', 'x', 'check'] },
-    ],
-    faqLabel: 'FAQ',
-    faqH2: 'Answers to Your Most Important Questions',
-    faqs: [
-      { q: 'What is SENDA?', a: 'SENDA is a comprehensive Saudi platform for managing Google Business reviews, AI-powered smart replies, performance analytics, and branch and team management from one place.' },
-      { q: 'Can I try the platform for free?', a: 'Yes, all plans include a free trial without needing a credit card. You can start immediately and explore all features.' },
-      { q: 'How does AI smart reply work?', a: 'The AI analyzes the review text and crafts a professional reply that matches the review content and your brand tone automatically, with the option to edit before publishing.' },
-      { q: 'Do I need technical experience?', a: 'No, SENDA is designed to be easy to use. All you need is to link your Google Business account and start managing your reviews immediately.' },
-      { q: 'Can I manage multiple branches?', a: 'Yes, Nova, Galaxy, and Infinity plans support multi-branch management with the ability to compare performance and track each branch separately.' },
-      { q: 'How is VAT calculated?', a: 'VAT at 15% is added to all plans. Displayed prices are before tax, and the total including tax is shown at subscription.' },
-    ],
     ctaSectionH2: 'Elevate Your Business to the Next Level',
     ctaSectionDesc: 'Start your free trial and launch with full confidence in managing your digital reputation',
     ctaSectionBtn: 'Start Your Free Trial',
-    contactLabel: 'Contact Us',
-    contactH2: 'We\'d Love to Hear from You',
-    contactDesc: 'Whether you have a question, want a demo, or want to learn more — our team is here',
-    contactFields: { name: 'Full Name', email: 'Email', phone: 'Phone', company: 'Company', message: 'Your Message' },
-    contactPlaceholders: { name: 'Full name', email: 'email@example.com', phone: '+966 5XXXXXXXX', company: 'Company name', message: 'Write your message here...' },
-    contactSubmit: 'Send Message',
-    contactSending: 'Sending...',
-    contactSuccessTitle: 'Message Sent Successfully',
-    contactSuccessDesc: 'Our team will get back to you as soon as possible',
-    contactSuccessRetry: 'Send Another Message',
-    contactError: 'An error occurred. Please try again.',
     footerTagline: 'A complete platform for Google review management and digital reputation',
     footerProduct: 'Product',
     footerProductLinks: ['Features', 'Pricing', 'About'],
@@ -254,14 +137,9 @@ const IconMap: Record<string, any> = {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function HomePage() {
-  const navigate = useNavigate();
   const [lang, setLang] = useState<Lang>('ar');
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [form, setForm] = useState({ name: '', email: '', phone: '', company: '', message: '' });
-  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
-  const [formError, setFormError] = useState('');
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
   const t = T[lang];
   const isRtl = lang === 'ar';
 
@@ -277,27 +155,6 @@ export default function HomePage() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setStatus('loading');
-    setFormError('');
-    try {
-      const { error } = await supabase.functions.invoke('send-contact', { body: form });
-      if (error) throw error;
-      setStatus('success');
-      setForm({ name: '', email: '', phone: '', company: '', message: '' });
-    } catch (err) {
-      console.error('[Contact]', err);
-      setStatus('error');
-      setFormError(t.contactError);
-    }
-  };
-
-  const CellVal = ({ v }: { v: string }) => {
-    if (v === 'check') return <CheckCircle2 size={16} className="text-blue-500 mx-auto" />;
-    if (v === 'x') return <X size={16} className="text-slate-300 mx-auto" />;
-    return <span className="text-sm text-slate-700">{v}</span>;
-  };
 
   return (
     <div dir={t.dir} className="min-h-screen bg-[#FAFBFC] text-slate-800" style={{ fontFamily: "'IBM Plex Sans Arabic', 'Inter', system-ui, sans-serif" }}>
@@ -444,111 +301,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ═══════════════════ PRICING ═══════════════════ */}
-      <section id="pricing" className="py-20 bg-white">
-        <div className="max-w-[1200px] mx-auto px-6">
-          <div className="text-center mb-14">
-            <p className="text-xs font-semibold text-blue-600 tracking-widest uppercase mb-3">{t.pricingLabel}</p>
-            <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 tracking-tight mb-3">{t.pricingH2}</h2>
-            <p className="text-base text-slate-500 max-w-xl mx-auto">{t.pricingDesc}</p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-20 items-stretch">
-            {t.plans.map((plan: any, i: number) => {
-              const isPopular = plan.popular;
-              return (
-                <div key={i} className={`relative rounded-2xl p-7 flex flex-col border transition-all duration-300 hover:shadow-lg ${isPopular ? 'border-blue-200 bg-white shadow-md ring-1 ring-blue-100' : plan.price === null ? 'border-slate-200 bg-slate-50' : 'border-slate-100 bg-white'}`}>
-                  {isPopular && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                      <span className="bg-blue-600 text-white px-4 py-1 rounded-full text-[10px] font-semibold tracking-wide">{t.pricingMostPopular}</span>
-                    </div>
-                  )}
-                  {/* Fixed-height header block */}
-                  <div className="mb-6 min-h-[100px]">
-                    <h3 className="text-xs font-semibold text-blue-600 tracking-widest uppercase mb-1">{plan.name}</h3>
-                    <p className="text-sm text-slate-500 mb-3">{plan.nameAr}</p>
-                    {plan.price ? (
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-3xl font-semibold text-slate-900">{plan.price}</span>
-                        <span className="text-sm text-slate-400">{t.pricingMo}</span>
-                      </div>
-                    ) : (
-                      <div className="text-xl font-semibold text-blue-600">{t.pricingContactUs}</div>
-                    )}
-                  </div>
-                  <div className="h-px bg-slate-100 mb-5" />
-                  {/* Features list fills remaining space */}
-                  <ul className="space-y-2.5 mb-8 flex-1">
-                    {plan.features.map((f: string, fi: number) => (
-                      <li key={fi} className="flex items-start gap-2.5 text-sm text-slate-600">
-                        <CheckCircle2 size={14} className="text-blue-500 mt-0.5 flex-shrink-0" />
-                        <span>{f}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  {/* Button always at bottom */}
-                  <button onClick={() => plan.price ? navigate('/login') : navigate('/contact-us')} className={`w-full py-3 rounded-xl text-sm font-semibold transition-all mt-auto ${isPopular ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm' : 'border border-slate-200 text-slate-700 hover:bg-slate-50'}`}>
-                    {plan.price ? (isPopular ? t.pricingCtaHighlight : t.pricingCtaDefault) : t.pricingContactUs}
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Comparison table */}
-          <h3 className="text-xl font-semibold text-slate-900 text-center mb-8">{t.compareTitle}</h3>
-          <div className="overflow-x-auto rounded-xl border border-slate-100 bg-white">
-            <table className="w-full border-collapse min-w-[700px] text-sm">
-              <thead>
-                <tr className="bg-slate-50">
-                  <th className={`py-3.5 px-5 font-semibold text-slate-700 border-b border-slate-100 ${isRtl ? 'text-right' : 'text-left'}`}>{t.compareFeatureCol}</th>
-                  {t.plans.map((p: any, i: number) => (
-                    <th key={i} className={`py-3.5 px-4 text-center font-semibold border-b border-slate-100 ${p.popular ? 'text-blue-700 bg-blue-50/50' : 'text-slate-700'}`}>
-                      <div>{p.name}</div>
-                      <div className="text-xs font-normal text-slate-400 mt-0.5">{p.price ? `${p.price} ${t.pricingMo}` : t.pricingContactUs}</div>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {t.compareRows.map((row: any, ri: number) => (
-                  <tr key={ri} className={`border-b border-slate-50 ${ri % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'}`}>
-                    <td className={`py-3 px-5 font-medium text-slate-700 ${isRtl ? 'text-right' : 'text-left'}`}>{row.label}</td>
-                    {row.vals.map((v: string, vi: number) => (
-                      <td key={vi} className={`py-3 px-4 text-center ${t.plans[vi]?.popular ? 'bg-blue-50/30' : ''}`}><CellVal v={v} /></td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════════ FAQ ═══════════════════ */}
-      <section className="py-20 bg-[#FAFBFC]">
-        <div className="max-w-3xl mx-auto px-6">
-          <div className="text-center mb-14">
-            <p className="text-xs font-semibold text-blue-600 tracking-widest uppercase mb-3">{t.faqLabel}</p>
-            <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 tracking-tight">{t.faqH2}</h2>
-          </div>
-          <div className="space-y-3">
-            {t.faqs.map((faq: any, i: number) => (
-              <div key={i} className="bg-white rounded-xl border border-slate-100 overflow-hidden transition-all">
-                <button onClick={() => setOpenFaq(openFaq === i ? null : i)} className="w-full flex items-center justify-between px-6 py-4 text-start">
-                  <span className="text-sm font-medium text-slate-800">{faq.q}</span>
-                  {openFaq === i ? <ChevronUp size={16} className="text-slate-400 flex-shrink-0" /> : <ChevronDown size={16} className="text-slate-400 flex-shrink-0" />}
-                </button>
-                {openFaq === i && (
-                  <div className="px-6 pb-5">
-                    <p className="text-sm text-slate-500 leading-relaxed">{faq.a}</p>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* ═══════════════════ CTA ═══════════════════ */}
       <section className="py-20 bg-white">
@@ -571,57 +323,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ═══════════════════ CONTACT ═══════════════════ */}
-      <section id="contact" className="py-20 bg-[#FAFBFC]">
-        <div className="max-w-[1200px] mx-auto px-6">
-          <div className="text-center mb-12">
-            <p className="text-xs font-semibold text-blue-600 tracking-widest uppercase mb-3">{t.contactLabel}</p>
-            <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 tracking-tight mb-3">{t.contactH2}</h2>
-            <p className="text-base text-slate-500 max-w-xl mx-auto">{t.contactDesc}</p>
-          </div>
-          <div className="max-w-xl mx-auto">
-            {status === 'success' ? (
-              <div className="bg-white rounded-2xl border border-slate-100 p-12 text-center shadow-sm">
-                <CheckCircle2 size={40} className="text-blue-500 mx-auto mb-5" />
-                <h3 className="text-lg font-semibold text-slate-900 mb-2">{t.contactSuccessTitle}</h3>
-                <p className="text-sm text-slate-500 mb-6">{t.contactSuccessDesc}</p>
-                <button onClick={() => setStatus('idle')} className="border border-slate-200 text-slate-700 hover:bg-slate-50 font-medium px-6 py-2 rounded-lg text-sm transition-all">{t.contactSuccessRetry}</button>
-              </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-slate-100 p-8 shadow-sm space-y-5">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-medium text-slate-500 mb-1.5">{t.contactFields.name}</label>
-                    <input required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder={t.contactPlaceholders.name} className="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm text-slate-800 bg-slate-50/50 focus:border-blue-300 focus:ring-1 focus:ring-blue-100 outline-none transition-all" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-slate-500 mb-1.5">{t.contactFields.email}</label>
-                    <input required type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder={t.contactPlaceholders.email} dir="ltr" className="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm text-slate-800 bg-slate-50/50 focus:border-blue-300 focus:ring-1 focus:ring-blue-100 outline-none transition-all" />
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-medium text-slate-500 mb-1.5">{t.contactFields.phone}</label>
-                    <input value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} placeholder={t.contactPlaceholders.phone} dir="ltr" className="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm text-slate-800 bg-slate-50/50 focus:border-blue-300 focus:ring-1 focus:ring-blue-100 outline-none transition-all" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-slate-500 mb-1.5">{t.contactFields.company}</label>
-                    <input value={form.company} onChange={e => setForm({ ...form, company: e.target.value })} placeholder={t.contactPlaceholders.company} className="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm text-slate-800 bg-slate-50/50 focus:border-blue-300 focus:ring-1 focus:ring-blue-100 outline-none transition-all" />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-slate-500 mb-1.5">{t.contactFields.message}</label>
-                  <textarea required rows={4} value={form.message} onChange={e => setForm({ ...form, message: e.target.value })} placeholder={t.contactPlaceholders.message} className="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm text-slate-800 bg-slate-50/50 focus:border-blue-300 focus:ring-1 focus:ring-blue-100 outline-none transition-all resize-vertical font-[inherit]" />
-                </div>
-                {formError && <p className="text-red-500 text-sm">{formError}</p>}
-                <button type="submit" disabled={status === 'loading'} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg text-sm transition-all shadow-sm disabled:opacity-60 flex items-center justify-center gap-2">
-                  {status === 'loading' ? <><Loader2 size={16} className="animate-spin" /> {t.contactSending}</> : <><Send size={16} /> {t.contactSubmit}</>}
-                </button>
-              </form>
-            )}
-          </div>
-        </div>
-      </section>
 
       {/* ═══════════════════ FOOTER ═══════════════════ */}
       <footer className="bg-slate-900 text-white">
