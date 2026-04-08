@@ -26,10 +26,12 @@ const T: Record<Lang, Record<string, any>> = {
     loginBtn: 'دخول',
     ctaBtn: 'ابدأ الآن',
     heroTag: 'منصة إدارة التقييمات الأولى في السعودية',
-    heroH1: 'من التقييمات يبدأ نموك',
-    heroSub: 'حل ذكي لإدارة الردود والتحليلات وبناء حضور أقوى لأعمالك',
+    heroH1Line1: 'تقييم',
+    heroH1Line2: 'سمعة رقمية',
+    heroSub: 'نحوّل تقييمات عملائك إلى قوة حقيقية تبني سمعتك وتنمّي أعمالك',
     heroCtaPrimary: 'ابدأ تجربتك المجانية',
     heroCtaSecondary: 'تعرّف على المميزات',
+    scrollDown: 'مرّر للأسفل',
     whatLabel: 'ماذا تقدم سيندا',
     whatH2: 'كل أدوات إدارة السمعة في منصة واحدة',
     whatDesc: 'سيندا تحوّل إدارة التقييمات والردود والفروع والتحليلات إلى قوة تدعم سمعة نشاطك وترفع ثقة عملائك',
@@ -137,10 +139,12 @@ const T: Record<Lang, Record<string, any>> = {
     loginBtn: 'Login',
     ctaBtn: 'Get Started',
     heroTag: 'The Leading Review Management Platform in Saudi Arabia',
-    heroH1: 'Your Growth Starts From Reviews',
-    heroSub: 'Smart solution for managing responses, analytics, and building a stronger presence for your business',
+    heroH1Line1: 'Review',
+    heroH1Line2: 'Digital Reputation',
+    heroSub: 'We transform your customer reviews into a real force that builds your reputation and grows your business',
     heroCtaPrimary: 'Start Your Free Trial',
     heroCtaSecondary: 'Explore Features',
+    scrollDown: 'Scroll Down',
     whatLabel: 'What SENDA Offers',
     whatH2: 'All Reputation Tools in One Platform',
     whatDesc: 'SENDA transforms management of reviews, replies, branches, and analytics into a force that supports your business reputation and drives growth',
@@ -299,28 +303,28 @@ export default function HomePage() {
     <div dir={t.dir} className="min-h-screen bg-[#FAFBFC] text-slate-800" style={{ fontFamily: "'IBM Plex Sans Arabic', 'Inter', system-ui, sans-serif" }}>
 
       {/* ═══════════════════ NAVBAR ═══════════════════ */}
-      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-white/95 backdrop-blur-xl shadow-sm border-b border-slate-100' : 'bg-white/80 backdrop-blur-md border-b border-transparent'}`}>
-        <div className="max-w-[1200px] mx-auto px-6 flex items-center justify-between h-[68px]">
+      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled ? 'bg-white/95 backdrop-blur-xl shadow-sm border-b border-slate-100' : 'bg-transparent'}`}>
+        <div className="max-w-[1200px] mx-auto px-6 flex items-center justify-between h-[72px]">
           <Link to="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
-            <img src="/senda-logo.png" alt="SENDA" className="h-9" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+            <img src="/senda-logo.png" alt="SENDA" className={`h-9 transition-all duration-500 ${scrolled ? '' : 'brightness-0 invert'}`} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
           </Link>
 
           {/* Desktop nav */}
           <div className="hidden lg:flex items-center gap-7">
             {t.nav.map((label: string, i: number) => (
-              <Link key={i} to={t.navPaths[i]} className="text-[13px] font-medium text-slate-500 hover:text-teal-600 transition-colors">{label}</Link>
+              <Link key={i} to={t.navPaths[i]} className={`text-[13px] font-medium transition-colors ${scrolled ? 'text-slate-500 hover:text-teal-600' : 'text-white/70 hover:text-white'}`}>{label}</Link>
             ))}
           </div>
 
           {/* Desktop CTAs */}
           <div className="hidden lg:flex items-center gap-3">
-            <button onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')} className="px-3.5 py-1.5 text-xs font-medium text-slate-500 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">{t.langToggle}</button>
-            <Link to="/login" className="text-sm text-slate-600 hover:text-slate-900 transition-colors px-3 py-1.5">{t.loginBtn}</Link>
-            <Link to="/login" className="bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium px-5 py-2 rounded-lg transition-all shadow-sm">{t.ctaBtn}</Link>
+            <button onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')} className={`px-3.5 py-1.5 text-xs font-medium rounded-lg transition-colors ${scrolled ? 'text-slate-500 border border-slate-200 hover:bg-slate-50' : 'text-white/70 border border-white/20 hover:bg-white/10'}`}>{t.langToggle}</button>
+            <Link to="/login" className={`text-sm transition-colors px-3 py-1.5 ${scrolled ? 'text-slate-600 hover:text-slate-900' : 'text-white/80 hover:text-white'}`}>{t.loginBtn}</Link>
+            <Link to="/login" className="bg-teal-500 hover:bg-teal-400 text-white text-sm font-medium px-5 py-2 rounded-lg transition-all shadow-sm">{t.ctaBtn}</Link>
           </div>
 
           {/* Mobile toggle */}
-          <button onClick={() => setMobileOpen(!mobileOpen)} className="lg:hidden p-2 text-slate-600">
+          <button onClick={() => setMobileOpen(!mobileOpen)} className={`lg:hidden p-2 ${scrolled ? 'text-slate-600' : 'text-white'}`}>
             {mobileOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
         </div>
@@ -339,23 +343,57 @@ export default function HomePage() {
         )}
       </nav>
 
-      {/* ═══════════════════ HERO ═══════════════════ */}
-      <section className="pt-36 pb-20 sm:pt-40 sm:pb-24 bg-gradient-to-b from-white via-slate-50/50 to-[#FAFBFC]">
-        <div className="max-w-[1200px] mx-auto px-6 text-center">
-          <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-teal-50 border border-teal-100 mb-8">
-            <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse" />
-            <span className="text-[11px] font-medium text-teal-700 tracking-wide">{t.heroTag}</span>
+      {/* ═══════════════════ HERO — Dark immersive ═══════════════════ */}
+      <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden" style={{ background: 'linear-gradient(160deg, #0B1120 0%, #162032 40%, #0F1A2E 100%)' }}>
+        {/* Decorative grid overlay */}
+        <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
+        {/* Glow effects */}
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[700px] h-[400px] rounded-full blur-[140px] pointer-events-none" style={{ background: 'rgba(20, 184, 166, 0.08)' }} />
+        <div className="absolute bottom-0 left-0 w-[500px] h-[300px] rounded-full blur-[120px] pointer-events-none" style={{ background: 'rgba(20, 184, 166, 0.05)' }} />
+
+        {/* Floating doodle elements */}
+        <svg className="absolute top-[18%] right-[8%] w-16 h-16 text-teal-400/20 animate-pulse" viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="28" stroke="currentColor" strokeWidth="1.5" strokeDasharray="4 6" /></svg>
+        <svg className="absolute bottom-[25%] left-[10%] w-10 h-10 text-teal-400/15" viewBox="0 0 40 40" fill="none"><rect x="5" y="5" width="30" height="30" rx="6" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 5" /></svg>
+        <svg className="absolute top-[30%] left-[15%] w-6 h-6 text-white/10" viewBox="0 0 24 24" fill="currentColor"><polygon points="12,2 15,9 22,9 16,14 18,22 12,17 6,22 8,14 2,9 9,9" /></svg>
+
+        <div className="relative z-10 max-w-[900px] mx-auto px-6 text-center">
+          {/* Tag */}
+          <div className="inline-flex items-center gap-2.5 px-5 py-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm mb-10">
+            <span className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse" />
+            <span className="text-[11px] font-medium text-white/60 tracking-wide">{t.heroTag}</span>
           </div>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold text-slate-900 leading-tight tracking-tight mb-5 max-w-3xl mx-auto">{t.heroH1}</h1>
-          <p className="text-base sm:text-lg text-slate-500 leading-relaxed mb-10 max-w-xl mx-auto">{t.heroSub}</p>
+
+          {/* Main headline — two lines with animated wave SVG between */}
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-[1.15] tracking-tight mb-6">
+            {t.heroH1Line1}
+            {/* Animated wave connector */}
+            <span className="inline-block mx-3 align-middle">
+              <svg width="80" height="32" viewBox="0 0 80 32" fill="none" className="inline-block">
+                <path d="M4 16C12 4 20 28 28 16C36 4 44 28 52 16C60 4 68 28 76 16" stroke="url(#waveGrad)" strokeWidth="3" strokeLinecap="round" className="animate-[dash_3s_ease-in-out_infinite]" strokeDasharray="120" strokeDashoffset="0" />
+                <defs><linearGradient id="waveGrad" x1="4" y1="16" x2="76" y2="16"><stop offset="0%" stopColor="#14B8A6" /><stop offset="100%" stopColor="#2DD4BF" /></linearGradient></defs>
+              </svg>
+            </span>
+            {t.heroH1Line2}
+          </h1>
+
+          <p className="text-base sm:text-lg text-white/50 leading-relaxed mb-10 max-w-xl mx-auto">{t.heroSub}</p>
+
           <div className="flex flex-wrap gap-4 justify-center">
-            <Link to="/login" className="bg-teal-600 hover:bg-teal-700 text-white font-medium px-7 py-3 rounded-lg text-sm transition-all shadow-sm inline-flex items-center gap-2">
+            <Link to="/register" className="bg-teal-500 hover:bg-teal-400 text-white font-semibold px-8 py-3.5 rounded-xl text-sm transition-all shadow-lg shadow-teal-500/20 inline-flex items-center gap-2">
               {t.heroCtaPrimary}
               {isRtl ? <ArrowLeft size={16} /> : <ArrowRight size={16} />}
             </Link>
-            <Link to="/features" className="border border-slate-200 text-slate-600 hover:bg-slate-50 font-medium px-7 py-3 rounded-lg text-sm transition-all inline-flex items-center gap-2">
+            <Link to="/features" className="border border-white/15 text-white/70 hover:text-white hover:border-white/30 hover:bg-white/5 font-medium px-8 py-3.5 rounded-xl text-sm transition-all inline-flex items-center gap-2">
               {t.heroCtaSecondary}
             </Link>
+          </div>
+        </div>
+
+        {/* Scroll down indicator */}
+        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 animate-bounce">
+          <span className="text-[11px] text-white/30 tracking-wide">{t.scrollDown}</span>
+          <div className="w-10 h-10 rounded-full border border-white/15 flex items-center justify-center bg-white/5">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M4 9l4 4 4-4" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
           </div>
         </div>
       </section>
@@ -632,8 +670,12 @@ export default function HomePage() {
         </div>
       </footer>
 
-      {/* Scroll padding for anchor links */}
-      <style>{`html { scroll-behavior: smooth; scroll-padding-top: 80px; } ::selection { background: rgba(13, 148, 136, 0.15); }`}</style>
+      {/* Scroll padding + wave animation */}
+      <style>{`
+        html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+        ::selection { background: rgba(13, 148, 136, 0.15); }
+        @keyframes dash { 0%,100% { stroke-dashoffset: 0; } 50% { stroke-dashoffset: 60; } }
+      `}</style>
     </div>
   );
 }
