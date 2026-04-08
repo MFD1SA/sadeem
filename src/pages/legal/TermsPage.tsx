@@ -48,7 +48,7 @@ export default function TermsPage() {
   return (
     <PublicLayout lang={lang} onToggleLang={() => setLang(l => l === 'ar' ? 'en' : 'ar')}>
       {/* Hero */}
-      <section className="py-20 px-6">
+      <section className="pt-28 pb-20 px-6">
         <div className="max-w-3xl mx-auto text-center">
           <span className="inline-block text-xs font-semibold text-blue-900 bg-blue-50 px-4 py-1.5 rounded-full mb-4">{t.heroTag}</span>
           <h1 className="text-3xl md:text-4xl font-bold text-slate-900 leading-tight mb-4">{t.heroH1}</h1>

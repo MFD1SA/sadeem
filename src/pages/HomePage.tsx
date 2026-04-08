@@ -19,7 +19,7 @@ type Lang = 'ar' | 'en';
 const T: Record<Lang, Record<string, any>> = {
   ar: {
     dir: 'rtl',
-    langToggle: 'EN',
+    langToggle: 'English',
     nav: ['الرئيسية', 'من نحن', 'المميزات', 'الباقات', 'الأسئلة الشائعة', 'المدونة', 'تواصل معنا'],
     navPaths: ['/', '/about', '/features', '/pricing', '/faq', '/blog', '/contact-us'],
     loginBtn: 'دخول',
@@ -74,7 +74,7 @@ const T: Record<Lang, Record<string, any>> = {
   },
   en: {
     dir: 'ltr',
-    langToggle: 'عربي',
+    langToggle: 'العربية',
     nav: ['Home', 'About', 'Features', 'Pricing', 'FAQ', 'Blog', 'Contact'],
     navPaths: ['/', '/about', '/features', '/pricing', '/faq', '/blog', '/contact-us'],
     loginBtn: 'Login',
@@ -240,17 +240,20 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Scroll down indicator */}
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 animate-bounce">
-          <span className="text-[11px] text-white/30 tracking-wide">{t.scrollDown}</span>
-          <div className="w-10 h-10 rounded-full border border-white/15 flex items-center justify-center bg-white/5">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M4 9l4 4 4-4" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+        {/* Scroll down indicator — glass vertical pill */}
+        <button
+          onClick={() => document.getElementById('senda-content')?.scrollIntoView({ behavior: 'smooth' })}
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 group cursor-pointer"
+        >
+          <span className="text-[10px] text-white/30 tracking-widest uppercase group-hover:text-white/50 transition-colors">{t.scrollDown}</span>
+          <div className="w-7 h-12 rounded-full border border-white/20 bg-white/5 backdrop-blur-md flex flex-col items-center justify-start pt-2 group-hover:border-white/30 group-hover:bg-white/10 transition-all">
+            <div className="w-1 h-2.5 rounded-full bg-white/50 animate-[scrollPulse_1.5s_ease-in-out_infinite]" />
           </div>
-        </div>
+        </button>
       </section>
 
       {/* ═══════════════════ WHAT IS SENDA ═══════════════════ */}
-      <section className="py-20 bg-white">
+      <section id="senda-content" className="py-20 bg-white">
         <div className="max-w-3xl mx-auto px-6 text-center">
           <p className="text-xs font-semibold text-blue-900 tracking-widest uppercase mb-3">{t.whatLabel}</p>
           <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 tracking-tight mb-4">{t.whatH2}</h2>

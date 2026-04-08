@@ -11,7 +11,7 @@ type Lang = 'ar' | 'en';
 const T: Record<Lang, Record<string, any>> = {
   ar: {
     dir: 'rtl',
-    langToggle: 'EN',
+    langToggle: 'English',
     nav: ['الرئيسية', 'من نحن', 'المميزات', 'الباقات', 'الأسئلة الشائعة', 'المدونة', 'تواصل معنا'],
     navPaths: ['/', '/about', '/features', '/pricing', '/faq', '/blog', '/contact-us'],
     loginBtn: 'دخول',
@@ -32,7 +32,7 @@ const T: Record<Lang, Record<string, any>> = {
   },
   en: {
     dir: 'ltr',
-    langToggle: 'عربي',
+    langToggle: 'العربية',
     nav: ['Home', 'About', 'Features', 'Pricing', 'FAQ', 'Blog', 'Contact'],
     navPaths: ['/', '/about', '/features', '/pricing', '/faq', '/blog', '/contact-us'],
     loginBtn: 'Login',
@@ -74,28 +74,28 @@ export default function PublicLayout({ children, lang, onToggleLang }: PublicLay
     <div dir={t.dir} className="min-h-screen bg-[#FAFBFC] text-slate-800" style={{ fontFamily: "'IBM Plex Sans Arabic', 'Inter', system-ui, sans-serif" }}>
 
       {/* ═══════════════════ NAVBAR ═══════════════════ */}
-      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-white/95 backdrop-blur-xl shadow-sm border-b border-slate-100' : 'bg-white border-b border-slate-100'}`}>
+      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled ? 'bg-white/95 backdrop-blur-xl shadow-sm border-b border-slate-100' : 'bg-transparent'}`}>
         <div className="max-w-[1200px] mx-auto px-6 flex items-center justify-between h-[72px]">
           <Link to="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
-            <img src="/senda-logo.png" alt="SENDA" className="h-9" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+            <img src="/senda-logo.png" alt="SENDA" className={`h-9 transition-all duration-500 ${scrolled ? '' : 'brightness-0 invert'}`} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
           </Link>
 
           {/* Desktop nav */}
           <div className="hidden lg:flex items-center gap-7">
             {t.nav.map((label: string, i: number) => (
-              <Link key={i} to={t.navPaths[i]} className="text-[13px] font-medium text-slate-500 hover:text-blue-900 transition-colors">{label}</Link>
+              <Link key={i} to={t.navPaths[i]} className={`text-[13px] font-medium transition-colors ${scrolled ? 'text-slate-500 hover:text-blue-900' : 'text-white/70 hover:text-white'}`}>{label}</Link>
             ))}
           </div>
 
           {/* Desktop CTAs */}
           <div className="hidden lg:flex items-center gap-3">
-            <button onClick={onToggleLang} className="px-3.5 py-1.5 text-xs font-medium text-slate-500 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">{t.langToggle}</button>
-            <Link to="/login" className="text-sm text-slate-600 hover:text-slate-900 transition-colors px-3 py-1.5">{t.loginBtn}</Link>
-            <Link to="/login" className="bg-[#0F1A2E] hover:bg-[#162032] text-white text-sm font-medium px-5 py-2 rounded-lg transition-all shadow-sm">{t.ctaBtn}</Link>
+            <button onClick={onToggleLang} className={`px-3.5 py-1.5 text-xs font-medium rounded-lg transition-colors ${scrolled ? 'text-slate-500 border border-slate-200 hover:bg-slate-50' : 'text-white/70 border border-white/20 hover:bg-white/10'}`}>{t.langToggle}</button>
+            <Link to="/login" className={`text-sm transition-colors px-3 py-1.5 ${scrolled ? 'text-slate-600 hover:text-slate-900' : 'text-white/80 hover:text-white'}`}>{t.loginBtn}</Link>
+            <Link to="/login" className="bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium px-5 py-2 rounded-lg transition-all shadow-sm">{t.ctaBtn}</Link>
           </div>
 
           {/* Mobile toggle */}
-          <button onClick={() => setMobileOpen(!mobileOpen)} className="lg:hidden p-2 text-slate-600">
+          <button onClick={() => setMobileOpen(!mobileOpen)} className={`lg:hidden p-2 ${scrolled ? 'text-slate-600' : 'text-white'}`}>
             {mobileOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
         </div>
@@ -115,7 +115,7 @@ export default function PublicLayout({ children, lang, onToggleLang }: PublicLay
       </nav>
 
       {/* ═══════════════════ CONTENT ═══════════════════ */}
-      <main className="pt-[72px]">
+      <main>
         {children}
       </main>
 
