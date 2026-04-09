@@ -14,6 +14,7 @@ interface MinimalSession {
   user: { id: string; email?: string; user_metadata?: Record<string, unknown>; app_metadata?: Record<string, unknown> };
   expires_at?: number;
   access_token?: string;
+  refresh_token?: string;
 }
 
 interface AuthState {
@@ -128,12 +129,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         Promise.race([p, new Promise<T>((r) => setTimeout(() => r(fallback), ms))]);
 
       try {
-        // Ensure the Supabase client has the session stored internally
-        // before we run any authenticated queries.  With the lock bypass,
-        // SIGNED_IN can fire before _saveSession finishes, so the client's
-        // auth header may not be set yet.  getSession() forces a sync read
-        // from storage and populates the internal state.
-        await supabase.auth.getSession();
+        // Force-inject the session into the Supabase client so the
+        // PostgREST fetch interceptor has the correct JWT for RLS queries.
+        // With the lock bypass, SIGNED_IN can fire before the client's
+        // internal auth state is fully synchronized.  getSession() alone
+        // isn't enough because it may return a stale/empty session while
+        // initializePromise is still pending.  setSession() bypasses that
+        // and directly writes the tokens into the client's memory+storage.
+        if (session.access_token && session.refresh_token) {
+          await supabase.auth.setSession({
+            access_token: session.access_token,
+            refresh_token: session.refresh_token,
+          });
+        }
 
         // Phase 1: Load profile + org in parallel (org is now a single joined query)
         // Each query has a 5-second timeout to prevent indefinite hangs.

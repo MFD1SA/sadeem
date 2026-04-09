@@ -3,40 +3,29 @@ import type { DbOrganization, DbMembership } from '@/types/database';
 
 export const organizationService = {
   async getUserOrganization(
-    userId: string
+    _userId: string
   ): Promise<{ org: DbOrganization; membership: DbMembership } | null> {
-    // Single query with join instead of 2 sequential queries
-    const { data: membership, error: memErr } = await supabase
-      .from('memberships')
-      .select('*, organizations(*)')
-      .eq('user_id', userId)
-      .eq('status', 'active')
-      .limit(1)
-      .maybeSingle();
+    // Use server-side RPC (SECURITY DEFINER) to fetch org + membership.
+    // This bypasses RLS timing issues where the PostgREST auth header
+    // might still be the anon key right after OAuth login.  The function
+    // uses auth.uid() internally so it's still secure.
+    const { data, error } = await supabase.rpc('get_my_organization');
 
-    if (memErr) {
-      console.warn('[Senda] Membership lookup failed:', memErr.message);
+    if (error) {
+      console.warn('[Senda] Org lookup RPC failed:', error.message);
       return null;
     }
 
-    if (!membership) return null;
+    if (!data || !data.org || !data.membership) return null;
 
-    const mem = membership as DbMembership & { organizations: DbOrganization | null };
-    const org = mem.organizations;
-
-    if (!org) {
-      console.warn('[Senda] Organization not found for membership');
-      return null;
-    }
-
-    // Strip the joined org from the membership object
-    const { organizations: _, ...cleanMem } = mem;
-
-    return { org: org as DbOrganization, membership: cleanMem as DbMembership };
+    return {
+      org: data.org as DbOrganization,
+      membership: data.membership as DbMembership,
+    };
   },
 
   async createOrganization(
-    userId: string,
+    _userId: string,
     input: {
       name: string;
       industry: string;
@@ -58,51 +47,30 @@ export const organizationService = {
       '-' +
       Date.now().toString(36);
 
-    console.log('[Senda][createOrg] Step 1: inserting organization…', { userId, slug });
+    // Use server-side RPC (SECURITY DEFINER) to create org + membership
+    // atomically.  This bypasses RLS timing issues where the PostgREST
+    // auth header might not have the correct JWT yet after OAuth login.
+    const { data, error } = await supabase.rpc('create_org_with_membership', {
+      p_name: input.name,
+      p_slug: slug,
+      p_industry: input.industry,
+      p_country: input.country,
+      p_city: input.city,
+      p_logo_url: input.logoUrl || null,
+      p_language: input.language || 'ar',
+      p_tone: input.tone || 'professional',
+    });
 
-    const { data: org, error: orgErr } = await supabase
-      .from('organizations')
-      .insert({
-        owner_user_id: userId,
-        name: input.name,
-        slug,
-        industry: input.industry,
-        country: input.country,
-        city: input.city,
-        logo_url: input.logoUrl || null,
-        ...(input.language && { language: input.language }),
-        ...(input.tone && { tone: input.tone }),
-      })
-      .select()
-      .single();
-
-    console.log('[Senda][createOrg] Step 1 result:', { org: !!org, orgErr });
-
-    if (orgErr || !org) {
-      throw orgErr || new Error('Failed to create organization');
+    if (error) {
+      console.error('[Senda][createOrg] RPC failed:', error.message);
+      throw error;
     }
 
-    const created = org as DbOrganization;
+    if (!data) {
+      throw new Error('Organization creation returned no data');
+    }
 
-    console.log('[Senda][createOrg] Step 2: inserting membership…', { orgId: created.id });
-
-    const { data: mem, error: memErr } = await supabase
-      .from('memberships')
-      .insert({
-        user_id: userId,
-        organization_id: created.id,
-        role: 'owner',
-        status: 'active',
-      })
-      .select()
-      .single();
-
-    console.log('[Senda][createOrg] Step 2 result:', { mem: !!mem, memErr });
-
-    if (memErr) throw memErr;
-    if (!mem) throw new Error('Membership was not created — possible RLS policy issue');
-
-    return created;
+    return data as DbOrganization;
   },
 
   async updateOrganization(
