@@ -70,8 +70,8 @@ export const organizationService = {
         country: input.country,
         city: input.city,
         logo_url: input.logoUrl || null,
-        ...(input.language && { preferred_language: input.language }),
-        ...(input.tone && { preferred_tone: input.tone }),
+        ...(input.language && { language: input.language }),
+        ...(input.tone && { tone: input.tone }),
       })
       .select()
       .single();

@@ -14,7 +14,7 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { usePlan } from '@/hooks/usePlan';
 import { LoadingState } from '@/components/ui/LoadingState';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 
 const ADMIN_CACHE_KEY = 'sadeem_admin_check';
@@ -121,16 +121,34 @@ export function RequireAuth() {
 /**
  * Requires completed onboarding. Redirects to /onboarding if no organization.
  * Redirects admin users to /admin/dashboard.
+ *
+ * After Google OAuth, the first hydration may fail to load the org (the
+ * Supabase client's auth header isn't guaranteed to be set when SIGNED_IN
+ * fires with the lock bypass).  To prevent a false redirect to /onboarding,
+ * we retry refreshOrganization() ONCE before giving up.
  */
 export function RequireOrganization() {
-  const { hasOrganization, isLoading, isAuthenticated } = useAuth();
+  const { hasOrganization, isLoading, isAuthenticated, refreshOrganization } = useAuth();
   const { isAdmin, checking } = useAdminCheck();
+  const orgRetried = useRef(false);
+  const [orgConfirmed, setOrgConfirmed] = useState(false);
 
-  // Only block on auth loading — not on the admin check.
-  // The admin check runs in background; if the user is an admin the redirect
-  // fires when `checking` resolves. This removes the white loading flash
-  // that appeared after Google OAuth redirected to /dashboard.
-  if (isLoading) {
+  useEffect(() => {
+    // Already found org — no retry needed
+    if (hasOrganization) {
+      setOrgConfirmed(true);
+      return;
+    }
+    // Auth still loading — wait
+    if (isLoading || !isAuthenticated) return;
+    // Retry once: re-fetch org after auth has fully settled
+    if (!orgRetried.current) {
+      orgRetried.current = true;
+      refreshOrganization().finally(() => setOrgConfirmed(true));
+    }
+  }, [isLoading, isAuthenticated, hasOrganization, refreshOrganization]);
+
+  if (isLoading || (isAuthenticated && !hasOrganization && !orgConfirmed)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <LoadingState />
@@ -208,8 +226,11 @@ export function RedirectIfAuthenticated() {
 
   if (isAuthenticated) {
     if (isAdmin) return <Navigate to="/admin/dashboard" replace />;
-    if (hasOrganization) return <Navigate to="/dashboard" replace />;
-    return <Navigate to="/onboarding" replace />;
+    // Always route to /dashboard — RequireOrganization will redirect to
+    // /onboarding if needed, AFTER a verified org check.  Routing directly
+    // to /onboarding here caused false redirects after Google OAuth because
+    // hasOrganization was still false during initial hydration.
+    return <Navigate to="/dashboard" replace />;
   }
 
   return <Outlet />;
