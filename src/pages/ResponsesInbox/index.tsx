@@ -11,27 +11,30 @@ import { Tabs } from '@/components/ui/Tabs';
 import { ResponseCard, type ResponseCardProps } from './ResponseCard';
 import type { DbReplyDraft } from '@/types/database';
 
-let _cache: DbReplyDraft[] | null = null;
+// Module-level cache scoped to organization ID to prevent cross-org data leaks.
+let _cache: { orgId: string; data: DbReplyDraft[] } | null = null;
 
 export default function ResponsesInbox() {
   const { t, lang } = useLanguage();
   useEffect(() => { document.title = lang === 'ar' ? 'سيندا | SENDA — الردود' : 'SENDA | سيندا — Replies'; }, [lang]);
   const { organization, user, isLoading: authLoading } = useAuth();
 
-  const [drafts, setDrafts] = useState<DbReplyDraft[]>(_cache ?? []);
-  const [loading, setLoading] = useState(_cache === null);
+  const orgId = organization?.id;
+  const validCache = _cache && _cache.orgId === orgId ? _cache.data : null;
+  const [drafts, setDrafts] = useState<DbReplyDraft[]>(validCache ?? []);
+  const [loading, setLoading] = useState(validCache === null);
   const [error, setError] = useState('');
   const [tab, setTab] = useState('all');
 
   const loadDrafts = useCallback(async () => {
     if (!organization?.id) return;
 
-    if (_cache === null) setLoading(true);
+    if (!_cache || _cache.orgId !== organization.id) setLoading(true);
     setError('');
 
     try {
       const data = await replyDraftsService.list(organization.id);
-      _cache = data;
+      _cache = { orgId: organization.id, data };
       setDrafts(data);
     } catch (err: unknown) {
       setError((err as Error).message || 'Failed to load drafts');
@@ -45,7 +48,7 @@ export default function ResponsesInbox() {
     void loadDrafts();
   }, [organization?.id, loadDrafts, authLoading]);
 
-  useEffect(() => { _cache = null; }, [organization?.id]);
+  // Cache is now org-scoped; no need to clear on org change.
 
   const handleApprove = async (draftId: string, finalReply: string) => {
     if (!user || !organization?.id) return;

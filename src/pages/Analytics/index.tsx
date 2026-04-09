@@ -9,26 +9,29 @@ import { SentimentChart } from './SentimentChart';
 import { BranchComparison } from './BranchComparison';
 import { Star, MessageSquare, Percent, TrendingUp, BarChart3 } from 'lucide-react';
 
-let _cache: AnalyticsData | null = null;
+// Module-level cache scoped to organization ID to prevent cross-org data leaks.
+let _cache: { orgId: string; data: AnalyticsData } | null = null;
 
 export default function Analytics() {
   const { t, lang } = useLanguage();
   const isAr = lang === 'ar';
   const { organization, isLoading: authLoading } = useAuth();
 
-  const [data, setData] = useState<AnalyticsData | null>(_cache);
-  const [loading, setLoading] = useState(_cache === null);
+  const orgId = organization?.id;
+  const validCache = _cache && _cache.orgId === orgId ? _cache.data : null;
+  const [data, setData] = useState<AnalyticsData | null>(validCache);
+  const [loading, setLoading] = useState(validCache === null);
   const [error, setError] = useState('');
 
   const loadData = useCallback(async () => {
     if (!organization?.id) return;
 
-    if (_cache === null) setLoading(true);
+    if (!_cache || _cache.orgId !== organization.id) setLoading(true);
     setError('');
 
     try {
       const d = await analyticsService.getAnalytics(organization.id);
-      _cache = d;
+      _cache = { orgId: organization.id, data: d };
       setData(d);
     } catch (err: unknown) {
       setError((err as Error).message || 'Failed to load analytics');
@@ -42,7 +45,7 @@ export default function Analytics() {
     void loadData();
   }, [organization?.id, loadData, authLoading]);
 
-  useEffect(() => { _cache = null; }, [organization?.id]);
+  // Cache is now org-scoped; no need to clear on org change.
 
   if (loading) {
     return <LoadingState message={t.common.loading} />;

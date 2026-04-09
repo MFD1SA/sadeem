@@ -111,9 +111,32 @@ export default function Onboarding() {
   const handleFinish = async () => {
     setSaving(true);
     setError('');
+
+    // Validate form values against known whitelists
+    if (!BUSINESS_TYPES.includes(form.businessType)) {
+      setError('نوع النشاط غير صالح');
+      setSaving(false);
+      return;
+    }
+    if (!LANGUAGES.some(l => l.id === form.language)) {
+      setError('اللغة المحددة غير صالحة');
+      setSaving(false);
+      return;
+    }
+    if (!TONES.some(t => t.id === form.tone)) {
+      setError('أسلوب الرد غير صالح');
+      setSaving(false);
+      return;
+    }
+    if (!GCC_COUNTRIES.some(c => c.code === form.country)) {
+      setError('الدولة غير صالحة');
+      setSaving(false);
+      return;
+    }
+
     try {
       await organizationService.createOrganization(user!.id, {
-        name: form.businessName,
+        name: form.businessName.trim(),
         industry: form.businessType,
         country: form.country,
         city: form.city,

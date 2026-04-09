@@ -14,7 +14,8 @@ import {
 import { formatTimeAgo } from '@/utils/helpers';
 import type { DbReview, DbBranch } from '@/types/database';
 
-let _cache: { stats: DashboardStats; criticalReviews: DbReview[]; branches: DbBranch[] } | null = null;
+// Module-level cache scoped to organization ID to prevent cross-org data leaks.
+let _cache: { orgId: string; stats: DashboardStats; criticalReviews: DbReview[]; branches: DbBranch[] } | null = null;
 
 export default function Dashboard() {
   const { t, lang } = useLanguage();
@@ -25,23 +26,26 @@ export default function Dashboard() {
   }, [lang]);
   const { subscription, trial } = usePlan();
 
-  const [stats, setStats] = useState<DashboardStats | null>(_cache?.stats ?? null);
-  const [criticalReviews, setCriticalReviews] = useState<DbReview[]>(_cache?.criticalReviews ?? []);
-  const [branches, setBranches] = useState<DbBranch[]>(_cache?.branches ?? []);
-  const [loading, setLoading] = useState(_cache === null);
+  const orgId = organization?.id;
+  const validCache = _cache && _cache.orgId === orgId ? _cache : null;
+
+  const [stats, setStats] = useState<DashboardStats | null>(validCache?.stats ?? null);
+  const [criticalReviews, setCriticalReviews] = useState<DbReview[]>(validCache?.criticalReviews ?? []);
+  const [branches, setBranches] = useState<DbBranch[]>(validCache?.branches ?? []);
+  const [loading, setLoading] = useState(validCache === null);
   const [error, setError] = useState('');
 
   const loadData = useCallback(async () => {
-    if (!organization?.id) return;
-    if (_cache === null) setLoading(true);
+    if (!orgId) return;
+    if (!_cache || _cache.orgId !== orgId) setLoading(true);
     setError('');
     try {
       const [s, cr, br] = await Promise.all([
-        dashboardService.getStats(organization.id),
-        dashboardService.getCriticalReviews(organization.id),
-        branchesService.list(organization.id),
+        dashboardService.getStats(orgId),
+        dashboardService.getCriticalReviews(orgId),
+        branchesService.list(orgId),
       ]);
-      _cache = { stats: s, criticalReviews: cr, branches: br };
+      _cache = { orgId, stats: s, criticalReviews: cr, branches: br };
       setStats(s);
       setCriticalReviews(cr);
       setBranches(br);
@@ -50,14 +54,12 @@ export default function Dashboard() {
     } finally {
       setLoading(false);
     }
-  }, [organization?.id]);
+  }, [orgId]);
 
   useEffect(() => {
-    if (!organization?.id) { if (!authLoading) setLoading(false); return; }
+    if (!orgId) { if (!authLoading) setLoading(false); return; }
     void loadData();
-  }, [organization?.id, loadData, authLoading]);
-
-  useEffect(() => { _cache = null; }, [organization?.id]);
+  }, [orgId, loadData, authLoading]);
 
   if (loading) return <LoadingState message={t.common.loading} />;
   if (error) return <ErrorState message={error} onRetry={loadData} />;

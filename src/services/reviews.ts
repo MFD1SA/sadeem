@@ -46,6 +46,10 @@ export const reviewsService = {
   },
 
   async updateStatus(reviewId: string, status: string): Promise<void> {
+    const VALID_STATUSES = ['new', 'pending', 'replied', 'auto_replied', 'ignored', 'flagged'];
+    if (!VALID_STATUSES.includes(status)) {
+      throw new Error(`Invalid review status: ${status}`);
+    }
     const { error } = await supabase
       .from('reviews')
       .update({ status } as Record<string, unknown>)

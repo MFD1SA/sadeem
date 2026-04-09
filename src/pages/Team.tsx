@@ -10,15 +10,18 @@ import { StatusDot } from '@/components/ui/StatusDot';
 import { formatDateTime } from '@/utils/helpers';
 import { UserPlus, X, Lock } from 'lucide-react';
 
-let _cache: TeamMemberRow[] | null = null;
+// Module-level cache scoped to organization ID to prevent cross-org data leaks.
+let _cache: { orgId: string; data: TeamMemberRow[] } | null = null;
 
 export default function Team() {
   const { t, lang } = useLanguage();
   useEffect(() => { document.title = lang === 'ar' ? 'سيندا | SENDA — الفريق' : 'SENDA | سيندا — Team'; }, [lang]);
   const { organization } = useAuth();
   const { limits, trial } = usePlan();
-  const [members, setMembers] = useState<TeamMemberRow[]>(_cache ?? []);
-  const [loading, setLoading] = useState(_cache === null);
+  const orgId = organization?.id;
+  const validCache = _cache && _cache.orgId === orgId ? _cache.data : null;
+  const [members, setMembers] = useState<TeamMemberRow[]>(validCache ?? []);
+  const [loading, setLoading] = useState(validCache === null);
   const [error, setError] = useState('');
 
   const [showInvite, setShowInvite] = useState(false);
@@ -30,11 +33,11 @@ export default function Team() {
 
   const loadMembers = useCallback(async () => {
     if (!organization) { setLoading(false); return; }
-    if (_cache === null) setLoading(true);
+    if (!_cache || _cache.orgId !== organization.id) setLoading(true);
     setError('');
     try {
       const data = await teamService.listMembers(organization.id);
-      _cache = data;
+      _cache = { orgId: organization.id, data };
       setMembers(data);
     } catch (err: unknown) {
       setError((err as Error).message);
@@ -57,7 +60,7 @@ export default function Team() {
     setInviteError('');
     try {
       await teamService.inviteMember(organization.id, inviteEmail, inviteRole);
-      _cache = null;
+      _cache = null; // Invalidate to force reload
       await loadMembers();
       setInviteSuccess(true);
       setTimeout(() => { setShowInvite(false); setInviteEmail(''); setInviteRole('member'); setInviteSuccess(false); }, 1500);

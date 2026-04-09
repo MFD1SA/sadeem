@@ -11,7 +11,8 @@ import { Toggle } from '@/components/ui/Toggle';
 import { Plus, Edit3, Trash2, BarChart2, Lock } from 'lucide-react';
 import type { DbReplyTemplate } from '@/types/database';
 
-let _cache: DbReplyTemplate[] | null = null;
+// Module-level cache scoped to organization ID to prevent cross-org data leaks.
+let _cache: { orgId: string; data: DbReplyTemplate[] } | null = null;
 
 /** Unified display type for both custom and built-in templates */
 type DisplayTemplate = {
@@ -86,8 +87,10 @@ export default function Templates() {
   const { t, lang } = useLanguage();
   useEffect(() => { document.title = lang === 'ar' ? 'سيندا | SENDA — القوالب' : 'SENDA | سيندا — Templates'; }, [lang]);
   const { organization } = useAuth();
-  const [customTemplates, setCustomTemplates] = useState<DbReplyTemplate[]>(_cache ?? []);
-  const [loading, setLoading] = useState(_cache === null);
+  const orgId = organization?.id;
+  const validCache = _cache && _cache.orgId === orgId ? _cache.data : null;
+  const [customTemplates, setCustomTemplates] = useState<DbReplyTemplate[]>(validCache ?? []);
+  const [loading, setLoading] = useState(validCache === null);
   const [error, setError] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editTemplate, setEditTemplate] = useState<DbReplyTemplate | null>(null);
@@ -109,11 +112,11 @@ export default function Templates() {
 
   const loadTemplates = useCallback(async () => {
     if (!organization) { setLoading(false); return; }
-    if (_cache === null) setLoading(true);
+    if (!_cache || _cache.orgId !== organization.id) setLoading(true);
     setError('');
     try {
       const data = await templatesService.list(organization.id);
-      _cache = data;
+      _cache = { orgId: organization.id, data };
       setCustomTemplates(data);
     } catch (err: unknown) {
       setError((err as Error).message);
@@ -124,7 +127,7 @@ export default function Templates() {
 
   useEffect(() => { loadTemplates(); }, [loadTemplates]);
 
-  useEffect(() => { _cache = null; }, [organization?.id]);
+  // Cache is now org-scoped; no need to clear on org change.
 
   const openCreate = () => {
     setEditTemplate(null);

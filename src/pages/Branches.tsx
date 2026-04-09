@@ -11,7 +11,8 @@ import { useBranchLimit } from '@/components/ui/FeatureGate';
 import { Plus, Edit3, Trash2, Lock, MapPin, Link2, Unlink } from 'lucide-react';
 import type { DbBranch } from '@/types/database';
 
-let _cache: DbBranch[] | null = null;
+// Module-level cache scoped to organization ID to prevent cross-org data leaks.
+let _cache: { orgId: string; data: DbBranch[] } | null = null;
 
 export default function Branches() {
   const { t, lang } = useLanguage();
@@ -23,8 +24,10 @@ export default function Branches() {
     showUpgrade,
   } = useBranchLimit();
 
-  const [branches, setBranches] = useState<DbBranch[]>(_cache ?? []);
-  const [loading, setLoading] = useState(_cache === null);
+  const orgId = organization?.id;
+  const validCache = _cache && _cache.orgId === orgId ? _cache.data : null;
+  const [branches, setBranches] = useState<DbBranch[]>(validCache ?? []);
+  const [loading, setLoading] = useState(validCache === null);
   const [error, setError] = useState('');
   const [limitWarning, setLimitWarning] = useState(false);
 
@@ -42,12 +45,12 @@ export default function Branches() {
   const loadBranches = useCallback(async () => {
     if (!organization?.id) return;
 
-    if (_cache === null) setLoading(true);
+    if (!_cache || _cache.orgId !== organization.id) setLoading(true);
     setError('');
 
     try {
       const data = await branchesService.list(organization.id);
-      _cache = data;
+      _cache = { orgId: organization.id, data };
       setBranches(data);
     } catch (err: unknown) {
       setError((err as Error).message || 'Failed to load branches');
@@ -61,7 +64,7 @@ export default function Branches() {
     void loadBranches();
   }, [organization?.id, loadBranches, authLoading]);
 
-  useEffect(() => { _cache = null; }, [organization?.id]);
+  // Cache is now org-scoped; no need to clear on org change.
 
   const openCreate = () => {
     if (!canAddBranch) {
