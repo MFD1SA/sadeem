@@ -180,10 +180,7 @@ async function callProxy<T>(
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
       const { data, error } = await supabase.functions.invoke('google-business-proxy', {
-        body,
-        headers: {
-          'x-google-token': googleToken,
-        },
+        body: { ...body, googleToken },
       });
 
       if (error) {

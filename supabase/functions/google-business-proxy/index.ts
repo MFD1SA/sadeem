@@ -2,10 +2,10 @@
 // SENDA — Google Business Profile API Proxy
 //
 // Proxies Google Business Profile API calls server-side to avoid CORS issues.
-// The browser sends the Google OAuth access token via x-google-token header.
+// The Google OAuth access token is passed in the request body (googleToken field).
 //
 // POST /google-business-proxy
-// Body: { action: 'listAccounts' | 'listLocations' | 'listReviews' | 'postReply' | 'deleteReply', ...params }
+// Body: { googleToken: string, action: string, ...params }
 // ============================================================================
 
 import { makeCorsHeaders, isOriginAllowed } from '../_shared/cors.ts';
@@ -28,27 +28,18 @@ Deno.serve(async (req: Request) => {
     });
   }
 
-  // Auth check — Supabase user token
-  const authHeader = req.headers.get('authorization');
-  if (!authHeader) {
-    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-      status: 401,
-      headers: { ...cors, 'Content-Type': 'application/json' },
-    });
-  }
-
-  // Google OAuth access token — passed separately
-  const googleToken = req.headers.get('x-google-token');
-  if (!googleToken) {
-    return new Response(JSON.stringify({ error: 'Missing Google access token (x-google-token header)' }), {
-      status: 400,
-      headers: { ...cors, 'Content-Type': 'application/json' },
-    });
-  }
-
   try {
     const body = await req.json();
-    const { action } = body;
+    const { googleToken, action } = body;
+
+    if (!googleToken) {
+      console.warn('[google-business-proxy] Missing googleToken in body');
+      return new Response(JSON.stringify({ error: 'Missing Google access token' }), {
+        status: 400,
+        headers: { ...cors, 'Content-Type': 'application/json' },
+      });
+    }
+
     console.log('[google-business-proxy] Action:', action);
 
     let url: string;
@@ -136,7 +127,6 @@ Deno.serve(async (req: Request) => {
     if (!googleRes.ok) {
       console.error('[google-business-proxy] Google error:', responseText.slice(0, 500));
 
-      // Parse Google error for helpful message
       let errorMessage = `Google API error: ${googleRes.status}`;
       try {
         const errJson = JSON.parse(responseText);
@@ -152,7 +142,6 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    // Forward successful response
     return new Response(responseText, {
       status: 200,
       headers: { ...cors, 'Content-Type': 'application/json' },
