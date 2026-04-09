@@ -79,7 +79,10 @@ export const plansService = {
     return Object.fromEntries((data || []).map(f => [f.feature_key, f.feature_value]));
   },
 
+  /** Admin-only: update a plan row. RLS enforces is_active_admin(). */
   async updatePlan(id: string, updates: Partial<DbPlan>): Promise<void> {
+    const { data: isAdmin } = await supabase.rpc('check_is_admin');
+    if (!isAdmin) throw new Error('Unauthorized: admin access required');
     const { error } = await supabase
       .from('plans')
       .update({ ...updates, updated_at: new Date().toISOString() })
@@ -87,14 +90,20 @@ export const plansService = {
     if (error) throw error;
   },
 
+  /** Admin-only: update plan limits. RLS enforces is_active_admin(). */
   async updateLimits(planId: string, limits: Partial<DbPlanLimits>): Promise<void> {
+    const { data: isAdmin } = await supabase.rpc('check_is_admin');
+    if (!isAdmin) throw new Error('Unauthorized: admin access required');
     const { error } = await supabase
       .from('plan_limits')
       .upsert({ plan_id: planId, ...limits });
     if (error) throw error;
   },
 
+  /** Admin-only: update a plan feature. RLS enforces is_active_admin(). */
   async updateFeature(planId: string, featureKey: string, featureValue: string): Promise<void> {
+    const { data: isAdmin } = await supabase.rpc('check_is_admin');
+    if (!isAdmin) throw new Error('Unauthorized: admin access required');
     const { error } = await supabase
       .from('plan_features')
       .upsert({ plan_id: planId, feature_key: featureKey, feature_value: featureValue });
@@ -122,7 +131,10 @@ export const integrationsService = {
     return data;
   },
 
+  /** Admin-only: update integration config. RLS enforces admin check. */
   async update(id: string, updates: Partial<DbIntegration>): Promise<void> {
+    const { data: isAdmin } = await supabase.rpc('check_is_admin');
+    if (!isAdmin) throw new Error('Unauthorized: admin access required');
     const { error } = await supabase
       .from('integrations_config')
       .update({ ...updates, updated_at: new Date().toISOString() })
@@ -130,7 +142,10 @@ export const integrationsService = {
     if (error) throw error;
   },
 
+  /** Admin-only: toggle integration enabled state. RLS enforces admin check. */
   async toggleEnabled(id: string, enabled: boolean): Promise<void> {
+    const { data: isAdmin } = await supabase.rpc('check_is_admin');
+    if (!isAdmin) throw new Error('Unauthorized: admin access required');
     const { error } = await supabase
       .from('integrations_config')
       .update({ enabled, updated_at: new Date().toISOString() })

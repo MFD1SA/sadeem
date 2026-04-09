@@ -18,11 +18,20 @@ export const subscriptionService = {
     return (data as DbSubscription) || null;
   },
 
-  async updatePlan(subscriptionId: string, plan: string): Promise<DbSubscription> {
+  /**
+   * Update the plan for a subscription.
+   * Requires organizationId to verify caller ownership (RLS enforces org-owner).
+   */
+  async updatePlan(subscriptionId: string, plan: string, organizationId: string): Promise<DbSubscription> {
+    const VALID_PLANS = ['trial', 'starter', 'growth', 'orbit'];
+    if (!VALID_PLANS.includes(plan)) {
+      throw new Error(`Invalid plan: ${plan}`);
+    }
     const { data, error } = await supabase
       .from('subscriptions')
       .update({ plan, updated_at: new Date().toISOString() } as Record<string, unknown>)
       .eq('id', subscriptionId)
+      .eq('organization_id', organizationId)
       .select()
       .single();
 
