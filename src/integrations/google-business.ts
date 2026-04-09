@@ -1,9 +1,5 @@
 import { supabase } from '@/lib/supabase';
 
-const GBP_API_BASE = 'https://mybusinessbusinessinformation.googleapis.com/v1';
-const GBP_REVIEWS_BASE = 'https://mybusiness.googleapis.com/v4';
-const GBP_ACCOUNTS_BASE = 'https://mybusinessaccountmanagement.googleapis.com/v1';
-
 export interface GoogleLocation {
   name: string;
   title: string;
@@ -124,8 +120,8 @@ export function classifyGbpError(
       type: 'api_disabled',
       message:
         lang === 'ar'
-          ? 'Google Business Profile API غير مفعلة في مشروع Google Cloud'
-          : 'Google Business Profile API is not enabled in your Google Cloud project',
+          ? 'Google Business Profile API غير مفعلة في مشروع Google Cloud. فعّل:\n• My Business Account Management API\n• My Business Business Information API'
+          : 'Google Business Profile API is not enabled in your Google Cloud project. Enable:\n• My Business Account Management API\n• My Business Business Information API',
     };
   }
 
@@ -143,6 +139,7 @@ export function classifyGbpError(
 
   if (
     msg.includes('no google access token') ||
+    msg.includes('missing google access token') ||
     msg.includes('invalid_grant') ||
     (msg.includes('token') && msg.includes('expir'))
   ) {
@@ -155,71 +152,70 @@ export function classifyGbpError(
     };
   }
 
+  if (msg.includes('failed to fetch') || msg.includes('networkerror') || msg.includes('network error')) {
+    return {
+      type: 'api_disabled',
+      message:
+        lang === 'ar'
+          ? 'تعذر الاتصال بـ Google Business Profile API. تأكد من اتصال الإنترنت وأعد المحاولة.'
+          : 'Could not connect to Google Business Profile API. Check your internet connection and try again.',
+    };
+  }
+
   return {
     type: 'unknown',
     message: err instanceof Error ? err.message : String(err),
   };
 }
 
-async function fetchGoogleJson<T>(
-  url: string,
-  accessToken: string,
-  init?: RequestInit,
+// ── Proxy helper: calls google-business-proxy Edge Function ─────────────────
+// All Google Business API calls go through the server-side proxy to avoid CORS.
+async function callProxy<T>(
+  googleToken: string,
+  body: Record<string, unknown>,
   retries = 2,
-  timeoutMs = 15000
 ): Promise<T> {
   let lastError: unknown;
 
   for (let attempt = 0; attempt <= retries; attempt++) {
-    const controller = new AbortController();
-    const timer = window.setTimeout(() => controller.abort(), timeoutMs);
-
     try {
-      const res = await fetch(url, {
-        ...init,
+      const { data, error } = await supabase.functions.invoke('google-business-proxy', {
+        body,
         headers: {
-          Authorization: `Bearer ${accessToken}`,
-          ...(init?.headers || {}),
+          'x-google-token': googleToken,
         },
-        signal: controller.signal,
       });
 
-      window.clearTimeout(timer);
+      if (error) {
+        const message = error.message || `Proxy error: ${error}`;
 
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        const message =
-          (err as { error?: { message?: string } }).error?.message ||
-          `Google request failed: ${res.status}`;
-
-        if (res.status === 429 || isRateLimitErrorMessage(message)) {
-          if (attempt < retries) {
-            await sleep(1200 * (attempt + 1));
-            continue;
-          }
+        if (isRateLimitErrorMessage(message) && attempt < retries) {
+          await sleep(1200 * (attempt + 1));
+          continue;
         }
 
         throw new Error(message);
       }
 
-      return (await res.json()) as T;
-    } catch (error: unknown) {
-      window.clearTimeout(timer);
-      lastError = error;
+      // Edge Function returns the error in the body when Google API fails
+      if (data?.error) {
+        const message = data.error as string;
 
-      const message =
-        error instanceof DOMException && error.name === 'AbortError'
-          ? 'Google request timeout'
-          : error instanceof Error
-            ? error.message
-            : String(error);
+        if (isRateLimitErrorMessage(message) && attempt < retries) {
+          await sleep(1200 * (attempt + 1));
+          continue;
+        }
 
-      if (attempt < retries && isRateLimitErrorMessage(message)) {
-        await sleep(1200 * (attempt + 1));
-        continue;
+        throw new Error(message);
       }
 
-      if (attempt < retries && message.toLowerCase().includes('timeout')) {
+      return data as T;
+    } catch (err: unknown) {
+      lastError = err;
+
+      const message = err instanceof Error ? err.message : String(err);
+
+      if (attempt < retries && isRateLimitErrorMessage(message)) {
         await sleep(1200 * (attempt + 1));
         continue;
       }
@@ -262,9 +258,9 @@ export const googleBusinessService = {
   },
 
   async listAccounts(accessToken: string): Promise<{ name: string; accountName: string }[]> {
-    const data = await fetchGoogleJson<{ accounts?: { name: string; accountName: string }[] }>(
-      `${GBP_ACCOUNTS_BASE}/accounts`,
-      accessToken
+    const data = await callProxy<{ accounts?: { name: string; accountName: string }[] }>(
+      accessToken,
+      { action: 'listAccounts' },
     );
 
     return (data.accounts || []).map((a) => ({
@@ -274,9 +270,9 @@ export const googleBusinessService = {
   },
 
   async listLocations(accessToken: string, accountName: string): Promise<GoogleLocation[]> {
-    const data = await fetchGoogleJson<{ locations?: GoogleLocation[] }>(
-      `${GBP_API_BASE}/${accountName}/locations?readMask=name,title,storefrontAddress,metadata`,
-      accessToken
+    const data = await callProxy<{ locations?: GoogleLocation[] }>(
+      accessToken,
+      { action: 'listLocations', accountName },
     );
 
     return (data.locations || []).map((loc) => ({
@@ -295,16 +291,14 @@ export const googleBusinessService = {
     nextPageToken?: string;
     totalReviewCount: number;
   }> {
-    let url = `${GBP_REVIEWS_BASE}/${locationName}/reviews?pageSize=${pageSize}`;
-    if (pageToken) {
-      url += `&pageToken=${encodeURIComponent(pageToken)}`;
-    }
-
-    const data = await fetchGoogleJson<{
+    const data = await callProxy<{
       reviews?: GoogleReview[];
       nextPageToken?: string;
       totalReviewCount?: number;
-    }>(url, accessToken);
+    }>(
+      accessToken,
+      { action: 'listReviews', locationName, pageSize, pageToken },
+    );
 
     return {
       reviews: data.reviews || [],
@@ -314,30 +308,16 @@ export const googleBusinessService = {
   },
 
   async postReply(accessToken: string, reviewName: string, replyText: string): Promise<void> {
-    await fetchGoogleJson(
-      `${GBP_REVIEWS_BASE}/${reviewName}/reply`,
+    await callProxy(
       accessToken,
-      {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ comment: replyText }),
-      },
-      2,
-      15000
+      { action: 'postReply', reviewName, comment: replyText },
     );
   },
 
   async deleteReply(accessToken: string, reviewName: string): Promise<void> {
-    await fetchGoogleJson(
-      `${GBP_REVIEWS_BASE}/${reviewName}/reply`,
+    await callProxy(
       accessToken,
-      {
-        method: 'DELETE',
-      },
-      2,
-      15000
+      { action: 'deleteReply', reviewName },
     );
   },
 
