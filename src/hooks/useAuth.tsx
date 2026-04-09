@@ -122,15 +122,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // ── Core hydration: loads profile + org + subscription ──────────
   //
-  // ★ KEY FIX: If org fails to load on first attempt (common after PKCE
-  //   exchange because the JWT may not have fully propagated), retry once
-  //   after 1 second. This eliminates the false onboarding redirect.
+  // ★ PERF: Only retries org load when sessionStorage confirms org existed
+  //   (i.e. returning user after PKCE exchange). New users skip the retry
+  //   entirely — no wasted delay.
   const hydrateAuth = useCallback(
     async (session: MinimalSession | null) => {
-      // Prevent concurrent hydrations — but DON'T silently return.
-      // If someone calls us while we're running, the caller already set
-      // isLoading=true. The current hydration will finish and set isLoading=false,
-      // so the state is self-healing. We just skip the duplicate work.
+      // Prevent concurrent hydrations — the in-flight one will finish
+      // and set isLoading=false, so skipping is self-healing.
       if (hydrating.current) return;
       hydrating.current = true;
 
@@ -142,22 +140,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       try {
-        // Phase 1: Load profile + org in parallel.
+        // Phase 1: Load profile + org in parallel (fast path).
         const [profile, orgData] = await Promise.all([
-          raceTimeout(loadProfile(session.user.id, session), 6000, null),
-          raceTimeout(loadOrganization(session.user.id), 6000, null),
+          raceTimeout(loadProfile(session.user.id, session), 5000, null),
+          raceTimeout(loadOrganization(session.user.id), 5000, null),
         ]);
 
-        // ★ FIX: If org is null, ALWAYS retry once after a short delay.
-        //   Reason 1: After PKCE exchange the JWT may not have propagated yet.
-        //   Reason 2: Transient network/DB hiccup on page reload.
-        //   The retry is cheap (single RPC) and prevents false onboarding redirects.
-        //   If sessionStorage confirms org existed, use a longer delay (PKCE timing).
+        // ★ Retry org ONLY when sessionStorage proves org existed before.
+        //   This covers PKCE timing without penalizing new users.
         let finalOrgData = orgData;
         if (!orgData?.org) {
           const wasConfirmed = sessionStorage.getItem(ORG_CONFIRMED_KEY);
-          await delay(wasConfirmed ? 1000 : 500);
-          finalOrgData = await raceTimeout(loadOrganization(session.user.id), 6000, null);
+          if (wasConfirmed) {
+            await delay(800);
+            finalOrgData = await raceTimeout(loadOrganization(session.user.id), 5000, null);
+          }
         }
 
         // Phase 2: If org exists, pre-load subscription in parallel
@@ -168,7 +165,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           try {
             sub = await raceTimeout(
               subscriptionService.getByOrganization(finalOrgData.org.id),
-              4000,
+              3000,
               null,
             );
           } catch {
@@ -190,8 +187,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
       } catch (err) {
         console.error('[Senda] Auth hydrate failed:', err);
-        // ★ FIX: PRESERVE existing org/profile data on failure.
-        //   Previously this cleared everything → user redirected to onboarding.
+        // ★ PRESERVE existing org/profile data on failure.
         const prev = stateRef.current;
         hydrationDone.current = true;
         setState({
@@ -225,7 +221,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (event === 'SIGNED_OUT') {
         initialSessionHandled.current = false;
         hydrationDone.current = false;
-        // Clear org confirmation on sign-out
         sessionStorage.removeItem(ORG_CONFIRMED_KEY);
         setState({ ...EMPTY_STATE });
         return;
@@ -264,27 +259,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // ── SIGNED_IN ──────────────────────────────────────────────
       if (event === 'SIGNED_IN' && session?.user) {
-        // ★ FIX: If already hydrated (INITIAL_SESSION ran first, or
-        //   returning to a tab), just update session — do NOT set
-        //   isLoading=true, do NOT reload org/profile.
+        // If already hydrated (INITIAL_SESSION ran first, or returning
+        // to a tab), just update session — do NOT re-hydrate.
         if (hydrationDone.current) {
           setState(prev => ({
             ...prev,
             session,
             user: { id: session.user.id, email: session.user.email },
             isAuthenticated: true,
-            // ★ CRITICAL: never set isLoading=true here — this is what
-            //   caused "جاري التحميل" to appear on tab return.
+            // ★ CRITICAL: never set isLoading=true here — prevents
+            //   "جاري التحميل" on tab return.
           }));
           return;
         }
 
         // Fresh login: mark authenticated immediately so
         // RedirectIfAuthenticated redirects without waiting.
-        // ★ FIX: Only set isLoading=true if hydration will actually run.
-        //   If hydrateAuth is blocked (hydrating.current=true), the
-        //   in-flight hydration from INITIAL_SESSION will finish and
-        //   set isLoading=false.
         setState(prev => ({
           ...prev,
           session,

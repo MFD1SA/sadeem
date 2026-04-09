@@ -4,10 +4,10 @@
 // These guards protect subscriber routes (/dashboard/*, /onboarding, /login).
 // Admin routes (/admin/*) are protected separately by AdminAuthProvider.
 //
-// RBAC additions:
-// - If authenticated user is an admin → redirect to /admin/dashboard
-//   (prevents admin from accidentally using subscriber dashboard)
-// - check_is_admin() RPC is a lightweight server check
+// ★ PERF: Guards are lightweight — they read cached auth state from context.
+//   No spinners are shown unless auth is genuinely unresolved.
+//   RequireAuth handles ALL loading/admin checks. RequireOrganization is
+//   purely a data check — no duplicate spinners, no redundant RPC calls.
 // ============================================================================
 
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
@@ -96,6 +96,10 @@ function useAdminCheck() {
 /**
  * Requires authentication. Redirects to /login if not authenticated.
  * Redirects admin users to /admin/dashboard.
+ *
+ * ★ This is the ONLY guard that shows a loading spinner for auth resolution.
+ *   All downstream guards (RequireOrganization, SubscriptionGate) trust that
+ *   auth is already resolved when they render.
  */
 export function RequireAuth() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -123,83 +127,45 @@ export function RequireAuth() {
 
 /**
  * Requires completed onboarding. Redirects to /onboarding if no organization.
- * Redirects admin users to /admin/dashboard.
  *
- * Org data comes from AuthProvider's initial hydration (which uses a
- * SECURITY DEFINER RPC immune to token-timing issues).  No retry needed.
+ * ★ PERF: This guard does NOT show its own spinner. By the time it renders,
+ *   RequireAuth has already confirmed auth is resolved (isLoading=false).
+ *   It only checks the cached hasOrganization flag from AuthProvider.
  *
- * ★ FIX: Uses a stable ref to prevent false onboarding redirects.
- *   If org was previously confirmed, a transient hydration failure
- *   (e.g. network hiccup on tab return) won't redirect to onboarding.
+ * ★ SAFETY: Uses orgConfirmed ref (initialized from sessionStorage) to prevent
+ *   false onboarding redirects on transient hydration failures.
+ *   If orgConfirmed but hasOrganization is false, it triggers a background
+ *   refresh without showing any loading UI — the dashboard renders immediately
+ *   with whatever data is available.
  */
 export function RequireOrganization() {
-  const { hasOrganization, isLoading, isAuthenticated, refreshOrganization, user } = useAuth();
-  const { isAdmin } = useAdminCheck();
+  const { hasOrganization, isAuthenticated, refreshOrganization } = useAuth();
 
-  // ★ FIX: Initialize from sessionStorage so that page reloads and tab
-  //   returns don't lose the "org confirmed" flag.  The ref is a fast
-  //   in-memory fallback that doesn't require a storage read every render.
+  // Initialize from sessionStorage — survives page reloads and tab switches.
   const orgConfirmed = useRef(
     (() => {
-      try {
-        const stored = sessionStorage.getItem('sadeem_org_confirmed');
-        return !!stored;
-      } catch { return false; }
+      try { return !!sessionStorage.getItem('sadeem_org_confirmed'); }
+      catch { return false; }
     })()
   );
 
-  // ★ FIX: Before redirecting to onboarding, attempt ONE background
-  //   refresh. This prevents false redirects when both sessionStorage
-  //   is lost AND the initial org load failed transiently.
-  const retryAttempted = useRef(false);
-  const [retrying, setRetrying] = useState(false);
-
   // Once org is confirmed, remember it for the session lifetime
-  if (hasOrganization) {
-    orgConfirmed.current = true;
-    retryAttempted.current = false; // reset for future
-  }
+  if (hasOrganization) orgConfirmed.current = true;
 
-  if (isLoading || retrying) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <LoadingState />
-      </div>
-    );
-  }
+  // ★ PERF: No loading spinner here — RequireAuth already handled that.
+  //   If we're rendering, auth is resolved.
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
-  if (isAdmin) {
-    return <Navigate to="/admin/dashboard" replace />;
-  }
-
   if (!hasOrganization) {
-    // ★ If org was previously confirmed in this session, don't redirect.
-    // Instead, attempt a background refresh — the org data will be restored.
+    // If org was previously confirmed (sessionStorage or earlier in this session),
+    // don't redirect. Trigger a silent background refresh instead.
     if (orgConfirmed.current) {
       refreshOrganization().catch(() => {});
       return <Outlet />;
     }
-
-    // ★ FIX: Even without sessionStorage confirmation, retry ONCE before
-    //   redirecting. This handles the edge case where sessionStorage was
-    //   cleared but the user does have an org (e.g. browser session restore).
-    if (!retryAttempted.current) {
-      retryAttempted.current = true;
-      setRetrying(true);
-      refreshOrganization()
-        .catch(() => {})
-        .finally(() => setRetrying(false));
-      return (
-        <div className="min-h-screen flex items-center justify-center">
-          <LoadingState />
-        </div>
-      );
-    }
-
     return <Navigate to="/onboarding" replace />;
   }
 
@@ -250,8 +216,8 @@ export function SubscriptionGate() {
  * When auth resolves to authenticated, the redirect below fires automatically.
  */
 export function RedirectIfAuthenticated() {
-  const { isAuthenticated, hasOrganization, isLoading } = useAuth();
-  const { isAdmin, checking } = useAdminCheck();
+  const { isAuthenticated, isLoading } = useAuth();
+  const { isAdmin } = useAdminCheck();
 
   // Render login form while auth is loading. Do NOT wait for admin check —
   // redirect fires as soon as auth resolves. Admin check may still be running;
