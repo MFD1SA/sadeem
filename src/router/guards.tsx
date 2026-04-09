@@ -1,13 +1,16 @@
 // ============================================================================
 // SENDA — Subscriber Route Guards (with RBAC)
 //
-// These guards protect subscriber routes (/dashboard/*, /onboarding, /login).
-// Admin routes (/admin/*) are protected separately by AdminAuthProvider.
+// ★ IMPORTANT ARCHITECTURE NOTE:
+//   RequireAuth wraps /onboarding ONLY.
+//   RequireOrganization wraps /dashboard/* INDEPENDENTLY (NOT inside RequireAuth).
+//   Therefore RequireOrganization MUST handle isLoading itself.
 //
-// ★ PERF: Guards are lightweight — they read cached auth state from context.
-//   No spinners are shown unless auth is genuinely unresolved.
-//   RequireAuth handles ALL loading/admin checks. RequireOrganization is
-//   purely a data check — no duplicate spinners, no redundant RPC calls.
+//   Guard hierarchy for /dashboard/*:
+//     RequireOrganization → SubscriberLayout → PlanProvider → SubscriptionGate
+//
+//   Guard hierarchy for /onboarding:
+//     RequireAuth → Onboarding
 // ============================================================================
 
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
@@ -23,27 +26,16 @@ const ADMIN_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
 /**
  * Hook: check if current auth.uid() is an admin.
- *
- * CRITICAL: waits for useAuth to fully resolve before starting — this avoids
- * Supabase lock contention. Previously this hook called getSession() on mount,
- * which competed for the "lock:sadeem-auth" BroadcastChannel lock that
- * onAuthStateChange (inside AuthProvider) also holds during INITIAL_SESSION.
- * The result was a 5-second delay before the login page appeared.
- *
- * Now we only start the admin check AFTER useAuth signals it's done
- * (authLoading = false), at which point the lock is already free.
+ * Waits for useAuth to fully resolve before starting (avoids lock contention).
  */
 function useAdminCheck() {
   const { isAuthenticated, isLoading: authLoading, user } = useAuth();
   const [isAdmin, setIsAdmin] = useState(false);
   const [checking, setChecking] = useState(true);
 
-  // Use the primitive user.id so the effect doesn't re-run when the
-  // user object reference changes but the id stays the same.
   const userId = user?.id;
 
   useEffect(() => {
-    // Don't start until auth is fully resolved
     if (authLoading) return;
 
     let cancelled = false;
@@ -55,7 +47,6 @@ function useAdminCheck() {
           return;
         }
 
-        // Serve from cache if it belongs to the current user and is not expired
         try {
           const raw = sessionStorage.getItem(ADMIN_CACHE_KEY);
           if (raw) {
@@ -97,9 +88,7 @@ function useAdminCheck() {
  * Requires authentication. Redirects to /login if not authenticated.
  * Redirects admin users to /admin/dashboard.
  *
- * ★ This is the ONLY guard that shows a loading spinner for auth resolution.
- *   All downstream guards (RequireOrganization, SubscriptionGate) trust that
- *   auth is already resolved when they render.
+ * Used for: /onboarding
  */
 export function RequireAuth() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -117,7 +106,6 @@ export function RequireAuth() {
     return <Navigate to="/login" replace />;
   }
 
-  // Admin user trying to access subscriber area → redirect to admin
   if (isAdmin) {
     return <Navigate to="/admin/dashboard" replace />;
   }
@@ -126,20 +114,17 @@ export function RequireAuth() {
 }
 
 /**
- * Requires completed onboarding. Redirects to /onboarding if no organization.
+ * Requires authentication + completed onboarding (organization exists).
+ * Redirects to /login if not authenticated, /onboarding if no organization.
  *
- * ★ PERF: This guard does NOT show its own spinner. By the time it renders,
- *   RequireAuth has already confirmed auth is resolved (isLoading=false).
- *   It only checks the cached hasOrganization flag from AuthProvider.
+ * Used for: /dashboard/* (NOT nested inside RequireAuth — handles auth independently)
  *
- * ★ SAFETY: Uses orgConfirmed ref (initialized from sessionStorage) to prevent
- *   false onboarding redirects on transient hydration failures.
- *   If orgConfirmed but hasOrganization is false, it triggers a background
- *   refresh without showing any loading UI — the dashboard renders immediately
- *   with whatever data is available.
+ * ★ PERF: Shows ONE spinner while auth is loading. No admin RPC check here
+ *   (admin check only needed for /onboarding redirect, not for dashboard access).
+ *   No retry state — orgConfirmed ref prevents false redirects silently.
  */
 export function RequireOrganization() {
-  const { hasOrganization, isAuthenticated, refreshOrganization } = useAuth();
+  const { hasOrganization, isLoading, isAuthenticated, refreshOrganization } = useAuth();
 
   // Initialize from sessionStorage — survives page reloads and tab switches.
   const orgConfirmed = useRef(
@@ -149,19 +134,26 @@ export function RequireOrganization() {
     })()
   );
 
-  // Once org is confirmed, remember it for the session lifetime
+  // Once org is confirmed, remember it for the component lifetime
   if (hasOrganization) orgConfirmed.current = true;
 
-  // ★ PERF: No loading spinner here — RequireAuth already handled that.
-  //   If we're rendering, auth is resolved.
+  // ★ MUST check isLoading — this guard is NOT inside RequireAuth.
+  //   Without this, isAuthenticated=false during initial load would
+  //   cause a flash redirect to /login before auth resolves.
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <LoadingState />
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
   if (!hasOrganization) {
-    // If org was previously confirmed (sessionStorage or earlier in this session),
-    // don't redirect. Trigger a silent background refresh instead.
+    // If org was previously confirmed, don't redirect — trigger silent refresh.
     if (orgConfirmed.current) {
       refreshOrganization().catch(() => {});
       return <Outlet />;
@@ -173,29 +165,20 @@ export function RequireOrganization() {
 }
 
 /**
- * Subscription gate — MUST be rendered inside PlanProvider.
- * Place this component as the content outlet inside SubscriberLayout so that
- * expired subscribers (including those with no subscription row) are redirected
- * to the billing page before any protected page renders.
- *
- * The billing page itself is always accessible so users can renew.
- * All other /dashboard/* routes require a non-expired subscription.
+ * Subscription gate — rendered inside SubscriberLayout (inside PlanProvider).
  */
 export function SubscriptionGate() {
   const { trial, isLoading } = usePlan();
   const location = useLocation();
 
-  // While subscription data is loading, show a spinner so users see feedback.
   if (isLoading) return (
     <div className="flex items-center justify-center min-h-[40vh]">
       <LoadingState />
     </div>
   );
 
-  // Billing page is always accessible — prevent redirect loop.
   if (location.pathname === '/dashboard/billing') return <Outlet />;
 
-  // Expired or missing subscription → force to billing.
   if (trial.isExpired) {
     return <Navigate to="/dashboard/billing" replace />;
   }
@@ -205,31 +188,15 @@ export function SubscriptionGate() {
 
 /**
  * Redirect authenticated users away from login/signup pages.
- * Admin users → /admin/dashboard.
- * Subscriber users → /dashboard or /onboarding.
- *
- * IMPORTANT: Never show a white loading screen here.
- * – On the first load of /login, show the form immediately.
- * – During Google OAuth callback (/login?code=…), Login.tsx renders its own
- *   branded blue loading screen — we must not overlap it with a white spinner.
- * – After logout, the login form appears instantly with no loading flash.
- * When auth resolves to authenticated, the redirect below fires automatically.
  */
 export function RedirectIfAuthenticated() {
   const { isAuthenticated, isLoading } = useAuth();
   const { isAdmin } = useAdminCheck();
 
-  // Render login form while auth is loading. Do NOT wait for admin check —
-  // redirect fires as soon as auth resolves. Admin check may still be running;
-  // if the user is an admin the second render redirects them to /admin/dashboard.
   if (isLoading) return <Outlet />;
 
   if (isAuthenticated) {
     if (isAdmin) return <Navigate to="/admin/dashboard" replace />;
-    // Always route to /dashboard — RequireOrganization will redirect to
-    // /onboarding if needed, AFTER a verified org check.  Routing directly
-    // to /onboarding here caused false redirects after Google OAuth because
-    // hasOrganization was still false during initial hydration.
     return <Navigate to="/dashboard" replace />;
   }
 

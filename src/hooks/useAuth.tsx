@@ -43,8 +43,6 @@ const EMPTY_STATE: AuthState = {
 };
 
 // ── SessionStorage key for org confirmation ──────────────────────────
-// Survives React re-renders, navigation, and strict-mode remounts.
-// Cleared on sign-out.
 const ORG_CONFIRMED_KEY = 'sadeem_org_confirmed';
 
 // Timeout helper — prevents a hung DB query from blocking auth forever.
@@ -60,20 +58,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isLoading: true,
   });
 
-  // Track whether INITIAL_SESSION has already been handled to prevent
-  // the getSession() fallback from double-hydrating.
   const initialSessionHandled = useRef(false);
-  // Track in-flight hydration to prevent concurrent calls.
   const hydrating = useRef(false);
-  // Track whether a full hydration has completed successfully (with a user).
-  // This ref is updated synchronously in hydrateAuth, so concurrent event
-  // handlers can reliably check it without waiting for React re-render.
   const hydrationDone = useRef(false);
-  // Guard: while signing out, ignore auth events that would re-hydrate.
   const signingOut = useRef(false);
 
-  // ── Stable refs for callbacks that need current state without
-  //    invalidating their memoization ──────────────────────────────
   const stateRef = useRef(state);
   stateRef.current = state;
 
@@ -86,8 +75,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .single();
       if (!error) return (data as DbUser) || null;
 
-      // Profile row missing (trigger may not have fired yet for OAuth users).
-      // Create it now so downstream code always has a profile.
       if (error.code === 'PGRST116') {
         const meta = session?.user?.user_metadata || {};
         const { data: created, error: insErr } = await supabase
@@ -120,15 +107,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  // ── Core hydration: loads profile + org + subscription ──────────
+  // ── Core hydration ─────────────────────────────────────────────────
   //
-  // ★ PERF: Only retries org load when sessionStorage confirms org existed
-  //   (i.e. returning user after PKCE exchange). New users skip the retry
-  //   entirely — no wasted delay.
+  // ★ Retry logic: If org is null on first attempt, retry ONCE after a
+  //   short delay. This covers PKCE timing (JWT propagation delay).
+  //   - If sessionStorage confirms org existed → 800ms delay (PKCE safe)
+  //   - Otherwise → 300ms delay (quick check, covers edge cases)
+  //   - Retry timeout is 3s (short — prevents long waits for new users)
   const hydrateAuth = useCallback(
     async (session: MinimalSession | null) => {
-      // Prevent concurrent hydrations — the in-flight one will finish
-      // and set isLoading=false, so skipping is self-healing.
       if (hydrating.current) return;
       hydrating.current = true;
 
@@ -146,21 +133,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           raceTimeout(loadOrganization(session.user.id), 5000, null),
         ]);
 
-        // ★ Retry org ONLY when sessionStorage proves org existed before.
-        //   This covers PKCE timing without penalizing new users.
+        // ★ If org is null, retry once. Covers PKCE timing + transient failures.
+        //   Short delay + short timeout to minimize impact on genuinely new users.
         let finalOrgData = orgData;
         if (!orgData?.org) {
           const wasConfirmed = sessionStorage.getItem(ORG_CONFIRMED_KEY);
-          if (wasConfirmed) {
-            await delay(800);
-            finalOrgData = await raceTimeout(loadOrganization(session.user.id), 5000, null);
-          }
+          await delay(wasConfirmed ? 800 : 300);
+          finalOrgData = await raceTimeout(loadOrganization(session.user.id), 3000, null);
         }
 
-        // Phase 2: If org exists, pre-load subscription in parallel
+        // Phase 2: If org exists, pre-load subscription
         let sub: DbSubscription | null = null;
         if (finalOrgData?.org) {
-          // Persist org confirmation for future sessions / tab returns
           sessionStorage.setItem(ORG_CONFIRMED_KEY, session.user.id);
           try {
             sub = await raceTimeout(
@@ -187,7 +171,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
       } catch (err) {
         console.error('[Senda] Auth hydrate failed:', err);
-        // ★ PRESERVE existing org/profile data on failure.
         const prev = stateRef.current;
         hydrationDone.current = true;
         setState({
@@ -217,7 +200,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const session = rawSession as MinimalSession | null;
 
-      // ── SIGNED_OUT ─────────────────────────────────────────────
       if (event === 'SIGNED_OUT') {
         initialSessionHandled.current = false;
         hydrationDone.current = false;
@@ -226,9 +208,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      // ── TOKEN_REFRESHED ────────────────────────────────────────
-      // Only update session token. Do NOT reload profile/org.
-      // Do NOT touch isLoading — this must be transparent.
       if (event === 'TOKEN_REFRESHED') {
         if (session?.user) {
           setState(prev => ({ ...prev, session }));
@@ -236,8 +215,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      // ── USER_UPDATED ───────────────────────────────────────────
-      // Only refresh profile (e.g. after password change). No org reload.
       if (event === 'USER_UPDATED') {
         if (session?.user) {
           const profile = await raceTimeout(
@@ -250,31 +227,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      // ── INITIAL_SESSION ────────────────────────────────────────
       if (event === 'INITIAL_SESSION') {
         initialSessionHandled.current = true;
         await hydrateAuth(session);
         return;
       }
 
-      // ── SIGNED_IN ──────────────────────────────────────────────
       if (event === 'SIGNED_IN' && session?.user) {
-        // If already hydrated (INITIAL_SESSION ran first, or returning
-        // to a tab), just update session — do NOT re-hydrate.
         if (hydrationDone.current) {
           setState(prev => ({
             ...prev,
             session,
             user: { id: session.user.id, email: session.user.email },
             isAuthenticated: true,
-            // ★ CRITICAL: never set isLoading=true here — prevents
-            //   "جاري التحميل" on tab return.
           }));
           return;
         }
 
-        // Fresh login: mark authenticated immediately so
-        // RedirectIfAuthenticated redirects without waiting.
         setState(prev => ({
           ...prev,
           session,
@@ -287,7 +256,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
 
-    // Fallback: if INITIAL_SESSION doesn't fire within 400ms, call getSession()
     const fallback = setTimeout(() => {
       if (!initialSessionHandled.current && mounted) {
         supabase.auth.getSession().then(({ data: { session } }) => {
@@ -299,8 +267,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     }, 400);
 
-    // ★ Global safety timeout — force isLoading=false after 5 seconds
-    //   no matter what. Prevents infinite loading in ALL edge cases.
     const safetyTimer = setTimeout(() => {
       if (mounted) {
         setState(prev => {
@@ -321,7 +287,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [hydrateAuth, loadProfile]);
 
-  // ── Stable callbacks: use refs so the function identity never changes ──
   const refreshProfile = useCallback(async () => {
     const s = stateRef.current;
     if (!s.user) return;
@@ -358,7 +323,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  // ── Memoized context value: only changes when state actually changes ──
   const contextValue = useMemo<AuthContextType>(
     () => ({ ...state, refreshProfile, refreshOrganization, signOut }),
     [state, refreshProfile, refreshOrganization, signOut]
