@@ -8,7 +8,7 @@ import { checkRateLimit, getClientIP, rateLimitResponse } from '../_shared/rate-
 import { isNonEmptyString, logEvent, withTimeout } from '../_shared/validate.ts';
 
 const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
-const MODEL = 'gemini-2.0-flash-lite';
+const MODEL = 'gemini-2.5-flash-lite';
 
 const FN = 'generate-reply';
 const RATE_LIMIT = 20;
