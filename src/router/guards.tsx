@@ -19,6 +19,7 @@ import { supabase } from '@/lib/supabase';
 
 const ADMIN_CACHE_KEY = 'sadeem_admin_check';
 const ADMIN_CHECK_TIMEOUT_MS = 1500;
+const ADMIN_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
 /**
  * Hook: check if current auth.uid() is an admin.
@@ -54,12 +55,13 @@ function useAdminCheck() {
           return;
         }
 
-        // Serve from cache if it belongs to the current user
+        // Serve from cache if it belongs to the current user and is not expired
         try {
           const raw = sessionStorage.getItem(ADMIN_CACHE_KEY);
           if (raw) {
-            const cached = JSON.parse(raw) as { uid: string; value: boolean };
-            if (cached.uid === userId) {
+            const cached = JSON.parse(raw) as { uid: string; value: boolean; ts?: number };
+            const age = cached.ts ? Date.now() - cached.ts : Infinity;
+            if (cached.uid === userId && age < ADMIN_CACHE_TTL_MS) {
               if (!cancelled) { setIsAdmin(cached.value); setChecking(false); }
               return;
             }
@@ -76,7 +78,7 @@ function useAdminCheck() {
 
         sessionStorage.setItem(
           ADMIN_CACHE_KEY,
-          JSON.stringify({ uid: userId, value: result })
+          JSON.stringify({ uid: userId, value: result, ts: Date.now() })
         );
         if (!cancelled) { setIsAdmin(result); setChecking(false); }
       } catch {

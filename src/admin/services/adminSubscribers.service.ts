@@ -205,11 +205,13 @@ class AdminSubscribersService {
   }
 
   async resetAIUsage(orgId: string): Promise<void> {
-    const { error } = await adminSupabase
-      .from('subscriptions')
-      .update({ ai_replies_used: 0 })
-      .eq('organization_id', orgId);
-    if (error) throw new Error(error.message);
+    const { error } = await adminSupabase.rpc('admin_reset_subscriber_ai_usage', {
+      p_org_id: orgId,
+    });
+    if (error) {
+      if (error.message.includes('Permission denied')) throw new Error('ليس لديك صلاحية تصفير الاستخدام');
+      throw new Error(error.message);
+    }
   }
 
   async getDashboardStats(): Promise<DashboardStats> {

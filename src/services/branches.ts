@@ -22,18 +22,28 @@ export const branchesService = {
     address?: string;
     status?: string;
   }): Promise<DbBranch> {
+    // Use RPC with server-side branch limit enforcement
+    const { data: branchId, error: rpcError } = await supabase.rpc('create_branch_with_limit_check', {
+      p_org_id: branch.organization_id,
+      p_internal_name: branch.internal_name,
+      p_google_name: branch.google_name ?? null,
+      p_google_location_id: branch.google_location_id ?? null,
+      p_city: branch.city ?? null,
+      p_address: branch.address ?? null,
+    });
+
+    if (rpcError) {
+      if (rpcError.message.includes('Branch limit reached')) {
+        throw new Error('لقد وصلت للحد الأقصى من الفروع المسموح بها في خطتك');
+      }
+      throw rpcError;
+    }
+
+    // Fetch the created branch
     const { data, error } = await supabase
       .from('branches')
-      .insert({
-        organization_id: branch.organization_id,
-        internal_name: branch.internal_name,
-        google_name: branch.google_name ?? null,
-        google_location_id: branch.google_location_id ?? null,
-        city: branch.city ?? null,
-        address: branch.address ?? null,
-        status: branch.status ?? 'active',
-      })
-      .select()
+      .select('*')
+      .eq('id', branchId)
       .single();
 
     if (error) throw error;

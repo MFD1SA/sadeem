@@ -10,6 +10,9 @@ import {
 } from 'lucide-react';
 import { adminSupabase } from '../services/adminSupabase';
 import { adminIntegrationsService, type AdminIntegration } from '../services/adminIntegrations.service';
+import { useAdminAuth } from '../contexts/AdminAuthContext';
+import { PermissionGate } from '../guards';
+import { PERMISSIONS } from '../utils/constants';
 
 const CATEGORY_LABELS: Record<string, string> = {
   reviews:       'التقييمات',
@@ -50,6 +53,9 @@ const EMPTY_FORM: {
 };
 
 export default function AdminIntegrations() {
+  const { hasPermission } = useAdminAuth();
+  const canEdit = hasPermission(PERMISSIONS.SETTINGS_UPDATE);
+
   useEffect(() => { document.title = 'سيندا | SENDA — التكاملات'; }, []);
 
   const [integrations, setIntegrations] = useState<AdminIntegration[]>([]);
@@ -228,9 +234,11 @@ export default function AdminIntegrations() {
           <button onClick={load} className="flex items-center gap-1.5 px-3 py-2 bg-gray-50 hover:bg-gray-100 text-gray-500 hover:text-gray-900 rounded-lg text-xs transition-colors">
             <RefreshCw size={13} /> تحديث
           </button>
-          <button onClick={() => setShowAddModal(true)} className="flex items-center gap-1.5 px-3 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 border border-indigo-500/30 rounded-lg text-xs font-medium transition-colors">
-            <Plus size={13} /> إضافة تكامل
-          </button>
+          <PermissionGate permission={PERMISSIONS.SETTINGS_UPDATE}>
+            <button onClick={() => setShowAddModal(true)} className="flex items-center gap-1.5 px-3 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 border border-indigo-500/30 rounded-lg text-xs font-medium transition-colors">
+              <Plus size={13} /> إضافة تكامل
+            </button>
+          </PermissionGate>
         </div>
       </div>
 
@@ -350,23 +358,29 @@ export default function AdminIntegrations() {
                         {/* Controls */}
                         <div className="flex items-center gap-2 flex-shrink-0">
                           {/* Toggle */}
-                          <button
-                            onClick={() => handleToggle(item)}
-                            disabled={toggling || isComingSoon}
-                            title={isComingSoon ? 'غير متاح بعد' : undefined}
-                            className={`relative w-10 h-5 rounded-full transition-colors flex-shrink-0 ${
-                              isComingSoon ? 'bg-gray-300 cursor-not-allowed opacity-50' :
-                              item.enabled ? 'bg-indigo-500' : 'bg-gray-300'
-                            } ${toggling ? 'opacity-60' : ''}`}
-                          >
-                            {toggling
-                              ? <Loader2 size={10} className="absolute top-1.5 left-1.5 animate-spin text-white" />
-                              : <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${item.enabled ? 'translate-x-5 rtl:-translate-x-5' : 'translate-x-0.5 rtl:-translate-x-0.5'}`} />
-                            }
-                          </button>
+                          {canEdit ? (
+                            <button
+                              onClick={() => handleToggle(item)}
+                              disabled={toggling || isComingSoon}
+                              title={isComingSoon ? 'غير متاح بعد' : undefined}
+                              className={`relative w-10 h-5 rounded-full transition-colors flex-shrink-0 ${
+                                isComingSoon ? 'bg-gray-300 cursor-not-allowed opacity-50' :
+                                item.enabled ? 'bg-indigo-500' : 'bg-gray-300'
+                              } ${toggling ? 'opacity-60' : ''}`}
+                            >
+                              {toggling
+                                ? <Loader2 size={10} className="absolute top-1.5 left-1.5 animate-spin text-white" />
+                                : <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${item.enabled ? 'translate-x-5 rtl:-translate-x-5' : 'translate-x-0.5 rtl:-translate-x-0.5'}`} />
+                              }
+                            </button>
+                          ) : (
+                            <div className={`relative w-10 h-5 rounded-full flex-shrink-0 cursor-not-allowed opacity-50 ${item.enabled ? 'bg-indigo-500' : 'bg-gray-300'}`}>
+                              <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow ${item.enabled ? 'translate-x-5 rtl:-translate-x-5' : 'translate-x-0.5 rtl:-translate-x-0.5'}`} />
+                            </div>
+                          )}
 
                           {/* Edit */}
-                          {!isComingSoon && (
+                          {!isComingSoon && canEdit && (
                             <button onClick={() => openEdit(item)}
                               className="p-1.5 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors">
                               {expanded ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
@@ -374,10 +388,12 @@ export default function AdminIntegrations() {
                           )}
 
                           {/* Delete */}
-                          <button onClick={() => handleDelete(item.id)} disabled={!!deleting}
-                            className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-500/10 transition-colors">
-                            {deleting ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />}
-                          </button>
+                          {canEdit && (
+                            <button onClick={() => handleDelete(item.id)} disabled={!!deleting}
+                              className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-500/10 transition-colors">
+                              {deleting ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />}
+                            </button>
+                          )}
                         </div>
                       </div>
 
