@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { subscriptionService } from '@/services/subscription';
 import { branchesService } from '@/services/branches';
@@ -80,16 +80,20 @@ export function PlanProvider({ children }: { children: ReactNode }) {
 
   const orgId = organization?.id;
 
+  // Ref to grab preloadedSub without adding it to the dependency array.
+  // This prevents re-fetching on every auth context update.
+  const preloadedSubRef = useRef(preloadedSub);
+  preloadedSubRef.current = preloadedSub;
+
   const loadPlan = useCallback(async () => {
     if (authLoading) return;
     if (!orgId) { setIsLoading(false); return; }
 
-    const safetyTimer = setTimeout(() => { setIsLoading(false); }, 3000);
-
     try {
       // Use pre-loaded subscription from AuthProvider if available (saves a round-trip)
-      const subPromise = preloadedSub
-        ? Promise.resolve(preloadedSub)
+      const cached = preloadedSubRef.current;
+      const subPromise = cached
+        ? Promise.resolve(cached)
         : subscriptionService.getByOrganization(orgId);
 
       const [sub, branches] = await Promise.all([
@@ -105,12 +109,17 @@ export function PlanProvider({ children }: { children: ReactNode }) {
       setTrial(noSubscriptionTrial);
       setBranchCount(0);
     } finally {
-      clearTimeout(safetyTimer);
       setIsLoading(false);
     }
-  }, [orgId, authLoading, preloadedSub, computeTrial]);
+  }, [orgId, authLoading, computeTrial]);
 
-  useEffect(() => { loadPlan(); }, [loadPlan]);
+  // Only load once when orgId becomes available (not on every dep change)
+  const planLoaded = useRef(false);
+  useEffect(() => {
+    if (planLoaded.current) return;
+    if (!authLoading && orgId) planLoaded.current = true;
+    loadPlan();
+  }, [loadPlan]);
 
   const isExpired = trial.isExpired;
   const canAddBranch = !isExpired && branchCount < (trial.isTrial ? TRIAL_LIMITS.maxBranches : limits.maxBranches);

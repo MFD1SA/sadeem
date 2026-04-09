@@ -14,7 +14,7 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { usePlan } from '@/hooks/usePlan';
 import { LoadingState } from '@/components/ui/LoadingState';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 
 const ADMIN_CACHE_KEY = 'sadeem_admin_check';
@@ -37,16 +37,19 @@ function useAdminCheck() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [checking, setChecking] = useState(true);
 
+  // Use the primitive user.id so the effect doesn't re-run when the
+  // user object reference changes but the id stays the same.
+  const userId = user?.id;
+
   useEffect(() => {
-    // Don't start until auth is fully resolved — avoids lock contention
+    // Don't start until auth is fully resolved
     if (authLoading) return;
 
     let cancelled = false;
 
     async function check() {
       try {
-        // Not authenticated → no admin check needed, resolve immediately
-        if (!isAuthenticated || !user) {
+        if (!isAuthenticated || !userId) {
           if (!cancelled) { setIsAdmin(false); setChecking(false); }
           return;
         }
@@ -56,7 +59,7 @@ function useAdminCheck() {
           const raw = sessionStorage.getItem(ADMIN_CACHE_KEY);
           if (raw) {
             const cached = JSON.parse(raw) as { uid: string; value: boolean };
-            if (cached.uid === user.id) {
+            if (cached.uid === userId) {
               if (!cancelled) { setIsAdmin(cached.value); setChecking(false); }
               return;
             }
@@ -65,8 +68,6 @@ function useAdminCheck() {
           sessionStorage.removeItem(ADMIN_CACHE_KEY);
         }
 
-        // Fresh RPC check — race against a 2-second timeout so the
-        // guard never blocks the UI indefinitely on network failure.
         const rpcPromise = supabase.rpc('check_is_admin').then(({ data }) => data === true);
         const timeoutPromise = new Promise<boolean>((resolve) =>
           setTimeout(() => resolve(false), ADMIN_CHECK_TIMEOUT_MS)
@@ -75,7 +76,7 @@ function useAdminCheck() {
 
         sessionStorage.setItem(
           ADMIN_CACHE_KEY,
-          JSON.stringify({ uid: user.id, value: result })
+          JSON.stringify({ uid: userId, value: result })
         );
         if (!cancelled) { setIsAdmin(result); setChecking(false); }
       } catch {
@@ -85,7 +86,7 @@ function useAdminCheck() {
 
     check();
     return () => { cancelled = true; };
-  }, [authLoading, isAuthenticated, user]);
+  }, [authLoading, isAuthenticated, userId]);
 
   return { isAdmin, checking };
 }
@@ -122,35 +123,14 @@ export function RequireAuth() {
  * Requires completed onboarding. Redirects to /onboarding if no organization.
  * Redirects admin users to /admin/dashboard.
  *
- * After Google OAuth, the first hydration may fail to load the org (the
- * Supabase client's auth header isn't guaranteed to be set when SIGNED_IN
- * fires with the lock bypass).  To prevent a false redirect to /onboarding,
- * we retry refreshOrganization() ONCE before giving up.
+ * Org data comes from AuthProvider's initial hydration (which uses a
+ * SECURITY DEFINER RPC immune to token-timing issues).  No retry needed.
  */
 export function RequireOrganization() {
-  const { hasOrganization, isLoading, isAuthenticated, refreshOrganization } = useAuth();
-  const { isAdmin, checking } = useAdminCheck();
-  const orgRetried = useRef(false);
-  const [orgConfirmed, setOrgConfirmed] = useState(false);
+  const { hasOrganization, isLoading, isAuthenticated } = useAuth();
+  const { isAdmin } = useAdminCheck();
 
-  useEffect(() => {
-    // Already found org — no retry needed
-    if (hasOrganization) {
-      setOrgConfirmed(true);
-      return;
-    }
-    // Auth still loading — wait
-    if (isLoading || !isAuthenticated) return;
-    // Retry once: re-fetch org after auth has fully settled.
-    // Timeout after 3s so we never get stuck on loading forever.
-    if (!orgRetried.current) {
-      orgRetried.current = true;
-      const timeout = new Promise<void>((r) => setTimeout(r, 3000));
-      Promise.race([refreshOrganization(), timeout]).finally(() => setOrgConfirmed(true));
-    }
-  }, [isLoading, isAuthenticated, hasOrganization, refreshOrganization]);
-
-  if (isLoading || (isAuthenticated && !hasOrganization && !orgConfirmed)) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <LoadingState />
@@ -162,7 +142,6 @@ export function RequireOrganization() {
     return <Navigate to="/login" replace />;
   }
 
-  // Admin user → redirect to admin dashboard
   if (isAdmin) {
     return <Navigate to="/admin/dashboard" replace />;
   }

@@ -1,6 +1,6 @@
 import {
   createContext, useContext, useState, useEffect,
-  useCallback, useRef, type ReactNode,
+  useCallback, useRef, useMemo, type ReactNode,
 } from 'react';
 import { supabase } from '@/lib/supabase';
 import { organizationService } from '@/services/organizations';
@@ -57,6 +57,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Guard: while signing out, ignore auth events that would re-hydrate
   // (e.g. TOKEN_REFRESHED racing with signOut).
   const signingOut = useRef(false);
+
+  // ── Stable refs for callbacks that need current state without
+  //    invalidating their memoization ──────────────────────────────
+  const stateRef = useRef(state);
+  stateRef.current = state;
 
   const loadProfile = useCallback(async (userId: string, session: MinimalSession | null): Promise<DbUser | null> => {
     try {
@@ -130,22 +135,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         // Wait for the Supabase client to finish initializing so that
         // fetchWithAuth → getSession() returns the correct JWT.
-        // On Google OAuth, SIGNED_IN fires via setTimeout(0) AFTER
-        // _initialize resolves, so initializePromise is already done
-        // by the time we reach here.  This call is a safety net.
         await supabase.auth.getSession();
 
         // Phase 1: Load profile + org in parallel.
         // Org uses server-side RPC (SECURITY DEFINER) so RLS timing
         // doesn't matter — auth.uid() is read from the JWT header.
-        // Each query has a 4-second timeout to prevent indefinite hangs.
         const [profile, orgData] = await Promise.all([
           raceTimeout(loadProfile(session.user.id, session), 4000, null),
           raceTimeout(loadOrganization(session.user.id), 4000, null),
         ]);
 
         // Phase 2: If org exists, pre-load subscription in parallel
-        // This saves PlanProvider from having to wait and fetch it separately
         let sub: DbSubscription | null = null;
         if (orgData?.org) {
           try {
@@ -196,12 +196,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: listener } = supabase.auth.onAuthStateChange(async (event, rawSession) => {
       if (!mounted) return;
 
-      // While signing out, ignore all events except SIGNED_OUT itself.
-      // This prevents TOKEN_REFRESHED from re-hydrating and undoing
-      // the immediate state clear in signOut().
       if (signingOut.current && event !== 'SIGNED_OUT') return;
 
-      // Cast Supabase Session to our minimal shape
       const session = rawSession as MinimalSession | null;
 
       if (event === 'INITIAL_SESSION') {
@@ -209,11 +205,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       // On SIGNED_IN, immediately mark as authenticated BEFORE the async
-      // hydration. This ensures RedirectIfAuthenticated redirects instantly
-      // to /dashboard, where RequireOrganization shows a loading spinner
-      // while profile/org data loads. Without this, isAuthenticated stays
-      // false during the entire hydration (2-5s), leaving the user stuck
-      // on the login page with a spinning button.
+      // hydration so RedirectIfAuthenticated redirects instantly.
       if (event === 'SIGNED_IN' && session?.user) {
         setState((prev) => ({
           ...prev,
@@ -276,27 +268,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [hydrateAuth]);
 
+  // ── Stable callbacks: use refs so the function identity never changes ──
   const refreshProfile = useCallback(async () => {
-    if (!state.user) return;
-    const profile = await loadProfile(state.user.id, state.session);
+    const s = stateRef.current;
+    if (!s.user) return;
+    const profile = await loadProfile(s.user.id, s.session);
     setState((prev) => ({ ...prev, profile }));
-  }, [state.user, state.session, loadProfile]);
+  }, [loadProfile]);
 
   const refreshOrganization = useCallback(async () => {
-    if (!state.user) return;
-    const orgData = await loadOrganization(state.user.id);
+    const s = stateRef.current;
+    if (!s.user) return;
+    const orgData = await loadOrganization(s.user.id);
     setState((prev) => ({
       ...prev,
       organization: orgData?.org || null,
       membership: orgData?.membership || null,
       hasOrganization: !!orgData?.org,
     }));
-  }, [state.user, loadOrganization]);
+  }, [loadOrganization]);
 
   const signOut = useCallback(async () => {
-    // Clear local state IMMEDIATELY for instant redirect to /login.
-    // Don't wait for supabase.auth.signOut() — that makes a network call
-    // and the user sees a loading screen until it resolves.
     signingOut.current = true;
     setState({
       session: null,
@@ -309,7 +301,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isAuthenticated: false,
       hasOrganization: false,
     });
-    // Clean up server-side session in the background.
     try {
       await supabase.auth.signOut();
     } catch (err) {
@@ -319,10 +310,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  // ── Memoized context value: only changes when state actually changes ──
+  const contextValue = useMemo<AuthContextType>(
+    () => ({ ...state, refreshProfile, refreshOrganization, signOut }),
+    [state, refreshProfile, refreshOrganization, signOut]
+  );
+
   return (
-    <AuthContext.Provider
-      value={{ ...state, refreshProfile, refreshOrganization, signOut }}
-    >
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );
