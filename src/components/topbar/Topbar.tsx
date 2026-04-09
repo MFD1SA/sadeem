@@ -64,7 +64,7 @@ export function Topbar({ onMenuClick }: TopbarProps) {
   };
 
   return (
-    <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-xl supports-[backdrop-filter]:bg-white/80" style={{ borderBottom: '1px solid #e5e7eb' }}>
+    <header className="sticky top-0 z-30 bg-white" style={{ borderBottom: '1px solid #e5e7eb' }}>
       <div className="mx-auto flex h-14 w-full max-w-[1400px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
 
         {/* Right — org context */}

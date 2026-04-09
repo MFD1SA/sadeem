@@ -44,7 +44,7 @@ export function Modal({ title, onClose, children, footer }: ModalProps) {
       onClick={onClose}
       role="presentation"
     >
-      <div className="absolute inset-0 bg-black/25 backdrop-blur-[1px]" aria-hidden="true" />
+      <div className="absolute inset-0 bg-black/30" aria-hidden="true" />
       <div
         ref={modalRef}
         role="dialog"

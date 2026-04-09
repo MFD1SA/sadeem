@@ -65,7 +65,16 @@ export default function PublicLayout({ children, lang, onToggleLang }: PublicLay
   const t = T[lang];
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
+    let ticking = false;
+    const onScroll = () => {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(() => {
+          setScrolled(window.scrollY > 20);
+          ticking = false;
+        });
+      }
+    };
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
@@ -74,7 +83,7 @@ export default function PublicLayout({ children, lang, onToggleLang }: PublicLay
     <div dir={t.dir} className="min-h-screen bg-[#FAFBFC] text-slate-800" style={{ fontFamily: "'IBM Plex Sans Arabic', 'Inter', system-ui, sans-serif" }}>
 
       {/* ═══════════════════ NAVBAR ═══════════════════ */}
-      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled ? 'bg-white/95 backdrop-blur-xl shadow-sm border-b border-slate-100' : 'bg-transparent'}`}>
+      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-white shadow-sm border-b border-slate-100' : 'bg-transparent'}`}>
         <div className="max-w-[1200px] mx-auto px-6 flex items-center justify-between h-[72px]">
           <Link to="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
             <img src="/senda-logo.png" alt="SENDA" className={`h-9 transition-all duration-500 ${scrolled ? '' : 'brightness-0 invert'}`} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />

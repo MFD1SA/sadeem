@@ -29,32 +29,31 @@ function lazyWithRetry(importFn: () => Promise<{ default: React.ComponentType }>
   );
 }
 
-// ── Eagerly loaded — critical path + all subscriber pages ───────────────────
+// ── Eagerly loaded — only auth-critical pages ─────────────────────────────
 import Login         from '@/pages/Auth/Login';
 import AuthCallback  from '@/pages/Auth/Callback';
 import ResetPassword from '@/pages/Auth/ResetPassword';
 import Onboarding    from '@/pages/Onboarding';
-import Dashboard    from '@/pages/Dashboard';
 
-// Subscriber pages — eager so sidebar navigation is always instant
-import ReviewsCenter  from '@/pages/ReviewsCenter';
-import ResponsesInbox from '@/pages/ResponsesInbox';
-import Analytics      from '@/pages/Analytics';
-import Insights       from '@/pages/Insights';
-import Branches       from '@/pages/Branches';
-import Templates      from '@/pages/Templates';
-import Team           from '@/pages/Team';
-import Integrations   from '@/pages/Integrations';
-import QrReviews      from '@/pages/QrReviews';
-import Tasks          from '@/pages/Tasks';
-import Notifications  from '@/pages/Notifications';
-import Billing        from '@/pages/Billing';
-import Support        from '@/pages/Support';
-import Settings       from '@/pages/Settings';
-import ReviewLanding  from '@/pages/ReviewLanding';
-import SeoLanding     from '@/pages/SeoLanding';
-import HomePage       from '@/pages/HomePage';
-// StoryPage removed — /story now redirects to /
+// ── Lazy loaded — subscriber pages (load on first visit, then cached) ─────
+const Dashboard      = lazyWithRetry(() => import('@/pages/Dashboard'));
+const ReviewsCenter  = lazyWithRetry(() => import('@/pages/ReviewsCenter'));
+const ResponsesInbox = lazyWithRetry(() => import('@/pages/ResponsesInbox'));
+const Analytics      = lazyWithRetry(() => import('@/pages/Analytics'));
+const Insights       = lazyWithRetry(() => import('@/pages/Insights'));
+const Branches       = lazyWithRetry(() => import('@/pages/Branches'));
+const Templates      = lazyWithRetry(() => import('@/pages/Templates'));
+const Team           = lazyWithRetry(() => import('@/pages/Team'));
+const Integrations   = lazyWithRetry(() => import('@/pages/Integrations'));
+const QrReviews      = lazyWithRetry(() => import('@/pages/QrReviews'));
+const Tasks          = lazyWithRetry(() => import('@/pages/Tasks'));
+const Notifications  = lazyWithRetry(() => import('@/pages/Notifications'));
+const Billing        = lazyWithRetry(() => import('@/pages/Billing'));
+const Support        = lazyWithRetry(() => import('@/pages/Support'));
+const Settings       = lazyWithRetry(() => import('@/pages/Settings'));
+const ReviewLanding  = lazyWithRetry(() => import('@/pages/ReviewLanding'));
+const SeoLanding     = lazyWithRetry(() => import('@/pages/SeoLanding'));
+const HomePage       = lazyWithRetry(() => import('@/pages/HomePage'));
 const PrivacyPage    = lazyWithRetry(() => import('@/pages/legal/PrivacyPage'));
 const TermsPage      = lazyWithRetry(() => import('@/pages/legal/TermsPage'));
 const FeaturesPage          = lazyWithRetry(() => import('@/pages/marketing/FeaturesPage'));
@@ -116,7 +115,7 @@ export function AppRouter() {
       {/* SUBSCRIBER ROUTES                                        */}
       {/* ======================================================= */}
 
-      <Route path="/" element={<HomePage />} />
+      <Route path="/" element={<Suspense fallback={<PageLoader />}><HomePage /></Suspense>} />
       <Route path="/story"   element={<Navigate to="/" replace />} />
       <Route path="/privacy" element={<Suspense fallback={<PageLoader />}><PrivacyPage /></Suspense>} />
       <Route path="/terms"   element={<Suspense fallback={<PageLoader />}><TermsPage /></Suspense>} />
@@ -134,9 +133,9 @@ export function AppRouter() {
       <Route path="/blog/:slug"  element={<Suspense fallback={<PageLoader />}><ArticlePage /></Suspense>} />
       <Route path="/contact-us" element={<Suspense fallback={<PageLoader />}><ContactPage /></Suspense>} />
 
-      <Route path="/r/:slug" element={<ReviewLanding />} />
-      <Route path="/s/:city/:industry" element={<SeoLanding />} />
-      <Route path="/s/:city" element={<SeoLanding />} />
+      <Route path="/r/:slug" element={<Suspense fallback={<PageLoader />}><ReviewLanding /></Suspense>} />
+      <Route path="/s/:city/:industry" element={<Suspense fallback={<PageLoader />}><SeoLanding /></Suspense>} />
+      <Route path="/s/:city" element={<Suspense fallback={<PageLoader />}><SeoLanding /></Suspense>} />
 
       <Route element={<RedirectIfAuthenticated />}>
         <Route path="/login"    element={<Login />} />
@@ -152,21 +151,21 @@ export function AppRouter() {
 
       <Route element={<RequireOrganization />}>
         <Route path="/dashboard" element={<SubscriberLayout />}>
-          <Route index           element={<Dashboard />} />
-          <Route path="reviews"       element={<ReviewsCenter />} />
-          <Route path="replies"       element={<ResponsesInbox />} />
-          <Route path="analytics"     element={<Analytics />} />
-          <Route path="insights"      element={<Insights />} />
-          <Route path="branches"      element={<Branches />} />
-          <Route path="templates"     element={<Templates />} />
-          <Route path="qr"            element={<QrReviews />} />
-          <Route path="team"          element={<Team />} />
-          <Route path="integrations"  element={<Integrations />} />
-          <Route path="tasks"         element={<Tasks />} />
-          <Route path="notifications" element={<Notifications />} />
-          <Route path="billing"       element={<Billing />} />
-          <Route path="support"       element={<Support />} />
-          <Route path="settings"      element={<Settings />} />
+          <Route index           element={<Suspense fallback={<PageLoader />}><Dashboard /></Suspense>} />
+          <Route path="reviews"       element={<Suspense fallback={<PageLoader />}><ReviewsCenter /></Suspense>} />
+          <Route path="replies"       element={<Suspense fallback={<PageLoader />}><ResponsesInbox /></Suspense>} />
+          <Route path="analytics"     element={<Suspense fallback={<PageLoader />}><Analytics /></Suspense>} />
+          <Route path="insights"      element={<Suspense fallback={<PageLoader />}><Insights /></Suspense>} />
+          <Route path="branches"      element={<Suspense fallback={<PageLoader />}><Branches /></Suspense>} />
+          <Route path="templates"     element={<Suspense fallback={<PageLoader />}><Templates /></Suspense>} />
+          <Route path="qr"            element={<Suspense fallback={<PageLoader />}><QrReviews /></Suspense>} />
+          <Route path="team"          element={<Suspense fallback={<PageLoader />}><Team /></Suspense>} />
+          <Route path="integrations"  element={<Suspense fallback={<PageLoader />}><Integrations /></Suspense>} />
+          <Route path="tasks"         element={<Suspense fallback={<PageLoader />}><Tasks /></Suspense>} />
+          <Route path="notifications" element={<Suspense fallback={<PageLoader />}><Notifications /></Suspense>} />
+          <Route path="billing"       element={<Suspense fallback={<PageLoader />}><Billing /></Suspense>} />
+          <Route path="support"       element={<Suspense fallback={<PageLoader />}><Support /></Suspense>} />
+          <Route path="settings"      element={<Suspense fallback={<PageLoader />}><Settings /></Suspense>} />
         </Route>
       </Route>
 
