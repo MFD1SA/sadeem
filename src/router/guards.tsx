@@ -141,10 +141,12 @@ export function RequireOrganization() {
     }
     // Auth still loading — wait
     if (isLoading || !isAuthenticated) return;
-    // Retry once: re-fetch org after auth has fully settled
+    // Retry once: re-fetch org after auth has fully settled.
+    // Timeout after 3s so we never get stuck on loading forever.
     if (!orgRetried.current) {
       orgRetried.current = true;
-      refreshOrganization().finally(() => setOrgConfirmed(true));
+      const timeout = new Promise<void>((r) => setTimeout(r, 3000));
+      Promise.race([refreshOrganization(), timeout]).finally(() => setOrgConfirmed(true));
     }
   }, [isLoading, isAuthenticated, hasOrganization, refreshOrganization]);
 

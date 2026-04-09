@@ -14,7 +14,6 @@ interface MinimalSession {
   user: { id: string; email?: string; user_metadata?: Record<string, unknown>; app_metadata?: Record<string, unknown> };
   expires_at?: number;
   access_token?: string;
-  refresh_token?: string;
 }
 
 interface AuthState {
@@ -129,33 +128,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         Promise.race([p, new Promise<T>((r) => setTimeout(() => r(fallback), ms))]);
 
       try {
-        // Force-inject the session into the Supabase client so the
-        // PostgREST fetch interceptor has the correct JWT for RLS queries.
-        // With the lock bypass, SIGNED_IN can fire before the client's
-        // internal auth state is fully synchronized.  getSession() alone
-        // isn't enough because it may return a stale/empty session while
-        // initializePromise is still pending.  setSession() bypasses that
-        // and directly writes the tokens into the client's memory+storage.
-        if (session.access_token && session.refresh_token) {
-          await supabase.auth.setSession({
-            access_token: session.access_token,
-            refresh_token: session.refresh_token,
-          });
-        }
+        // Wait for the Supabase client to finish initializing so that
+        // fetchWithAuth → getSession() returns the correct JWT.
+        // On Google OAuth, SIGNED_IN fires via setTimeout(0) AFTER
+        // _initialize resolves, so initializePromise is already done
+        // by the time we reach here.  This call is a safety net.
+        await supabase.auth.getSession();
 
-        // Phase 1: Load profile + org in parallel (org is now a single joined query)
-        // Each query has a 5-second timeout to prevent indefinite hangs.
-        let [profile, orgData] = await Promise.all([
-          raceTimeout(loadProfile(session.user.id, session), 5000, null),
-          raceTimeout(loadOrganization(session.user.id), 5000, null),
+        // Phase 1: Load profile + org in parallel.
+        // Org uses server-side RPC (SECURITY DEFINER) so RLS timing
+        // doesn't matter — auth.uid() is read from the JWT header.
+        // Each query has a 4-second timeout to prevent indefinite hangs.
+        const [profile, orgData] = await Promise.all([
+          raceTimeout(loadProfile(session.user.id, session), 4000, null),
+          raceTimeout(loadOrganization(session.user.id), 4000, null),
         ]);
-
-        // Retry org lookup once if it came back null — on Google OAuth the
-        // RLS policy may not see the new session on the very first query.
-        if (!orgData?.org) {
-          await new Promise((r) => setTimeout(r, 400));
-          orgData = await raceTimeout(loadOrganization(session.user.id), 4000, null);
-        }
 
         // Phase 2: If org exists, pre-load subscription in parallel
         // This saves PlanProvider from having to wait and fetch it separately
