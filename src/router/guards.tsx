@@ -14,7 +14,7 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { usePlan } from '@/hooks/usePlan';
 import { LoadingState } from '@/components/ui/LoadingState';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 
 const ADMIN_CACHE_KEY = 'sadeem_admin_check';
@@ -127,10 +127,18 @@ export function RequireAuth() {
  *
  * Org data comes from AuthProvider's initial hydration (which uses a
  * SECURITY DEFINER RPC immune to token-timing issues).  No retry needed.
+ *
+ * ★ FIX: Uses a stable ref to prevent false onboarding redirects.
+ *   If org was previously confirmed, a transient hydration failure
+ *   (e.g. network hiccup on tab return) won't redirect to onboarding.
  */
 export function RequireOrganization() {
-  const { hasOrganization, isLoading, isAuthenticated } = useAuth();
+  const { hasOrganization, isLoading, isAuthenticated, refreshOrganization } = useAuth();
   const { isAdmin } = useAdminCheck();
+  const orgConfirmed = useRef(false);
+
+  // Once org is confirmed, remember it for the session lifetime
+  if (hasOrganization) orgConfirmed.current = true;
 
   if (isLoading) {
     return (
@@ -149,6 +157,12 @@ export function RequireOrganization() {
   }
 
   if (!hasOrganization) {
+    // ★ If org was previously confirmed in this session, don't redirect.
+    // Instead, attempt a background refresh — the org data will be restored.
+    if (orgConfirmed.current) {
+      refreshOrganization().catch(() => {});
+      return <Outlet />;
+    }
     return <Navigate to="/onboarding" replace />;
   }
 

@@ -36,17 +36,20 @@ interface AuthContextType extends AuthState {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
+const EMPTY_STATE: AuthState = {
+  session: null, user: null, profile: null,
+  organization: null, membership: null, subscription: null,
+  isLoading: false, isAuthenticated: false, hasOrganization: false,
+};
+
+// Timeout helper — prevents a hung DB query from blocking auth forever.
+const raceTimeout = <T,>(p: Promise<T>, ms: number, fallback: T): Promise<T> =>
+  Promise.race([p, new Promise<T>((r) => setTimeout(() => r(fallback), ms))]);
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AuthState>({
-    session: null,
-    user: null,
-    profile: null,
-    organization: null,
-    membership: null,
-    subscription: null,
+    ...EMPTY_STATE,
     isLoading: true,
-    isAuthenticated: false,
-    hasOrganization: false,
   });
 
   // Track whether INITIAL_SESSION has already been handled to prevent
@@ -54,8 +57,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const initialSessionHandled = useRef(false);
   // Track in-flight hydration to prevent concurrent calls.
   const hydrating = useRef(false);
-  // Guard: while signing out, ignore auth events that would re-hydrate
-  // (e.g. TOKEN_REFRESHED racing with signOut).
+  // Track whether a full hydration has completed successfully (with a user).
+  // This ref is updated synchronously in hydrateAuth, so concurrent event
+  // handlers can reliably check it without waiting for React re-render.
+  const hydrationDone = useRef(false);
+  // Guard: while signing out, ignore auth events that would re-hydrate.
   const signingOut = useRef(false);
 
   // ── Stable refs for callbacks that need current state without
@@ -106,6 +112,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  // ── Core hydration: loads profile + org + subscription ──────────
   const hydrateAuth = useCallback(
     async (session: MinimalSession | null) => {
       // Prevent concurrent hydrations
@@ -114,35 +121,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (!session?.user) {
         hydrating.current = false;
-        setState({
-          session: null,
-          user: null,
-          profile: null,
-          organization: null,
-          membership: null,
-          subscription: null,
-          isLoading: false,
-          isAuthenticated: false,
-          hasOrganization: false,
-        });
+        hydrationDone.current = false;
+        setState({ ...EMPTY_STATE });
         return;
       }
 
-      // Timeout helper — prevents a hung DB query from blocking auth forever.
-      const raceTimeout = <T,>(p: Promise<T>, ms: number, fallback: T): Promise<T> =>
-        Promise.race([p, new Promise<T>((r) => setTimeout(() => r(fallback), ms))]);
-
       try {
-        // Wait for the Supabase client to finish initializing so that
-        // fetchWithAuth → getSession() returns the correct JWT.
-        await supabase.auth.getSession();
+        // Ensure Supabase client is synced (non-blocking if slow).
+        try { await raceTimeout(supabase.auth.getSession(), 2000, null); } catch { /* non-critical */ }
 
         // Phase 1: Load profile + org in parallel.
-        // Org uses server-side RPC (SECURITY DEFINER) so RLS timing
-        // doesn't matter — auth.uid() is read from the JWT header.
         const [profile, orgData] = await Promise.all([
-          raceTimeout(loadProfile(session.user.id, session), 4000, null),
-          raceTimeout(loadOrganization(session.user.id), 4000, null),
+          raceTimeout(loadProfile(session.user.id, session), 6000, null),
+          raceTimeout(loadOrganization(session.user.id), 6000, null),
         ]);
 
         // Phase 2: If org exists, pre-load subscription in parallel
@@ -159,6 +150,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         }
 
+        hydrationDone.current = true;
         setState({
           session,
           user: { id: session.user.id, email: session.user.email },
@@ -172,16 +164,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
       } catch (err) {
         console.error('[Senda] Auth hydrate failed:', err);
+        // ★ FIX: PRESERVE existing org/profile data on failure.
+        //   Previously this cleared everything → user redirected to onboarding.
+        const prev = stateRef.current;
+        hydrationDone.current = true;
         setState({
           session,
           user: { id: session.user.id, email: session.user.email },
-          profile: null,
-          organization: null,
-          membership: null,
-          subscription: null,
+          profile: prev.profile,
+          organization: prev.organization,
+          membership: prev.membership,
+          subscription: prev.subscription,
           isLoading: false,
           isAuthenticated: true,
-          hasOrganization: false,
+          hasOrganization: prev.hasOrganization,
         });
       } finally {
         hydrating.current = false;
@@ -195,70 +191,107 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const { data: listener } = supabase.auth.onAuthStateChange(async (event, rawSession) => {
       if (!mounted) return;
-
       if (signingOut.current && event !== 'SIGNED_OUT') return;
 
       const session = rawSession as MinimalSession | null;
 
-      if (event === 'INITIAL_SESSION') {
-        initialSessionHandled.current = true;
+      // ── SIGNED_OUT ─────────────────────────────────────────────
+      if (event === 'SIGNED_OUT') {
+        initialSessionHandled.current = false;
+        hydrationDone.current = false;
+        setState({ ...EMPTY_STATE });
+        return;
       }
 
-      // On SIGNED_IN, immediately mark as authenticated BEFORE the async
-      // hydration so RedirectIfAuthenticated redirects instantly.
+      // ── TOKEN_REFRESHED ────────────────────────────────────────
+      // ★ FIX: Only update session token. Do NOT reload profile/org.
+      //   Previously this re-ran hydrateAuth → if org load failed on
+      //   tab return → hasOrganization=false → redirect to onboarding.
+      if (event === 'TOKEN_REFRESHED') {
+        if (session?.user) {
+          setState(prev => ({ ...prev, session }));
+        }
+        return;
+      }
+
+      // ── USER_UPDATED ───────────────────────────────────────────
+      // Only refresh profile (e.g. after password change). No org reload.
+      if (event === 'USER_UPDATED') {
+        if (session?.user) {
+          const profile = await raceTimeout(
+            loadProfile(session.user.id, session),
+            4000,
+            stateRef.current.profile,
+          );
+          if (mounted) setState(prev => ({ ...prev, session, profile }));
+        }
+        return;
+      }
+
+      // ── INITIAL_SESSION ────────────────────────────────────────
+      if (event === 'INITIAL_SESSION') {
+        initialSessionHandled.current = true;
+        await hydrateAuth(session);
+        return;
+      }
+
+      // ── SIGNED_IN ──────────────────────────────────────────────
       if (event === 'SIGNED_IN' && session?.user) {
-        setState((prev) => ({
+        // ★ FIX: If already hydrated (INITIAL_SESSION ran first, or
+        //   returning to a tab), just update session — do NOT set
+        //   isLoading=true, do NOT reload org/profile.
+        //   Previously this reset isLoading=true even for hydrated
+        //   users, causing "جاري التحميل" to appear on tab return.
+        if (hydrationDone.current) {
+          setState(prev => ({
+            ...prev,
+            session,
+            user: { id: session.user.id, email: session.user.email },
+            isAuthenticated: true,
+          }));
+          return;
+        }
+
+        // Fresh login: mark authenticated immediately so
+        // RedirectIfAuthenticated redirects without waiting.
+        setState(prev => ({
           ...prev,
           session,
           user: { id: session.user.id, email: session.user.email },
           isAuthenticated: true,
           isLoading: true,
         }));
-      }
-
-      if (
-        event === 'INITIAL_SESSION' ||
-        event === 'SIGNED_IN' ||
-        event === 'TOKEN_REFRESHED' ||
-        event === 'USER_UPDATED'
-      ) {
         await hydrateAuth(session);
-      }
-
-      if (event === 'SIGNED_OUT') {
-        initialSessionHandled.current = false;
-        setState({
-          session: null,
-          user: null,
-          profile: null,
-          organization: null,
-          membership: null,
-          subscription: null,
-          isLoading: false,
-          isAuthenticated: false,
-          hasOrganization: false,
-        });
+        return;
       }
     });
 
-    // Fallback: if INITIAL_SESSION doesn't fire within 150ms, call getSession()
+    // Fallback: if INITIAL_SESSION doesn't fire within 300ms, call getSession()
     const fallback = setTimeout(() => {
       if (!initialSessionHandled.current && mounted) {
         supabase.auth.getSession().then(({ data: { session } }) => {
           if (mounted && !initialSessionHandled.current) {
+            initialSessionHandled.current = true;
             hydrateAuth(session as MinimalSession | null);
           }
         });
       }
-    }, 150);
+    }, 300);
 
-    // Safety timeout: force isLoading=false after 2 seconds
+    // ★ FIX: Global safety timeout — force isLoading=false after 10 seconds
+    //   no matter what. Prevents infinite loading in ALL edge cases.
+    //   Previously only guarded !initialSessionHandled within 2s.
     const safetyTimer = setTimeout(() => {
-      if (mounted && !initialSessionHandled.current) {
-        initialSessionHandled.current = true;
-        setState((prev) => ({ ...prev, isLoading: false }));
+      if (mounted) {
+        setState(prev => {
+          if (prev.isLoading) {
+            console.warn('[Senda] Safety timeout: forcing isLoading=false after 10s');
+            return { ...prev, isLoading: false };
+          }
+          return prev;
+        });
       }
-    }, 2000);
+    }, 10_000);
 
     return () => {
       mounted = false;
@@ -266,21 +299,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       clearTimeout(safetyTimer);
       listener?.subscription.unsubscribe();
     };
-  }, [hydrateAuth]);
+  }, [hydrateAuth, loadProfile]);
 
   // ── Stable callbacks: use refs so the function identity never changes ──
   const refreshProfile = useCallback(async () => {
     const s = stateRef.current;
     if (!s.user) return;
     const profile = await loadProfile(s.user.id, s.session);
-    setState((prev) => ({ ...prev, profile }));
+    setState(prev => ({ ...prev, profile }));
   }, [loadProfile]);
 
   const refreshOrganization = useCallback(async () => {
     const s = stateRef.current;
     if (!s.user) return;
     const orgData = await loadOrganization(s.user.id);
-    setState((prev) => ({
+    setState(prev => ({
       ...prev,
       organization: orgData?.org || null,
       membership: orgData?.membership || null,
@@ -290,17 +323,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = useCallback(async () => {
     signingOut.current = true;
-    setState({
-      session: null,
-      user: null,
-      profile: null,
-      organization: null,
-      membership: null,
-      subscription: null,
-      isLoading: false,
-      isAuthenticated: false,
-      hasOrganization: false,
-    });
+    hydrationDone.current = false;
+    setState({ ...EMPTY_STATE });
     try {
       await supabase.auth.signOut();
     } catch (err) {
