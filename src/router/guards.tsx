@@ -148,10 +148,19 @@ export function RequireOrganization() {
     })()
   );
 
-  // Once org is confirmed, remember it for the session lifetime
-  if (hasOrganization) orgConfirmed.current = true;
+  // ★ FIX: Before redirecting to onboarding, attempt ONE background
+  //   refresh. This prevents false redirects when both sessionStorage
+  //   is lost AND the initial org load failed transiently.
+  const retryAttempted = useRef(false);
+  const [retrying, setRetrying] = useState(false);
 
-  if (isLoading) {
+  // Once org is confirmed, remember it for the session lifetime
+  if (hasOrganization) {
+    orgConfirmed.current = true;
+    retryAttempted.current = false; // reset for future
+  }
+
+  if (isLoading || retrying) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <LoadingState />
@@ -174,6 +183,23 @@ export function RequireOrganization() {
       refreshOrganization().catch(() => {});
       return <Outlet />;
     }
+
+    // ★ FIX: Even without sessionStorage confirmation, retry ONCE before
+    //   redirecting. This handles the edge case where sessionStorage was
+    //   cleared but the user does have an org (e.g. browser session restore).
+    if (!retryAttempted.current) {
+      retryAttempted.current = true;
+      setRetrying(true);
+      refreshOrganization()
+        .catch(() => {})
+        .finally(() => setRetrying(false));
+      return (
+        <div className="min-h-screen flex items-center justify-center">
+          <LoadingState />
+        </div>
+      );
+    }
+
     return <Navigate to="/onboarding" replace />;
   }
 

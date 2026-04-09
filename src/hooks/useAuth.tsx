@@ -148,17 +148,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           raceTimeout(loadOrganization(session.user.id), 6000, null),
         ]);
 
-        // ★ FIX: If org is null but we expect one (e.g. existing user after
-        // OAuth PKCE exchange), retry once. The JWT might not have propagated
-        // on the first attempt.
+        // ★ FIX: If org is null, ALWAYS retry once after a short delay.
+        //   Reason 1: After PKCE exchange the JWT may not have propagated yet.
+        //   Reason 2: Transient network/DB hiccup on page reload.
+        //   The retry is cheap (single RPC) and prevents false onboarding redirects.
+        //   If sessionStorage confirms org existed, use a longer delay (PKCE timing).
         let finalOrgData = orgData;
         if (!orgData?.org) {
-          // Check sessionStorage — if org was confirmed before, it likely exists
           const wasConfirmed = sessionStorage.getItem(ORG_CONFIRMED_KEY);
-          if (wasConfirmed) {
-            await delay(1000);
-            finalOrgData = await raceTimeout(loadOrganization(session.user.id), 6000, null);
-          }
+          await delay(wasConfirmed ? 1000 : 500);
+          finalOrgData = await raceTimeout(loadOrganization(session.user.id), 6000, null);
         }
 
         // Phase 2: If org exists, pre-load subscription in parallel
