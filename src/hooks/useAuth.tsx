@@ -128,12 +128,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         Promise.race([p, new Promise<T>((r) => setTimeout(() => r(fallback), ms))]);
 
       try {
+        // Ensure the Supabase client has the session stored internally
+        // before we run any authenticated queries.  With the lock bypass,
+        // SIGNED_IN can fire before _saveSession finishes, so the client's
+        // auth header may not be set yet.  getSession() forces a sync read
+        // from storage and populates the internal state.
+        await supabase.auth.getSession();
+
         // Phase 1: Load profile + org in parallel (org is now a single joined query)
         // Each query has a 5-second timeout to prevent indefinite hangs.
-        const [profile, orgData] = await Promise.all([
+        let [profile, orgData] = await Promise.all([
           raceTimeout(loadProfile(session.user.id, session), 5000, null),
           raceTimeout(loadOrganization(session.user.id), 5000, null),
         ]);
+
+        // Retry org lookup once if it came back null — on Google OAuth the
+        // RLS policy may not see the new session on the very first query.
+        if (!orgData?.org) {
+          await new Promise((r) => setTimeout(r, 400));
+          orgData = await raceTimeout(loadOrganization(session.user.id), 4000, null);
+        }
 
         // Phase 2: If org exists, pre-load subscription in parallel
         // This saves PlanProvider from having to wait and fetch it separately
