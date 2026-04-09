@@ -10,7 +10,6 @@
 // ============================================================================
 
 import { makeCorsHeaders, isOriginAllowed } from '../_shared/cors.ts';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.43.4';
 
 interface CompetitorData {
   name: string;
@@ -66,6 +65,7 @@ Deno.serve(async (req: Request) => {
 
   // Origin check
   if (!isOriginAllowed(req)) {
+    console.warn('[fetch-competitors] Blocked origin:', req.headers.get('origin'));
     return new Response(JSON.stringify({ error: 'Forbidden' }), {
       status: 403,
       headers: { ...cors, 'Content-Type': 'application/json' },
@@ -76,45 +76,55 @@ Deno.serve(async (req: Request) => {
     // Verify auth
     const authHeader = req.headers.get('authorization');
     if (!authHeader) {
+      console.warn('[fetch-competitors] No authorization header');
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
         headers: { ...cors, 'Content-Type': 'application/json' },
       });
     }
 
-    const { industry, city, latitude, longitude } = await req.json();
+    const body = await req.json();
+    const { industry, city, latitude, longitude } = body;
+    console.log('[fetch-competitors] Request:', { industry, city, latitude, longitude });
 
     if (!industry || !city) {
+      console.warn('[fetch-competitors] Missing required fields');
       return new Response(JSON.stringify({ error: 'industry and city are required' }), {
         status: 400,
         headers: { ...cors, 'Content-Type': 'application/json' },
       });
     }
 
+    // ── Check API Key ────────────────────────────────────────────
     const GOOGLE_MAPS_KEY = Deno.env.get('GOOGLE_MAPS_API_KEY');
 
-    // If no API key configured, return empty array gracefully
     if (!GOOGLE_MAPS_KEY) {
-      return new Response(JSON.stringify([]), {
+      console.error('[fetch-competitors] GOOGLE_MAPS_API_KEY is NOT set in environment');
+      return new Response(JSON.stringify({
+        error: 'GOOGLE_MAPS_API_KEY not configured',
+      }), {
+        status: 503,
         headers: { ...cors, 'Content-Type': 'application/json' },
       });
     }
 
-    // Resolve coordinates
+    // ── Resolve coordinates ──────────────────────────────────────
     const coords = (latitude && longitude)
       ? { lat: latitude, lng: longitude }
       : CITY_COORDS[city] || null;
 
     if (!coords) {
-      // Unknown city — return empty
+      console.warn('[fetch-competitors] Unknown city, no coordinates:', city);
       return new Response(JSON.stringify([]), {
         headers: { ...cors, 'Content-Type': 'application/json' },
       });
     }
+    console.log('[fetch-competitors] Coordinates:', coords);
 
     const placeType = INDUSTRY_TYPE[industry] || 'establishment';
+    console.log('[fetch-competitors] Place type:', placeType);
 
-    // Call Google Places Nearby Search
+    // ── Call Google Places Nearby Search ──────────────────────────
     const url = new URL('https://maps.googleapis.com/maps/api/place/nearbysearch/json');
     url.searchParams.set('location', `${coords.lat},${coords.lng}`);
     url.searchParams.set('radius', '5000');
@@ -122,12 +132,24 @@ Deno.serve(async (req: Request) => {
     url.searchParams.set('key', GOOGLE_MAPS_KEY);
     url.searchParams.set('language', 'ar');
 
+    console.log('[fetch-competitors] Calling Google Places API...');
     const placesRes = await fetch(url.toString());
     const placesData = await placesRes.json();
 
+    console.log('[fetch-competitors] Google API status:', placesData.status);
+    console.log('[fetch-competitors] Results count:', placesData.results?.length || 0);
+
     if (placesData.status !== 'OK' && placesData.status !== 'ZERO_RESULTS') {
-      console.error('[fetch-competitors] Places API error:', placesData.status, placesData.error_message);
-      return new Response(JSON.stringify([]), {
+      console.error('[fetch-competitors] Google API error:', {
+        status: placesData.status,
+        error_message: placesData.error_message || 'none',
+      });
+      return new Response(JSON.stringify({
+        error: 'Google Places API error',
+        apiStatus: placesData.status,
+        apiMessage: placesData.error_message || null,
+      }), {
+        status: 502,
         headers: { ...cors, 'Content-Type': 'application/json' },
       });
     }
@@ -143,12 +165,14 @@ Deno.serve(async (req: Request) => {
       }))
       .filter((c: CompetitorData) => c.rating > 0);
 
+    console.log('[fetch-competitors] Returning', results.length, 'competitors');
+
     return new Response(JSON.stringify(results), {
       headers: { ...cors, 'Content-Type': 'application/json' },
     });
   } catch (err) {
-    console.error('[fetch-competitors] Error:', err);
-    return new Response(JSON.stringify({ error: 'Internal server error' }), {
+    console.error('[fetch-competitors] Unhandled error:', err);
+    return new Response(JSON.stringify({ error: 'Internal server error', detail: String(err) }), {
       status: 500,
       headers: { ...makeCorsHeaders(req), 'Content-Type': 'application/json' },
     });
