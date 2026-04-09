@@ -133,9 +133,20 @@ export function RequireAuth() {
  *   (e.g. network hiccup on tab return) won't redirect to onboarding.
  */
 export function RequireOrganization() {
-  const { hasOrganization, isLoading, isAuthenticated, refreshOrganization } = useAuth();
+  const { hasOrganization, isLoading, isAuthenticated, refreshOrganization, user } = useAuth();
   const { isAdmin } = useAdminCheck();
-  const orgConfirmed = useRef(false);
+
+  // ★ FIX: Initialize from sessionStorage so that page reloads and tab
+  //   returns don't lose the "org confirmed" flag.  The ref is a fast
+  //   in-memory fallback that doesn't require a storage read every render.
+  const orgConfirmed = useRef(
+    (() => {
+      try {
+        const stored = sessionStorage.getItem('sadeem_org_confirmed');
+        return !!stored;
+      } catch { return false; }
+    })()
+  );
 
   // Once org is confirmed, remember it for the session lifetime
   if (hasOrganization) orgConfirmed.current = true;
