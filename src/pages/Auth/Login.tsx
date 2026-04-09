@@ -153,6 +153,10 @@ export default function Login({ defaultSignup = false }: { defaultSignup?: boole
         setSuccess(t.auth.accountCreated);
       } else {
         await authService.login(email, password);
+        // Session stored — onAuthStateChange fires SIGNED_IN which sets
+        // isAuthenticated=true immediately, triggering RedirectIfAuthenticated.
+        // Release the button so the UI doesn't look stuck during redirect.
+        setLoading(false);
       }
     } catch (err: unknown) {
       setLoading(false);

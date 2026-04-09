@@ -120,11 +120,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
+      // Timeout helper — prevents a hung DB query from blocking auth forever.
+      const raceTimeout = <T,>(p: Promise<T>, ms: number, fallback: T): Promise<T> =>
+        Promise.race([p, new Promise<T>((r) => setTimeout(() => r(fallback), ms))]);
+
       try {
         // Phase 1: Load profile + org in parallel (org is now a single joined query)
+        // Each query has a 5-second timeout to prevent indefinite hangs.
         const [profile, orgData] = await Promise.all([
-          loadProfile(session.user.id, session),
-          loadOrganization(session.user.id),
+          raceTimeout(loadProfile(session.user.id, session), 5000, null),
+          raceTimeout(loadOrganization(session.user.id), 5000, null),
         ]);
 
         // Phase 2: If org exists, pre-load subscription in parallel
@@ -132,7 +137,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         let sub: DbSubscription | null = null;
         if (orgData?.org) {
           try {
-            sub = await subscriptionService.getByOrganization(orgData.org.id);
+            sub = await raceTimeout(
+              subscriptionService.getByOrganization(orgData.org.id),
+              4000,
+              null,
+            );
           } catch {
             // Non-critical — PlanProvider can retry
           }
@@ -179,6 +188,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (event === 'INITIAL_SESSION') {
         initialSessionHandled.current = true;
+      }
+
+      // On SIGNED_IN, immediately mark as authenticated BEFORE the async
+      // hydration. This ensures RedirectIfAuthenticated redirects instantly
+      // to /dashboard, where RequireOrganization shows a loading spinner
+      // while profile/org data loads. Without this, isAuthenticated stays
+      // false during the entire hydration (2-5s), leaving the user stuck
+      // on the login page with a spinning button.
+      if (event === 'SIGNED_IN' && session?.user) {
+        setState((prev) => ({
+          ...prev,
+          session,
+          user: { id: session.user.id, email: session.user.email },
+          isAuthenticated: true,
+          isLoading: true,
+        }));
       }
 
       if (
