@@ -53,8 +53,9 @@ export default function ResetPassword() {
       const { error: err } = await supabase.auth.updateUser({ password });
       if (err) throw err;
       setSuccess(true);
-      // Redirect to dashboard after short delay
-      setTimeout(() => { window.location.href = '/dashboard'; }, 2000);
+      // Sign out all sessions to invalidate old tokens, then redirect to login
+      await supabase.auth.signOut({ scope: 'global' });
+      setTimeout(() => { window.location.href = '/login'; }, 2000);
     } catch (err: unknown) {
       setError((err as Error).message || t.auth.errorGeneric);
     } finally {
