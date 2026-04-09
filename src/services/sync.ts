@@ -239,7 +239,7 @@ export const reviewSyncService = {
     // Post to Google FIRST — if it fails, DB stays unchanged so user can retry
     if (review?.google_review_id) {
       try {
-        await googleBusinessService.sendReplyToGoogle(review.id, finalReply);
+        await googleBusinessService.sendReplyToGoogle(orgId, review.id, finalReply);
       } catch (err) {
         // Audit the failure with full context
         auditLog.trackNow({
@@ -335,7 +335,7 @@ export const reviewSyncService = {
       // Post to Google first — only mark as sent if Google succeeds (or no google_review_id)
       if (review.google_review_id) {
         try {
-          await googleBusinessService.sendReplyToGoogle(review.id, finalReply);
+          await googleBusinessService.sendReplyToGoogle(organizationId, review.id, finalReply);
         } catch (err: unknown) {
           // Skip this draft — don't mark as sent if Google failed
           auditLog.track({

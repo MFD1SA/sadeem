@@ -1,19 +1,92 @@
 // ============================================================================
-// SENDA — Google Business Profile API Proxy
+// SENDA — Google Business Profile API Proxy (v2)
 //
-// Proxies Google Business Profile API calls server-side to avoid CORS issues.
-// The Google OAuth access token is passed in the request body (googleToken field).
+// Reads Google OAuth tokens from google_tokens table (no tokens in frontend).
+// Auto-refreshes expired tokens using GOOGLE_CLIENT_ID/SECRET.
 //
 // POST /google-business-proxy
-// Body: { googleToken: string, action: string, ...params }
+// Body: { organizationId: string, action: string, ...params }
 // ============================================================================
 
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { makeCorsHeaders, isOriginAllowed } from '../_shared/cors.ts';
 
 const GBP_ACCOUNTS_BASE = 'https://mybusinessaccountmanagement.googleapis.com/v1';
 const GBP_API_BASE = 'https://mybusinessbusinessinformation.googleapis.com/v1';
 const GBP_REVIEWS_BASE = 'https://mybusiness.googleapis.com/v4';
+const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token';
 
+// ── Get or refresh access token ─────────────────────────────────────────────
+async function getValidToken(
+  db: ReturnType<typeof createClient>,
+  organizationId: string,
+): Promise<string> {
+  const { data: row, error } = await db
+    .from('google_tokens')
+    .select('access_token, refresh_token, token_expiry')
+    .eq('organization_id', organizationId)
+    .single();
+
+  if (error || !row) {
+    throw new Error('NO_TOKEN');
+  }
+
+  // Check if token is still valid (5 min buffer)
+  if (row.token_expiry) {
+    const expiresAt = new Date(row.token_expiry);
+    if (expiresAt > new Date(Date.now() + 5 * 60 * 1000)) {
+      return row.access_token;
+    }
+  }
+
+  // Token expired — refresh it
+  if (!row.refresh_token) {
+    throw new Error('NO_REFRESH_TOKEN');
+  }
+
+  const clientId = Deno.env.get('GOOGLE_CLIENT_ID');
+  const clientSecret = Deno.env.get('GOOGLE_CLIENT_SECRET');
+
+  if (!clientId || !clientSecret) {
+    throw new Error('OAUTH_NOT_CONFIGURED');
+  }
+
+  console.log('[google-business-proxy] Refreshing expired token for org:', organizationId);
+
+  const tokenRes = await fetch(GOOGLE_TOKEN_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      client_id: clientId,
+      client_secret: clientSecret,
+      refresh_token: row.refresh_token,
+      grant_type: 'refresh_token',
+    }),
+  });
+
+  const tokenData = await tokenRes.json();
+
+  if (!tokenRes.ok || !tokenData.access_token) {
+    console.error('[google-business-proxy] Refresh failed:', tokenData);
+    throw new Error('REFRESH_FAILED');
+  }
+
+  const expiresAt = new Date(Date.now() + (tokenData.expires_in || 3600) * 1000).toISOString();
+
+  // Update DB
+  await db
+    .from('google_tokens')
+    .update({
+      access_token: tokenData.access_token,
+      token_expiry: expiresAt,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('organization_id', organizationId);
+
+  return tokenData.access_token;
+}
+
+// ── Main handler ────────────────────────────────────────────────────────────
 Deno.serve(async (req: Request) => {
   const cors = makeCorsHeaders(req);
 
@@ -30,18 +103,50 @@ Deno.serve(async (req: Request) => {
 
   try {
     const body = await req.json();
-    const { googleToken, action } = body;
+    const { organizationId, action } = body;
 
-    if (!googleToken) {
-      console.warn('[google-business-proxy] Missing googleToken in body');
-      return new Response(JSON.stringify({ error: 'Missing Google access token' }), {
+    if (!organizationId) {
+      return new Response(JSON.stringify({ error: 'organizationId is required' }), {
         status: 400,
         headers: { ...cors, 'Content-Type': 'application/json' },
       });
     }
 
-    console.log('[google-business-proxy] Action:', action);
+    if (!action) {
+      return new Response(JSON.stringify({ error: 'action is required' }), {
+        status: 400,
+        headers: { ...cors, 'Content-Type': 'application/json' },
+      });
+    }
 
+    console.log('[google-business-proxy] Action:', action, 'Org:', organizationId);
+
+    // Get valid Google token from DB (auto-refreshes if expired)
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const db = createClient(supabaseUrl, serviceKey);
+
+    let googleToken: string;
+    try {
+      googleToken = await getValidToken(db, organizationId);
+    } catch (err) {
+      const code = (err as Error).message;
+      const messages: Record<string, string> = {
+        NO_TOKEN: 'لم يتم ربط حساب Google Business بعد. اضغط "ربط Google Business" أولاً.',
+        NO_REFRESH_TOKEN: 'انتهت صلاحية الربط. أعد ربط حساب Google Business.',
+        OAUTH_NOT_CONFIGURED: 'Google OAuth غير مُعدّ على السيرفر.',
+        REFRESH_FAILED: 'فشل تجديد رمز Google. أعد ربط حساب Google Business.',
+      };
+      return new Response(JSON.stringify({
+        error: messages[code] || 'خطأ في الحصول على رمز Google',
+        code,
+      }), {
+        status: code === 'NO_TOKEN' ? 404 : 401,
+        headers: { ...cors, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Build Google API request
     let url: string;
     let method = 'GET';
     let fetchBody: string | undefined;

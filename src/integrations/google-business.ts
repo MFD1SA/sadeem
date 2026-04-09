@@ -1,3 +1,11 @@
+// ============================================================================
+// SENDA — Google Business Profile Service (v2)
+//
+// All Google API calls go through google-business-proxy Edge Function.
+// Tokens are stored in google_tokens table (server-side only).
+// Frontend never touches Google tokens directly.
+// ============================================================================
+
 import { supabase } from '@/lib/supabase';
 
 export interface GoogleLocation {
@@ -39,46 +47,14 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function isRateLimitErrorMessage(message: string): boolean {
-  const lower = message.toLowerCase();
-  return (
-    lower.includes('quota') ||
-    lower.includes('rate limit') ||
-    lower.includes('rate-limit') ||
-    lower.includes('too many requests') ||
-    lower.includes('429') ||
-    lower.includes('resource exhausted')
-  );
-}
-
-async function getGoogleAccessToken(): Promise<string> {
-  const {
-    data: { session },
-    error,
-  } = await supabase.auth.getSession();
-
-  if (error || !session) {
-    throw new Error('No authenticated session');
-  }
-
-  const providerToken = session.provider_token;
-  if (!providerToken) {
-    throw new Error('No Google access token available. Please reconnect Google Business.');
-  }
-
-  return providerToken;
-}
-
 function starRatingToNumber(star: string): number {
   const map: Record<string, number> = {
-    ONE: 1,
-    TWO: 2,
-    THREE: 3,
-    FOUR: 4,
-    FIVE: 5,
+    ONE: 1, TWO: 2, THREE: 3, FOUR: 4, FIVE: 5,
   };
   return map[star] || 3;
 }
+
+// ── Error classification ────────────────────────────────────────────────────
 
 export type GbpErrorType =
   | 'quota'
@@ -86,92 +62,88 @@ export type GbpErrorType =
   | 'auth_cancelled'
   | 'no_locations'
   | 'token_expired'
+  | 'not_connected'
   | 'unknown';
 
 export function classifyGbpError(
   err: unknown,
-  lang: 'ar' | 'en' = 'ar'
+  lang: 'ar' | 'en' = 'ar',
 ): { type: GbpErrorType; message: string } {
-  const msg = (err instanceof Error ? err.message : String(err)).toLowerCase();
+  const raw = err instanceof Error ? err.message : String(err);
+  const msg = raw.toLowerCase();
 
-  if (
-    msg.includes('quota') ||
-    msg.includes('rate limit') ||
-    msg.includes('too many requests') ||
-    msg.includes('429') ||
-    msg.includes('resource exhausted')
-  ) {
+  if (msg.includes('quota') || msg.includes('rate limit') ||
+      msg.includes('too many requests') || msg.includes('429') ||
+      msg.includes('resource exhausted')) {
     return {
       type: 'quota',
-      message:
-        lang === 'ar'
-          ? 'طلبات Google Business كثيرة مؤقتاً. انتظر دقيقة ثم حاول مرة أخرى.'
-          : 'Google Business requests are temporarily rate-limited. Please wait a minute and try again.',
+      message: lang === 'ar'
+        ? 'طلبات Google Business كثيرة مؤقتاً. انتظر دقيقة ثم حاول مرة أخرى.'
+        : 'Google Business requests are temporarily rate-limited. Please wait a minute and try again.',
     };
   }
 
-  if (
-    msg.includes('not enabled') ||
-    msg.includes('has not been used') ||
-    msg.includes('api_not_enabled') ||
-    msg.includes('403')
-  ) {
+  if (msg.includes('not enabled') || msg.includes('has not been used') ||
+      msg.includes('api_not_enabled') || msg.includes('403')) {
     return {
       type: 'api_disabled',
-      message:
-        lang === 'ar'
-          ? 'Google Business Profile API غير مفعلة في مشروع Google Cloud. فعّل:\n• My Business Account Management API\n• My Business Business Information API'
-          : 'Google Business Profile API is not enabled in your Google Cloud project. Enable:\n• My Business Account Management API\n• My Business Business Information API',
+      message: lang === 'ar'
+        ? 'Google Business Profile API غير مفعلة في مشروع Google Cloud. فعّل:\n• My Business Account Management API\n• My Business Business Information API'
+        : 'Google Business Profile API is not enabled in your Google Cloud project.',
     };
   }
 
-  if (
-    msg.includes('cancelled') ||
-    msg.includes('canceled') ||
-    msg.includes('popup_closed') ||
-    msg.includes('access_denied')
-  ) {
+  if (msg.includes('cancelled') || msg.includes('canceled') ||
+      msg.includes('popup_closed') || msg.includes('access_denied')) {
     return {
       type: 'auth_cancelled',
       message: lang === 'ar' ? 'تم إلغاء عملية الربط' : 'Connection was cancelled',
     };
   }
 
-  if (
-    msg.includes('no google access token') ||
-    msg.includes('missing google access token') ||
-    msg.includes('invalid_grant') ||
-    (msg.includes('token') && msg.includes('expir'))
-  ) {
+  if (msg.includes('no_token') || msg.includes('لم يتم ربط')) {
+    return {
+      type: 'not_connected',
+      message: lang === 'ar'
+        ? 'لم يتم ربط حساب Google Business بعد. اضغط "ربط Google Business" أولاً.'
+        : 'Google Business is not connected. Click "Connect Google Business" first.',
+    };
+  }
+
+  if (msg.includes('refresh_failed') || msg.includes('no_refresh_token') ||
+      msg.includes('أعد ربط') || msg.includes('invalid_grant') ||
+      msg.includes('token') && msg.includes('expir')) {
     return {
       type: 'token_expired',
-      message:
-        lang === 'ar'
-          ? 'انتهت صلاحية رمز الوصول. أعد ربط حساب Google Business.'
-          : 'Access token expired. Please reconnect Google Business.',
+      message: lang === 'ar'
+        ? 'انتهت صلاحية الربط. أعد ربط حساب Google Business.'
+        : 'Connection expired. Please reconnect Google Business.',
     };
   }
 
-  if (msg.includes('failed to fetch') || msg.includes('networkerror') || msg.includes('network error')) {
+  if (msg.includes('failed to fetch') || msg.includes('networkerror')) {
     return {
-      type: 'api_disabled',
-      message:
-        lang === 'ar'
-          ? 'تعذر الاتصال بـ Google Business Profile API. تأكد من اتصال الإنترنت وأعد المحاولة.'
-          : 'Could not connect to Google Business Profile API. Check your internet connection and try again.',
+      type: 'unknown',
+      message: lang === 'ar'
+        ? 'تعذر الاتصال. تأكد من اتصال الإنترنت وأعد المحاولة.'
+        : 'Connection failed. Check your internet and try again.',
     };
   }
 
-  return {
-    type: 'unknown',
-    message: err instanceof Error ? err.message : String(err),
-  };
+  return { type: 'unknown', message: raw };
 }
 
-// ── Proxy helper: calls google-business-proxy Edge Function ─────────────────
-// All Google Business API calls go through the server-side proxy to avoid CORS.
+// ── Proxy helper ────────────────────────────────────────────────────────────
+// Calls google-business-proxy Edge Function. Tokens are handled server-side.
+
+function isRateLimitError(message: string): boolean {
+  const lower = message.toLowerCase();
+  return lower.includes('quota') || lower.includes('rate limit') ||
+         lower.includes('429') || lower.includes('too many requests');
+}
+
 async function callProxy<T>(
-  googleToken: string,
+  organizationId: string,
   body: Record<string, unknown>,
   retries = 2,
 ): Promise<T> {
@@ -180,39 +152,32 @@ async function callProxy<T>(
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
       const { data, error } = await supabase.functions.invoke('google-business-proxy', {
-        body: { ...body, googleToken },
+        body: { ...body, organizationId },
       });
 
       if (error) {
-        const message = error.message || `Proxy error: ${error}`;
-
-        if (isRateLimitErrorMessage(message) && attempt < retries) {
+        const message = error.message || String(error);
+        if (isRateLimitError(message) && attempt < retries) {
           await sleep(1200 * (attempt + 1));
           continue;
         }
-
         throw new Error(message);
       }
 
-      // Edge Function returns the error in the body when Google API fails
       if (data?.error) {
         const message = data.error as string;
-
-        if (isRateLimitErrorMessage(message) && attempt < retries) {
+        if (isRateLimitError(message) && attempt < retries) {
           await sleep(1200 * (attempt + 1));
           continue;
         }
-
         throw new Error(message);
       }
 
       return data as T;
     } catch (err: unknown) {
       lastError = err;
-
       const message = err instanceof Error ? err.message : String(err);
-
-      if (attempt < retries && isRateLimitErrorMessage(message)) {
+      if (attempt < retries && isRateLimitError(message)) {
         await sleep(1200 * (attempt + 1));
         continue;
       }
@@ -222,12 +187,19 @@ async function callProxy<T>(
   throw lastError instanceof Error ? lastError : new Error(String(lastError));
 }
 
+// ── Public service ──────────────────────────────────────────────────────────
+
 export const googleBusinessService = {
+  /**
+   * Initiate Google OAuth for Business Profile linking.
+   * Redirects to Google with business.manage scope.
+   * After consent, callback saves tokens to google_tokens table.
+   */
   async connectGoogleBusiness(): Promise<void> {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: `${window.location.origin}/auth/callback?from=integrations`,
         scopes: 'https://www.googleapis.com/auth/business.manage',
         queryParams: {
           access_type: 'offline',
@@ -235,6 +207,40 @@ export const googleBusinessService = {
         },
       },
     });
+    if (error) throw error;
+  },
+
+  /**
+   * Check if Google Business is connected for this organization (from DB).
+   */
+  async getConnectionStatus(organizationId: string): Promise<{
+    connected: boolean;
+    googleEmail?: string;
+    updatedAt?: string;
+  }> {
+    const { data, error } = await supabase.rpc('get_google_connection_status', {
+      p_organization_id: organizationId,
+    });
+
+    if (error || !data || data.length === 0) {
+      return { connected: false };
+    }
+
+    return {
+      connected: true,
+      googleEmail: data[0].google_email,
+      updatedAt: data[0].updated_at,
+    };
+  },
+
+  /**
+   * Disconnect Google Business (delete tokens from DB).
+   */
+  async disconnect(organizationId: string): Promise<void> {
+    const { error } = await supabase
+      .from('google_tokens')
+      .delete()
+      .eq('organization_id', organizationId);
 
     if (error) throw error;
   },
@@ -243,46 +249,27 @@ export const googleBusinessService = {
     return !!import.meta.env.VITE_SUPABASE_URL;
   },
 
-  async hasAccessToken(): Promise<boolean> {
-    try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      return !!session?.provider_token;
-    } catch {
-      return false;
-    }
-  },
-
-  async listAccounts(accessToken: string): Promise<{ name: string; accountName: string }[]> {
+  async listAccounts(organizationId: string): Promise<{ name: string; accountName: string }[]> {
     const data = await callProxy<{ accounts?: { name: string; accountName: string }[] }>(
-      accessToken,
+      organizationId,
       { action: 'listAccounts' },
     );
-
-    return (data.accounts || []).map((a) => ({
-      name: a.name,
-      accountName: a.accountName,
-    }));
+    return (data.accounts || []).map((a) => ({ name: a.name, accountName: a.accountName }));
   },
 
-  async listLocations(accessToken: string, accountName: string): Promise<GoogleLocation[]> {
+  async listLocations(organizationId: string, accountName: string): Promise<GoogleLocation[]> {
     const data = await callProxy<{ locations?: GoogleLocation[] }>(
-      accessToken,
+      organizationId,
       { action: 'listLocations', accountName },
     );
-
-    return (data.locations || []).map((loc) => ({
-      ...loc,
-      accountName,
-    }));
+    return (data.locations || []).map((loc) => ({ ...loc, accountName }));
   },
 
   async listReviews(
-    accessToken: string,
+    organizationId: string,
     locationName: string,
     pageSize = 50,
-    pageToken?: string
+    pageToken?: string,
   ): Promise<{
     reviews: GoogleReview[];
     nextPageToken?: string;
@@ -292,10 +279,7 @@ export const googleBusinessService = {
       reviews?: GoogleReview[];
       nextPageToken?: string;
       totalReviewCount?: number;
-    }>(
-      accessToken,
-      { action: 'listReviews', locationName, pageSize, pageToken },
-    );
+    }>(organizationId, { action: 'listReviews', locationName, pageSize, pageToken });
 
     return {
       reviews: data.reviews || [],
@@ -304,23 +288,15 @@ export const googleBusinessService = {
     };
   },
 
-  async postReply(accessToken: string, reviewName: string, replyText: string): Promise<void> {
-    await callProxy(
-      accessToken,
-      { action: 'postReply', reviewName, comment: replyText },
-    );
+  async postReply(organizationId: string, reviewName: string, replyText: string): Promise<void> {
+    await callProxy(organizationId, { action: 'postReply', reviewName, comment: replyText });
   },
 
-  async deleteReply(accessToken: string, reviewName: string): Promise<void> {
-    await callProxy(
-      accessToken,
-      { action: 'deleteReply', reviewName },
-    );
+  async deleteReply(organizationId: string, reviewName: string): Promise<void> {
+    await callProxy(organizationId, { action: 'deleteReply', reviewName });
   },
 
   async syncAllReviews(organizationId: string): Promise<{ synced: number; total: number }> {
-    const accessToken = await getGoogleAccessToken();
-
     const { data: branchesData, error: brErr } = await supabase
       .from('branches')
       .select('id, google_location_id')
@@ -330,9 +306,7 @@ export const googleBusinessService = {
     if (brErr) throw brErr;
 
     const branches = (branchesData || []) as BranchRow[];
-    if (branches.length === 0) {
-      return { synced: 0, total: 0 };
-    }
+    if (branches.length === 0) return { synced: 0, total: 0 };
 
     let totalSynced = 0;
     let totalFetched = 0;
@@ -344,7 +318,7 @@ export const googleBusinessService = {
         let pageToken: string | undefined;
 
         do {
-          const result = await this.listReviews(accessToken, branch.google_location_id, 50, pageToken);
+          const result = await this.listReviews(organizationId, branch.google_location_id, 50, pageToken);
           totalFetched += result.reviews.length;
 
           for (const gReview of result.reviews) {
@@ -396,16 +370,11 @@ export const googleBusinessService = {
               published_at: gReview.createTime,
             });
 
-            if (!insErr) {
-              totalSynced++;
-            }
+            if (!insErr) totalSynced++;
           }
 
           pageToken = result.nextPageToken;
-
-          if (pageToken) {
-            await sleep(500);
-          }
+          if (pageToken) await sleep(500);
         } while (pageToken);
       } catch (err) {
         console.error(`Failed to sync reviews for branch ${branch.id}:`, err);
@@ -417,9 +386,7 @@ export const googleBusinessService = {
     return { synced: totalSynced, total: totalFetched };
   },
 
-  async sendReplyToGoogle(reviewId: string, replyText: string): Promise<void> {
-    const accessToken = await getGoogleAccessToken();
-
+  async sendReplyToGoogle(organizationId: string, reviewId: string, replyText: string): Promise<void> {
     const { data: reviewData, error } = await supabase
       .from('reviews')
       .select('google_review_id')
@@ -431,6 +398,6 @@ export const googleBusinessService = {
       throw new Error('Review not found or missing Google reference');
     }
 
-    await this.postReply(accessToken, review.google_review_id, replyText);
+    await this.postReply(organizationId, review.google_review_id, replyText);
   },
 };

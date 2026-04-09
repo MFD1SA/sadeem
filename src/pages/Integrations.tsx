@@ -21,6 +21,7 @@ import {
   AlertCircle,
   ExternalLink,
   Check,
+  Unplug,
 } from 'lucide-react';
 import type { DbBranch } from '@/types/database';
 
@@ -60,13 +61,7 @@ async function retryGoogleRequest<T>(
 }
 
 // Step number circle component
-function StepCircle({
-  number,
-  done,
-}: {
-  number: number;
-  done: boolean;
-}) {
+function StepCircle({ number, done }: { number: number; done: boolean }) {
   if (done) {
     return (
       <div className="w-9 h-9 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0 shadow-sm">
@@ -81,7 +76,6 @@ function StepCircle({
   );
 }
 
-// Connector line between steps
 function StepConnector({ done }: { done: boolean }) {
   return (
     <div className="flex justify-center my-1 px-4">
@@ -99,7 +93,9 @@ export default function Integrations() {
   useEffect(() => { document.title = lang === 'ar' ? 'سيندا | SENDA — التكاملات' : 'SENDA | سيندا — Integrations'; }, [lang]);
   const { organization } = useAuth();
 
-  const [hasGoogleToken, setHasGoogleToken] = useState(false);
+  // Google connection status (from DB, not session)
+  const [googleConnected, setGoogleConnected] = useState(false);
+  const [googleEmail, setGoogleEmail] = useState('');
   const [geminiConfigured, setGeminiConfigured] = useState(false);
   const [branches, setBranches] = useState<DbBranch[]>([]);
   const [linkedCount, setLinkedCount] = useState(0);
@@ -126,11 +122,14 @@ export default function Integrations() {
   const [geminiTestResult, setGeminiTestResult] = useState('');
 
   const loadStatus = useCallback(async () => {
-    const token = await googleBusinessService.hasAccessToken();
-    setHasGoogleToken(token);
     setGeminiConfigured(aiService.isConfigured());
 
     if (organization) {
+      // Check Google connection from DB (not session)
+      const status = await googleBusinessService.getConnectionStatus(organization.id);
+      setGoogleConnected(status.connected);
+      setGoogleEmail(status.googleEmail || '');
+
       const br = await branchesService.list(organization.id);
       setBranches(br);
       setLinkedCount(br.filter((b: DbBranch) => !!b.google_location_id).length);
@@ -146,31 +145,35 @@ export default function Integrations() {
     setLocationSuccess('');
     try {
       await googleBusinessService.connectGoogleBusiness();
+      // Redirects to Google — tokens saved in callback
     } catch (err: unknown) {
       const classified = classifyGbpError(err, lang);
       setLocationError(classified.message);
     }
   };
 
+  const handleDisconnectGoogle = async () => {
+    if (!organization) return;
+    try {
+      await googleBusinessService.disconnect(organization.id);
+      setGoogleConnected(false);
+      setGoogleEmail('');
+      setLocationSuccess(lang === 'ar' ? 'تم فصل حساب Google Business' : 'Google Business disconnected');
+    } catch (err: unknown) {
+      setLocationError((err as Error).message);
+    }
+  };
+
   const handleFetchLocations = async () => {
-    if (loadingLocations) return;
+    if (loadingLocations || !organization) return;
 
     setLoadingLocations(true);
     setLocationError('');
     setLocationSuccess('');
 
     try {
-      const {
-        data: { session },
-      } = await (await import('@/lib/supabase')).supabase.auth.getSession();
-
-      const token = session?.provider_token;
-      if (!token) {
-        throw new Error(t.integrationsExt.noValidGoogleToken);
-      }
-
       const accounts = await retryGoogleRequest(() =>
-        googleBusinessService.listAccounts(token)
+        googleBusinessService.listAccounts(organization.id)
       );
 
       if (accounts.length === 0) {
@@ -181,9 +184,8 @@ export default function Integrations() {
 
       for (const account of accounts) {
         const locs = await retryGoogleRequest(() =>
-          googleBusinessService.listLocations(token, account.name)
+          googleBusinessService.listLocations(organization.id, account.name)
         );
-
         allLocations.push(...locs);
         await sleep(600);
       }
@@ -197,21 +199,8 @@ export default function Integrations() {
       setSelectedLocations(new Set());
       setShowLocationModal(true);
     } catch (err: unknown) {
-      const rawMessage = (err as Error)?.message || '';
-      const lower = rawMessage.toLowerCase();
-
-      const isRateLimit =
-        lower.includes('rate') ||
-        lower.includes('quota') ||
-        lower.includes('429') ||
-        lower.includes('too many requests');
-
-      if (isRateLimit) {
-        setLocationError(t.integrationsExt.rateLimited);
-      } else {
-        const classified = classifyGbpError(err, lang);
-        setLocationError(classified.message);
-      }
+      const classified = classifyGbpError(err, lang);
+      setLocationError(classified.message);
     } finally {
       setLoadingLocations(false);
     }
@@ -325,9 +314,9 @@ export default function Integrations() {
   ).length;
 
   // Step completion state
-  const step1Done = hasGoogleToken;
+  const step1Done = googleConnected;
   const step2Done = linkedCount > 0;
-  const step3Done = false; // Sync is an action, never permanently "done" — handled per-result
+  const step3Done = false;
 
   return (
     <div className="space-y-8">
@@ -339,8 +328,8 @@ export default function Integrations() {
 
         {/* Global feedback banners */}
         {locationError && (
-          <div className="flex items-center gap-2 text-xs text-red-700 bg-red-50 border border-red-200/60 rounded-lg p-3 mb-4">
-            <AlertCircle size={14} className="flex-shrink-0" />
+          <div className="flex items-start gap-2 text-xs text-red-700 bg-red-50 border border-red-200/60 rounded-lg p-3 mb-4 whitespace-pre-line">
+            <AlertCircle size={14} className="flex-shrink-0 mt-0.5" />
             <span>{locationError}</span>
           </div>
         )}
@@ -385,18 +374,31 @@ export default function Integrations() {
                     </div>
                   </div>
 
-                  {/* Action */}
-                  <div className="mt-3">
+                  {/* Connected email display */}
+                  {step1Done && googleEmail && (
+                    <div className="mt-2 text-xs text-content-tertiary">
+                      {googleEmail}
+                    </div>
+                  )}
+
+                  {/* Actions */}
+                  <div className="mt-3 flex items-center gap-2">
                     {!step1Done ? (
                       <button className="btn btn-primary btn-sm" onClick={handleConnectGoogle}>
                         <ExternalLink size={13} />
                         {t.integrationsExt.connectGoogle}
                       </button>
                     ) : (
-                      <button className="btn btn-secondary btn-sm" onClick={handleConnectGoogle}>
-                        <ExternalLink size={13} />
-                        {t.integrationsExt.changeAccount}
-                      </button>
+                      <>
+                        <button className="btn btn-secondary btn-sm" onClick={handleConnectGoogle}>
+                          <ExternalLink size={13} />
+                          {t.integrationsExt.changeAccount}
+                        </button>
+                        <button className="btn btn-secondary btn-sm text-red-600 hover:text-red-700" onClick={handleDisconnectGoogle}>
+                          <Unplug size={13} />
+                          {lang === 'ar' ? 'فصل' : 'Disconnect'}
+                        </button>
+                      </>
                     )}
                   </div>
                 </div>
@@ -444,7 +446,6 @@ export default function Integrations() {
                     </div>
                   </div>
 
-                  {/* Action */}
                   {step1Done && (
                     <div className="mt-3">
                       <button
@@ -464,7 +465,6 @@ export default function Integrations() {
                     </div>
                   )}
 
-                  {/* Linked locations chips */}
                   {step2Done && (
                     <div className="mt-3 flex flex-wrap gap-1.5">
                       {branches
@@ -512,7 +512,6 @@ export default function Integrations() {
                     )}
                   </div>
 
-                  {/* Action */}
                   {step2Done && (
                     <div className="mt-3">
                       <button
@@ -532,7 +531,6 @@ export default function Integrations() {
                     </div>
                   )}
 
-                  {/* Sync result */}
                   {syncResult && (
                     <div
                       className={`mt-3 p-3 rounded-lg text-xs ${
@@ -576,7 +574,6 @@ export default function Integrations() {
         <div className="card">
           <div className="card-body">
             <div className="flex items-start gap-4">
-              {/* Icon */}
               <div
                 className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
                   geminiConfigured
@@ -598,7 +595,6 @@ export default function Integrations() {
                     </p>
                   </div>
 
-                  {/* Status indicator */}
                   <div className="flex items-center gap-1.5">
                     <StatusDot color={geminiConfigured ? 'green' : 'gray'} />
                     <Badge variant={geminiConfigured ? 'success' : 'neutral'}>
@@ -609,7 +605,6 @@ export default function Integrations() {
                   </div>
                 </div>
 
-                {/* Content based on configured state */}
                 {geminiConfigured ? (
                   <div className="mt-3 space-y-2">
                     <button
@@ -650,7 +645,7 @@ export default function Integrations() {
         </div>
       </div>
 
-      {/* Location modal — unchanged */}
+      {/* Location modal */}
       {showLocationModal && (
         <Modal
           title={t.integrationsExt.linkGoogleLocations}
