@@ -54,6 +54,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const initialSessionHandled = useRef(false);
   // Track in-flight hydration to prevent concurrent calls.
   const hydrating = useRef(false);
+  // Guard: while signing out, ignore auth events that would re-hydrate
+  // (e.g. TOKEN_REFRESHED racing with signOut).
+  const signingOut = useRef(false);
 
   const loadProfile = useCallback(async (userId: string, session: MinimalSession | null): Promise<DbUser | null> => {
     try {
@@ -183,6 +186,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const { data: listener } = supabase.auth.onAuthStateChange(async (event, rawSession) => {
       if (!mounted) return;
+
+      // While signing out, ignore all events except SIGNED_OUT itself.
+      // This prevents TOKEN_REFRESHED from re-hydrating and undoing
+      // the immediate state clear in signOut().
+      if (signingOut.current && event !== 'SIGNED_OUT') return;
+
       // Cast Supabase Session to our minimal shape
       const session = rawSession as MinimalSession | null;
 
@@ -242,17 +251,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     }, 150);
 
-    // PKCE race fallback for OAuth callback
-    const hasPkceCode = typeof window !== 'undefined' && window.location.search.includes('code=');
-    const pkceTimer = hasPkceCode ? setTimeout(() => {
-      if (!mounted) return;
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        if (mounted && session?.user && !hydrating.current) {
-          hydrateAuth(session as MinimalSession | null);
-        }
-      });
-    }, 1000) : null;
-
     // Safety timeout: force isLoading=false after 2 seconds
     const safetyTimer = setTimeout(() => {
       if (mounted && !initialSessionHandled.current) {
@@ -265,7 +263,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       mounted = false;
       clearTimeout(fallback);
       clearTimeout(safetyTimer);
-      if (pkceTimer) clearTimeout(pkceTimer);
       listener?.subscription.unsubscribe();
     };
   }, [hydrateAuth]);
@@ -288,21 +285,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [state.user, loadOrganization]);
 
   const signOut = useCallback(async () => {
+    // Clear local state IMMEDIATELY for instant redirect to /login.
+    // Don't wait for supabase.auth.signOut() — that makes a network call
+    // and the user sees a loading screen until it resolves.
+    signingOut.current = true;
+    setState({
+      session: null,
+      user: null,
+      profile: null,
+      organization: null,
+      membership: null,
+      subscription: null,
+      isLoading: false,
+      isAuthenticated: false,
+      hasOrganization: false,
+    });
+    // Clean up server-side session in the background.
     try {
       await supabase.auth.signOut();
     } catch (err) {
-      console.error('[Senda] Sign out failed:', err);
-      setState({
-        session: null,
-        user: null,
-        profile: null,
-        organization: null,
-        membership: null,
-        subscription: null,
-        isLoading: false,
-        isAuthenticated: false,
-        hasOrganization: false,
-      });
+      console.error('[Senda] Sign out cleanup failed:', err);
+    } finally {
+      signingOut.current = false;
     }
   }, []);
 
