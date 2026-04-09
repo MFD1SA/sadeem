@@ -20,7 +20,10 @@ function makeChain(): Record<string, any> {
 }
 
 vi.mock('@/lib/supabase', () => ({
-  supabase: { from: () => makeChain() },
+  supabase: {
+    from: () => makeChain(),
+    rpc: () => Promise.resolve({ data: true, error: null }),
+  },
 }));
 
 import { plansService, integrationsService } from '@/services/plans';

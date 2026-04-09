@@ -23,8 +23,9 @@ export interface CompetitorInsight {
 
 export const competitorService = {
   /**
-   * Fetch nearby competitors using Google Places API.
-   * Requires a Google Maps API key (uses Places Nearby Search).
+   * Fetch nearby competitors via the fetch-competitors Edge Function.
+   * The Edge Function proxies Google Places API (keeps API key server-side).
+   * Returns empty array gracefully if GOOGLE_MAPS_API_KEY is not configured.
    */
   async fetchCompetitors(params: {
     industry: string;
@@ -33,14 +34,26 @@ export const competitorService = {
     longitude?: number;
     accessToken?: string;
   }): Promise<CompetitorData[]> {
-    // For MVP: return structured placeholder that the UI can display.
-    // In production, this would call Google Places API:
-    // GET https://maps.googleapis.com/maps/api/place/nearbysearch/json
-    //   ?location={lat},{lng}&radius=5000&type={industry}&key={API_KEY}
-    
-    // Store search intent for future backend implementation
-    console.info('[Senda] Competitor search:', params.industry, params.city);
-    return [];
+    try {
+      const { data, error } = await supabase.functions.invoke('fetch-competitors', {
+        body: {
+          industry: params.industry,
+          city: params.city,
+          latitude: params.latitude,
+          longitude: params.longitude,
+        },
+      });
+
+      if (error) {
+        console.warn('[Senda] Competitor fetch failed:', error.message);
+        return [];
+      }
+
+      return Array.isArray(data) ? data : [];
+    } catch (err) {
+      console.warn('[Senda] Competitor fetch error:', err);
+      return [];
+    }
   },
 
   /**

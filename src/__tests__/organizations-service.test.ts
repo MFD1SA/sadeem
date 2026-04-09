@@ -1,72 +1,26 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // ─── Result holders ───
-let membershipResult: { data: unknown; error: unknown };
-let orgInsertResults: Array<{ data: unknown; error: unknown }>;
-let orgInsertCallIndex: number;
+let rpcResult: { data: unknown; error: unknown };
 let updateResult: { data: unknown; error: unknown };
 
-const mockInsert = vi.fn();
 const mockUpdate = vi.fn();
 
 vi.mock('@/lib/supabase', () => ({
   supabase: {
-    from: (table: string) => {
-      if (table === 'memberships' && orgInsertCallIndex === 0) {
-        // This could be getUserOrganization or createOrganization membership insert
+    rpc: (_name: string, _params?: unknown) => Promise.resolve(rpcResult),
+    from: () => ({
+      update: (...a: unknown[]) => {
+        mockUpdate(...a);
         return {
-          select: () => ({
-            eq: () => ({
-              eq: () => ({
-                limit: () => ({
-                  maybeSingle: () => Promise.resolve(membershipResult),
-                }),
-              }),
-            }),
-          }),
-          insert: (...a: unknown[]) => {
-            mockInsert(...a);
-            const idx = orgInsertCallIndex++;
-            return {
-              select: () => ({
-                single: () => Promise.resolve(orgInsertResults[idx] || { data: null, error: null }),
-              }),
-            };
-          },
-        };
-      }
-      // organizations or memberships (for createOrg flow)
-      return {
-        select: () => ({
           eq: () => ({
-            eq: () => ({
-              limit: () => ({
-                maybeSingle: () => Promise.resolve(membershipResult),
-              }),
+            select: () => ({
+              single: () => Promise.resolve(updateResult),
             }),
           }),
-        }),
-        insert: (...a: unknown[]) => {
-          mockInsert(...a);
-          const idx = orgInsertCallIndex++;
-          return {
-            select: () => ({
-              single: () => Promise.resolve(orgInsertResults[idx] || { data: null, error: null }),
-            }),
-          };
-        },
-        update: (...a: unknown[]) => {
-          mockUpdate(...a);
-          return {
-            eq: () => ({
-              select: () => ({
-                single: () => Promise.resolve(updateResult),
-              }),
-            }),
-          };
-        },
-      };
-    },
+        };
+      },
+    }),
   },
 }));
 
@@ -75,66 +29,49 @@ import { organizationService } from '@/services/organizations';
 describe('organizationService', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    membershipResult = { data: null, error: null };
-    orgInsertResults = [];
-    orgInsertCallIndex = 0;
+    rpcResult = { data: null, error: null };
     updateResult = { data: null, error: null };
   });
 
-  // ─── getUserOrganization ───
+  // ─── getUserOrganization (now uses RPC get_my_organization) ───
 
-  it('getUserOrganization returns null when no membership exists', async () => {
-    membershipResult = { data: null, error: null };
-
-    const result = await organizationService.getUserOrganization('user-1');
-    expect(result).toBeNull();
-  });
-
-  it('getUserOrganization returns null on query error', async () => {
-    membershipResult = { data: null, error: { message: 'fail' } };
+  it('getUserOrganization returns null when RPC returns null', async () => {
+    rpcResult = { data: null, error: null };
 
     const result = await organizationService.getUserOrganization('user-1');
     expect(result).toBeNull();
   });
 
-  it('getUserOrganization returns null when membership has no joined org', async () => {
-    membershipResult = {
-      data: { user_id: 'user-1', organization_id: 'org-1', organizations: null },
-      error: null,
-    };
+  it('getUserOrganization returns null on RPC error', async () => {
+    rpcResult = { data: null, error: { message: 'fail' } };
 
     const result = await organizationService.getUserOrganization('user-1');
     expect(result).toBeNull();
   });
 
-  it('getUserOrganization returns org and cleaned membership on success', async () => {
+  it('getUserOrganization returns null when RPC data has no org', async () => {
+    rpcResult = { data: { org: null, membership: null }, error: null };
+
+    const result = await organizationService.getUserOrganization('user-1');
+    expect(result).toBeNull();
+  });
+
+  it('getUserOrganization returns org and membership on success', async () => {
     const org = { id: 'org-1', name: 'Acme' };
-    membershipResult = {
-      data: {
-        user_id: 'user-1',
-        organization_id: 'org-1',
-        role: 'owner',
-        status: 'active',
-        organizations: org,
-      },
-      error: null,
-    };
+    const membership = { user_id: 'user-1', organization_id: 'org-1', role: 'owner', status: 'active' };
+    rpcResult = { data: { org, membership }, error: null };
 
     const result = await organizationService.getUserOrganization('user-1');
     expect(result).not.toBeNull();
     expect(result!.org).toEqual(org);
-    // The returned membership should NOT contain the nested organizations key
-    expect((result!.membership as any).organizations).toBeUndefined();
+    expect(result!.membership).toEqual(membership);
   });
 
-  // ─── createOrganization ───
+  // ─── createOrganization (now uses RPC create_org_with_membership) ───
 
-  it('createOrganization generates a slug and creates org + membership', async () => {
+  it('createOrganization returns org data from RPC on success', async () => {
     const org = { id: 'org-new', name: 'Test Org', slug: 'test-org-abc' };
-    orgInsertResults = [
-      { data: org, error: null },          // org insert
-      { data: { id: 'mem-1' }, error: null }, // membership insert
-    ];
+    rpcResult = { data: org, error: null };
 
     const result = await organizationService.createOrganization('user-1', {
       name: 'Test Org',
@@ -144,14 +81,11 @@ describe('organizationService', () => {
     });
 
     expect(result).toEqual(org);
-    expect(mockInsert).toHaveBeenCalledWith(
-      expect.objectContaining({ name: 'Test Org', owner_user_id: 'user-1' })
-    );
   });
 
-  it('createOrganization throws when org insert fails', async () => {
+  it('createOrganization throws when RPC fails', async () => {
     const err = { message: 'insert failed' };
-    orgInsertResults = [{ data: null, error: err }];
+    rpcResult = { data: null, error: err };
 
     await expect(
       organizationService.createOrganization('user-1', {
@@ -163,12 +97,8 @@ describe('organizationService', () => {
     ).rejects.toEqual(err);
   });
 
-  it('createOrganization throws when membership insert returns null data', async () => {
-    const org = { id: 'org-2', name: 'OK' };
-    orgInsertResults = [
-      { data: org, error: null },
-      { data: null, error: null }, // no error, but no data either
-    ];
+  it('createOrganization throws when RPC returns no data', async () => {
+    rpcResult = { data: null, error: null };
 
     await expect(
       organizationService.createOrganization('user-1', {
@@ -177,7 +107,7 @@ describe('organizationService', () => {
         country: 'x',
         city: 'x',
       })
-    ).rejects.toThrow('Membership was not created');
+    ).rejects.toThrow('Organization creation returned no data');
   });
 
   // ─── updateOrganization ───

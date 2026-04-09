@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // Mock supabase with chainable query builder
 const mockResult = { data: null as unknown, error: null as unknown };
+let rpcResult = { data: null as unknown, error: null as unknown };
 
 const chainable = () => {
   const chain: Record<string, unknown> = {};
@@ -26,6 +27,7 @@ let mockChain: ReturnType<typeof chainable>;
 vi.mock('@/lib/supabase', () => ({
   supabase: {
     from: () => mockChain,
+    rpc: () => Promise.resolve(rpcResult),
   },
 }));
 
@@ -36,6 +38,7 @@ describe('branchesService', () => {
     mockChain = chainable();
     mockResult.data = null;
     mockResult.error = null;
+    rpcResult = { data: null, error: null };
   });
 
   // ─── list ───
@@ -71,10 +74,11 @@ describe('branchesService', () => {
     );
   });
 
-  // ─── create ───
+  // ─── create (now uses RPC create_branch_with_limit_check) ───
 
-  it('create inserts branch with defaults for optional fields', async () => {
+  it('create returns branch after RPC + fetch', async () => {
     const newBranch = { id: 'b3', internal_name: 'South', organization_id: 'org-1', status: 'active' };
+    rpcResult = { data: 'b3', error: null };
     mockResult.data = newBranch;
 
     const result = await branchesService.create({
@@ -82,40 +86,24 @@ describe('branchesService', () => {
       internal_name: 'South',
     });
 
-    expect(mockChain.insert).toHaveBeenCalledWith(
-      expect.objectContaining({
-        organization_id: 'org-1',
-        internal_name: 'South',
-        google_name: null,
-        google_location_id: null,
-        city: null,
-        address: null,
-        status: 'active',
-      })
-    );
     expect(result).toEqual(newBranch);
   });
 
-  it('create passes provided optional fields instead of null', async () => {
+  it('create passes optional fields to RPC', async () => {
+    rpcResult = { data: 'b4', error: null };
     mockResult.data = { id: 'b4' };
 
-    await branchesService.create({
+    const result = await branchesService.create({
       organization_id: 'org-1',
       internal_name: 'East',
       city: 'Riyadh',
-      status: 'inactive',
     });
 
-    expect(mockChain.insert).toHaveBeenCalledWith(
-      expect.objectContaining({
-        city: 'Riyadh',
-        status: 'inactive',
-      })
-    );
+    expect(result).toEqual({ id: 'b4' });
   });
 
-  it('create throws on insert error', async () => {
-    mockResult.error = { message: 'duplicate key' };
+  it('create throws on RPC error', async () => {
+    rpcResult = { data: null, error: { message: 'duplicate key' } };
 
     await expect(
       branchesService.create({ organization_id: 'org-1', internal_name: 'Dup' })

@@ -1,8 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-// ── Supabase mock (competitor service imports it but fetchCompetitors is a stub) ──
+// ── Supabase mock ──
+let invokeResult: { data: unknown; error: unknown } = { data: [], error: null };
 vi.mock('@/lib/supabase', () => ({
-  supabase: { from: () => ({}) },
+  supabase: {
+    from: () => ({}),
+    functions: {
+      invoke: () => Promise.resolve(invokeResult),
+    },
+  },
 }));
 
 import { competitorService, type CompetitorData } from '@/services/competitor';
@@ -10,11 +16,39 @@ import { competitorService, type CompetitorData } from '@/services/competitor';
 describe('competitorService', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    invokeResult = { data: [], error: null };
   });
 
   // ── fetchCompetitors ──
 
-  it('returns empty array (MVP placeholder)', async () => {
+  it('returns empty array when edge function returns empty', async () => {
+    invokeResult = { data: [], error: null };
+
+    const result = await competitorService.fetchCompetitors({
+      industry: 'restaurant',
+      city: 'Riyadh',
+    });
+
+    expect(result).toEqual([]);
+  });
+
+  it('returns competitors from edge function', async () => {
+    const competitors = [
+      { name: 'Place A', rating: 4.5, reviewCount: 100, address: 'Addr', placeId: 'p1' },
+    ];
+    invokeResult = { data: competitors, error: null };
+
+    const result = await competitorService.fetchCompetitors({
+      industry: 'restaurant',
+      city: 'الرياض',
+    });
+
+    expect(result).toEqual(competitors);
+  });
+
+  it('returns empty array on edge function error', async () => {
+    invokeResult = { data: null, error: { message: 'timeout' } };
+
     const result = await competitorService.fetchCompetitors({
       industry: 'restaurant',
       city: 'Riyadh',
