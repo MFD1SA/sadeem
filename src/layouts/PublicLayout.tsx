@@ -16,7 +16,7 @@ const T: Record<Lang, Record<string, any>> = {
     navPaths: ['/', '/about', '/features', '/pricing', '/faq', '/blog', '/contact-us'],
     loginBtn: 'دخول',
     ctaBtn: 'ابدأ الآن',
-    footerTagline: 'حلك المتكامل لإدارة تقييمات جوجل وتحسين السمعة الرقمية',
+    footerTagline: 'كل ما يحتاجه نشاطك لينمو بثبات ويحضر بقوة في السوق الرقمي',
     footerProduct: 'المنتج',
     footerProductLinks: ['المميزات', 'الباقات', 'من نحن'],
     footerProductPaths: ['/features', '/pricing', '/about'],
