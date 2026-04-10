@@ -14,7 +14,7 @@ export function SubscriberLayout() {
 
   return (
     <PlanProvider>
-      <div className="flex h-screen w-full overflow-hidden bg-surface-secondary">
+      <div className="flex h-screen-safe w-full overflow-hidden bg-surface-secondary">
         <Sidebar
           mobileSidebarOpen={mobileSidebarOpen}
           onCloseMobile={closeMobileSidebar}
