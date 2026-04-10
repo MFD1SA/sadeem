@@ -6,6 +6,8 @@ export interface CompetitorData {
   reviewCount: number;
   address: string;
   placeId: string;
+  distance?: number;   // meters from search center
+  score?: number;       // internal relevance + quality score (0–1)
 }
 
 export interface CompetitorReport {
@@ -32,6 +34,7 @@ export const competitorService = {
     city: string;
     latitude?: number;
     longitude?: number;
+    businessName?: string;
     accessToken?: string;
   }): Promise<CompetitorData[]> {
     try {
@@ -41,6 +44,7 @@ export const competitorService = {
           city: params.city,
           latitude: params.latitude,
           longitude: params.longitude,
+          businessName: params.businessName,
         },
       });
 
@@ -70,13 +74,13 @@ export const competitorService = {
     const avgCompReviews = competitors.reduce((sum, c) => sum + c.reviewCount, 0) / competitors.length;
 
     // Rating comparison
-    if (myRating > avgCompRating) {
+    if (myRating > avgCompRating + 0.2) {
       insights.push({
         type: 'strength',
         textAr: `تقييمك (${myRating.toFixed(1)}) أعلى من متوسط المنافسين (${avgCompRating.toFixed(1)})`,
         textEn: `Your rating (${myRating.toFixed(1)}) is above competitor average (${avgCompRating.toFixed(1)})`,
       });
-    } else if (myRating < avgCompRating) {
+    } else if (myRating < avgCompRating - 0.2) {
       insights.push({
         type: 'weakness',
         textAr: `تقييمك (${myRating.toFixed(1)}) أقل من متوسط المنافسين (${avgCompRating.toFixed(1)})`,
@@ -91,17 +95,44 @@ export const competitorService = {
         textAr: 'عدد تقييماتك أقل بكثير من المنافسين — استخدم نظام QR لزيادة التقييمات',
         textEn: 'Your review count is significantly lower — use QR system to increase reviews',
       });
+    } else if (myReviewCount > avgCompReviews * 1.5) {
+      insights.push({
+        type: 'strength',
+        textAr: `عدد تقييماتك (${myReviewCount}) أعلى بكثير من متوسط المنافسين (${Math.round(avgCompReviews)})`,
+        textEn: `Your review count (${myReviewCount}) is significantly above competitor average (${Math.round(avgCompReviews)})`,
+      });
     }
 
-    // Top competitor
-    const topComp = competitors.length > 0
-      ? competitors.reduce((best, c) => c.rating > best.rating ? c : best, competitors[0])
-      : null;
+    // Top competitor (by score if available, else rating)
+    const topComp = competitors.reduce((best, c) => {
+      const cScore = c.score ?? c.rating;
+      const bScore = best.score ?? best.rating;
+      return cScore > bScore ? c : best;
+    }, competitors[0]);
+
     if (topComp && topComp.rating > myRating) {
+      const distText = topComp.distance
+        ? ` (${topComp.distance < 1000 ? `${topComp.distance}م` : `${(topComp.distance / 1000).toFixed(1)}كم`})`
+        : '';
+      const distTextEn = topComp.distance
+        ? ` (${topComp.distance < 1000 ? `${topComp.distance}m` : `${(topComp.distance / 1000).toFixed(1)}km`} away)`
+        : '';
       insights.push({
         type: 'weakness',
-        textAr: `المنافس الأقوى "${topComp.name}" بتقييم ${topComp.rating} و ${topComp.reviewCount} تقييم`,
-        textEn: `Strongest competitor "${topComp.name}" with ${topComp.rating} rating and ${topComp.reviewCount} reviews`,
+        textAr: `المنافس الأقوى "${topComp.name}"${distText} بتقييم ${topComp.rating} و ${topComp.reviewCount} تقييم`,
+        textEn: `Strongest competitor "${topComp.name}"${distTextEn} with ${topComp.rating} rating and ${topComp.reviewCount} reviews`,
+      });
+    }
+
+    // Nearest strong competitor insight
+    const nearestStrong = competitors
+      .filter(c => c.distance && c.distance > 0 && c.rating >= 4.0)
+      .sort((a, b) => (a.distance || Infinity) - (b.distance || Infinity))[0];
+    if (nearestStrong && nearestStrong.distance && nearestStrong.distance < 1000) {
+      insights.push({
+        type: 'weakness',
+        textAr: `منافس قوي "${nearestStrong.name}" على بعد ${nearestStrong.distance}م فقط بتقييم ${nearestStrong.rating}`,
+        textEn: `Strong competitor "${nearestStrong.name}" only ${nearestStrong.distance}m away with ${nearestStrong.rating} rating`,
       });
     }
 

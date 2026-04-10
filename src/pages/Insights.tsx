@@ -57,10 +57,11 @@ export default function Insights() {
       });
       setSeo(seoResult);
 
-      // Competitors
+      // Competitors (Smart Engine v2: pass businessName for keyword extraction)
       const comps = await competitorService.fetchCompetitors({
         industry: organization.industry || '',
         city: organization.city || '',
+        businessName: organization.name || '',
       });
       const report = competitorService.generateReport(stats.avgRating, stats.totalReviews, comps);
       setCompetitors(report);
