@@ -13,6 +13,7 @@ export interface AIReplyRequest {
   language: 'ar' | 'en';
   tone?: 'professional' | 'friendly' | 'luxury';
   emojiSupport?: EmojiLevel;
+  industry?: string;
 }
 
 export interface AIReplyResponse {
@@ -62,7 +63,13 @@ function buildPrompt(req: AIReplyRequest): string {
     emojiInstruction = 'You may use emojis freely and naturally throughout the reply to enhance warmth and engagement.';
   }
 
-  return `You are a professional review response assistant for "${req.organizationName}" (branch: "${req.branchName}").
+  // Industry context for relevant replies
+  const industryContext = req.industry
+    ? ` in the ${req.industry} industry`
+    : '';
+
+  return `You are a professional review response assistant for "${req.organizationName}"${industryContext} (branch: "${req.branchName}").
+IMPORTANT: Your reply must be relevant to the business type. Do NOT mention food/restaurant terms unless the business is a restaurant. Match your language to the actual industry.
 A customer named "${req.reviewerName}" left a ${req.rating}-star review:
 """
 ${req.reviewText || '(no text)'}
@@ -165,7 +172,7 @@ export const aiService = {
     };
   },
 
-  async processNewReview(reviewId: string, organizationName: string, branchName: string, language: 'ar' | 'en' = 'ar', tone: 'professional' | 'friendly' | 'luxury' = 'professional', emojiSupport: EmojiLevel = 'basic'): Promise<void> {
+  async processNewReview(reviewId: string, organizationName: string, branchName: string, language: 'ar' | 'en' = 'ar', tone: 'professional' | 'friendly' | 'luxury' = 'professional', emojiSupport: EmojiLevel = 'basic', industry?: string): Promise<void> {
     const { data: reviewData, error: revErr } = await supabase
       .from('reviews')
       .select('*')
@@ -220,6 +227,7 @@ export const aiService = {
         language,
         tone,
         emojiSupport,
+        industry,
       });
     } catch (aiErr) {
       // Log error

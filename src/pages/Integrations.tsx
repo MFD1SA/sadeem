@@ -290,12 +290,13 @@ export default function Integrations() {
     setGeminiTestResult('');
     try {
       const result = await aiService.generateReply({
-        reviewText: 'الطعام ممتاز والخدمة سريعة. أنصح الجميع بزيارة هذا المطعم.',
+        reviewText: 'تجربة ممتازة والخدمة احترافية جداً. أنصح الجميع بالتعامل معهم.',
         reviewerName: 'محمد',
         rating: 5,
         branchName: 'الفرع الرئيسي',
         organizationName: organization?.name || 'سيندا',
         language: 'ar',
+        industry: organization?.industry || '',
       });
       setGeminiTestResult(`✓ ${result.sentiment} | ${result.reply}`);
     } catch (err: unknown) {

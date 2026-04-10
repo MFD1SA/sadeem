@@ -177,7 +177,7 @@ export const reviewSyncService = {
         }
 
         try {
-          await aiService.processNewReview(review.id, org.name, branchMap[review.branch_id] || '', reviewLang, 'professional', emojiSupport);
+          await aiService.processNewReview(review.id, org.name, branchMap[review.branch_id] || '', reviewLang, 'professional', emojiSupport, org.industry || '');
           draftsGenerated++;
         } catch (err: unknown) {
           errors.push(`AI error for review ${review.id}: ${(err as Error).message}`);
