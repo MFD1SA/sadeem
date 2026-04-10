@@ -1,12 +1,50 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { Sidebar } from '@/components/sidebar/Sidebar';
 import { Topbar } from '@/components/topbar/Topbar';
 import { PlanProvider } from '@/hooks/usePlan';
 import { TrialBanner } from '@/components/ui/TrialBanner';
 import { SubscriptionGate } from '@/router/guards';
 
-// All subscriber pages are eagerly loaded — no prefetch needed.
+// ── Prefetch subscriber page chunks in background (after initial render) ────
+// This eliminates the loading delay when navigating between pages.
+const prefetched = { done: false };
+function prefetchSubscriberChunks() {
+  if (prefetched.done) return;
+  prefetched.done = true;
+  const pages = [
+    () => import('@/pages/Dashboard'),
+    () => import('@/pages/ReviewsCenter'),
+    () => import('@/pages/ResponsesInbox'),
+    () => import('@/pages/Analytics'),
+    () => import('@/pages/Branches'),
+    () => import('@/pages/Integrations'),
+    () => import('@/pages/Templates'),
+    () => import('@/pages/Billing'),
+    () => import('@/pages/Settings'),
+    () => import('@/pages/Insights'),
+    () => import('@/pages/Notifications'),
+    () => import('@/pages/Support'),
+    () => import('@/pages/Team'),
+    () => import('@/pages/QrReviews'),
+    () => import('@/pages/Tasks'),
+  ];
+  // Stagger imports to avoid network congestion
+  pages.forEach((load, i) => {
+    setTimeout(() => load().catch(() => {}), 300 + i * 150);
+  });
+}
+
 export function SubscriberLayout() {
+  const prefetchRef = useRef(false);
+
+  useEffect(() => {
+    if (!prefetchRef.current) {
+      prefetchRef.current = true;
+      // Start prefetching after 500ms (let current page render first)
+      const t = setTimeout(prefetchSubscriberChunks, 500);
+      return () => clearTimeout(t);
+    }
+  }, []);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   const closeMobileSidebar = useCallback(() => setMobileSidebarOpen(false), []);

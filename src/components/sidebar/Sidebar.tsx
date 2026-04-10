@@ -56,10 +56,11 @@ export function Sidebar({ mobileSidebarOpen, onCloseMobile }: SidebarProps) {
   const userAvatar = profile?.avatar_url || sessionMeta?.avatar_url || null;
   const userInitial = userName.charAt(0) || '?';
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     onCloseMobile();
-    await signOut();
+    // Navigate FIRST — don't wait for async signOut to prevent white screen
     navigate('/login', { replace: true });
+    signOut();
   };
 
   return (

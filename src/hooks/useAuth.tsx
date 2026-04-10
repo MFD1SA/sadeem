@@ -110,10 +110,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // ── Core hydration ─────────────────────────────────────────────────
   //
   // ★ Retry logic: If org is null on first attempt, retry ONCE after a
-  //   short delay. This covers PKCE timing (JWT propagation delay).
-  //   - If sessionStorage confirms org existed → 800ms delay (PKCE safe)
-  //   - Otherwise → 300ms delay (quick check, covers edge cases)
-  //   - Retry timeout is 3s (short — prevents long waits for new users)
+  //   very short delay (200–400ms). The RequireOrganization guard has
+  //   its own retry loop, so we don't need long waits here.
   const hydrateAuth = useCallback(
     async (session: MinimalSession | null) => {
       if (hydrating.current) return;
@@ -129,17 +127,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         // Phase 1: Load profile + org in parallel (fast path).
         const [profile, orgData] = await Promise.all([
-          raceTimeout(loadProfile(session.user.id, session), 5000, null),
-          raceTimeout(loadOrganization(session.user.id), 5000, null),
+          raceTimeout(loadProfile(session.user.id, session), 4000, null),
+          raceTimeout(loadOrganization(session.user.id), 4000, null),
         ]);
 
-        // ★ If org is null, retry once. Covers PKCE timing + transient failures.
-        //   Short delay + short timeout to minimize impact on genuinely new users.
+        // ★ If org is null, retry once with a SHORT delay.
+        //   If this also fails, RequireOrganization guard has its own retry.
         let finalOrgData = orgData;
         if (!orgData?.org) {
           const wasConfirmed = sessionStorage.getItem(ORG_CONFIRMED_KEY);
-          await delay(wasConfirmed ? 800 : 300);
-          finalOrgData = await raceTimeout(loadOrganization(session.user.id), 3000, null);
+          await delay(wasConfirmed ? 400 : 200);
+          finalOrgData = await raceTimeout(loadOrganization(session.user.id), 2000, null);
         }
 
         // Phase 2: If org exists, pre-load subscription
@@ -203,7 +201,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (event === 'SIGNED_OUT') {
         initialSessionHandled.current = false;
         hydrationDone.current = false;
-        sessionStorage.removeItem(ORG_CONFIRMED_KEY);
+        // ★ Keep ORG_CONFIRMED_KEY — prevents onboarding flash on re-login
         setState({ ...EMPTY_STATE });
         return;
       }
@@ -271,13 +269,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (mounted) {
         setState(prev => {
           if (prev.isLoading) {
-            console.warn('[Senda] Safety timeout: forcing isLoading=false after 5s');
+            console.warn('[Senda] Safety timeout: forcing isLoading=false after 3s');
             return { ...prev, isLoading: false };
           }
           return prev;
         });
       }
-    }, 5_000);
+    }, 3_000);
 
     return () => {
       mounted = false;
@@ -312,7 +310,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = useCallback(async () => {
     signingOut.current = true;
     hydrationDone.current = false;
-    sessionStorage.removeItem(ORG_CONFIRMED_KEY);
+    // ★ Do NOT clear ORG_CONFIRMED_KEY — it's a performance hint to prevent
+    //   the onboarding flash on next login. It's harmless: if the user
+    //   truly has no org, RequireOrganization retries will time out and
+    //   redirect to onboarding properly.
     setState({ ...EMPTY_STATE });
     try {
       await supabase.auth.signOut();

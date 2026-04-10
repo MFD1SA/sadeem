@@ -17,7 +17,7 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { usePlan } from '@/hooks/usePlan';
 import { LoadingState } from '@/components/ui/LoadingState';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 
 const ADMIN_CACHE_KEY = 'sadeem_admin_check';
@@ -119,14 +119,15 @@ export function RequireAuth() {
  *
  * Used for: /dashboard/* (NOT nested inside RequireAuth — handles auth independently)
  *
- * ★ PERF: Shows ONE spinner while auth is loading. No admin RPC check here
- *   (admin check only needed for /onboarding redirect, not for dashboard access).
- *   No retry state — orgConfirmed ref prevents false redirects silently.
+ * ★ KEY BEHAVIOR: If session‑Storage confirms the user previously had an org,
+ *   NEVER redirect to /onboarding. Instead show a spinner and retry for up
+ *   to 4 seconds.  This eliminates the "onboarding flash" caused by the
+ *   Supabase PostgREST JWT propagation delay after OAuth sign‑in.
  */
 export function RequireOrganization() {
   const { hasOrganization, isLoading, isAuthenticated, refreshOrganization } = useAuth();
 
-  // Initialize from sessionStorage — survives page reloads and tab switches.
+  // Initialize from sessionStorage — survives page reloads AND sign‑out.
   const orgConfirmed = useRef(
     (() => {
       try { return !!sessionStorage.getItem('sadeem_org_confirmed'); }
@@ -134,15 +135,33 @@ export function RequireOrganization() {
     })()
   );
 
+  // Track whether we're waiting for a retry to resolve
+  const [waitingForOrg, setWaitingForOrg] = useState(false);
+  const retryDone = useRef(false);
+
   // Once org is confirmed, remember it for the component lifetime
   if (hasOrganization) orgConfirmed.current = true;
 
+  // Retry org load when we know user had one but hydration missed it
+  const retryOrgLoad = useCallback(async () => {
+    if (retryDone.current) return;
+    retryDone.current = true;
+    setWaitingForOrg(true);
+
+    // Try up to 3 times over ~3 seconds
+    for (let i = 0; i < 3; i++) {
+      await refreshOrganization();
+      // Check if org was found (refreshOrganization updates auth state)
+      await new Promise(r => setTimeout(r, 400));
+      // If org is now available, the next render will show <Outlet />
+    }
+    setWaitingForOrg(false);
+  }, [refreshOrganization]);
+
   // ★ MUST check isLoading — this guard is NOT inside RequireAuth.
-  //   Without this, isAuthenticated=false during initial load would
-  //   cause a flash redirect to /login before auth resolves.
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen min-h-[100dvh] flex items-center justify-center bg-surface-secondary">
         <LoadingState />
       </div>
     );
@@ -153,9 +172,20 @@ export function RequireOrganization() {
   }
 
   if (!hasOrganization) {
-    // If org was previously confirmed, don't redirect — trigger silent refresh.
+    // User previously had an org → JWT timing issue. Show spinner, retry.
     if (orgConfirmed.current) {
-      refreshOrganization().catch(() => {});
+      if (!retryDone.current) {
+        retryOrgLoad();
+      }
+      if (waitingForOrg) {
+        return (
+          <div className="min-h-screen min-h-[100dvh] flex items-center justify-center bg-surface-secondary">
+            <LoadingState />
+          </div>
+        );
+      }
+      // Retries exhausted but still no org — render dashboard shell anyway
+      // (org might load via onAuthStateChange later)
       return <Outlet />;
     }
     return <Navigate to="/onboarding" replace />;
@@ -188,11 +218,14 @@ export function SubscriptionGate() {
 
 /**
  * Redirect authenticated users away from login/signup pages.
+ * ★ Always renders the login page immediately (no spinner) to avoid white screen.
  */
 export function RedirectIfAuthenticated() {
   const { isAuthenticated, isLoading } = useAuth();
   const { isAdmin } = useAdminCheck();
 
+  // ★ Show login page immediately while loading — never show blank/spinner.
+  // If the user is authenticated, the redirect happens once loading completes.
   if (isLoading) return <Outlet />;
 
   if (isAuthenticated) {
